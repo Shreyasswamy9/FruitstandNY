@@ -39,13 +39,16 @@ export default function Home() {
       <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "#000", zIndex: 9999 }}>
         <video
           ref={videoRef}
-          src={"/fruitstand.mp4"}
           style={{ width: "100vw", height: "100vh", objectFit: "cover" }}
           autoPlay
           muted
           preload="auto"
+          playsInline
           onEnded={handleVideoEnd}
-        />
+        >
+          <source src="/fruitstand.webm" type="video/webm" />
+          <source src="/fruitstand.mp4" type="video/mp4" />
+        </video>
       </div>
     );
   }
