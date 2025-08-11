@@ -1,8 +1,23 @@
 "use client";
 
 import { motion } from "framer-motion";
+import React, { useRef, useEffect, useState } from "react";
 
 export default function Home() {
+  const [videoEnded, setVideoEnded] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+  videoRef.current.playbackRate = 1.0; // Set playback rate to normal speed
+  videoRef.current.play();
+    }
+  }, []);
+
+  const handleVideoEnd = () => {
+    setVideoEnded(true);
+  };
+
   // Animation variants for staggered letters
   const container = {
     hidden: { opacity: 0 },
@@ -18,6 +33,23 @@ export default function Home() {
     hidden: { opacity: 0, y: 40, scale: 0.8 },
     show: { opacity: 1, y: 0, scale: 1, transition: { stiffness: 400, damping: 20 } },
   };
+
+  if (!videoEnded) {
+    return (
+      <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "#000", zIndex: 9999 }}>
+        <video
+          ref={videoRef}
+          src={"/fruitstand.mp4"}
+          style={{ width: "100vw", height: "100vh", objectFit: "cover" }}
+          autoPlay
+          muted
+          preload="auto"
+          onEnded={handleVideoEnd}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="relative min-h-screen w-full bg-gradient-to-br from-black via-gray-900 to-gray-800 flex items-center justify-center overflow-hidden">
       {/* Dark overlay for readability */}
@@ -54,3 +86,4 @@ export default function Home() {
     </div>
   );
 }
+
