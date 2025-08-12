@@ -54,7 +54,7 @@ export default function Home() {
           preload="auto"
           onEnded={handleVideoEnd}
         >
-          <source src="https://github.com/Shreyasswamy9/FruitstandNY/raw/main/Videos/fruitstand.mp4" type="video/mp4" />
+          <source src="https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/Videos/fruitstand.mp4" type="video/mp4" />
         </video>
       </div>
     );
