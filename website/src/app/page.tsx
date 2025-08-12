@@ -8,9 +8,16 @@ export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (videoRef.current) {
-  videoRef.current.playbackRate = 1.0; // Set playback rate to normal speed
-  videoRef.current.play();
+    const video = videoRef.current;
+    if (video) {
+      const handleCanPlay = () => {
+        video.playbackRate = 1.0;
+        video.play().catch(err => {
+          console.warn("Autoplay failed:", err);
+        });
+      };
+      video.addEventListener("canplaythrough", handleCanPlay);
+      return () => video.removeEventListener("canplaythrough", handleCanPlay);
     }
   }, []);
 
@@ -36,18 +43,18 @@ export default function Home() {
 
   if (!videoEnded) {
     return (
-      <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "#000", zIndex: 9999 }}>
+      <div style={{ position: "fixed", inset: 0, width: "100vw", height: "100vh", background: "#000", zIndex: 9999, overflow: "hidden" }}>
         <video
           ref={videoRef}
-          style={{ width: "100vw", height: "100vh", objectFit: "cover" }}
+          id="intro-video"
+          style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", objectFit: "cover", backgroundColor: "#000" }}
           autoPlay
           muted
-          preload="auto"
           playsInline
+          preload="auto"
           onEnded={handleVideoEnd}
         >
-          <source src="/fruitstand.webm" type="video/webm" />
-          <source src="/fruitstand.mp4" type="video/mp4" />
+          <source src="https://github.com/Shreyasswamy9/FruitstandNY/raw/main/Videos/fruitstand.mp4" type="video/mp4" />
         </video>
       </div>
     );
