@@ -107,7 +107,7 @@ export default function Home() {
           preload="auto"
           loop
         >
-          <source src="https://github.com/Shreyasswamy9/FruitstandNY/raw/main/Videos/fruitstand2.mp4" type="video/mp4" />
+          <source src="https://github.com/Shreyasswamy9/FruitstandNY/blob/main/Videos/websitebackground.mp4" type="video/mp4" />
         </video>
         {/* Menu button top right */}
         <div style={{ position: "fixed", top: 20, right: 20, zIndex: 10001 }}>
