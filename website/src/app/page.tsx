@@ -54,7 +54,32 @@ export default function Home() {
   const [showMain, setShowMain] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [hoveredNav, setHoveredNav] = useState<NavType | null>(null);
+  const [menuTransition, setMenuTransition] = useState<'closed' | 'opening' | 'open' | 'closing'>('closed');
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Handle menu open/close with animation
+  // Use animation complete to reveal menu after blocks finish
+  const openMenu = () => {
+    setMenuTransition('opening');
+  };
+  const closeMenu = () => {
+    setMenuTransition('closing');
+    setMenuOpen(false);
+  };
+
+  // When blocks finish opening animation, show menu
+  const handleBlocksOpenComplete = () => {
+    if (menuTransition === 'opening') {
+      setMenuOpen(true);
+      setMenuTransition('open');
+    }
+  };
+  // When blocks finish closing animation, hide menu
+  const handleBlocksCloseComplete = () => {
+    if (menuTransition === 'closing') {
+      setMenuTransition('closed');
+    }
+  };
 
   useEffect(() => {
     const video = videoRef.current;
@@ -107,7 +132,7 @@ export default function Home() {
         animate={transitioning || showMain ? { opacity: 1 } : { opacity: 0 }}
         transition={{ duration: 0.7, ease: "easeInOut" }}
       >
-        <source src="https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/Videos/websitebackground.mp4" type="video/mp4" />
+  <source src="https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/Videos/websitebackgroundfinal.mp4" type="video/mp4" />
       </motion.video>
       {/* Top header FRUITSTAND text and menu button only after transition */}
       {showMain && (
@@ -137,54 +162,105 @@ export default function Home() {
             }}>FRUITSTAND</h1>
           </div>
           {/* Menu Button */}
-          <div style={{ position: "fixed", top: 20, right: 20, zIndex: 10001 }}>
-            <button style={{ padding: "10px 20px", fontSize: 18 }} onClick={() => setMenuOpen(true)}>Menu</button>
-          </div>
-          {/* Menu Overlay */}
-          {menuOpen && (
-            <div style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100vw",
-              height: "100vh",
-              zIndex: 20000,
-              display: "flex",
-              background: "linear-gradient(120deg, #e0e0e0 0%, #bdbdbd 100%)",
-              transition: "background 0.7s ease"
-            }}>
-              {/* Left: Animated, skewed, fanned photos */}
-              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-                <PhotoGroup hoveredNav={hoveredNav} />
-              </div>
-              {/* Right: Navigation buttons */}
-              <div style={{ width: 400, minWidth: 220, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "flex-end", paddingRight: 60 }}>
-                {["SHOP", "ACCOUNT", "CART", "CONTACT"].map(nav => (
-                  <button
-                    key={nav}
-                    style={{
-                      margin: "18px 0",
-                      padding: "18px 38px",
-                      fontSize: 28,
-                      fontWeight: "bold",
-                      background: hoveredNav === nav ? "#fff" : "#f5f5f5",
-                      color: "#333",
-                      border: "none",
-                      borderRadius: 12,
-                      boxShadow: hoveredNav === nav ? "0 4px 24px #bbb" : "0 2px 8px #ccc",
-                      cursor: "pointer",
-                      transition: "all 0.3s"
-                    }}
-                    onMouseEnter={() => setHoveredNav(nav as NavType)}
-                    onMouseLeave={() => setHoveredNav(null)}
-                  >
-                    {nav}
-                  </button>
-                ))}
-                <button style={{ marginTop: 40, padding: "10px 24px", fontSize: 18 }} onClick={() => setMenuOpen(false)}>Close</button>
-              </div>
-            </div>
-          )}
+             <div style={{ position: "fixed", top: 20, right: 20, zIndex: 10001 }}>
+               <button style={{ padding: "10px 20px", fontSize: 18 }} onClick={openMenu}>Menu</button>
+             </div>
+             {/* Slide-up transition blocks and menu overlay */}
+             {/* Only show blocks when menu is opening or closing */}
+             {(menuTransition === 'opening' || menuTransition === 'closing') && (
+               <>
+                 <motion.div
+                   initial={{ y: "100vh" }}
+                   animate={menuTransition === 'opening' ? { y: 0 } : { y: "100vh" }}
+                   transition={{ duration: 1.2, ease: "easeInOut" }}
+                   style={{
+                     position: "fixed",
+                     left: 0,
+                     bottom: 0,
+                     width: "100vw",
+                     height: "60vh",
+                     background: "#232323",
+                     zIndex: 30000,
+                     pointerEvents: "auto",
+                     borderTopLeftRadius: 32,
+                     borderTopRightRadius: 32,
+                     boxShadow: "0 -16px 48px #000, 0 0 0 8px #fff inset",
+                     border: "6px solid #ffeb3b"
+                   }}
+                   onAnimationComplete={menuTransition === 'opening' ? handleBlocksOpenComplete : handleBlocksCloseComplete}
+                 />
+                 <motion.div
+                   initial={{ y: "100vh" }}
+                   animate={menuTransition === 'opening' ? { y: 0 } : { y: "100vh" }}
+                   transition={{ duration: 1.2, ease: "easeInOut", delay: 0.32 }}
+                   style={{
+                     position: "fixed",
+                     left: 0,
+                     bottom: 0,
+                     width: "100vw",
+                     height: "40vh",
+                     background: "#b71c1c",
+                     zIndex: 30001,
+                     pointerEvents: "auto",
+                     borderTopLeftRadius: 32,
+                     borderTopRightRadius: 32,
+                     boxShadow: "0 -8px 32px #222, 0 0 0 8px #fff inset",
+                     border: "6px solid #00e676"
+                   }}
+                 />
+               </>
+             )}
+             {/* Menu Overlay (appears after blocks) */}
+             {menuOpen && menuTransition === 'open' && (
+               <motion.div
+                 initial={{ opacity: 0 }}
+                 animate={{ opacity: 1 }}
+                 exit={{ opacity: 0 }}
+                 transition={{ duration: 0.6, ease: "easeInOut" }}
+                 style={{
+                   position: "fixed",
+                   top: 0,
+                   left: 0,
+                   width: "100vw",
+                   height: "100vh",
+                   zIndex: 20002,
+                   display: "flex",
+                   background: "linear-gradient(120deg, #232323 0%, #b71c1c 100%)",
+                   transition: "background 0.7s ease"
+                 }}
+               >
+                 {/* Left: Animated, skewed, fanned photos */}
+                 <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+                   <PhotoGroup hoveredNav={hoveredNav} />
+                 </div>
+                 {/* Right: Navigation buttons */}
+                 <div style={{ width: 400, minWidth: 220, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "flex-end", paddingRight: 60 }}>
+                   {["SHOP", "ACCOUNT", "CART", "CONTACT"].map(nav => (
+                     <button
+                       key={nav}
+                       style={{
+                         margin: "18px 0",
+                         padding: "18px 38px",
+                         fontSize: 28,
+                         fontWeight: "bold",
+                         background: hoveredNav === nav ? "#fff" : "#f5f5f5",
+                         color: "#333",
+                         border: "none",
+                         borderRadius: 12,
+                         boxShadow: hoveredNav === nav ? "0 4px 24px #bbb" : "0 2px 8px #ccc",
+                         cursor: "pointer",
+                         transition: "all 0.3s"
+                       }}
+                       onMouseEnter={() => setHoveredNav(nav as NavType)}
+                       onMouseLeave={() => setHoveredNav(null)}
+                     >
+                       {nav}
+                     </button>
+                   ))}
+                   <button style={{ marginTop: 40, padding: "10px 24px", fontSize: 18 }} onClick={closeMenu}>Close</button>
+                 </div>
+               </motion.div>
+             )}
         </>
       )}
       {/* Main website content goes here, scrollable */}
