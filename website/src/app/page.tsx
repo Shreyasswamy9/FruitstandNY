@@ -4,10 +4,10 @@ import { motion } from "framer-motion";
 import React, { useRef, useEffect, useState } from "react";
 
 const navPhotos = {
-  SHOP: ["/images/red1.jpeg", "/images/green1.jpeg", "/images/black1.jpeg"],
-  ACCOUNT: ["/images/white1.jpeg", "/images/black2.jpeg", "/images/green2.jpeg"],
-  CART: ["/images/red2.jpeg", "/images/white 2.jpeg", "/images/tshirt1.jpeg"],
-  CONTACT: ["/images/tshirt back.jpeg", "/images/tshirt plain.jpeg", "/images/tshirt1.jpeg"],
+  SHOP: ["/images/shop.jpg"],
+  ACCOUNT: ["/images/home.jpg"],
+  CART: ["/images/cart.webp"],
+  CONTACT: ["/images/contact.jpeg"],
 };
 
 type NavType = "SHOP" | "ACCOUNT" | "CART" | "CONTACT";
@@ -17,7 +17,7 @@ interface PhotoGroupProps {
 function PhotoGroup({ hoveredNav }: PhotoGroupProps) {
   const photos = hoveredNav && navPhotos[hoveredNav as NavType] ? navPhotos[hoveredNav as NavType] : navPhotos["SHOP"];
   return (
-    <div style={{ position: "relative", width: 340, height: 420 }}>
+    <div style={{ position: "relative", width: 520, height: 620 }}>
       {photos.map((src: string, i: number) => (
         <motion.img
           key={src}
@@ -25,7 +25,7 @@ function PhotoGroup({ hoveredNav }: PhotoGroupProps) {
           initial={{ opacity: 0, x: -80, rotate: -8 + i * 8, scale: 0.92 }}
           animate={{
             opacity: 1,
-            x: 0 + i * 18,
+            x: 0 + i * 28,
             rotate: -8 + i * 8,
             scale: 1 + i * 0.04
           }}
@@ -33,13 +33,13 @@ function PhotoGroup({ hoveredNav }: PhotoGroupProps) {
           transition={{ duration: 0.5 + i * 0.1, ease: "easeOut" }}
           style={{
             position: "absolute",
-            top: 40 + i * 38,
-            left: 40 + i * 18,
-            width: 180,
-            height: 180,
+            top: 40 + i * 48,
+            left: 40 + i * 28,
+            width: 340,
+            height: 340,
             objectFit: "cover",
-            borderRadius: 24,
-            boxShadow: "0 8px 32px #aaa",
+            borderRadius: 64,
+            boxShadow: "0 16px 48px #aaa",
             zIndex: 10 + i,
             transform: `skewY(-6deg) rotate(${-8 + i * 8}deg)`
           }}
@@ -60,11 +60,12 @@ export default function Home() {
   // Handle menu open/close with animation
   // Use animation complete to reveal menu after blocks finish
   const openMenu = () => {
-    setMenuTransition('opening');
+    setMenuOpen(true);
+    setMenuTransition('open');
   };
   const closeMenu = () => {
-    setMenuTransition('closing');
     setMenuOpen(false);
+    setMenuTransition('closed');
   };
 
   // When blocks finish opening animation, show menu
@@ -165,52 +166,8 @@ export default function Home() {
              <div style={{ position: "fixed", top: 20, right: 20, zIndex: 10001 }}>
                <button style={{ padding: "10px 20px", fontSize: 18 }} onClick={openMenu}>Menu</button>
              </div>
-             {/* Slide-up transition blocks and menu overlay */}
-             {/* Only show blocks when menu is opening or closing */}
-             {(menuTransition === 'opening' || menuTransition === 'closing') && (
-               <>
-                 <motion.div
-                   initial={{ y: "100vh" }}
-                   animate={menuTransition === 'opening' ? { y: 0 } : { y: "100vh" }}
-                   transition={{ duration: 1.2, ease: "easeInOut" }}
-                   style={{
-                     position: "fixed",
-                     left: 0,
-                     bottom: 0,
-                     width: "100vw",
-                     height: "60vh",
-                     background: "#232323",
-                     zIndex: 30000,
-                     pointerEvents: "auto",
-                     borderTopLeftRadius: 32,
-                     borderTopRightRadius: 32,
-                     boxShadow: "0 -16px 48px #000, 0 0 0 8px #fff inset",
-                     border: "6px solid #ffeb3b"
-                   }}
-                   onAnimationComplete={menuTransition === 'opening' ? handleBlocksOpenComplete : handleBlocksCloseComplete}
-                 />
-                 <motion.div
-                   initial={{ y: "100vh" }}
-                   animate={menuTransition === 'opening' ? { y: 0 } : { y: "100vh" }}
-                   transition={{ duration: 1.2, ease: "easeInOut", delay: 0.32 }}
-                   style={{
-                     position: "fixed",
-                     left: 0,
-                     bottom: 0,
-                     width: "100vw",
-                     height: "40vh",
-                     background: "#b71c1c",
-                     zIndex: 30001,
-                     pointerEvents: "auto",
-                     borderTopLeftRadius: 32,
-                     borderTopRightRadius: 32,
-                     boxShadow: "0 -8px 32px #222, 0 0 0 8px #fff inset",
-                     border: "6px solid #00e676"
-                   }}
-                 />
-               </>
-             )}
-             {/* Menu Overlay (appears after blocks) */}
+             {/* Simple crossfade menu overlay, no blocks */}
+             {/* Menu Overlay (crossfade only) */}
              {menuOpen && menuTransition === 'open' && (
                <motion.div
                  initial={{ opacity: 0 }}
