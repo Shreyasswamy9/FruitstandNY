@@ -22,7 +22,7 @@ function PhotoGroup({ hoveredNav }: PhotoGroupProps) {
 
   useEffect(() => {
     // Animate images when hoveredNav changes
-    imageRefs.current.forEach((img, i) => {
+    imageRefs.current.forEach((img: HTMLImageElement | null, i: number) => {
       if (img) {
         animate(img, {
           opacity: [0, 1],
@@ -80,212 +80,122 @@ export default function Home() {
   const subtitleRef = useRef<HTMLParagraphElement>(null)
   const logoRef = useRef<HTMLDivElement>(null)
 
-  const [currentFontIndex, setCurrentFontIndex] = useState(0)
-  const [showFontFlip, setShowFontFlip] = useState(true)
+  const [currentLangIndex, setCurrentLangIndex] = useState(0)
+  const [showLangFlip, setShowLangFlip] = useState(true)
 
-  const fonts = [
-    "Arial, sans-serif",
-    "Georgia, serif",
-    "Courier New, monospace",
-    "Impact, sans-serif",
-    "Times New Roman, serif",
-    "Helvetica, sans-serif",
-    "Verdana, sans-serif",
-  ]
+  // Translations for 'Fruitstand' in different languages
+  const fruitstandTranslations = [
+    "Fruitstand", // English
+    "水果摊",      // Chinese
+    "Frutaria",   // Portuguese
+    "Frutería",   // Spanish
+    "फलस्टैंड",   // Hindi
+    "Stall de fruits", // French
+    "Obststand",  // German
+    "Fruttivendolo", // Italian
+    "フルーツスタンド", // Japanese
+    "فروٹ اسٹینڈ", // Urdu
+  ];
 
-  const fruitColors = [
-    "#FF6B6B", // F - Strawberry red
-    "#FF8E53", // R - Orange
-    "#4ECDC4", // U - Mint green
-    "#45B7D1", // I - Blueberry blue
-    "#96CEB4", // T - Lime green
-    "#FFEAA7", // S - Banana yellow
-    "#DDA0DD", // T - Grape purple
-    "#FF7675", // A - Apple red
-    "#74B9FF", // N - Berry blue
-    "#00B894", // D - Avocado green
-  ]
-
-  // Handle menu open/close with animation
-  const openMenu = () => {
-    setMenuOpen(true)
-    setMenuButtonState("close")
-
-    // Animate menu button to close icon
-    if (menuButtonRef.current) {
-      animate(menuButtonRef.current, {
-        rotate: [0, 180],
-        scale: [1, 1.1, 1],
-        duration: 400,
-        easing: "easeOutBack",
-      })
-    }
-
-    // Animate menu overlay in
-    if (menuRef.current) {
-      animate(menuRef.current, {
-        opacity: [0, 1],
-        duration: 600,
-        easing: "easeInOutQuad",
-        complete: () => {
-          // Stagger animate menu items
-          menuItemsRef.current.forEach((item, i) => {
-            if (item) {
-              animate(item, {
+  useEffect(() => {
+    if (titleRef.current && showLangFlip) {
+      let flipCount = 0;
+      const maxFlips = fruitstandTranslations.length * 2;
+      const langFlipInterval = setInterval(() => {
+        setCurrentLangIndex((prev: number) => (prev + 1) % fruitstandTranslations.length);
+        flipCount++;
+        if (flipCount >= maxFlips) {
+          clearInterval(langFlipInterval);
+          setShowLangFlip(false);
+          // Immediately start the fade-in animation after language flipping
+          if (logoRef.current) {
+            animate(logoRef.current, {
+              opacity: [0, 1],
+              scale: [0.8, 1],
+              duration: 600,
+              easing: "easeOutQuart",
+              delay: 0,
+            });
+          }
+          // Fade in subtitle after logo
+          setTimeout(() => {
+            if (subtitleRef.current) {
+              animate(subtitleRef.current, {
                 opacity: [0, 1],
-                translateY: [40, 0],
-                scale: [0.8, 1],
-                duration: 500,
-                easing: "easeOutBack",
-                delay: i * 100,
-              })
+                translateY: [20, 0],
+                duration: 1000,
+                easing: "easeOutQuart",
+              });
             }
-          })
-        },
-      })
+          }, 600);
+          // Auto transition to main content
+          setTimeout(() => {
+            if (logoRef.current) {
+              animate(logoRef.current, {
+                opacity: [1, 0],
+                scale: [1, 1.1],
+                duration: 800,
+                easing: "easeInQuart",
+              });
+            }
+            if (subtitleRef.current) {
+              animate(subtitleRef.current, {
+                opacity: [1, 0],
+                translateY: [0, -20],
+                duration: 800,
+                easing: "easeInQuart",
+              });
+            }
+            setTimeout(() => {
+              setShowMain(true);
+            }, 800);
+          }, 4000);
+        }
+      }, 170); // Flip every 600ms
     }
-  }
-
+  }, [fruitstandTranslations.length, showLangFlip]);
+  // Function to close the menu
   const closeMenu = () => {
-    setMenuButtonState("burger")
+    setMenuOpen(false);
+    setMenuButtonState("burger");
+    setHoveredNav(null);
+  };
 
-    // Animate menu items out first
-    menuItemsRef.current.forEach((item, i) => {
-      if (item) {
-        animate(item, {
-          opacity: [1, 0],
-          translateY: [0, -20],
-          scale: [1, 0.9],
-          duration: 300,
-          easing: "easeInBack",
-          delay: (menuItemsRef.current.length - 1 - i) * 50, // Reverse order
-        })
-      }
-    })
-
-    // Animate menu button back to burger
-    if (menuButtonRef.current) {
-      animate(menuButtonRef.current, {
-        rotate: [180, 360],
-        scale: [1, 0.9, 1],
-        duration: 400,
-        easing: "easeOutBack",
-        delay: 200,
-      })
-    }
-
-    // Animate menu overlay out
-    if (menuRef.current) {
-      animate(menuRef.current, {
-        opacity: [1, 0],
-        duration: 400,
-        easing: "easeInOutQuad",
-        delay: 300,
-        complete: () => {
-          setMenuOpen(false)
-        },
-      })
-    }
-  }
+  // Function to open the menu
+  const openMenu = () => {
+    setMenuOpen(true);
+    setMenuButtonState("close");
+  };
 
   // Handle navigation clicks
   const handleNavClick = (navItem: string) => {
     // Add a small delay before closing to show the selection
     setTimeout(() => {
-      closeMenu()
-    }, 200)
+      closeMenu();
+    }, 200);
 
     switch (navItem) {
       case "SHOP":
-        console.log("🛍️ Opening Shop - Browse our fruit collection!")
-        router.push("/shop")
-        break
+        console.log("🛍️ Opening Shop - Browse our fruit collection!");
+        router.push("/shop");
+        break;
       case "ACCOUNT":
-        console.log("👤 Account accessed")
-        router.push("/account")
-        break
+        console.log("👤 Account accessed");
+        router.push("/account");
+        break;
       case "CART":
-        console.log("🛒 Cart opened")
-        router.push("/cart")
-        break
+        console.log("🛒 Cart opened");
+        router.push("/cart");
+        break;
       case "CONTACT":
-        console.log("📞 Contact page accessed")
-        router.push("/contact")
-        break
+        console.log("📞 Contact page accessed");
+        router.push("/contact");
+        break;
       default:
-        console.log(`Navigating to ${navItem}`)
+        console.log(`Navigating to ${navItem}`);
     }
-  }
+  };
 
-  useEffect(() => {
-    const animateLanding = () => {
-      if (titleRef.current && showFontFlip) {
-        let flipCount = 0
-        const maxFlips = 20
-
-        const fontFlipInterval = setInterval(() => {
-          setCurrentFontIndex((prev) => (prev + 1) % fonts.length)
-          flipCount++
-
-          if (flipCount >= maxFlips) {
-            clearInterval(fontFlipInterval)
-            setShowFontFlip(false)
-
-            // Start the fade-in animation after font flipping
-            setTimeout(() => {
-              if (logoRef.current) {
-                animate(logoRef.current, {
-                  opacity: [0, 1],
-                  scale: [0.8, 1],
-                  duration: 1500,
-                  easing: "easeOutQuart",
-                  delay: 500,
-                })
-              }
-
-              // Fade in subtitle after logo
-              setTimeout(() => {
-                if (subtitleRef.current) {
-                  animate(subtitleRef.current, {
-                    opacity: [0, 1],
-                    translateY: [20, 0],
-                    duration: 1000,
-                    easing: "easeOutQuart",
-                  })
-                }
-              }, 1500)
-
-              // Auto transition to main content
-              setTimeout(() => {
-                if (logoRef.current) {
-                  animate(logoRef.current, {
-                    opacity: [1, 0],
-                    scale: [1, 1.1],
-                    duration: 800,
-                    easing: "easeInQuart",
-                  })
-                }
-                if (subtitleRef.current) {
-                  animate(subtitleRef.current, {
-                    opacity: [1, 0],
-                    translateY: [0, -20],
-                    duration: 800,
-                    easing: "easeInQuart",
-                  })
-                }
-
-                setTimeout(() => {
-                  setShowMain(true)
-                }, 800)
-              }, 4000)
-            }, 500)
-          }
-        }, 100) // Flip every 100ms
-      }
-    }
-
-    animateLanding()
-  }, [fonts.length, showFontFlip])
 
   return (
     <div
@@ -301,23 +211,23 @@ export default function Home() {
       {!showMain && (
         <div
           style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            background: "#fff",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 10001,
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              background: `url('/images/black-plain-concrete-textured.jpg') center center / cover no-repeat`,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 10001,
           }}
         >
           <div
             ref={logoRef}
             style={{
-              opacity: showFontFlip ? 1 : 0,
+              opacity: showLangFlip ? 1 : 0,
               transform: "scale(0.8)",
             }}
           >
@@ -325,28 +235,20 @@ export default function Home() {
               ref={titleRef}
               style={{
                 fontSize: "4rem",
-                fontWeight: "300",
+                fontWeight: "400",
                 letterSpacing: "0.3em",
                 textTransform: "uppercase",
                 margin: "0 0 40px 0",
-                fontFamily: showFontFlip ? fonts[currentFontIndex] : "Arial, sans-serif",
+                color: "#fff",
                 textAlign: "center",
-                transition: showFontFlip ? "font-family 0.1s ease" : "none",
+                transition: "none",
                 display: "flex",
                 justifyContent: "center",
+                // To customize the font, change the fontFamily below:
+                fontFamily: "Arial, Helvetica, sans-serif", // <-- Customize font here
               }}
             >
-              {"FRUITSTAND".split("").map((letter, index) => (
-                <span
-                  key={index}
-                  style={{
-                    color: fruitColors[index],
-                    transition: showFontFlip ? "color 0.1s ease" : "none",
-                  }}
-                >
-                  {letter}
-                </span>
-              ))}
+              {fruitstandTranslations[currentLangIndex]}
             </h1>
           </div>
 
@@ -355,7 +257,7 @@ export default function Home() {
             ref={subtitleRef}
             style={{
               fontSize: "1rem",
-              color: "rgba(0, 0, 0, 0.6)",
+              color: "rgba(255, 255, 255, 0.6)",
               textAlign: "center",
               opacity: 0,
               transform: "translateY(20px)",
@@ -373,7 +275,7 @@ export default function Home() {
 
       <div
         style={{
-          position: showMain ? "sticky" : "fixed",
+          position: showMain ? "relative" : "fixed",
           top: 0,
           left: 0,
           width: "100vw",
@@ -381,45 +283,40 @@ export default function Home() {
           zIndex: 1,
           opacity: showMain ? 1 : 0,
           transition: "opacity 1.5s ease-in-out",
-          padding: "20px",
+          padding: 0,
+          margin: 0,
           boxSizing: "border-box",
         }}
       >
-        <div
+        <video
+          ref={secondVideoRef}
           style={{
-            width: "100%",
-            height: "100%",
-            border: "3px solid rgba(0, 0, 0, 0.3)",
-            borderRadius: "20px",
-            overflow: "hidden",
-            boxShadow: "0 0 30px rgba(0, 0, 0, 0.1), inset 0 0 30px rgba(0, 0, 0, 0.05)",
-            backdropFilter: "blur(1px)",
+            width: "100vw",
+            height: "100vh",
+            objectFit: "cover",
+            pointerEvents: "none",
+            display: "block",
+            margin: 0,
+            padding: 0,
+            border: "none",
+            borderRadius: 0,
+            boxShadow: "none",
           }}
+          autoPlay
+          muted
+          playsInline
+          preload="auto"
+          loop
         >
-          <video
-            ref={secondVideoRef}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              pointerEvents: "none",
-            }}
-            autoPlay
-            muted
-            playsInline
-            preload="auto"
-            loop
-          >
-            <source
-              src="https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/Videos/websitebackgroundfinal.mp4"
-              type="video/mp4"
-            />
-          </video>
-        </div>
+          <source
+            src="https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/Videos/websitebackgroundfinal.mp4"
+            type="video/mp4"
+          />
+        </video>
       </div>
 
-      {/* Main website content goes here, scrollable */}
-      <div style={{ position: "relative", zIndex: 2, marginTop: showMain ? "40vh" : "0" }}>
+  {/* Main website content goes here, scrollable */}
+  <div style={{ position: "relative", zIndex: 2, marginTop: showMain ? "0" : "0" }}>
         {/* Example content, replace with your actual site */}
         <div
           style={{
