@@ -1,0 +1,138 @@
+[33mcommit c63ed9beb97b9e5e75c2d700d53dcdd7d2329aac[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Shreyas Swamy <ss263@fordham.edu>
+Date:   Wed Aug 20 23:27:13 2025 -0400
+
+    august20th
+
+[33mcommit 8aecfc98da71c6e2216dae7a721b13de82614ec6[m
+Author: Shreyas Swamy <ss263@fordham.edu>
+Date:   Fri Aug 15 05:44:17 2025 -0400
+
+    images
+
+[33mcommit daefda0d94930da5b0d0e0f126e5582e760b97ac[m
+Author: Shreyas Swamy <ss263@fordham.edu>
+Date:   Fri Aug 15 00:49:58 2025 -0400
+
+    menu
+
+[33mcommit 9f8c6aa05670067411cbf9c4e712651d658e70ee[m
+Author: Shreyas Swamy <ss263@fordham.edu>
+Date:   Fri Aug 15 00:34:37 2025 -0400
+
+    naming
+
+[33mcommit 20d5f354cad77889724dd599022f3a5f9b9940d2[m
+Author: Shreyas Swamy <ss263@fordham.edu>
+Date:   Fri Aug 15 00:31:26 2025 -0400
+
+    video and menu
+
+[33mcommit 113fb8ab29b51526fe37ab1a815d8bc7374e1381[m
+Merge: a0a034e 90516aa
+Author: Abhinav <112683325+Abhinav412@users.noreply.github.com>
+Date:   Thu Aug 14 02:07:25 2025 +0530
+
+    Merge pull request #3 from Abhinav412/main
+
+[33mcommit 90516aac403fb8f6d31dfa955d0a3ba803c6152f[m
+Author: Abhinav <abhinavdasu0412@gmail.com>
+Date:   Thu Aug 14 02:06:29 2025 +0530
+
+    v0 clone
+
+[33mcommit a0a034ef08ddbfc1bb332f663bf7ebbd3b650828[m
+Author: Shreyas Swamy <ss263@fordham.edu>
+Date:   Tue Aug 12 21:45:16 2025 -0400
+
+    updatebackgroundvuideo
+
+[33mcommit 4b3fb1aca933ea1b3334301ebc9647614fed94ed[m
+Author: Shreyas Swamy <ss263@fordham.edu>
+Date:   Tue Aug 12 21:38:41 2025 -0400
+
+    new homepage
+
+[33mcommit 214547afd0a82477f90d38174c822b1930c16223[m
+Author: Shreyas Swamy <ss263@fordham.edu>
+Date:   Tue Aug 12 19:20:31 2025 -0400
+
+    videosffs
+
+[33mcommit 83745149fe4bf2adb7c1404166fa05070bfbf5d6[m
+Author: Shreyas Swamy <ss263@fordham.edu>
+Date:   Tue Aug 12 19:13:16 2025 -0400
+
+    video and frame
+
+[33mcommit dac37fd3d536f59b8a0bdf4d6c59defc875d60b0[m
+Author: Shreyas Swamy <ss263@fordham.edu>
+Date:   Mon Aug 11 17:49:10 2025 -0400
+
+    videos
+
+[33mcommit c2fd2ffb4885202f5ca8eb9aaabaf3d1dbf4758c[m
+Author: Shreyas Swamy <ss263@fordham.edu>
+Date:   Mon Aug 11 17:45:39 2025 -0400
+
+    video
+
+[33mcommit b5c589f873cba6a6080e2133705c577d66a85109[m
+Author: Shreyas Swamy <ss263@fordham.edu>
+Date:   Mon Aug 11 17:19:36 2025 -0400
+
+    name
+
+[33mcommit 30ca3698d34870398dbcc595a60e7631460e51d5[m
+Author: Shreyas Swamy <ss263@fordham.edu>
+Date:   Mon Aug 11 17:16:18 2025 -0400
+
+    proper video
+
+[33mcommit 2f1fb154f9917d432bda0eec3f7ead1f8cbfb6f9[m
+Author: Shreyas Swamy <ss263@fordham.edu>
+Date:   Mon Aug 11 17:10:18 2025 -0400
+
+    Videos
+
+[33mcommit 75042905682e6b106abab6af21c70e7598e97282[m
+Merge: d24769b 093222a
+Author: Abhinav <112683325+Abhinav412@users.noreply.github.com>
+Date:   Tue Aug 12 02:39:31 2025 +0530
+
+    Merge pull request #2 from Abhinav412/main
+    
+    animated title
+
+[33mcommit 093222aa9853a20124ac30ad93c1a3ceedf877a7[m
+Author: Abhinav <abhinavdasu0412@gmail.com>
+Date:   Tue Aug 12 02:38:30 2025 +0530
+
+    animated title
+
+[33mcommit d24769bc836d43d6759f6b7a6b7cc4a7678c84f0[m
+Author: Shreyas Swamy <ss263@fordham.edu>
+Date:   Mon Aug 11 15:20:50 2025 -0400
+
+    first
+
+[33mcommit 7aabdde3d48276e2773ea224425501decb640d5f[m
+Merge: 1030ea2 049b402
+Author: Abhinav <112683325+Abhinav412@users.noreply.github.com>
+Date:   Sun Aug 10 00:44:43 2025 +0530
+
+    Merge pull request #1 from Abhinav412/main
+    
+    create next.js app
+
+[33mcommit 049b402914248802616391c1799f76f97e8eb732[m
+Author: Abhinav <abhinavdasu0412@gmail.com>
+Date:   Sun Aug 10 00:43:36 2025 +0530
+
+    create next.js app
+
+[33mcommit 1030ea23a4970cf29de0e8ca6c2834ed42c13b34[m
+Author: Shreyas Swamy <ss263@fordham.edu>
+Date:   Sat Aug 9 14:32:48 2025 -0400
+
+    Add files via upload
