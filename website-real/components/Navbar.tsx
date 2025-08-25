@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { useSession, signOut } from "next-auth/react"
 import Link from "next/link"
 import ShopDropdown from "./ShopDropdown"
 
@@ -12,6 +13,8 @@ interface NavbarProps {
 
 export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const { data: session, status } = useSession()
 
   const handleShopHover = (open: boolean) => {
     if (window.innerWidth > 768) {
@@ -23,6 +26,10 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
     if (window.innerWidth <= 768) {
       setIsShopDropdownOpen(!isShopDropdownOpen)
     }
+  }
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: "/" })
   }
 
   return (
@@ -55,12 +62,77 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
 
           {/* Right - Navigation Links */}
           <div className="flex items-center space-x-4">
-            <Link
-              href="/account"
-              className="hidden md:block text-white hover:text-gray-300 transition-colors duration-200 font-serif"
-            >
-              Account
-            </Link>
+            {/* Authentication Links */}
+            {status === "loading" ? (
+              <div className="hidden md:block w-16 h-4 bg-gray-300 rounded animate-pulse"></div>
+            ) : session ? (
+              <div className="relative">
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="hidden md:flex items-center text-white hover:text-gray-300 transition-colors duration-200 font-serif"
+                >
+                  <span className="mr-1">Hi, {session.user?.name?.split(' ')[0]}</span>
+                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {/* User Dropdown */}
+                <AnimatePresence>
+                  {isUserMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50"
+                    >
+                      <Link
+                        href="/account"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        My Account
+                      </Link>
+                      {session.user?.role === "admin" && (
+                        <Link
+                          href="/admin"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          Admin Dashboard
+                        </Link>
+                      )}
+                      <button
+                        onClick={() => {
+                          setIsUserMenuOpen(false)
+                          handleSignOut()
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Sign Out
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <div className="hidden md:flex items-center space-x-2">
+                <Link
+                  href="/auth/signin"
+                  className="text-white hover:text-gray-300 transition-colors duration-200 font-serif"
+                >
+                  Sign In
+                </Link>
+                <span className="text-gray-400">|</span>
+                <Link
+                  href="/auth/signup"
+                  className="text-white hover:text-gray-300 transition-colors duration-200 font-serif"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
+            
             <Link
               href="/contact"
               className="hidden md:block text-white hover:text-gray-300 transition-colors duration-200 font-serif"
@@ -151,9 +223,51 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
                     </Link>
                   </motion.div>
                 )}
-                <Link href="/account" className="block text-white hover:text-gray-300 px-3 py-2 text-base font-medium">
-                  Account
-                </Link>
+                
+                {/* Mobile Authentication */}
+                {session ? (
+                  <div className="border-t border-gray-600 pt-2 mt-2">
+                    <div className="px-3 py-2 text-white font-medium">
+                      Hi, {session.user?.name}
+                    </div>
+                    <Link 
+                      href="/account" 
+                      className="block text-white hover:text-gray-300 px-3 py-2 text-base font-medium"
+                    >
+                      My Account
+                    </Link>
+                    {session.user?.role === "admin" && (
+                      <Link 
+                        href="/admin" 
+                        className="block text-white hover:text-gray-300 px-3 py-2 text-base font-medium"
+                      >
+                        Admin Dashboard
+                      </Link>
+                    )}
+                    <button
+                      onClick={handleSignOut}
+                      className="block w-full text-left text-white hover:text-gray-300 px-3 py-2 text-base font-medium"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  <div className="border-t border-gray-600 pt-2 mt-2">
+                    <Link 
+                      href="/auth/signin" 
+                      className="block text-white hover:text-gray-300 px-3 py-2 text-base font-medium"
+                    >
+                      Sign In
+                    </Link>
+                    <Link 
+                      href="/auth/signup" 
+                      className="block text-white hover:text-gray-300 px-3 py-2 text-base font-medium"
+                    >
+                      Sign Up
+                    </Link>
+                  </div>
+                )}
+                
                 <Link href="/contact" className="block text-white hover:text-gray-300 px-3 py-2 text-base font-medium">
                   Contact
                 </Link>
@@ -161,6 +275,14 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Overlay to close user menu when clicking outside */}
+        {isUserMenuOpen && (
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setIsUserMenuOpen(false)}
+          />
+        )}
       </div>
     </nav>
   )
