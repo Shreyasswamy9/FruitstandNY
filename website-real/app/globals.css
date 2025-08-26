@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+/* Removed unsupported @custom-variant dark (&:is(.dark *)); */
 
 @theme inline {
   --color-background: var(--background);
@@ -127,6 +127,5 @@
   }
   body::-webkit-scrollbar {
     display: none; /* Safari and Chrome */
-  }
   }
 }
