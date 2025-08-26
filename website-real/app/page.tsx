@@ -73,6 +73,25 @@ export default function Home() {
   const [hoveredNav, setHoveredNav] = useState<NavType | null>(null)
   const [menuButtonState, setMenuButtonState] = useState<"burger" | "close">("burger")
   const secondVideoRef = useRef<HTMLVideoElement>(null)
+
+  // Ensure Safari autoplay works by programmatically playing the video if needed
+  useEffect(() => {
+    if (secondVideoRef.current) {
+      const video = secondVideoRef.current;
+      // Safari requires muted for autoplay
+      video.muted = true;
+      // Try to play programmatically
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // If autoplay fails, try again after a short delay
+          setTimeout(() => {
+            video.play();
+          }, 500);
+        });
+      }
+    }
+  }, [showMain]);
   const menuRef = useRef<HTMLDivElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const menuItemsRef = useRef<(HTMLButtonElement | null)[]>([])
