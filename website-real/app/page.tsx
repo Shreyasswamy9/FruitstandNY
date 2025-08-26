@@ -26,9 +26,7 @@ function PhotoGroup({ hoveredNav }: PhotoGroupProps) {
       if (img) {
         animate(img, {
           opacity: [0, 1],
-          translateX: [-80, 0 + i * 28],
-          rotate: -8 + i * 8,
-          scale: [0.92, 1 + i * 0.04],
+            scale: [0.92, 1.08],
           duration: 500 + i * 100,
           easing: "easeOutExpo",
           delay: i * 50,
@@ -54,17 +52,14 @@ function PhotoGroup({ hoveredNav }: PhotoGroupProps) {
           src={src || "/placeholder.svg"}
           alt={`Product image ${i + 1}`}
           style={{
-            position: "absolute",
-            top: `clamp(${40 + i * 48}px, ${8 + i * 6}vw, ${120 + i * 80}px)`,
-            left: `clamp(${40 + i * 28}px, ${6 + i * 4}vw, ${120 + i * 60}px)`,
-            width: "clamp(180px, 22vw, 600px)",
-            height: "clamp(180px, 22vw, 600px)",
+            width: "clamp(400px, 55vw, 900px)",
+            height: "clamp(400px, 55vw, 900px)",
             objectFit: "cover",
             borderRadius: 64,
             boxShadow: "0 16px 48px #aaa",
             zIndex: 10 + i,
             opacity: 0,
-            transform: `translateX(-80px) skewY(-6deg) rotate(${-8 + i * 8}deg) scale(0.92)`,
+              transform: `translateX(-80px) scale(0.92)`,
           }}
         />
       ))}
@@ -73,8 +68,23 @@ function PhotoGroup({ hoveredNav }: PhotoGroupProps) {
 }
 
 export default function Home() {
-  const router = useRouter()
+  const [showScrollArrow, setShowScrollArrow] = useState(false);
   const [showMain, setShowMain] = useState(false)
+  // Show scroll arrow after 5 seconds when main video is visible
+  useEffect(() => {
+    let arrowTimeout: NodeJS.Timeout;
+    if (showMain) {
+      arrowTimeout = setTimeout(() => {
+        setShowScrollArrow(true);
+      }, 5000);
+    } else {
+      setShowScrollArrow(false);
+    }
+    return () => {
+      if (arrowTimeout) clearTimeout(arrowTimeout);
+    };
+  }, [showMain]);
+  const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
   const [hoveredNav, setHoveredNav] = useState<NavType | null>(null)
   const [menuButtonState, setMenuButtonState] = useState<"burger" | "close">("burger")
@@ -359,6 +369,32 @@ export default function Home() {
         </video>
       </div>
 
+      {/* Scroll Down Arrow */}
+      {showScrollArrow && (
+        <div
+          style={{
+            position: "fixed",
+            left: "50%",
+            bottom: 48,
+            transform: "translateX(-50%)",
+            zIndex: 10,
+            pointerEvents: "none",
+            animation: "arrowJump 1s infinite",
+          }}
+        >
+          <span
+            style={{
+              fontSize: 48,
+              color: "#ffe066",
+              textShadow: "0 2px 12px #232323",
+              userSelect: "none",
+            }}
+          >
+            ↓
+          </span>
+        </div>
+      )}
+
   {/* Main website content goes here, scrollable */}
   <div style={{ position: "relative", zIndex: 2, marginTop: showMain ? "0" : "0" }}>
         {/* Example content, replace with your actual site */}
@@ -517,32 +553,36 @@ export default function Home() {
                 height: "100vh",
                 zIndex: 20002,
                 display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 background: "linear-gradient(120deg, #232323 0%, #b71c1c 100%)",
-                opacity: 1, // Start visible, let anime.js handle the fade
+                opacity: 1,
+                gap: "60px",
               }}
             >
-              {/* Left: Animated, skewed, fanned photos */}
+              {/* Images: Centered */}
               <div
                 style={{
-                  flex: 1,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  position: "relative",
+                  minWidth: 320,
+                  maxWidth: 600,
+                  height: "70vh",
                 }}
               >
                 <PhotoGroup hoveredNav={hoveredNav} />
               </div>
-              {/* Right: Navigation buttons */}
+              {/* Menu: Centered, side by side with images */}
               <div
                 style={{
-                  width: 400,
-                  minWidth: 220,
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "center",
-                  alignItems: "flex-end",
-                  paddingRight: 60,
+                  alignItems: "center",
+                  minWidth: 320,
+                  maxWidth: 600,
+                  height: "70vh",
                 }}
               >
                 {["SHOP", "ACCOUNT", "CART", "CONTACT"].map((nav, index) => (
