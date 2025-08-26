@@ -74,6 +74,24 @@ export default function Home() {
   const [menuButtonState, setMenuButtonState] = useState<"burger" | "close">("burger")
   const secondVideoRef = useRef<HTMLVideoElement>(null)
 
+  // Ensure video autoplays on all browsers after intro
+  useEffect(() => {
+    if (showMain && secondVideoRef.current) {
+      const video = secondVideoRef.current;
+      video.muted = true;
+      video.playsInline = true;
+      // Try to play programmatically
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          setTimeout(() => {
+            video.play();
+          }, 500);
+        });
+      }
+    }
+  }, [showMain]);
+
   // Ensure Safari autoplay works by programmatically playing the video if needed
   useEffect(() => {
     if (secondVideoRef.current) {
