@@ -80,15 +80,17 @@ export default function Home() {
       const video = secondVideoRef.current;
       video.muted = true;
       video.playsInline = true;
-      // Try to play programmatically
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          setTimeout(() => {
-            video.play();
-          }, 500);
-        });
-      }
+      // Wait for the video to be visible, then play
+      setTimeout(() => {
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            setTimeout(() => {
+              video.play();
+            }, 500);
+          });
+        }
+      }, 100); // slight delay to ensure visibility
     }
   }, [showMain]);
 
