@@ -38,7 +38,13 @@ function PhotoGroup({ hoveredNav }: PhotoGroupProps) {
   }, [hoveredNav])
 
   return (
-    <div style={{ position: "relative", width: 520, height: 620 }}>
+    <div
+      style={{
+        position: "relative",
+        width: "clamp(400px, 40vw, 900px)",
+        height: "clamp(480px, 60vw, 1200px)",
+      }}
+    >
       {photos.map((src: string, i: number) => (
         <img
           key={src}
@@ -49,10 +55,10 @@ function PhotoGroup({ hoveredNav }: PhotoGroupProps) {
           alt={`Product image ${i + 1}`}
           style={{
             position: "absolute",
-            top: 40 + i * 48,
-            left: 40 + i * 28,
-            width: 340,
-            height: 340,
+            top: `clamp(${40 + i * 48}px, ${8 + i * 6}vw, ${120 + i * 80}px)`,
+            left: `clamp(${40 + i * 28}px, ${6 + i * 4}vw, ${120 + i * 60}px)`,
+            width: "clamp(180px, 22vw, 600px)",
+            height: "clamp(180px, 22vw, 600px)",
             objectFit: "cover",
             borderRadius: 64,
             boxShadow: "0 16px 48px #aaa",
@@ -333,7 +339,6 @@ export default function Home() {
             width: "100vw",
             height: "100vh",
             objectFit: "cover",
-            pointerEvents: "none",
             display: "block",
             margin: 0,
             padding: 0,
