@@ -2,6 +2,18 @@
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-18px); }
 }
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -125,11 +137,56 @@
     min-height: 100vh;
     width: 100vw;
     overflow-x: hidden;
+    overflow-y: auto;
     overscroll-behavior-x: none;
+    overscroll-behavior-y: auto;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE 10+ */
   }
+  
+  html {
+    overflow-x: hidden;
+    width: 100%;
+  }
   body::-webkit-scrollbar {
     display: none; /* Safari and Chrome */
+  }
+  
+  /* Prevent horizontal scrolling globally */
+  * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Menu scroll lock */
+  body.menu-open {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+  
+  /* Safari video autoplay fixes */
+  video::-webkit-media-controls {
+    display: none !important;
+  }
+  
+  video::-webkit-media-controls-panel {
+    display: none !important;
+  }
+  
+  video::-webkit-media-controls-play-button {
+    display: none !important;
+  }
+  
+  video::-webkit-media-controls-start-playback-button {
+    display: none !important;
+  }
+  
+  /* Hide video controls when autoplay succeeds */
+  video[data-autoplay-success="true"]::-webkit-media-controls,
+  video[data-autoplay-success="true"]::-webkit-media-controls-panel,
+  video[data-autoplay-success="true"]::-webkit-media-controls-play-button {
+    display: none !important;
   }
 }
