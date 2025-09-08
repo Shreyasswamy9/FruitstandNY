@@ -4,268 +4,8 @@
 import { animate } from "animejs"
 import { useRef, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
 
-// Shop Section Component with popup and mobile-first design
-function ShopSection({ showMain }: { showMain: boolean }) {
-  const [showCollectionPopup, setShowCollectionPopup] = useState(false)
-  const [hasScrolledToShop, setHasScrolledToShop] = useState(false)
-  const shopSectionRef = useRef<HTMLDivElement>(null)
-  const gridSectionRef = useRef<HTMLDivElement>(null)
-
-  const categories = [
-    {
-      name: "T-Shirts",
-      href: "/tshirts",
-      image: "/images/black1.jpeg",
-      description: "Fresh and vibrant t-shirts for every occasion",
-    },
-    {
-      name: "Tracksuits",
-      href: "/tracksuits",
-      image: "/images/black2.jpeg",
-      description: "Comfortable tracksuits for active lifestyles",
-    },
-    {
-      name: "Jerseys",
-      href: "/jerseys",
-      image: "/images/green1.jpeg",
-      description: "Premium jerseys for sports enthusiasts",
-    },
-    {
-      name: "Hats",
-      href: "/hats",
-      image: "/images/white1.jpeg",
-      description: "Trendy hats to complete your look",
-    },
-    {
-      name: "Socks",
-      href: "/socks",
-      image: "/images/red1.jpeg",
-      description: "Comfortable and stylish socks for every day",
-    },
-  ]
-
-  // Function to scroll to the grid section
-  const scrollToGrid = () => {
-    setShowCollectionPopup(false)
-    setTimeout(() => {
-      if (gridSectionRef.current) {
-        gridSectionRef.current.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        })
-      }
-    }, 300) // Small delay to allow popup to close first
-  }
-
-  // Intersection Observer for scroll detection
-  useEffect(() => {
-    const handleScroll = () => {
-      // Trigger popup on any scroll action when main video is showing
-      if (window.scrollY > 50 && !hasScrolledToShop && showMain) {
-        setHasScrolledToShop(true)
-        // Show popup immediately after scroll
-        setTimeout(() => {
-          setShowCollectionPopup(true)
-        }, 300)
-      }
-    }
-
-    // Add scroll listener when component mounts and main content is showing
-    if (showMain) {
-      window.addEventListener('scroll', handleScroll)
-    }
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-    }
-  }, [hasScrolledToShop, showMain])
-
-  return (
-    <>
-      {/* New Collection 2025 Popup */}
-      {showCollectionPopup && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{
-            background: "rgba(0, 0, 0, 0.8)",
-            backdropFilter: "blur(10px)",
-          }}
-          onClick={() => setShowCollectionPopup(false)}
-        >
-          <div
-            className="bg-white rounded-3xl p-6 md:p-8 max-w-sm md:max-w-md mx-auto transform animate-bounce"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              animation: "popupSlideIn 0.6s ease-out",
-            }}
-          >
-            <div className="text-center">
-              <div className="text-4xl md:text-6xl mb-4">✨</div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                New Collection
-              </h2>
-              <h3 className="text-3xl md:text-4xl font-extrabold text-emerald-600 mb-4">
-                2025
-              </h3>
-              <p className="text-gray-600 text-sm md:text-base mb-6">
-                Discover our latest streetwear collection featuring premium quality and cutting-edge designs
-              </p>
-              <button
-                onClick={scrollToGrid}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-full transition-colors duration-300 text-sm md:text-base"
-              >
-                Explore Collection
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Shop Section */}
-      <div 
-        ref={shopSectionRef}
-        className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50"
-      >
-        {/* Header */}
-        <div className="pt-16 md:pt-24 pb-8 md:pb-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto text-center">
-            <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold text-gray-900 mb-4">
-              Fresh Collection
-            </h1>
-            <p className="text-base md:text-xl text-gray-600 max-w-2xl mx-auto">
-              Discover our handpicked selection of premium apparel and accessories
-            </p>
-          </div>
-        </div>
-
-        {/* Categories Grid - Mobile First */}
-        <div 
-          ref={gridSectionRef}
-          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 md:pb-16"
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
-            {categories.map((category, index) => (
-              <div
-                key={category.name}
-                className="group"
-                style={{
-                  animation: `slideInUp 0.6s ease-out ${index * 0.1}s both`,
-                }}
-              >
-                <Link href={category.href} className="block">
-                  <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                    <div className="aspect-square overflow-hidden">
-                      <img
-                        src={category.image || "/placeholder.svg"}
-                        alt={category.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                    </div>
-                    <div className="p-4 md:p-6">
-                      <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors">
-                        {category.name}
-                      </h3>
-                      <p className="text-gray-600 leading-relaxed text-sm md:text-base">
-                        {category.description}
-                      </p>
-                      <div className="mt-3 md:mt-4 flex items-center text-emerald-600 font-medium group-hover:text-emerald-700 text-sm md:text-base">
-                        Shop Now
-                        <svg
-                          className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Featured Section - Mobile Optimized */}
-        <div className="bg-white py-12 md:py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-                Why Choose Our Collection?
-              </h2>
-              <p className="text-sm md:text-lg text-gray-600 max-w-3xl mx-auto mb-6 md:mb-8">
-                We curate only the finest quality apparel with attention to detail, comfort, and style. Each piece is
-                selected to ensure you look and feel your best.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mt-8 md:mt-12">
-                <div className="text-center">
-                  <div className="w-12 h-12 md:w-16 md:h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
-                    <svg className="w-6 h-6 md:w-8 md:h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">Premium Quality</h3>
-                  <p className="text-gray-600 text-sm md:text-base">Carefully selected materials for lasting comfort and durability</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 md:w-16 md:h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
-                    <svg className="w-6 h-6 md:w-8 md:h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">Fast Delivery</h3>
-                  <p className="text-gray-600 text-sm md:text-base">Quick and reliable shipping to get your items to you fast</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 md:w-16 md:h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
-                    <svg className="w-6 h-6 md:w-8 md:h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">Customer Love</h3>
-                  <p className="text-gray-600 text-sm md:text-base">Thousands of satisfied customers who love our products</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* CSS Animations */}
-      <style jsx>{`
-        @keyframes popupSlideIn {
-          0% {
-            opacity: 0;
-            transform: scale(0.8) translateY(-20px);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
-        }
-
-        @keyframes slideInUp {
-          0% {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
-    </>
-  )
-}
+type NavType = "SHOP" | "ACCOUNT" | "CART" | "CONTACT"
 
 export default function Home() {
   const [showScrollArrow, setShowScrollArrow] = useState(false)
@@ -274,33 +14,6 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   const [menuButtonState, setMenuButtonState] = useState<"burger" | "close">("burger")
-  
-  // White screen intro animation states
-  const [currentFontIndex, setCurrentFontIndex] = useState(0)
-  const [showFontFlip, setShowFontFlip] = useState(true)
-
-  const fonts = [
-    "Arial, sans-serif",
-    "Georgia, serif",
-    "Courier New, monospace",
-    "Impact, sans-serif",
-    "Times New Roman, serif",
-    "Helvetica, sans-serif",
-    "Verdana, sans-serif",
-  ]
-
-  const fruitColors = [
-    "#FF6B6B", // F - Strawberry red
-    "#FF8E53", // R - Orange
-    "#2D7D32", // U - Darker mint green for better contrast
-    "#45B7D1", // I - Blueberry blue
-    "#388E3C", // T - Darker lime green for better contrast
-    "#F57F17", // S - Darker banana yellow for better contrast
-    "#7B1FA2", // T - Darker grape purple for better contrast
-    "#FF7675", // A - Apple red
-    "#74B9FF", // N - Berry blue
-    "#00B894", // D - Avocado green
-  ]
   const secondVideoRef = useRef<HTMLVideoElement>(null)
 
   // Comprehensive Safari autoplay fix - tries multiple aggressive techniques
@@ -320,25 +33,25 @@ export default function Home() {
           // Strategy 1: Direct play
           await video.play()
           console.log('Video autoplay succeeded!')
-        } catch {
+        } catch (e) {
           try {
             // Strategy 2: Wait a bit and try again
             await new Promise(resolve => setTimeout(resolve, 100))
             await video.play()
             console.log('Video autoplay succeeded on retry 1!')
-          } catch {
+          } catch (e2) {
             try {
               // Strategy 3: Set currentTime and try again
               video.currentTime = 0
               await video.play()
               console.log('Video autoplay succeeded on retry 2!')
-            } catch {
+            } catch (e3) {
               try {
                 // Strategy 4: Load and play
                 video.load()
                 await video.play()
                 console.log('Video autoplay succeeded on retry 3!')
-              } catch {
+              } catch (e4) {
                 // Strategy 5: Final attempt with longer delay
                 setTimeout(async () => {
                   try {
@@ -346,7 +59,7 @@ export default function Home() {
                     video.playsInline = true
                     await video.play()
                     console.log('Video autoplay succeeded on final retry!')
-                  } catch {
+                  } catch (e5) {
                     console.log('All autoplay strategies failed')
                   }
                 }, 500)
@@ -405,7 +118,7 @@ export default function Home() {
           try {
             await video.play()
             console.log('Video autoplay succeeded on showMain!')
-          } catch {
+          } catch (e) {
             // If failed, try again with delay
             setTimeout(async () => {
               try {
@@ -413,7 +126,7 @@ export default function Home() {
                 video.playsInline = true
                 await video.play()
                 console.log('Video autoplay succeeded on showMain retry!')
-              } catch {
+              } catch (e2) {
                 // Final attempt
                 setTimeout(async () => {
                   try {
@@ -422,7 +135,7 @@ export default function Home() {
                     video.playsInline = true
                     await video.play()
                     console.log('Video autoplay succeeded on showMain final retry!')
-                  } catch {
+                  } catch (e3) {
                     console.log('Video autoplay failed on showMain')
                   }
                 }, 200)
@@ -452,7 +165,23 @@ export default function Home() {
   const subtitleRef = useRef<HTMLParagraphElement>(null)
   const logoRef = useRef<HTMLDivElement>(null)
 
+  const [currentLangIndex, setCurrentLangIndex] = useState(0)
+  const [showLangFlip, setShowLangFlip] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
+
+  // Translations for 'Fruitstand' in different languages (unchanged)
+  const fruitstandTranslations = [
+    "Fruitstand", // English
+    "水果摊", // Chinese
+    "Frutaria", // Portuguese
+    "Frutería", // Spanish
+    "फलस्टैंड", // Hindi
+    "Stall de fruits", // French
+    "Obststand", // German
+    "Fruttivendolo", // Italian
+    "フルーツスタンド", // Japanese
+    "فروٹ اسٹینڈ", // Urdu
+  ]
 
   // Detect mobile screen size
   useEffect(() => {
@@ -466,76 +195,78 @@ export default function Home() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // White screen intro animation with font flipping
+
+
   useEffect(() => {
-    const animateLanding = () => {
-      if (titleRef.current && showFontFlip) {
-        let flipCount = 0
-        const maxFlips = 20
-
-        const fontFlipInterval = setInterval(() => {
-          setCurrentFontIndex((prev) => (prev + 1) % fonts.length)
-          flipCount++
-
-          if (flipCount >= maxFlips) {
-            clearInterval(fontFlipInterval)
-            setShowFontFlip(false)
-
-            // Start the fade-in animation after font flipping
-            setTimeout(() => {
-              if (logoRef.current) {
-                animate(logoRef.current, {
-                  opacity: [0, 1],
-                  scale: [0.8, 1],
-                  duration: 1500,
-                  easing: "easeOutQuart",
-                  delay: 500,
-                })
-              }
-
-              // Fade in subtitle after logo
-              setTimeout(() => {
-                if (subtitleRef.current) {
-                  animate(subtitleRef.current, {
-                    opacity: [0, 1],
-                    translateY: [20, 0],
-                    duration: 1000,
-                    easing: "easeOutQuart",
-                  })
-                }
-              }, 1500)
-
-              // Auto transition to main content
-              setTimeout(() => {
-                if (logoRef.current) {
-                  animate(logoRef.current, {
-                    opacity: [1, 0],
-                    scale: [1, 1.1],
-                    duration: 800,
-                    easing: "easeInQuart",
-                  })
-                }
-                if (subtitleRef.current) {
-                  animate(subtitleRef.current, {
-                    opacity: [1, 0],
-                    translateY: [0, -20],
-                    duration: 800,
-                    easing: "easeInQuart",
-                  })
-                }
-
-                setTimeout(() => {
-                  setShowMain(true)
-                }, 800)
-              }, 4000)
-            }, 500)
+    if (titleRef.current && showLangFlip) {
+      let flipCount = 0
+      const maxFlips = fruitstandTranslations.length * 2
+      const langFlipInterval = setInterval(() => {
+        setCurrentLangIndex((prev: number) => (prev + 1) % fruitstandTranslations.length)
+        flipCount++
+        if (flipCount >= maxFlips) {
+          clearInterval(langFlipInterval)
+          setShowLangFlip(false)
+          // Immediately start the fade-in animation after language flipping
+          if (logoRef.current) {
+            animate(logoRef.current, {
+              opacity: [0, 1],
+              scale: [0.8, 1],
+              duration: 600,
+              easing: "easeOutQuart",
+              delay: 0,
+            })
           }
-        }, 100) // Flip every 100ms
-      }
-    }
+          // Fade in subtitle after logo
+          const subtitleId = setTimeout(() => {
+            if (subtitleRef.current) {
+              animate(subtitleRef.current, {
+                opacity: [0, 1],
+                translateY: [20, 0],
+                duration: 1000,
+                easing: "easeOutQuart",
+              })
+            }
+          }, 600)
 
-    animateLanding()
-  }, [fonts.length, showFontFlip])
+          // Auto transition to main content
+          const toMainId = setTimeout(() => {
+            if (logoRef.current) {
+              animate(logoRef.current, {
+                opacity: [1, 0],
+                scale: [1, 1.1],
+                duration: 800,
+                easing: "easeInQuart",
+              })
+            }
+            if (subtitleRef.current) {
+              animate(subtitleRef.current, {
+                opacity: [1, 0],
+                translateY: [0, -20],
+                duration: 800,
+                easing: "easeInQuart",
+              })
+            }
+            const showId = setTimeout(() => {
+              setShowMain(true)
+            }, 800)
+            // cleanup nested timeout
+            const cleanupShow = () => clearTimeout(showId)
+            // return for this nested scope
+            return cleanupShow
+          }, 4000)
+
+          // Cleanup timeouts if unmounted during sequence
+          return () => {
+            clearTimeout(subtitleId)
+            clearTimeout(toMainId as unknown as number)
+          }
+        }
+      }, 170) // Flip every 170ms (unchanged)
+      // Ensure cleanup on unmount even if we didn't reach maxFlips
+      return () => clearInterval(langFlipInterval)
+    }
+  }, [fruitstandTranslations.length, showLangFlip])
 
   // Function to close the menu
   const closeMenu = () => {
@@ -600,7 +331,7 @@ export default function Home() {
             left: 0,
             width: "100%",
             height: "100vh",
-            background: "#fff", // White background instead of texture
+            background: `url('/images/black-plain-concrete-textured.jpg') center center / cover no-repeat`,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -609,43 +340,40 @@ export default function Home() {
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
             willChange: "opacity, transform",
-            padding: "0 20px", // Added horizontal padding for mobile
           }}
         >
           <div
             ref={logoRef}
             style={{
-              opacity: showFontFlip ? 1 : 0,
-              transform: "scale(0.8)",
+              opacity: showLangFlip ? 1 : 0,
+              transform: "scale(0.8) translateZ(0)",
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
+              willChange: "transform, opacity",
             }}
           >
             <h1
               ref={titleRef}
               style={{
-                fontSize: "clamp(2rem, 8vw, 4rem)", // Responsive font size
-                fontWeight: "300",
-                letterSpacing: "0.3em",
+                fontSize: "clamp(2rem, 8vw, 4rem)",
+                fontWeight: "400",
+                letterSpacing: "clamp(0.1em, 2vw, 0.3em)",
                 textTransform: "uppercase",
-                margin: "0 0 40px 0",
-                fontFamily: showFontFlip ? fonts[currentFontIndex] : "Arial, sans-serif",
+                margin: "0 0 clamp(20px, 5vw, 40px) 0",
+                color: "#fff",
                 textAlign: "center",
-                transition: showFontFlip ? "font-family 0.1s ease" : "none",
+                transition: "none",
                 display: "flex",
                 justifyContent: "center",
-                flexWrap: "wrap", // Allow wrapping on very small screens
+                fontFamily: "Arial, Helvetica, sans-serif", // <-- Customize font here
+                backfaceVisibility: "hidden",
+                WebkitBackfaceVisibility: "hidden",
+                padding: "0 clamp(10px, 3vw, 20px)",
+                maxWidth: "90vw",
+                wordWrap: "break-word",
               }}
             >
-              {"FRUITSTAND".split("").map((letter, index) => (
-                <span
-                  key={index}
-                  style={{
-                    color: fruitColors[index],
-                    transition: showFontFlip ? "color 0.1s ease" : "none",
-                  }}
-                >
-                  {letter}
-                </span>
-              ))}
+              {fruitstandTranslations[currentLangIndex]}
             </h1>
           </div>
 
@@ -653,16 +381,21 @@ export default function Home() {
           <p
             ref={subtitleRef}
             style={{
-              fontSize: "clamp(0.8rem, 3vw, 1rem)", // Responsive font size
-              color: "rgba(0, 0, 0, 0.6)", // Dark text on white background
+              fontSize: "clamp(0.8rem, 3vw, 1rem)",
+              color: "rgba(255, 255, 255, 0.6)",
               textAlign: "center",
               opacity: 0,
-              transform: "translateY(20px)",
+              transform: "translate3d(0, 20px, 0)",
               fontWeight: "300",
-              letterSpacing: "0.2em",
+              letterSpacing: "clamp(0.1em, 2vw, 0.2em)",
               margin: 0,
               textTransform: "uppercase",
               fontFamily: "Arial, sans-serif",
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
+              willChange: "transform, opacity",
+              padding: "0 clamp(10px, 3vw, 20px)",
+              maxWidth: "90vw",
             }}
           >
             New York Streetwear
@@ -711,7 +444,7 @@ export default function Home() {
           loop
         >
           <source
-            src="https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/Videos/homescreen.mp4"
+            src="https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/Videos/homevideo.mp4"
             type="video/mp4"
           />
         </video>
@@ -756,7 +489,96 @@ export default function Home() {
         margin: 0,
         padding: 0,
       }}>
-        <ShopSection showMain={showMain} />
+        {/* Example content, replace with your actual site */}
+        <div
+          style={{
+            minHeight: "100vh",
+            color: "black",
+            padding: "clamp(20px, 5vw, 40px)",
+            background: "linear-gradient(135deg, #714f4fff, #3c1212ff)",
+            margin: 0,
+            width: "100%",
+            boxSizing: "border-box",
+            position: "relative",
+          }}
+        >
+          <div
+            style={{
+              maxWidth: "1200px",
+              margin: "0 auto",
+              textAlign: "center",
+              paddingTop: "clamp(20px, 5vw, 40px)",
+              width: "100%",
+              boxSizing: "border-box",
+              paddingLeft: "clamp(20px, 5vw, 40px)",
+              paddingRight: "clamp(20px, 5vw, 40px)",
+              position: "relative",
+            }}
+          >
+            <h2
+              style={{
+                fontSize: "clamp(2rem, 8vw, 3rem)",
+                marginBottom: "20px",
+                background: "linear-gradient(135deg, #ff6b6b, #4ecdc4)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              Welcome to FruitstandNY
+            </h2>
+            <div
+              style={{
+                padding: "clamp(20px, 5vw, 40px)",
+                background: "rgba(141, 97, 97, 0.1)",
+                borderRadius: "clamp(10px, 3vw, 20px)",
+                backdropFilter: "blur(10px)",
+                margin: "clamp(20px, 5vw, 40px) 0",
+              }}
+            >
+              <div>
+                <h3 style={{ fontSize: "clamp(1.2rem, 5vw, 1.5rem)" }}>🏠 Home</h3>
+                <p style={{ fontSize: "clamp(0.9rem, 3vw, 1rem)", lineHeight: "1.6" }}>
+                  Welcome to our fresh fruit experience! Scroll down to explore or use the menu to navigate to different
+                  sections of our site.
+                </p>
+                <div style={{ 
+                  display: "flex", 
+                  flexDirection: "column",
+                  gap: "clamp(10px, 3vw, 20px)", 
+                  justifyContent: "center", 
+                  marginTop: "20px",
+                  flexWrap: "wrap"
+                }}>
+                  <div style={{ 
+                    padding: "clamp(15px, 4vw, 20px)", 
+                    background: "rgba(255,255,255,0.1)", 
+                    borderRadius: "clamp(8px, 2vw, 10px)",
+                    fontSize: "clamp(0.8rem, 3vw, 1rem)"
+                  }}>
+                    🍎 Fresh Fruits
+                  </div>
+                  <div style={{ 
+                    padding: "clamp(15px, 4vw, 20px)", 
+                    background: "rgba(255,255,255,0.1)", 
+                    borderRadius: "clamp(8px, 2vw, 10px)",
+                    fontSize: "clamp(0.8rem, 3vw, 1rem)"
+                  }}>
+                    👕 Streetwear
+                  </div>
+                  <div style={{ 
+                    padding: "clamp(15px, 4vw, 20px)", 
+                    background: "rgba(255,255,255,0.1)", 
+                    borderRadius: "clamp(8px, 2vw, 10px)",
+                    fontSize: "clamp(0.8rem, 3vw, 1rem)"
+                  }}>
+                    🚚 Fast Delivery
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Top header FRUITSTAND text and menu button only after transition */}
