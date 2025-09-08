@@ -444,7 +444,7 @@ export default function Home() {
           loop
         >
           <source
-            src="https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/Videos/homescreen.mp4"
+            src="https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/Videos/homevideo.mp4"
             type="video/mp4"
           />
         </video>
