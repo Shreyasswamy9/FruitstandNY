@@ -43,7 +43,7 @@ export default function ShopPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50">
+  <div className="min-h-screen" style={{ background: '#fff' }}>
       {/* Navbar */}
       <Navbar isShopDropdownOpen={isShopDropdownOpen} setIsShopDropdownOpen={setIsShopDropdownOpen} />
 
@@ -81,13 +81,6 @@ export default function ShopPage() {
             >
               <Link href={category.href} className="group block">
                 <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                  <div className="aspect-square overflow-hidden">
-                    <img
-                      src={category.image || "/placeholder.svg"}
-                      alt={category.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                  </div>
                   <div className="p-6">
                     <h3 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors">
                       {category.name}

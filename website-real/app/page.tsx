@@ -4,10 +4,27 @@
 import { animate } from "animejs"
 import { useRef, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import ProductsGridHome from "../components/ProductsGridHome"
 
 type NavType = "SHOP" | "ACCOUNT" | "CART" | "CONTACT"
 
 export default function Home() {
+  // Global style to ensure no white bars on mobile
+  // This will override html/body background, margin, and padding
+  // Set --app-vh CSS variable to fix mobile 100vh issues
+  useEffect(() => {
+    function setVhVar() {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--app-vh', `${vh}px`);
+    }
+    setVhVar();
+    window.addEventListener('resize', setVhVar);
+    window.addEventListener('orientationchange', setVhVar);
+    return () => {
+      window.removeEventListener('resize', setVhVar);
+      window.removeEventListener('orientationchange', setVhVar);
+    };
+  }, []);
   const [showScrollArrow, setShowScrollArrow] = useState(false)
   const [showMain, setShowMain] = useState(false)
   const router = useRouter()
@@ -310,28 +327,43 @@ export default function Home() {
   }
 
   return (
-    <div
-      style={{
-        position: "relative",
-        minHeight: "100vh",
-        width: "100%",
-        background: "#fff",
-        zIndex: 9999,
-        overflow: "hidden",
-        overflowY: "auto",
-        overflowX: "hidden",
-        contain: "paint layout size", // isolate top-level container for smoother paints
-      }}
-    >
+    <>
+      <style global jsx>{`
+        html, body {
+          background: black !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          height: calc(var(--app-vh) * 100) !important;
+          min-height: calc(var(--app-vh) * 100) !important;
+          width: 100vw !important;
+          overflow: hidden !important;
+          overscroll-behavior: none !important;
+        }
+      `}</style>
+      <div
+        style={{
+          position: "relative",
+          minHeight: "calc(var(--app-vh) * 100)",
+          height: "calc(var(--app-vh) * 100)",
+          width: "100vw",
+          zIndex: 9999,
+          overflow: "hidden",
+          overflowY: "auto",
+          overflowX: "hidden",
+          contain: "paint layout size", // isolate top-level container for smoother paints
+          background: "black",
+          paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: "env(safe-area-inset-bottom)",
+        }}
+      >
       {!showMain && (
         <div
           style={{
             position: "fixed",
             top: 0,
             left: 0,
-            width: "100%",
-            height: "100vh",
-            background: `url('/images/black-plain-concrete-textured.jpg') center center / cover no-repeat`,
+            width: "100vw",
+            height: "calc(var(--app-vh) * 100)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -340,8 +372,29 @@ export default function Home() {
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
             willChange: "opacity, transform",
+            paddingTop: "env(safe-area-inset-top)",
+            paddingBottom: "env(safe-area-inset-bottom)",
+            overflow: "hidden",
           }}
         >
+          <img
+            src="/images/black-plain-concrete-textured.jpg"
+            alt="Intro background"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100%",
+              objectFit: "cover",
+              zIndex: -1,
+              pointerEvents: "none",
+              userSelect: "none",
+            }}
+            draggable={false}
+            loading="eager"
+              fetchPriority="high"
+          />
           <div
             ref={logoRef}
             style={{
@@ -408,8 +461,8 @@ export default function Home() {
           position: showMain ? "relative" : "fixed",
           top: 0,
           left: 0,
-          width: "100%",
-          height: "100vh",
+          width: "100vw",
+          height: "calc(var(--app-vh) * 100)",
           zIndex: 1,
           opacity: showMain ? 1 : 0,
           transition: "opacity 1.5s ease-in-out",
@@ -417,13 +470,16 @@ export default function Home() {
           margin: 0,
           boxSizing: "border-box",
           willChange: "opacity",
+          background: "black",
+          paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
         <video
           ref={secondVideoRef}
           style={{
-            width: "100%",
-            height: "100vh",
+            width: "100vw",
+            height: "calc(var(--app-vh) * 100)",
             objectFit: "cover",
             display: "block",
             margin: 0,
@@ -479,107 +535,48 @@ export default function Home() {
         </div>
       )}
 
-      {/* Main website content goes here, scrollable */}
-      <div style={{ 
-        position: "relative", 
-        zIndex: 2, 
-        marginTop: showMain ? "0" : "0",
-        width: "100%",
-        overflowX: "hidden",
-        margin: 0,
-        padding: 0,
-      }}>
-        {/* Example content, replace with your actual site */}
+      {/* Product grid and heading after video */}
+      {showMain && (
         <div
           style={{
-            minHeight: "100vh",
-            color: "black",
-            padding: "clamp(20px, 5vw, 40px)",
-            background: "linear-gradient(135deg, #714f4fff, #3c1212ff)",
-            margin: 0,
-            width: "100%",
-            boxSizing: "border-box",
             position: "relative",
+            zIndex: 2,
+            marginTop: "0",
+            width: "100%",
+            margin: 0,
+            padding: 0,
+            background: "#fff",
           }}
         >
           <div
             style={{
-              maxWidth: "1200px",
+              maxWidth: 1400,
               margin: "0 auto",
               textAlign: "center",
-              paddingTop: "clamp(20px, 5vw, 40px)",
+              padding: "clamp(24px, 6vw, 48px) clamp(8px, 2vw, 32px)",
               width: "100%",
               boxSizing: "border-box",
-              paddingLeft: "clamp(20px, 5vw, 40px)",
-              paddingRight: "clamp(20px, 5vw, 40px)",
-              position: "relative",
             }}
           >
             <h2
               style={{
-                fontSize: "clamp(2rem, 8vw, 3rem)",
-                marginBottom: "20px",
-                background: "linear-gradient(135deg, #ff6b6b, #4ecdc4)",
+                fontSize: "clamp(2.2rem, 8vw, 3.5rem)",
+                marginBottom: 32,
+                background: "linear-gradient(135deg, #18191a, #232324)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
+                fontWeight: 700,
+                letterSpacing: "0.04em",
               }}
             >
-              Welcome to FruitstandNY
+              Welcome to Fruitstand
             </h2>
-            <div
-              style={{
-                padding: "clamp(20px, 5vw, 40px)",
-                background: "rgba(141, 97, 97, 0.1)",
-                borderRadius: "clamp(10px, 3vw, 20px)",
-                backdropFilter: "blur(10px)",
-                margin: "clamp(20px, 5vw, 40px) 0",
-              }}
-            >
-              <div>
-                <h3 style={{ fontSize: "clamp(1.2rem, 5vw, 1.5rem)" }}>🏠 Home</h3>
-                <p style={{ fontSize: "clamp(0.9rem, 3vw, 1rem)", lineHeight: "1.6" }}>
-                  Welcome to our fresh fruit experience! Scroll down to explore or use the menu to navigate to different
-                  sections of our site.
-                </p>
-                <div style={{ 
-                  display: "flex", 
-                  flexDirection: "column",
-                  gap: "clamp(10px, 3vw, 20px)", 
-                  justifyContent: "center", 
-                  marginTop: "20px",
-                  flexWrap: "wrap"
-                }}>
-                  <div style={{ 
-                    padding: "clamp(15px, 4vw, 20px)", 
-                    background: "rgba(255,255,255,0.1)", 
-                    borderRadius: "clamp(8px, 2vw, 10px)",
-                    fontSize: "clamp(0.8rem, 3vw, 1rem)"
-                  }}>
-                    🍎 Fresh Fruits
-                  </div>
-                  <div style={{ 
-                    padding: "clamp(15px, 4vw, 20px)", 
-                    background: "rgba(255,255,255,0.1)", 
-                    borderRadius: "clamp(8px, 2vw, 10px)",
-                    fontSize: "clamp(0.8rem, 3vw, 1rem)"
-                  }}>
-                    👕 Streetwear
-                  </div>
-                  <div style={{ 
-                    padding: "clamp(15px, 4vw, 20px)", 
-                    background: "rgba(255,255,255,0.1)", 
-                    borderRadius: "clamp(8px, 2vw, 10px)",
-                    fontSize: "clamp(0.8rem, 3vw, 1rem)"
-                  }}>
-                    🚚 Fast Delivery
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* Product grid is now part of the main page flow, no extra scrollbars */}
+            <ProductsGridHome />
           </div>
         </div>
-      </div>
+      )}
 
       {/* Top header FRUITSTAND text and menu button only after transition */}
       {showMain && (
@@ -674,7 +671,7 @@ export default function Home() {
                   top: 0,
                   left: 0,
                   width: "100%",
-                  height: "100vh",
+                  height: "calc(var(--app-vh) * 100)",
                   zIndex: 20001,
                   background: "transparent",
                   pointerEvents: "none",
@@ -691,13 +688,13 @@ export default function Home() {
                 top: 0,
                 left: 0,
                 width: "100%",
-                height: "100vh",
+                height: "calc(var(--app-vh) * 100)",
                 zIndex: 20002,
                 display: "flex",
                 flexDirection: isMobile ? "column" : "row",
                 alignItems: "center",
                 justifyContent: isMobile ? "center" : "space-between",
-                background: "linear-gradient(120deg, #232323 0%, #b71c1c 100%)",
+                background: "#18191a",
                 opacity: 1,
                 willChange: "opacity, transform",
                 contain: "paint layout size",
@@ -705,6 +702,8 @@ export default function Home() {
                 overflow: "hidden",
                 gap: isMobile ? "clamp(20px, 5vw, 40px)" : "0",
                 overscrollBehavior: "none",
+                paddingTop: "env(safe-area-inset-top)",
+                paddingBottom: "env(safe-area-inset-bottom)",
               }}
               onWheel={(e) => e.preventDefault()}
               onTouchMove={(e) => e.preventDefault()}
@@ -838,5 +837,6 @@ export default function Home() {
         </>
       )}
     </div>
+    </>
   )
 }
