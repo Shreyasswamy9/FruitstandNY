@@ -16,7 +16,7 @@ export const products: Product[] = [
   // Hockey Jersey
   { id: 1, name: "Hockey Jersey", price: "$90", image: "/images/hockeyjerseymale1.jpeg", hoverImage: "/images/hockeyjerseymale2.jpeg" },
   // Classic Tee (cover models)
-  { id: 2, name: "Classic Tee", price: "$55", image: "/images/classicteecovermodels.jpeg", hoverImage: "/images/classicteemale1.jpeg" },
+  { id: 2, name: "Classic Tee", price: "$55", image: "/images/classicteemale1.jpeg", hoverImage: "/images/classicteecovermodels.jpeg" },
   // Classic Tee (female)
   { id: 3, name: "Classic Tee", price: "$55", image: "/images/classicteefemale1.jpeg", hoverImage: "/images/classicteefemale2.jpeg" },
   // Classic Tee (male)
@@ -59,7 +59,7 @@ export default function ProductsGrid() {
             <div
               key={product.id}
               style={{
-                background: '#fff',
+                background: '#f8f8f8',
                 borderRadius: 0,
                 boxShadow: 'none',
                 overflow: 'hidden',
@@ -83,10 +83,33 @@ export default function ProductsGrid() {
               }}
             onMouseEnter={() => !isMobile && setHovered(product.id)}
             onMouseLeave={() => !isMobile && setHovered(null)}
-            onTouchStart={() => { if (isMobile) setHovered(product.id); }}
-            onTouchEnd={() => { if (isMobile) setHovered(null); }}
-            onTouchCancel={() => { if (isMobile) setHovered(null); }}
-            onClick={() => window.location.href = `/products/${product.id}`}
+            onTouchStart={e => {
+              if (isMobile) {
+                setHovered(product.id);
+                // Prevents double tap zoom and ensures touch is registered
+                if (e.cancelable) e.preventDefault();
+              }
+            }}
+            onTouchEnd={e => {
+              if (isMobile) {
+                setHovered(null);
+                if (e.cancelable) e.preventDefault();
+              }
+            }}
+            onTouchCancel={e => {
+              if (isMobile) {
+                setHovered(null);
+                if (e.cancelable) e.preventDefault();
+              }
+            }}
+            onClick={e => {
+              if (isMobile) {
+                setHovered(product.id);
+                setTimeout(() => setHovered(null), 350); // quick flash for tap
+              } else {
+                window.location.href = `/products/${product.id}`;
+              }
+            }}
             role="button"
             tabIndex={0}
           >
@@ -94,10 +117,13 @@ export default function ProductsGrid() {
               position: 'relative',
               width: isMobile ? '100vw' : '100%',
               height: isMobile ? '88vh' : undefined,
+              minHeight: isMobile ? '88vh' : undefined,
               maxWidth: isMobile ? '100vw' : '100%',
               maxHeight: isMobile ? '88vh' : undefined,
               aspectRatio: isMobile ? undefined : '3/4',
-              display: 'block',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               background: '#f8f8f8',
               overflow: 'hidden',
             }}>

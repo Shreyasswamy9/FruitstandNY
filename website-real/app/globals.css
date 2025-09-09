@@ -1,3 +1,14 @@
+@font-face {
+  font-family: 'Fruitstand Light';
+  src: url('/fonts/Fruitstand Light.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+html, body, * {
+  font-family: 'Fruitstand Light', Arial, Helvetica, sans-serif !important;
+}
 @keyframes arrowJump {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-18px); }

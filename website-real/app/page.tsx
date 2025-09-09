@@ -508,31 +508,48 @@ export default function Home() {
 
       {/* Scroll Down Arrow */}
       {showScrollArrow && (
-        <div
+        <button
+          aria-label="Scroll to products"
+          onClick={() => {
+            const grid = document.getElementById('products-grid-anchor');
+            if (grid) {
+              grid.scrollIntoView({ behavior: 'smooth' });
+            }
+          }}
           style={{
             position: "fixed",
             left: "50%",
-            bottom: "clamp(30px, 8vw, 48px)",
+            bottom: "clamp(10px, 2vw, 18px)",
             transform: "translateX(-50%)",
             zIndex: 10,
-            pointerEvents: "none",
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            margin: 0,
+            cursor: 'pointer',
             animation: "arrowJump 1s infinite",
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
             willChange: "transform, opacity",
+            outline: 'none',
           }}
         >
-          <span
+          <svg
+            width="clamp(38px, 10vw, 54px)"
+            height="clamp(38px, 10vw, 54px)"
+            viewBox="0 0 48 48"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
             style={{
-              fontSize: "clamp(32px, 10vw, 48px)",
-              color: "#ffe066",
-              textShadow: "0 2px 12px #232323",
-              userSelect: "none",
+              display: 'block',
+              filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.10))',
+              userSelect: 'none',
             }}
           >
-            ↓
-          </span>
-        </div>
+            <circle cx="24" cy="24" r="22" fill="#fff" fillOpacity="0.92" />
+            <path d="M24 15v16M24 31l-7-7M24 31l7-7" stroke="#111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
       )}
 
       {/* Product grid and heading after video */}
@@ -559,6 +576,7 @@ export default function Home() {
             }}
           >
             <h2
+              id="products-grid-anchor"
               style={{
                 fontSize: "clamp(2.2rem, 8vw, 3.5rem)",
                 marginBottom: 32,
@@ -568,6 +586,7 @@ export default function Home() {
                 backgroundClip: "text",
                 fontWeight: 700,
                 letterSpacing: "0.04em",
+                fontFamily: "FruitstandLight, Arial, Helvetica, sans-serif",
               }}
             >
               Welcome to Fruitstand
@@ -837,6 +856,20 @@ export default function Home() {
         </>
       )}
     </div>
+    <footer style={{
+      width: '100vw',
+      textAlign: 'center',
+      fontSize: '0.92rem',
+      color: '#111',
+      padding: '32px 0 18px 0',
+      background: 'white',
+      letterSpacing: '0.01em',
+      fontWeight: 400,
+      boxShadow: '0 -2px 12px 0 rgba(0,0,0,0.03)',
+    }}>
+      © 2024 Fruitstand LLC,<br />
+      All Rights Reserved
+    </footer>
     </>
   )
 }
