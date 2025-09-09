@@ -43,43 +43,44 @@ export default function ProductsGrid() {
     <div
       style={{
         display: 'grid',
-        gap: isMobile ? 0 : 32,
-        width: '100vw',
-        margin: 0,
-        padding: 0,
-        gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-        gridTemplateRows: isMobile ? undefined : 'repeat(4, 1fr)',
-        overflowX: 'hidden',
-        alignItems: isMobile ? undefined : 'stretch',
+  gap: isMobile ? 0 : 32,
+  width: '100vw',
+  margin: 0,
+  padding: 0,
+  gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+  gridTemplateRows: isMobile ? undefined : 'repeat(4, 1fr)',
+  overflowX: 'hidden',
+  alignItems: isMobile ? 'stretch' : 'stretch',
       }}
     >
       {gridProducts.map((product) => {
         const isActive = hovered === product.id;
         return (
-          <div
-            key={product.id}
-            style={{
-              background: '#fff',
-              borderRadius: 0,
-              boxShadow: 'none',
-              overflow: 'hidden',
-              cursor: 'pointer',
-              transition: 'transform 0.2s',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              textDecoration: 'none',
-              color: 'inherit',
-              minHeight: isMobile ? '100vh' : 0,
-              height: isMobile ? '100vh' : '100%',
-              width: isMobile ? '100vw' : '100%',
-              maxWidth: '100vw',
-              boxSizing: 'border-box',
-              position: 'relative',
-              transform: isActive ? 'scale(1.01)' : 'none',
-              zIndex: isActive ? 10 : 1,
-              justifyContent: isMobile ? 'center' : 'stretch',
-            }}
+            <div
+              key={product.id}
+              style={{
+                background: '#fff',
+                borderRadius: 0,
+                boxShadow: 'none',
+                overflow: 'hidden',
+                cursor: 'pointer',
+                transition: 'transform 0.2s',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textDecoration: 'none',
+                color: 'inherit',
+                minHeight: isMobile ? '88vh' : 0,
+                height: isMobile ? '88vh' : '100%',
+                width: isMobile ? '100vw' : '100%',
+                maxWidth: isMobile ? '100vw' : '100vw',
+                maxHeight: isMobile ? '88vh' : undefined,
+                boxSizing: 'border-box',
+                position: 'relative',
+                transform: isActive ? 'scale(1.01)' : 'none',
+                zIndex: isActive ? 10 : 1,
+                justifyContent: isMobile ? 'center' : 'stretch',
+              }}
             onMouseEnter={() => !isMobile && setHovered(product.id)}
             onMouseLeave={() => !isMobile && setHovered(null)}
             onTouchStart={() => { if (isMobile) setHovered(product.id); }}
@@ -92,11 +93,11 @@ export default function ProductsGrid() {
             <div style={{
               position: 'relative',
               width: isMobile ? '100vw' : '100%',
+              height: isMobile ? '88vh' : undefined,
               maxWidth: isMobile ? '100vw' : '100%',
-              aspectRatio: '3/4',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              maxHeight: isMobile ? '88vh' : undefined,
+              aspectRatio: isMobile ? undefined : '3/4',
+              display: 'block',
               background: '#f8f8f8',
               overflow: 'hidden',
             }}>
@@ -113,6 +114,7 @@ export default function ProductsGrid() {
                   position: 'absolute',
                   top: 0,
                   left: 0,
+                  zIndex: 1,
                 }}
                 unoptimized
                 sizes="(max-width: 768px) 100vw, 33vw"
@@ -132,16 +134,57 @@ export default function ProductsGrid() {
                     position: 'absolute',
                     top: 0,
                     left: 0,
+                    zIndex: 1,
                   }}
                   unoptimized
                   sizes="(max-width: 768px) 100vw, 33vw"
                   priority
                 />
               )}
-            </div>
-            <div style={{ padding: isMobile ? '8px 0 0 0' : 18, textAlign: 'center', width: '100%' }}>
-              <h3 style={{ fontSize: isMobile ? '1rem' : '1.1rem', fontWeight: 600, color: '#222', margin: 0 }}>{product.name}</h3>
-              <p style={{ color: '#666', fontWeight: 500, fontSize: isMobile ? '0.95rem' : undefined, margin: 0 }}>{product.price}</p>
+              {/* Overlay name and price at the bottom of the grid cell */}
+              <div style={{
+                position: 'absolute',
+                left: isMobile ? '50%' : 0,
+                right: isMobile ? undefined : 0,
+                bottom: 0,
+                transform: isMobile ? 'translateX(-50%)' : 'none',
+                background: 'rgba(255,255,255,0.92)',
+                padding: isMobile ? '6px 14px' : '10px 32px',
+                borderRadius: isMobile ? 12 : '0 0 18px 18px',
+                boxSizing: 'border-box',
+                zIndex: 2,
+                opacity: isActive ? 1 : 0,
+                pointerEvents: isActive ? 'auto' : 'none',
+                transition: 'opacity 0.4s cubic-bezier(.4,0,.2,1)',
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: isMobile ? 10 : 18,
+                width: isMobile ? 'auto' : '100%',
+                minWidth: 0,
+                maxWidth: isMobile ? '90vw' : '100%',
+              }}>
+                <h3 style={{
+                  fontSize: isMobile ? '1.05rem' : '1.12rem',
+                  fontWeight: 500,
+                  color: '#232323',
+                  margin: 0,
+                  lineHeight: 1.1,
+                  letterSpacing: '0.02em',
+                  fontFamily: 'inherit',
+                  textTransform: 'none',
+                }}>{product.name}</h3>
+                <p style={{
+                  color: '#888',
+                  fontWeight: 400,
+                  fontSize: isMobile ? '0.98rem' : '1.05rem',
+                  margin: 0,
+                  lineHeight: 1.1,
+                  letterSpacing: '0.01em',
+                  fontFamily: 'inherit',
+                }}>{product.price}</p>
+              </div>
             </div>
           </div>
         );
