@@ -142,7 +142,6 @@ export default function ProductsGrid() {
                   left: 0,
                   zIndex: 1,
                 }}
-                unoptimized
                 sizes="(max-width: 768px) 100vw, 33vw"
                 priority
               />
@@ -162,7 +161,6 @@ export default function ProductsGrid() {
                     left: 0,
                     zIndex: 1,
                   }}
-                  unoptimized
                   sizes="(max-width: 768px) 100vw, 33vw"
                   priority
                 />

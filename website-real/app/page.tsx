@@ -4,6 +4,7 @@
 
 import { animate } from "animejs"
 import { useRef, useEffect, useState } from "react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import ProductsGridHome from "../components/ProductsGridHome"
 import { SignupModal } from "../components/SIgnUpModal"
@@ -421,23 +422,19 @@ export default function Home() {
             overflow: "hidden",
           }}
         >
-          <img
+          <Image
             src="/images/black-plain-concrete-textured.jpg"
             alt="Intro background"
+            fill
+            priority
             style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100vw",
-              height: "100%",
               objectFit: "cover",
               zIndex: -1,
               pointerEvents: "none",
               userSelect: "none",
             }}
-            draggable={false}
-            loading="eager"
-              fetchPriority="high"
+            sizes="100vw"
+            quality={70}
           />
           <div
             ref={logoRef}
