@@ -5,12 +5,13 @@ import { Product } from '@/database';
 // GET /api/products/[id] - Get a single product
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect();
 
-    const product = await Product.findById(params.id).lean();
+    const { id } = await params;
+    const product = await Product.findById(id).lean();
 
     if (!product) {
       return NextResponse.json(
@@ -43,15 +44,16 @@ export async function GET(
 // PUT /api/products/[id] - Update a product (Admin only)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect();
 
     const body = await request.json();
+    const { id } = await params;
 
     const product = await Product.findByIdAndUpdate(
-      params.id,
+      id,
       body,
       { new: true, runValidators: true }
     );
@@ -80,13 +82,14 @@ export async function PUT(
 // DELETE /api/products/[id] - Delete a product (Admin only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect();
 
+    const { id } = await params;
     const product = await Product.findByIdAndUpdate(
-      params.id,
+      id,
       { active: false },
       { new: true }
     );
