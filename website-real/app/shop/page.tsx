@@ -70,7 +70,7 @@ export default function ShopPage() {
 
       {/* Categories Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {categories.map((category, index) => (
             <motion.div
               key={category.name}
@@ -80,11 +80,11 @@ export default function ShopPage() {
             >
               <Link href={category.href} className="group block">
                 <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                  <div className="p-6">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors">
+                  <div className="p-4 sm:p-6">
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors">
                       {category.name}
                     </h3>
-                    <p className="text-gray-600 leading-relaxed">{category.description}</p>
+                    <p className="text-gray-600 leading-relaxed text-sm sm:text-base">{category.description}</p>
                     <div className="mt-4 flex items-center text-emerald-600 font-medium group-hover:text-emerald-700">
                       Shop Now
                       <svg
@@ -105,23 +105,23 @@ export default function ShopPage() {
       </div>
 
       {/* Featured Section */}
-      <div className="bg-white py-16">
+      <div className="bg-white py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose Our Collection?</h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Why Choose Our Collection?</h2>
+            <p className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto mb-8">
               We curate only the finest quality apparel with attention to detail, comfort, and style. Each piece is
               selected to ensure you look and feel your best.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mt-8 sm:mt-12">
               <div className="text-center">
                 <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Premium Quality</h3>
-                <p className="text-gray-600">Carefully selected materials for lasting comfort and durability</p>
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Premium Quality</h3>
+                <p className="text-gray-600 text-sm sm:text-base">Carefully selected materials for lasting comfort and durability</p>
               </div>
               <div className="text-center">
                 <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -129,8 +129,8 @@ export default function ShopPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Fast Delivery</h3>
-                <p className="text-gray-600">Quick and reliable shipping to get your items to you fast</p>
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Fast Delivery</h3>
+                <p className="text-gray-600 text-sm sm:text-base">Quick and reliable shipping to get your items to you fast</p>
               </div>
               <div className="text-center">
                 <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -143,8 +143,8 @@ export default function ShopPage() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Customer Love</h3>
-                <p className="text-gray-600">Thousands of satisfied customers who love our products</p>
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Customer Love</h3>
+                <p className="text-gray-600 text-sm sm:text-base">Thousands of satisfied customers who love our products</p>
               </div>
             </div>
           </motion.div>
