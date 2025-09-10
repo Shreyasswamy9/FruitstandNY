@@ -6,8 +6,8 @@ import { animate } from "animejs"
 import { useRef, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import ProductsGridHome from "../components/ProductsGridHome"
-
-type NavType = "SHOP" | "ACCOUNT" | "CART" | "CONTACT"
+import { SignupModal } from "../components/SIgnUpModal"
+import { useScrollTrigger } from "../hooks/useScrollTrigger"
 
 export default function Home() {
   // Global style to ensure no white bars on mobile
@@ -31,6 +31,10 @@ export default function Home() {
   const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
 
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [modalDismissed, setModalDismissed] = useState(false) // Track if user manually closed modal
+  
   const [menuButtonState, setMenuButtonState] = useState<"burger" | "close">("burger")
   const secondVideoRef = useRef<HTMLVideoElement>(null)
 
@@ -51,25 +55,25 @@ export default function Home() {
           // Strategy 1: Direct play
           await video.play()
           console.log('Video autoplay succeeded!')
-        } catch (e) {
+        } catch {
           try {
             // Strategy 2: Wait a bit and try again
             await new Promise(resolve => setTimeout(resolve, 100))
             await video.play()
             console.log('Video autoplay succeeded on retry 1!')
-          } catch (e2) {
+          } catch {
             try {
               // Strategy 3: Set currentTime and try again
               video.currentTime = 0
               await video.play()
               console.log('Video autoplay succeeded on retry 2!')
-            } catch (e3) {
+            } catch {
               try {
                 // Strategy 4: Load and play
                 video.load()
                 await video.play()
                 console.log('Video autoplay succeeded on retry 3!')
-              } catch (e4) {
+              } catch {
                 // Strategy 5: Final attempt with longer delay
                 setTimeout(async () => {
                   try {
@@ -77,7 +81,7 @@ export default function Home() {
                     video.playsInline = true
                     await video.play()
                     console.log('Video autoplay succeeded on final retry!')
-                  } catch (e5) {
+                  } catch {
                     console.log('All autoplay strategies failed')
                   }
                 }, 500)
@@ -136,7 +140,7 @@ export default function Home() {
           try {
             await video.play()
             console.log('Video autoplay succeeded on showMain!')
-          } catch (e) {
+          } catch {
             // If failed, try again with delay
             setTimeout(async () => {
               try {
@@ -144,7 +148,7 @@ export default function Home() {
                 video.playsInline = true
                 await video.play()
                 console.log('Video autoplay succeeded on showMain retry!')
-              } catch (e2) {
+              } catch {
                 // Final attempt
                 setTimeout(async () => {
                   try {
@@ -153,7 +157,7 @@ export default function Home() {
                     video.playsInline = true
                     await video.play()
                     console.log('Video autoplay succeeded on showMain final retry!')
-                  } catch (e3) {
+                  } catch {
                     console.log('Video autoplay failed on showMain')
                   }
                 }, 200)
@@ -182,6 +186,21 @@ export default function Home() {
   const titleRef = useRef<HTMLHeadingElement>(null)
   const subtitleRef = useRef<HTMLParagraphElement>(null)
   const logoRef = useRef<HTMLDivElement>(null)
+  const mainContainerRef = useRef<HTMLDivElement>(null)
+
+  // Use scroll trigger hook to show modal after user scrolls
+  const { isTriggered } = useScrollTrigger({ 
+    threshold: 600, // Show modal after scrolling 600px
+    delay: 3000,    // Wait 3 seconds after scroll threshold
+    containerRef: mainContainerRef
+  })
+
+  // Handle scroll trigger to show modal
+  useEffect(() => {
+    if (isTriggered && !isModalOpen && !modalDismissed) {
+      setIsModalOpen(true)
+    }
+  }, [isTriggered, isModalOpen, modalDismissed])
 
   const [currentLangIndex, setCurrentLangIndex] = useState(0)
   const [showLangFlip, setShowLangFlip] = useState(true)
@@ -337,11 +356,35 @@ export default function Home() {
           height: calc(var(--app-vh) * 100) !important;
           min-height: calc(var(--app-vh) * 100) !important;
           width: 100vw !important;
-          overflow: hidden !important;
+          overflow-x: hidden !important;
           overscroll-behavior: none !important;
+        }
+        
+        /* Hide scrollbars for all elements */
+        * {
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE and Edge */
+        }
+        
+        /* Hide scrollbars for webkit browsers (Chrome, Safari, etc.) */
+        *::-webkit-scrollbar {
+          display: none;
+        }
+        
+        /* Ensure scrolling still works on the main container */
+        html, body, #__next {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar,
+        #__next::-webkit-scrollbar {
+          display: none;
         }
       `}</style>
       <div
+        ref={mainContainerRef}
         style={{
           position: "relative",
           minHeight: "calc(var(--app-vh) * 100)",
@@ -871,6 +914,15 @@ export default function Home() {
       © 2024 Fruitstand LLC,<br />
       All Rights Reserved
     </footer>
+    
+    {/* Signup Modal */}
+    <SignupModal
+      isOpen={isModalOpen}
+      onClose={() => {
+        setIsModalOpen(false)
+        setModalDismissed(true) // Mark modal as dismissed to prevent it from appearing again
+      }}
+    />
     </>
   )
 }
