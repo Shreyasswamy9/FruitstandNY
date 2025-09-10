@@ -899,7 +899,9 @@ export default function Home() {
     </div>
     <footer style={{
       width: '100vw',
-      textAlign: 'center',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
       fontSize: '0.92rem',
       color: '#111',
       padding: '32px 0 18px 0',
@@ -907,9 +909,34 @@ export default function Home() {
       letterSpacing: '0.01em',
       fontWeight: 400,
       boxShadow: '0 -2px 12px 0 rgba(0,0,0,0.03)',
+      position: 'relative',
     }}>
-      © 2024 Fruitstand LLC,<br />
-      All Rights Reserved
+      <div style={{ flex: 1, textAlign: 'center' }}>
+        © 2024 Fruitstand LLC,<br />
+        All Rights Reserved
+      </div>
+      <a
+        href="/contact"
+        style={{
+          position: 'absolute',
+          right: 32,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          background: '#111',
+          color: '#fff',
+          padding: '10px 22px',
+          borderRadius: 8,
+          textDecoration: 'none',
+          fontWeight: 500,
+          fontSize: '1rem',
+          boxShadow: '0 2px 8px 0 rgba(0,0,0,0.07)',
+          transition: 'background 0.2s',
+        }}
+        onMouseOver={e => (e.currentTarget.style.background = '#333')}
+        onMouseOut={e => (e.currentTarget.style.background = '#111')}
+      >
+        Contact Us
+      </a>
     </footer>
     
     {/* Signup Modal */}
