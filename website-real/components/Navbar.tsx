@@ -40,7 +40,7 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
           <div className="flex items-center space-x-6">
             <Link
               href="/"
-              className="text-white hover:text-gray-300 transition-colors duration-200 font-serif text-xl font-bold"
+              className="text-white hover:text-gray-300 transition-colors duration-200 font-bold text-xl"
             >
               FRUITSTAND
             </Link>
@@ -49,7 +49,7 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
                 onMouseEnter={() => handleShopHover(true)}
                 onMouseLeave={() => handleShopHover(false)}
                 onClick={handleShopClick}
-                className="text-emerald-300 hover:text-emerald-200 transition-colors duration-200 font-serif text-xl italic font-light"
+                className="text-emerald-300 hover:text-emerald-200 transition-colors duration-200 text-xl font-light"
               >
                 Shop
               </button>
@@ -69,7 +69,7 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="hidden md:flex items-center text-white hover:text-gray-300 transition-colors duration-200 font-serif"
+                  className="hidden md:flex items-center text-white hover:text-gray-300 transition-colors duration-200"
                 >
                   <span className="mr-1">Hi, {session.user?.name?.split(' ')[0]}</span>
                   <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,14 +119,14 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
               <div className="hidden md:flex items-center space-x-2">
                 <Link
                   href="/auth/signin"
-                  className="text-white hover:text-gray-300 transition-colors duration-200 font-serif"
+                  className="text-white hover:text-gray-300 transition-colors duration-200"
                 >
                   Sign In
                 </Link>
                 <span className="text-gray-400">|</span>
                 <Link
                   href="/auth/signup"
-                  className="text-white hover:text-gray-300 transition-colors duration-200 font-serif"
+                  className="text-white hover:text-gray-300 transition-colors duration-200"
                 >
                   Sign Up
                 </Link>
@@ -135,7 +135,7 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
             
             <Link
               href="/contact"
-              className="hidden md:block text-white hover:text-gray-300 transition-colors duration-200 font-serif"
+              className="hidden md:block text-white hover:text-gray-300 transition-colors duration-200"
             >
               Contact
             </Link>
