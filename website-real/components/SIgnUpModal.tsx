@@ -47,7 +47,7 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       style={{
         position: "fixed",
         top: 0,
@@ -59,9 +59,10 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
         alignItems: "center",
         justifyContent: "center",
         padding: "16px",
-        backgroundColor: "rgba(0, 0, 0, 0.6)",
+        backgroundColor: "rgba(0, 0, 0, 0.85)",
         backdropFilter: "blur(4px)",
       }}
+      className="modal-outer flex items-center justify-center"
     >
       <div
         ref={modalRef}
@@ -70,12 +71,16 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
           width: "100%",
           maxWidth: "28rem",
           margin: "0 auto",
-          backgroundColor: "white",
+          backgroundColor: "#fff",
           borderRadius: "16px",
           boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
           transform: "scale(1)",
           transition: "all 0.3s ease-out",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
         }}
+        className="modal-inner w-full max-w-xl mx-auto flex flex-col items-center justify-center"
       >
         {/* Close button */}
         <button
@@ -85,7 +90,7 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
             top: "16px",
             right: "16px",
             padding: "8px",
-            color: "#9ca3af",
+            color: "#222",
             backgroundColor: "transparent",
             border: "none",
             borderRadius: "50%",
@@ -94,11 +99,11 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
             zIndex: 10,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.color = "#6b7280";
-            e.currentTarget.style.backgroundColor = "#f3f4f6";
+            e.currentTarget.style.color = "#fff";
+            e.currentTarget.style.backgroundColor = "#222";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.color = "#9ca3af";
+            e.currentTarget.style.color = "#222";
             e.currentTarget.style.backgroundColor = "transparent";
           }}
         >
@@ -106,15 +111,15 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
         </button>
 
         {/* Header */}
-        <div className="p-6 pb-4">
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center">
+        <div className="p-6 pb-4 w-full flex flex-col items-center justify-center">
+          <div className="text-center w-full flex flex-col items-center justify-center">
+            <div className="w-16 h-16 mb-4 bg-black rounded-full flex items-center justify-center mx-auto">
               <User className="w-8 h-8 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-black mb-2 w-full text-center">
               Join FruitStand NY
             </h2>
-            <p className="text-gray-600 text-sm">
+            <p className="text-gray-500 text-sm w-full text-center">
               Get exclusive access to fresh streetwear and early drops
             </p>
           </div>
@@ -124,8 +129,17 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
         <form onSubmit={handleSubmit} className="px-6 pb-6">
           <div className="space-y-4">
             {/* Name Input */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div style={{ position: "relative", width: "100%" }}>
+              <div style={{
+                position: "absolute",
+                top: 0,
+                bottom: 0,
+                left: 0,
+                display: "flex",
+                alignItems: "center",
+                pointerEvents: "none",
+                paddingLeft: "10px"
+              }}>
                 <User className="h-5 w-5 text-gray-400" />
               </div>
               <input
@@ -133,14 +147,24 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
                 placeholder="Full Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 outline-none"
+                className="w-full pr-4 py-3 border border-black rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 outline-none bg-white text-black placeholder-gray-400"
                 required
+                style={{ width: "100%", paddingLeft: "36px" }}
               />
             </div>
 
             {/* Email Input */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div style={{ position: "relative", width: "100%" }}>
+              <div style={{
+                position: "absolute",
+                top: 0,
+                bottom: 0,
+                left: 0,
+                display: "flex",
+                alignItems: "center",
+                pointerEvents: "none",
+                paddingLeft: "10px"
+              }}>
                 <Mail className="h-5 w-5 text-gray-400" />
               </div>
               <input
@@ -148,14 +172,24 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
                 placeholder="Email Address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 outline-none"
+                className="w-full pr-4 py-3 border border-black rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 outline-none bg-white text-black placeholder-gray-400"
                 required
+                style={{ width: "100%", paddingLeft: "36px" }}
               />
             </div>
 
             {/* Password Input */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div style={{ position: "relative", width: "100%" }}>
+              <div style={{
+                position: "absolute",
+                top: 0,
+                bottom: 0,
+                left: 0,
+                display: "flex",
+                alignItems: "center",
+                pointerEvents: "none",
+                paddingLeft: "10px"
+              }}>
                 <Lock className="h-5 w-5 text-gray-400" />
               </div>
               <input
@@ -163,9 +197,10 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 outline-none"
+                className="w-full pr-4 py-3 border border-black rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 outline-none bg-white text-black placeholder-gray-400"
                 required
                 minLength={6}
+                style={{ width: "100%", paddingLeft: "36px" }}
               />
             </div>
           </div>
@@ -174,7 +209,7 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full mt-6 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold py-3 px-4 rounded-lg hover:from-emerald-600 hover:to-teal-700 focus:ring-4 focus:ring-emerald-200 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            className="w-full mt-6 bg-black text-white font-semibold py-3 px-4 rounded-lg hover:bg-white hover:text-black border border-black focus:ring-4 focus:ring-black/20 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
@@ -189,23 +224,23 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
           {/* Terms */}
           <p className="text-xs text-gray-500 text-center mt-4 leading-relaxed">
             By signing up, you agree to our{" "}
-            <a href="#" className="text-emerald-600 hover:underline">
+            <a href="#" className="text-black hover:underline">
               Terms of Service
             </a>{" "}
             and{" "}
-            <a href="#" className="text-emerald-600 hover:underline">
+            <a href="#" className="text-black hover:underline">
               Privacy Policy
             </a>
           </p>
 
           {/* Social Login Alternative */}
-          <div className="mt-6 pt-4 border-t border-gray-100">
-            <p className="text-center text-sm text-gray-600 mb-3">
+          <div className="mt-6 pt-4 border-t border-gray-200">
+            <p className="text-center text-sm text-black mb-3">
               Already have an account?{" "}
               <button
                 type="button"
                 onClick={onClose}
-                className="text-emerald-600 hover:underline font-medium"
+                className="text-black hover:underline font-medium"
               >
                 Sign In
               </button>
@@ -214,7 +249,7 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
         </form>
 
         {/* Background decoration */}
-        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-t-2xl"></div>
+  <div className="absolute top-0 left-0 w-full h-2 bg-black rounded-t-2xl"></div>
       </div>
     </div>
   );
