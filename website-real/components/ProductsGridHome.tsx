@@ -102,7 +102,7 @@ export default function ProductsGrid() {
                 if (e.cancelable) e.preventDefault();
               }
             }}
-            onClick={e => {
+            onClick={() => {
               if (isMobile) {
                 setHovered(product.id);
                 setTimeout(() => setHovered(null), 350); // quick flash for tap
