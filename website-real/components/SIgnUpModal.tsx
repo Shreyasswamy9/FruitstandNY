@@ -117,7 +117,7 @@ export const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => 
               <User className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-black mb-2 w-full text-center">
-              Join FruitStand NY
+              JOIN FRUITSTAND NY
             </h2>
             <p className="text-gray-500 text-sm w-full text-center">
               Get exclusive access to fresh streetwear and early drops
