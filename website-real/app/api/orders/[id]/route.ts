@@ -6,7 +6,7 @@ import { Order } from '@/database';
 // GET /api/orders/[id] - Get a specific order
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect();
@@ -20,8 +20,10 @@ export async function GET(
       );
     }
 
+    const { id } = await params;
+
     const order = await Order.findOne({
-      _id: params.id,
+      _id: id,
       user: session.user.id
     }).lean();
 
@@ -49,7 +51,7 @@ export async function GET(
 // PUT /api/orders/[id] - Update order status (Admin only)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect();
@@ -82,8 +84,10 @@ export async function PUT(
       }
     }
 
+    const { id } = await params;
+
     const order = await Order.findByIdAndUpdate(
-      params.id,
+      id,
       updateData,
       { new: true, runValidators: true }
     );
