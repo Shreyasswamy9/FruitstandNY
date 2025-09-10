@@ -1,3 +1,4 @@
+/// <reference types="node" />
 /* eslint-disable @next/next/no-img-element */
 "use client"
 
@@ -637,11 +638,11 @@ export default function Home() {
                 willChange: "transform, opacity",
               }}
               onClick={openMenu}
-              onMouseEnter={(e) => {
+              onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
                 e.currentTarget.style.background = "rgba(0, 0, 0, 0.2)"
                 e.currentTarget.style.transform = "scale(1.05)"
               }}
-              onMouseLeave={(e) => {
+              onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
                 e.currentTarget.style.background = "rgba(0, 0, 0, 0.1)"
                 e.currentTarget.style.transform = "scale(1)"
               }}
@@ -695,9 +696,9 @@ export default function Home() {
                   background: "transparent",
                   pointerEvents: "none",
                 }}
-                onWheel={(e) => e.preventDefault()}
-                onTouchMove={(e) => e.preventDefault()}
-                onScroll={(e) => e.preventDefault()}
+                onWheel={(e: React.WheelEvent<HTMLDivElement>) => e.preventDefault()}
+                onTouchMove={(e: React.TouchEvent<HTMLDivElement>) => e.preventDefault()}
+                onScroll={(e: React.UIEvent<HTMLDivElement>) => e.preventDefault()}
               />
               {/* Menu content */}
             <div
@@ -724,9 +725,9 @@ export default function Home() {
                 paddingTop: "env(safe-area-inset-top)",
                 paddingBottom: "env(safe-area-inset-bottom)",
               }}
-              onWheel={(e) => e.preventDefault()}
-              onTouchMove={(e) => e.preventDefault()}
-              onScroll={(e) => e.preventDefault()}
+              onWheel={(e: React.WheelEvent<HTMLDivElement>) => e.preventDefault()}
+              onTouchMove={(e: React.TouchEvent<HTMLDivElement>) => e.preventDefault()}
+              onScroll={(e: React.UIEvent<HTMLDivElement>) => e.preventDefault()}
             >
               {/* Left side placeholder */}
               <div
@@ -828,19 +829,19 @@ export default function Home() {
                     textShadow: "none",
                   }}
                   onClick={closeMenu}
-                  onMouseEnter={(e) => {
+                  onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
                     e.currentTarget.style.background = "rgba(0, 0, 0, 0.2)"
                     e.currentTarget.style.transform = "scale(1.05)"
                   }}
-                  onMouseLeave={(e) => {
+                  onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
                     e.currentTarget.style.background = "rgba(0, 0, 0, 0.1)"
                     e.currentTarget.style.transform = "scale(1)"
                   }}
-                  onTouchStart={(e) => {
+                  onTouchStart={(e: React.TouchEvent<HTMLButtonElement>) => {
                     e.currentTarget.style.background = "rgba(0, 0, 0, 0.2)"
                     e.currentTarget.style.transform = "scale(1.05)"
                   }}
-                  onTouchEnd={(e) => {
+                  onTouchEnd={(e: React.TouchEvent<HTMLButtonElement>) => {
                     setTimeout(() => {
                       e.currentTarget.style.background = "rgba(0, 0, 0, 0.1)"
                       e.currentTarget.style.transform = "scale(1)"

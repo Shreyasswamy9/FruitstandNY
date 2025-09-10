@@ -59,7 +59,7 @@ export default function ProductsGrid() {
             <div
               key={product.id}
               style={{
-                background: '#f8f8f8',
+                background: '#fff',
                 borderRadius: 0,
                 boxShadow: 'none',
                 overflow: 'hidden',
@@ -124,7 +124,7 @@ export default function ProductsGrid() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: '#f8f8f8',
+              background: '#fff',
               overflow: 'hidden',
             }}>
               <Image
@@ -134,7 +134,7 @@ export default function ProductsGrid() {
                 style={{
                   objectFit: 'contain',
                   borderRadius: 0,
-                  background: '#f8f8f8',
+                  background: '#fff',
                   transition: 'opacity 0.5s cubic-bezier(.4,0,.2,1)',
                   opacity: isActive ? 0 : 1,
                   position: 'absolute',
@@ -154,7 +154,7 @@ export default function ProductsGrid() {
                   style={{
                     objectFit: 'contain',
                     borderRadius: 0,
-                    background: '#f8f8f8',
+                    background: '#fff',
                     transition: 'opacity 0.5s cubic-bezier(.4,0,.2,1)',
                     opacity: isActive ? 1 : 0,
                     position: 'absolute',
@@ -174,7 +174,7 @@ export default function ProductsGrid() {
                 right: isMobile ? undefined : 0,
                 bottom: 0,
                 transform: isMobile ? 'translateX(-50%)' : 'none',
-                background: 'rgba(255,255,255,0.92)',
+                background: '#fff',
                 padding: isMobile ? '6px 14px' : '10px 32px',
                 borderRadius: isMobile ? 12 : '0 0 18px 18px',
                 boxSizing: 'border-box',
