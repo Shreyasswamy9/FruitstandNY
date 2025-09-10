@@ -357,7 +357,9 @@ export default function Home() {
           min-height: calc(var(--app-vh) * 100) !important;
           width: 100vw !important;
           overflow-x: hidden !important;
-          overscroll-behavior: none !important;
+          overscroll-behavior-x: none !important;
+          overscroll-behavior-y: auto !important;
+          touch-action: manipulation !important;
         }
         
         /* Hide scrollbars for all elements */
@@ -398,6 +400,9 @@ export default function Home() {
           background: "black",
           paddingTop: "env(safe-area-inset-top)",
           paddingBottom: "env(safe-area-inset-bottom)",
+          overscrollBehaviorX: "none",
+          overscrollBehaviorY: "auto",
+          touchAction: "manipulation",
         }}
       >
       {!showMain && (
@@ -419,6 +424,7 @@ export default function Home() {
             paddingTop: "env(safe-area-inset-top)",
             paddingBottom: "env(safe-area-inset-bottom)",
             overflow: "hidden",
+            touchAction: "manipulation",
           }}
         >
           <img
@@ -517,6 +523,7 @@ export default function Home() {
           background: "black",
           paddingTop: "env(safe-area-inset-top)",
           paddingBottom: "env(safe-area-inset-bottom)",
+          touchAction: "manipulation",
         }}
       >
         <video
@@ -536,6 +543,7 @@ export default function Home() {
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
             contain: "paint size",
+            touchAction: "manipulation",
           }}
           autoPlay
           muted
