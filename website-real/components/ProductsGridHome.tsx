@@ -96,7 +96,7 @@ export default function ProductsGrid() {
                 if (e.cancelable) e.preventDefault();
               }
             }}
-            onTouchCancel={e => {
+            onTouchCancel={() => {
               if (isMobile) {
                 setHovered(null);
                 if (e.cancelable) e.preventDefault();
