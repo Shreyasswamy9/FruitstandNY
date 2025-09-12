@@ -2,7 +2,8 @@
 "use client"
 
 import { animate } from "animejs"
-import { useRef, useEffect, useState } from "react"
+import { useRef, useEffect, useState, useContext } from "react"
+import { LogoVisibilityContext } from "../components/ClientRootLayout"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import ProductsGridHome from "../components/ProductsGridHome"
@@ -10,6 +11,7 @@ import { SignupModal } from "../components/SIgnUpModal"
 import { useScrollTrigger } from "../hooks/useScrollTrigger"
 
 export default function Home() {
+  const { setHideLogo } = useContext(LogoVisibilityContext)
   // Global style to ensure no white bars on mobile
   // This will override html/body background, margin, and padding
   // Set --app-vh CSS variable to fix mobile 100vh issues
@@ -26,8 +28,13 @@ export default function Home() {
       window.removeEventListener('orientationchange', setVhVar);
     };
   }, []);
-  const [showScrollArrow, setShowScrollArrow] = useState(false)
+
   const [showMain, setShowMain] = useState(false)
+  // Hide logo during intro, show after
+  useEffect(() => {
+    setHideLogo(!showMain)
+  }, [showMain, setHideLogo])
+  const [showScrollArrow, setShowScrollArrow] = useState(false)
   const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -37,6 +44,11 @@ export default function Home() {
   
   const [menuButtonState, setMenuButtonState] = useState<"burger" | "close">("burger")
   const secondVideoRef = useRef<HTMLVideoElement>(null)
+
+  // Hide logo during intro, show after
+  useEffect(() => {
+    setHideLogo(!showMain)
+  }, [showMain, setHideLogo])
 
   // Comprehensive Safari autoplay fix - tries multiple aggressive techniques
   useEffect(() => {
@@ -291,7 +303,7 @@ export default function Home() {
             const cleanupShow = () => clearTimeout(showId)
             // return for this nested scope
             return cleanupShow
-          }, 4000)
+          }, 2000)
 
           // Cleanup timeouts if unmounted during sequence
           return () => {
@@ -299,7 +311,7 @@ export default function Home() {
             clearTimeout(toMainId as unknown as number)
           }
         }
-      }, 170) // Flip every 170ms (unchanged)
+  }, 100) // Flip every 80ms (even faster)
       // Ensure cleanup on unmount even if we didn't reach maxFlips
       return () => clearInterval(langFlipInterval)
     }
@@ -591,6 +603,11 @@ export default function Home() {
           </svg>
         </button>
       )}
+
+
+  {/* Logo button (top left), matches menu button interactivity and style */}
+
+  {/* Logo button removed from here; will be moved to layout.tsx for global visibility */}
 
       {/* Product grid and heading after video */}
       {showMain && (

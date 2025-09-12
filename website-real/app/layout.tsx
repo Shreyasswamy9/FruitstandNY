@@ -1,7 +1,18 @@
-import type React from "react"
+
+// removed duplicate React import
+
 import type { Metadata } from "next"
 import { AuthProvider } from "./providers/AuthProvider"
 import "./globals.css"
+import ClientRootLayout from "../components/ClientRootLayout"
+import { CartProvider } from "../components/CartContext"
+
+declare global {
+  interface Window {
+    __SHOW_LOGO__?: boolean;
+  }
+}
+
 
 export const metadata: Metadata = {
   title: "fruitstand - New Collection 2025",
@@ -24,9 +35,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <CartProvider>
+          <ClientRootLayout>
+            <AuthProvider>
+              {children}
+            </AuthProvider>
+          </ClientRootLayout>
+        </CartProvider>
       </body>
     </html>
   )

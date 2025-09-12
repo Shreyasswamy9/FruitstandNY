@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 export interface Product {
   id: number;
@@ -39,6 +39,8 @@ export default function ProductsGrid() {
   const [hovered, setHovered] = useState<number | null>(null);
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
   const gridProducts = products;
+  // Store touch state for each product card
+  const touchState = useRef<{ [key: number]: { start: number; moved: boolean } }>({});
   return (
     <div
       style={{
@@ -83,31 +85,47 @@ export default function ProductsGrid() {
               }}
             onMouseEnter={() => !isMobile && setHovered(product.id)}
             onMouseLeave={() => !isMobile && setHovered(null)}
-            onTouchStart={e => {
+            onTouchStart={() => {
               if (isMobile) {
+                touchState.current[product.id] = { start: Date.now(), moved: false };
                 setHovered(product.id);
-                // Prevents double tap zoom and ensures touch is registered
-                if (e.cancelable) e.preventDefault();
               }
             }}
-            onTouchEnd={e => {
+            onTouchMove={() => {
               if (isMobile) {
+                if (touchState.current[product.id]) {
+                  touchState.current[product.id].moved = true;
+                }
+              }
+            }}
+            onTouchEnd={() => {
+              if (isMobile) {
+                const state = touchState.current[product.id];
+                const touchTime = state ? Date.now() - state.start : 0;
                 setHovered(null);
-                if (e.cancelable) e.preventDefault();
+                if (state && !state.moved && touchTime < 250) {
+                  // Quick tap: open product page
+                  if (product.name === "Denim Hat") {
+                    window.location.href = "/shop/denim-hat";
+                  } else {
+                    window.location.href = `/products/${product.id}`;
+                  }
+                }
+                // else: hold or scroll, just change image
               }
             }}
             onTouchCancel={() => {
               if (isMobile) {
                 setHovered(null);
-                if (e.cancelable) e.preventDefault();
               }
             }}
-            onClick={() => {
-              if (isMobile) {
-                setHovered(product.id);
-                setTimeout(() => setHovered(null), 350); // quick flash for tap
-              } else {
-                window.location.href = `/products/${product.id}`;
+            onClick={e => {
+              if (!isMobile) {
+                if (product.name === "Denim Hat") {
+                  window.location.href = "/shop/denim-hat";
+                } else {
+                  window.location.href = `/products/${product.id}`;
+                }
               }
             }}
             role="button"
@@ -116,10 +134,10 @@ export default function ProductsGrid() {
             <div style={{
               position: 'relative',
               width: isMobile ? '100vw' : '100%',
-              height: isMobile ? '88vh' : undefined,
-              minHeight: isMobile ? '88vh' : undefined,
+              height: isMobile ? '88vh' : '60vh',
+              minHeight: isMobile ? '88vh' : '60vh',
               maxWidth: isMobile ? '100vw' : '100%',
-              maxHeight: isMobile ? '88vh' : undefined,
+              maxHeight: isMobile ? '88vh' : '60vh',
               aspectRatio: isMobile ? undefined : '3/4',
               display: 'flex',
               alignItems: 'center',
@@ -133,6 +151,8 @@ export default function ProductsGrid() {
                 fill
                 style={{
                   objectFit: 'contain',
+                  width: '100%',
+                  height: '100%',
                   borderRadius: 0,
                   background: '#fff',
                   transition: 'opacity 0.5s cubic-bezier(.4,0,.2,1)',
@@ -214,5 +234,4 @@ export default function ProductsGrid() {
         );
       })}
     </div>
-  );
-}
+  );}
