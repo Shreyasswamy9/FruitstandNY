@@ -83,7 +83,7 @@ export default function EmpireHatPage() {
           preload="auto"
         >
           <source
-            src="https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/Videos/applehat.mp4"
+            src="https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/Videos/applehatfinal.mp4"
             type="video/mp4"
           />
         </video>
