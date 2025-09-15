@@ -77,12 +77,16 @@ export default function EmpireHatPage() {
       <div id="empire-hat-video-bg" style={{ position: 'fixed', inset: 0, zIndex: -1, width: '100vw', height: '100vh', overflow: 'hidden' }}>
         <video
           ref={videoRef}
-          src="/Videos/applehat.mp4"
           style={{ width: '100vw', height: '100vh', objectFit: 'cover' }}
           muted
           playsInline
           preload="auto"
-        />
+        >
+          <source
+            src="https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/Videos/applehat.mp4"
+            type="video/mp4"
+          />
+        </video>
       </div>
       <div
         className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
