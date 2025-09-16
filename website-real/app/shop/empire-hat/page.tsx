@@ -57,12 +57,11 @@ function EmpireHatPage() {
         scrollTrigger: {
           trigger: "#empire-hat-video-bg",
           start: "top top",
-          end: "bottom+=2000 top",
+          end: () => `+=${window.innerHeight * 2}`,
           scrub: true,
           pin: true,
         },
       });
-
       // Image transitions: as video plays, change image at 0%, 33%, 66%
       updateImage = () => {
         if (!video || !duration) return;
@@ -85,7 +84,7 @@ function EmpireHatPage() {
         });
       }
     };
-  }, []);
+  }, [isMobile]);
 
   const handleAddToCart = () => {
     addToCart({
@@ -164,18 +163,18 @@ function EmpireHatPage() {
           max-height: 100dvh !important;
         }
         .empire-hat-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 100dvh;
-          z-index: 2;
-          pointer-events: none;
-          display: flex;
-          flex-direction: row;
-          gap: 8vw;
-          align-items: center;
-          justify-content: center;
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          width: 100vw !important;
+          height: 100dvh !important;
+          z-index: 2 !important;
+          pointer-events: auto !important;
+          display: flex !important;
+          flex-direction: row !important;
+          gap: 8vw !important;
+          align-items: center !important;
+          justify-content: center !important;
         }
         @media (max-width: 600px) {
           .empire-hat-btn {
@@ -188,18 +187,11 @@ function EmpireHatPage() {
             gap: 4px;
           }
           .empire-hat-overlay {
-            position: static !important;
-            width: 100vw !important;
-            height: auto !important;
-            min-height: 0 !important;
-            max-width: 100vw !important;
             flex-direction: column !important;
             gap: 24px !important;
             align-items: center !important;
             justify-content: flex-start !important;
             padding: 16px !important;
-            pointer-events: auto !important;
-            overflow: visible !important;
           }
           .empire-hat-overlay > div {
             flex-direction: column !important;
@@ -220,19 +212,26 @@ function EmpireHatPage() {
             position: relative !important;
           }
         }
+        body {
+          background: #000 !important;
+        }
         ${hideScrollbarStyle}
       `}</style>
       {/* Video background with GSAP scroll control */}
       <div id="empire-hat-video-bg" style={{ position: 'fixed', inset: 0, zIndex: -2, width: '100vw', height: '100dvh', minHeight: '100dvh', maxHeight: '100dvh', overflow: 'hidden', background: '#000' }}>
         <video
           ref={videoRef}
-          style={{ width: '100vw', height: '100vh', objectFit: 'cover' }}
+          style={{ width: '100vw', height: '100vh', objectFit: 'cover', objectPosition: 'center center', display: 'block' }}
           muted
           playsInline
           preload="auto"
+          autoPlay={!isMobile}
+          loop={!isMobile}
+          controls={false}
+          disablePictureInPicture
         >
           <source
-            src="https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/Videos/applehatfinal.mp4"
+            src={isMobile ? "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/Videos/mobileapplehat.mp4" : "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/Videos/applehatfinal.mp4"}
             type="video/mp4"
           />
         </video>
@@ -242,18 +241,6 @@ function EmpireHatPage() {
         style={{
           paddingTop: 56, // height of the floating taskbar
           paddingBottom: taskbarHeight,
-          position: isMobile ? 'relative' : 'fixed',
-          top: isMobile ? undefined : 0,
-          left: isMobile ? undefined : 0,
-          width: '100vw',
-          height: isMobile ? 'auto' : '100dvh',
-          zIndex: 2,
-          pointerEvents: 'auto',
-          display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row',
-          gap: isMobile ? '4vw' : '8vw',
-          alignItems: isMobile ? 'stretch' : 'center',
-          justifyContent: isMobile ? 'flex-start' : 'center',
         }}
       >
         <div style={{
@@ -274,41 +261,41 @@ function EmpireHatPage() {
           {/* Animated product image transitions - grid removed, image larger */}
           <div
             ref={imageContainerRef}
-            className="flex flex-col items-start justify-start empire-hat-image-container"
+            className="empire-hat-image-container"
             style={{
               minWidth: 0,
               minHeight: 0,
-              width: '60%',
-              maxWidth: 500,
+              width: isMobile ? '80vw' : '60%',
+              maxWidth: isMobile ? 350 : 500,
               aspectRatio: '4/5',
               position: 'relative',
               overflow: 'visible',
               background: 'none',
               boxShadow: 'none',
+              margin: isMobile ? '0 auto' : undefined,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            {empireHatImages.map((img, idx) => (
-              <Image
-                key={img}
-                src={img}
-                alt={PRODUCT.name}
-                fill
-                style={{
-                  objectFit: "contain",
-                  background: "transparent",
-                  position: 'absolute',
-                  left: 0,
-                  top: 0,
-                  width: '100%',
-                  height: '100%',
-                  opacity: idx === currentImageIdx ? 1 : 0,
-                  transform: idx === currentImageIdx ? 'translateY(0)' : 'translateY(60px)',
-                  transition: 'opacity 0.7s cubic-bezier(.7,-0.2,.3,1.2), transform 0.7s cubic-bezier(.7,-0.2,.3,1.2)',
-                  zIndex: idx === currentImageIdx ? 2 : 1,
-                }}
-                priority={idx === 0}
-              />
-            ))}
+            <Image
+              src={empireHatImages[currentImageIdx]}
+              alt={PRODUCT.name}
+              fill
+              style={{
+                objectFit: "contain",
+                background: "transparent",
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: '100%',
+                height: '100%',
+                opacity: 1,
+                transition: 'opacity 0.7s cubic-bezier(.7,-0.2,.3,1.2)',
+                zIndex: 2,
+              }}
+              priority
+            />
           </div>
           {/* Product Info */}
           <div className="md:w-1/2 flex flex-col justify-center" style={{color: '#fff', marginLeft: '32px'}}>
