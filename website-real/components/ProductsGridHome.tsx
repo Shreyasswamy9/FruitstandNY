@@ -33,6 +33,8 @@ export const products: Product[] = [
   { id: 9, name: "White Hat", price: "$40", image: "/images/whitehatmale1.jpeg", hoverImage: "/images/whitehatsolo.jpeg" },
   // Beige Hat (female)
   { id: 10, name: "Beige Hat", price: "$40", image: "/images/beigehatfemale1.jpeg", hoverImage: "/images/beigehatsolo.jpeg" },
+  // Empire Hat (NEW)
+  { id: 11, name: "Empire Hat", price: "$42", image: "/images/empirehatfemale.jpg", hoverImage: "/images/empirehatsolo.jpg" },
 ];
 
 export default function ProductsGrid() {
@@ -41,54 +43,99 @@ export default function ProductsGrid() {
   const gridProducts = products;
   // Store touch state for each product card
   const touchState = useRef<{ [key: number]: { start: number; moved: boolean } }>({});
+  // Track which product is showing hover image on mobile
+  const [mobileHover, setMobileHover] = useState<number | null>(null);
   return (
-    <div
-      style={{
-        display: 'grid',
-  gap: isMobile ? 0 : 32,
-  width: '100vw',
-  margin: 0,
-  padding: 0,
-  gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-  gridTemplateRows: isMobile ? undefined : 'repeat(4, 1fr)',
-  overflowX: 'hidden',
-  alignItems: isMobile ? 'stretch' : 'stretch',
-      }}
-    >
+    <>
+      {/* Fixed video background for all devices */}
+      <div style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 0,
+        width: '100vw',
+        height: '100vh',
+        overflow: 'hidden',
+        pointerEvents: 'none',
+      }}>
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          style={{
+            width: '100vw',
+            height: '100vh',
+            objectFit: 'cover',
+            objectPosition: isMobile ? 'center center' : 'right center',
+            pointerEvents: 'none',
+          }}
+          src="/Videos/homevideo.mp4"
+        />
+      </div>
+      <style>{`
+        @media (max-width: 600px) {
+          video {
+            object-position: center center !important;
+          }
+        }
+      `}</style>
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          display: 'grid',
+          gap: isMobile ? 18 : 32,
+          width: '100vw',
+          margin: 0,
+          padding: isMobile ? '18px 0' : 0,
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+          gridTemplateRows: isMobile ? undefined : 'repeat(4, 1fr)',
+          overflowX: 'hidden',
+          alignItems: isMobile ? 'stretch' : 'stretch',
+          background: isMobile ? 'transparent' : undefined,
+        }}
+      >
       {gridProducts.map((product) => {
-        const isActive = hovered === product.id;
+        const isActive = isMobile ? mobileHover === product.id : hovered === product.id;
+        // Custom link for Empire Hat and Denim Hat
+        const getProductLink = () => {
+          if (product.name === "Empire Hat") return "/shop/empire-hat";
+          if (product.name === "Denim Hat") return "/shop/denim-hat";
+          return `/products/${product.id}`;
+        };
         return (
-            <div
-              key={product.id}
-              style={{
-                background: '#fff',
-                borderRadius: 0,
-                boxShadow: 'none',
-                overflow: 'hidden',
-                cursor: 'pointer',
-                transition: 'transform 0.2s',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                textDecoration: 'none',
-                color: 'inherit',
-                minHeight: isMobile ? '88vh' : 0,
-                height: isMobile ? '88vh' : '100%',
-                width: isMobile ? '100vw' : '100%',
-                maxWidth: isMobile ? '100vw' : '100vw',
-                maxHeight: isMobile ? '88vh' : undefined,
-                boxSizing: 'border-box',
-                position: 'relative',
-                transform: isActive ? 'scale(1.01)' : 'none',
-                zIndex: isActive ? 10 : 1,
-                justifyContent: isMobile ? 'center' : 'stretch',
-              }}
-            onMouseEnter={() => !isMobile && setHovered(product.id)}
-            onMouseLeave={() => !isMobile && setHovered(null)}
+          <div
+            key={product.id}
+            style={{
+              background: isMobile ? 'rgba(255,255,255,0.82)' : '#fff',
+              borderRadius: isMobile ? 18 : 0,
+              boxShadow: isMobile ? '0 4px 24px 0 rgba(0,0,0,0.10)' : 'none',
+              overflow: 'hidden',
+              cursor: 'pointer',
+              transition: 'transform 0.2s',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textDecoration: 'none',
+              color: 'inherit',
+              minHeight: isMobile ? 'auto' : 0,
+              height: isMobile ? 'auto' : '100%',
+              width: isMobile ? '92vw' : '100%',
+              maxWidth: isMobile ? '96vw' : '100vw',
+              margin: isMobile ? '0 auto' : 0,
+              marginBottom: isMobile ? 12 : 0,
+              boxSizing: 'border-box',
+              position: 'relative',
+              transform: isActive ? 'scale(1.01)' : 'none',
+              zIndex: isActive ? 10 : 1,
+              justifyContent: isMobile ? 'center' : 'stretch',
+            }}
+            onMouseEnter={() => { if (!isMobile) setHovered(product.id); }}
+            onMouseLeave={() => { if (!isMobile) setHovered(null); }}
             onTouchStart={() => {
               if (isMobile) {
                 touchState.current[product.id] = { start: Date.now(), moved: false };
-                setHovered(product.id);
+                setMobileHover(product.id);
               }
             }}
             onTouchMove={() => {
@@ -102,30 +149,24 @@ export default function ProductsGrid() {
               if (isMobile) {
                 const state = touchState.current[product.id];
                 const touchTime = state ? Date.now() - state.start : 0;
-                setHovered(null);
                 if (state && !state.moved && touchTime < 250) {
-                  // Quick tap: open product page
-                  if (product.name === "Denim Hat") {
-                    window.location.href = "/shop/denim-hat";
-                  } else {
-                    window.location.href = `/products/${product.id}`;
-                  }
+                  // Tap: open product page
+                  setMobileHover(null);
+                  window.location.href = getProductLink();
+                } else {
+                  // Hold or scroll: revert hover image immediately on release
+                  setMobileHover(null);
                 }
-                // else: hold or scroll, just change image
               }
             }}
             onTouchCancel={() => {
               if (isMobile) {
-                setHovered(null);
+                setMobileHover(null);
               }
             }}
             onClick={e => {
               if (!isMobile) {
-                if (product.name === "Denim Hat") {
-                  window.location.href = "/shop/denim-hat";
-                } else {
-                  window.location.href = `/products/${product.id}`;
-                }
+                window.location.href = getProductLink();
               }
             }}
             role="button"
@@ -133,16 +174,16 @@ export default function ProductsGrid() {
           >
             <div style={{
               position: 'relative',
-              width: isMobile ? '100vw' : '100%',
-              height: isMobile ? '88vh' : '60vh',
-              minHeight: isMobile ? '88vh' : '60vh',
-              maxWidth: isMobile ? '100vw' : '100%',
-              maxHeight: isMobile ? '88vh' : '60vh',
+              width: isMobile ? '100%' : '100%',
+              height: isMobile ? '54vw' : '60vh', // less tall on mobile
+              minHeight: isMobile ? '54vw' : '60vh',
+              maxWidth: isMobile ? '100%' : '100%',
+              maxHeight: isMobile ? '60vw' : '60vh',
               aspectRatio: isMobile ? undefined : '3/4',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: '#fff',
+              background: 'transparent',
               overflow: 'hidden',
             }}>
               <Image
@@ -153,6 +194,8 @@ export default function ProductsGrid() {
                   objectFit: 'contain',
                   width: '100%',
                   height: '100%',
+                  maxWidth: '100%',
+                  maxHeight: '100%',
                   borderRadius: 0,
                   background: '#fff',
                   transition: 'opacity 0.5s cubic-bezier(.4,0,.2,1)',
@@ -172,6 +215,10 @@ export default function ProductsGrid() {
                   fill
                   style={{
                     objectFit: 'contain',
+                    width: '100%',
+                    height: '100%',
+                    maxWidth: '100%',
+                    maxHeight: '100%',
                     borderRadius: 0,
                     background: '#fff',
                     transition: 'opacity 0.5s cubic-bezier(.4,0,.2,1)',
@@ -192,14 +239,11 @@ export default function ProductsGrid() {
                 right: isMobile ? undefined : 0,
                 bottom: 0,
                 transform: isMobile ? 'translateX(-50%)' : 'none',
-                background: '#fff',
-                padding: isMobile ? '6px 14px' : '10px 32px',
-                borderRadius: isMobile ? 12 : '0 0 18px 18px',
+                background: isMobile ? 'rgba(255,255,255,0.92)' : '#fff',
+                padding: isMobile ? '8px 18px' : '10px 32px',
+                borderRadius: isMobile ? 14 : '0 0 18px 18px',
                 boxSizing: 'border-box',
                 zIndex: 2,
-                opacity: isActive ? 1 : 0,
-                pointerEvents: isActive ? 'auto' : 'none',
-                transition: 'opacity 0.4s cubic-bezier(.4,0,.2,1)',
                 display: 'flex',
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -234,4 +278,6 @@ export default function ProductsGrid() {
         );
       })}
     </div>
-  );}
+    </>
+  );
+}
