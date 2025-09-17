@@ -1,4 +1,3 @@
-/// <reference types="node" />
 "use client"
 
 import { animate } from "animejs"
@@ -139,7 +138,7 @@ export default function Home() {
 
   // Show scroll arrow after 5 seconds when main video is visible
   useEffect(() => {
-    let arrowTimeout: NodeJS.Timeout | null = null
+    let arrowTimeout: ReturnType<typeof setTimeout> | null = null
     if (showMain) {
       // Try to force video autoplay when main content shows
       if (secondVideoRef.current) {

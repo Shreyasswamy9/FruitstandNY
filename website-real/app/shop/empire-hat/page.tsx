@@ -1,14 +1,5 @@
 "use client";
-// Hide scrollbar for this page
-const hideScrollbarStyle = `
-  html, body {
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE 10+ */
-  }
-  html::-webkit-scrollbar, body::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
-  }
-`;
+// Removed hideScrollbarStyle to allow scrolling
 import Image from "next/image";
 import React, { useState, useRef, useEffect } from "react";
 import gsap from "gsap";
@@ -215,18 +206,18 @@ function EmpireHatPage() {
         body {
           background: #000 !important;
         }
-        ${hideScrollbarStyle}
+  /* Scrollbar style removed to allow scrolling */
       `}</style>
       {/* Video background with GSAP scroll control */}
-      <div id="empire-hat-video-bg" style={{ position: 'fixed', inset: 0, zIndex: -2, width: '100vw', height: '100dvh', minHeight: '100dvh', maxHeight: '100dvh', overflow: 'hidden', background: '#000' }}>
+  <div id="empire-hat-video-bg" style={{ position: 'fixed', inset: 0, zIndex: -2, width: '100vw', height: '100dvh', minHeight: '100dvh', maxHeight: '100dvh', overflow: 'hidden', background: '#000' }}>
         <video
           ref={videoRef}
           style={{ width: '100vw', height: '100vh', objectFit: 'cover', objectPosition: 'center center', display: 'block' }}
           muted
           playsInline
           preload="auto"
-          autoPlay={!isMobile}
-          loop={!isMobile}
+          autoPlay={isMobile}
+          loop={isMobile}
           controls={false}
           disablePictureInPicture
         >
