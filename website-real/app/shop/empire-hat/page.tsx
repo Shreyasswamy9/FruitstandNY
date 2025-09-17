@@ -34,6 +34,22 @@ function EmpireHatPage() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Force video to play on mount to suppress play button overlays
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      video.muted = true;
+      video.autoplay = true;
+      video.playsInline = true;
+      video.controls = false;
+      video.disablePictureInPicture = true;
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {});
+      }
+    }
+  }, [isMobile]);
   // GSAP ScrollTrigger for video scrubbing and image transitions
   useEffect(() => {
     const video = videoRef.current;
@@ -216,8 +232,8 @@ function EmpireHatPage() {
           muted
           playsInline
           preload="auto"
-          autoPlay={isMobile}
-          loop={isMobile}
+          autoPlay={!isMobile}
+          loop={!isMobile}
           controls={false}
           disablePictureInPicture
         >
