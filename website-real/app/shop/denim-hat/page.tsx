@@ -12,7 +12,7 @@ const denimHatImages = [
 
 const PRODUCT = {
   name: "Denim Hat",
-  price: 38,
+  price: 20,
   description: "Classic denim hat with a modern fit. Durable, stylish, and perfect for any season.",
 };
 

@@ -85,13 +85,14 @@ export default function ProductsGrid() {
           zIndex: 1,
           display: 'grid',
           gap: isMobile ? 18 : 32,
-          width: '100vw',
-          margin: 0,
+          width: 'fit-content',
+          margin: '0 auto',
           padding: isMobile ? '18px 0' : 0,
-          gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-          gridTemplateRows: isMobile ? undefined : 'repeat(4, 1fr)',
-          overflowX: 'hidden',
-          alignItems: isMobile ? 'stretch' : 'stretch',
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, auto)',
+          gridAutoRows: 'auto',
+          gridAutoFlow: 'row dense',
+          overflowX: 'visible',
+          alignItems: 'start',
           background: isMobile ? 'transparent' : undefined,
         }}
       >
@@ -174,61 +175,48 @@ export default function ProductsGrid() {
           >
             <div style={{
               position: 'relative',
-              width: isMobile ? '100%' : '100%',
-              height: isMobile ? '54vw' : '60vh', // less tall on mobile
-              minHeight: isMobile ? '54vw' : '60vh',
-              maxWidth: isMobile ? '100%' : '100%',
-              maxHeight: isMobile ? '60vw' : '60vh',
-              aspectRatio: isMobile ? undefined : '3/4',
+              background: 'transparent',
+              overflow: 'visible',
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              background: 'transparent',
-              overflow: 'hidden',
+              width: 'fit-content',
+              height: 'fit-content',
+              margin: 0,
+              padding: 0,
             }}>
               <Image
                 src={product.image}
                 alt={product.name}
-                fill
+                width={320}
+                height={420}
                 style={{
-                  objectFit: 'contain',
-                  width: '100%',
-                  height: '100%',
-                  maxWidth: '100%',
-                  maxHeight: '100%',
+                  objectFit: 'cover',
+                  display: isActive ? 'none' : 'block',
                   borderRadius: 0,
                   background: '#fff',
                   transition: 'opacity 0.5s cubic-bezier(.4,0,.2,1)',
                   opacity: isActive ? 0 : 1,
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
                   zIndex: 1,
                 }}
-                sizes="(max-width: 768px) 100vw, 33vw"
                 priority
               />
               {product.hoverImage && (
                 <Image
                   src={product.hoverImage}
                   alt={product.name + ' alt'}
-                  fill
+                  width={320}
+                  height={420}
                   style={{
-                    objectFit: 'contain',
-                    width: '100%',
-                    height: '100%',
-                    maxWidth: '100%',
-                    maxHeight: '100%',
+                    objectFit: 'cover',
+                    display: isActive ? 'block' : 'none',
                     borderRadius: 0,
                     background: '#fff',
                     transition: 'opacity 0.5s cubic-bezier(.4,0,.2,1)',
                     opacity: isActive ? 1 : 0,
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
                     zIndex: 1,
                   }}
-                  sizes="(max-width: 768px) 100vw, 33vw"
                   priority
                 />
               )}
