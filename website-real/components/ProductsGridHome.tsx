@@ -93,22 +93,37 @@ export default function ProductsGrid() {
           gridAutoFlow: 'row dense',
           overflowX: 'visible',
           alignItems: 'start',
-          background: isMobile ? 'transparent' : undefined,
+          background: 'transparent',
         }}
       >
       {gridProducts.map((product) => {
         const isActive = isMobile ? mobileHover === product.id : hovered === product.id;
         // Custom link for Empire Hat and Denim Hat
         const getProductLink = () => {
-          if (product.name === "Empire Hat") return "/shop/empire-hat";
-          if (product.name === "Denim Hat") return "/shop/denim-hat";
-          return `/products/${product.id}`;
+          switch (product.name) {
+            case "Empire Hat":
+              return "/shop/empire-hat";
+            case "Denim Hat":
+              return "/shop/denim-hat";
+            case "Hockey Jersey":
+              return "/shop/hockey-jersey";
+            case "Classic Tee":
+              return "/shop/classic-tee";
+            case "Tracksuit":
+              return "/shop/tracksuit";
+            case "White Hat":
+              return "/shop/white-hat";
+            case "Beige Hat":
+              return "/shop/beige-hat";
+            default:
+              return `/products/${product.id}`;
+          }
         };
         return (
           <div
             key={product.id}
             style={{
-              background: isMobile ? 'rgba(255,255,255,0.82)' : '#fff',
+              background: 'transparent',
               borderRadius: isMobile ? 18 : 0,
               boxShadow: isMobile ? '0 4px 24px 0 rgba(0,0,0,0.10)' : 'none',
               overflow: 'hidden',
@@ -176,7 +191,7 @@ export default function ProductsGrid() {
             <div style={{
               position: 'relative',
               background: 'transparent',
-              overflow: 'visible',
+              overflow: 'hidden', // ensure child corners are clipped
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
@@ -185,6 +200,8 @@ export default function ProductsGrid() {
               height: 'fit-content',
               margin: 0,
               padding: 0,
+              borderRadius: 18,
+              boxShadow: '0 4px 18px 0 rgba(0,0,0,0.10)',
             }}>
               <Image
                 src={product.image}
@@ -195,7 +212,7 @@ export default function ProductsGrid() {
                   objectFit: 'cover',
                   display: isActive ? 'none' : 'block',
                   borderRadius: 0,
-                  background: '#fff',
+                  background: 'transparent',
                   transition: 'opacity 0.5s cubic-bezier(.4,0,.2,1)',
                   opacity: isActive ? 0 : 1,
                   zIndex: 1,
@@ -212,7 +229,7 @@ export default function ProductsGrid() {
                     objectFit: 'cover',
                     display: isActive ? 'block' : 'none',
                     borderRadius: 0,
-                    background: '#fff',
+                    background: 'transparent',
                     transition: 'opacity 0.5s cubic-bezier(.4,0,.2,1)',
                     opacity: isActive ? 1 : 0,
                     zIndex: 1,
@@ -223,42 +240,46 @@ export default function ProductsGrid() {
               {/* Overlay name and price at the bottom of the grid cell */}
               <div style={{
                 position: 'absolute',
-                left: isMobile ? '50%' : 0,
-                right: isMobile ? undefined : 0,
+                left: 0,
+                right: 0,
                 bottom: 0,
-                transform: isMobile ? 'translateX(-50%)' : 'none',
-                background: isMobile ? 'rgba(255,255,255,0.92)' : '#fff',
-                padding: isMobile ? '8px 18px' : '10px 32px',
-                borderRadius: isMobile ? 14 : '0 0 18px 18px',
+                background: 'rgba(255,255,255,0.97)',
+                padding: isMobile ? '18px 24px 16px 24px' : '18px 32px 16px 32px',
+                borderBottomLeftRadius: 18,
+                borderBottomRightRadius: 18,
                 boxSizing: 'border-box',
                 zIndex: 2,
                 display: 'flex',
                 flexDirection: 'row',
                 alignItems: 'center',
-                justifyContent: 'center',
-                gap: isMobile ? 10 : 18,
-                width: isMobile ? 'auto' : '100%',
+                justifyContent: 'space-between',
+                gap: 18,
+                width: '100%',
                 minWidth: 0,
-                maxWidth: isMobile ? '90vw' : '100%',
+                maxWidth: '100%',
+                boxShadow: '0 4px 18px 0 rgba(0,0,0,0.10)',
+                borderTop: '1.5px solid #ececec',
               }}>
                 <h3 style={{
-                  fontSize: isMobile ? '1.05rem' : '1.12rem',
-                  fontWeight: 500,
-                  color: '#232323',
+                  fontSize: isMobile ? '1.18rem' : '1.22rem',
+                  fontWeight: 600,
+                  color: '#181818',
                   margin: 0,
-                  lineHeight: 1.1,
-                  letterSpacing: '0.02em',
-                  fontFamily: 'inherit',
+                  lineHeight: 1.13,
+                  letterSpacing: '0.01em',
+                  fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
                   textTransform: 'none',
+                  textShadow: '0 1px 0 #fff',
                 }}>{product.name}</h3>
                 <p style={{
-                  color: '#888',
-                  fontWeight: 400,
-                  fontSize: isMobile ? '0.98rem' : '1.05rem',
+                  color: '#444',
+                  fontWeight: 500,
+                  fontSize: isMobile ? '1.08rem' : '1.13rem',
                   margin: 0,
-                  lineHeight: 1.1,
+                  lineHeight: 1.13,
                   letterSpacing: '0.01em',
-                  fontFamily: 'inherit',
+                  fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
+                  textShadow: '0 1px 0 #fff',
                 }}>{product.price}</p>
               </div>
             </div>

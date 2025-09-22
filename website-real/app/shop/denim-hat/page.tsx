@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import React, { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 
 const denimHatImages = [
@@ -22,6 +23,7 @@ export default function DenimHatPage() {
   const [showPopup, setShowPopup] = useState(false);
   const [popupPhase, setPopupPhase] = useState<'center'|'toTaskbar'|null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   // Show popup in center, then animate to taskbar
   const handleAddToCart = () => {
@@ -47,6 +49,27 @@ export default function DenimHatPage() {
   const taskbarHeight = items.length > 0 && !showPopup ? 64 : 0;
   return (
     <>
+      {/* Go Back text link top left */}
+      <span
+        onClick={() => router.back()}
+        style={{
+          position: 'absolute',
+          top: 24,
+          right: 24,
+          fontSize: 18,
+          color: '#232323',
+          cursor: 'pointer',
+          fontWeight: 500,
+          zIndex: 100,
+          userSelect: 'none',
+          background: 'none',
+          border: 'none',
+          padding: 0,
+          textDecoration: 'underline',
+        }}
+      >
+        Go Back
+      </span>
       <div
         className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
         style={{ paddingBottom: taskbarHeight }}

@@ -2,6 +2,7 @@
 
 import React, { createContext, useState } from "react"
 import LogoButton from "./LogoButton"
+import CartBar from "./CartBar"
 
 // Context to control logo visibility (for intro)
 export const LogoVisibilityContext = createContext<{ hideLogo: boolean; setHideLogo: (v: boolean) => void }>({ hideLogo: false, setHideLogo: () => {} })
@@ -17,6 +18,7 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
       {/* Logo button, visible on every page, picture only, hidden if hideLogo */}
       <LogoButton />
       {children}
+      <CartBar />
     </LogoVisibilityContext.Provider>
   )
 }
