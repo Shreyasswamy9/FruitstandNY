@@ -16,8 +16,13 @@ const PRODUCT = {
   description: "Neutral beige hat, versatile and stylish for any look.",
 };
 
-export default function BeigeHatPage() {
-  const [selectedImage, setSelectedImage] = useState(beigeHatImages[0]);
+function BeigeHatPage() {
+  const colorOptions = [
+    { name: 'Beige', color: '#e5d1b8', image: '/images/beigehatfemale1.jpeg', bg: '#f7f3ed' },
+    { name: 'White', color: '#fff', image: '/images/beigehatsolo.jpeg', bg: '#f8f8f8', border: '#bbb' },
+  ];
+  const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
+  const [selectedImage, setSelectedImage] = useState(colorOptions[0].image);
   const [sizeDropdownOpen, setSizeDropdownOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL"];
@@ -33,6 +38,7 @@ export default function BeigeHatPage() {
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
+      color: selectedColor.name,
     });
   };
 
@@ -89,6 +95,31 @@ export default function BeigeHatPage() {
         {/* Product Info */}
         <div className="md:w-1/2 flex flex-col justify-center">
           <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
+          {/* Color Picker */}
+          <div className="flex gap-3 mb-4 px-1" style={{ overflowX: 'auto', marginBottom: 24, paddingTop: 8, paddingBottom: 8, minHeight: 48 }}>
+            {colorOptions.map((opt) => (
+              <button
+                key={opt.name}
+                aria-label={opt.name}
+                onClick={() => {
+                  setSelectedColor(opt);
+                  setSelectedImage(opt.image);
+                }}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: opt.color,
+                  border: selectedColor.name === opt.name ? '2px solid #232323' : (opt.border || '2px solid #fff'),
+                  outline: selectedColor.name === opt.name ? '2px solid #3B82F6' : 'none',
+                  boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #3B82F6' : '0 1px 4px 0 rgba(0,0,0,0.07)',
+                  display: 'inline-block',
+                  cursor: 'pointer',
+                  marginRight: 4,
+                }}
+              />
+            ))}
+          </div>
           {/* Size Dropdown */}
           <div style={{ marginBottom: 18, position: 'relative', width: 180 }}>
             <button
@@ -138,3 +169,5 @@ export default function BeigeHatPage() {
     </>
   );
 }
+
+export default BeigeHatPage;

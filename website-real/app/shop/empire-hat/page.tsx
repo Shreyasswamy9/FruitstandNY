@@ -1,4 +1,3 @@
-
 "use client";
 import Image from "next/image";
 import React, { useState, useRef, useEffect } from "react";
@@ -13,17 +12,46 @@ const PRODUCT = {
   description: "A bold, structured hat inspired by the New York City! Stand tall in style.",
 };
 
-const empireHatImages = [
-  "/images/empirehatfemale.jpg",
-  "/images/empirehatsolo.jpg",
-  "/images/empirehatmale.jpg",
+const colorOptions = [
+  {
+    name: 'Female',
+    color: '#e5d1b8',
+    images: [
+      '/images/empirehatfemale.jpg',
+    ],
+    bg: '#f7f3ed',
+    border: '#fff',
+  },
+  {
+    name: 'Solo',
+    color: '#fff',
+    images: [
+      '/images/empirehatsolo.jpg',
+    ],
+    bg: '#f8f8f8',
+    border: '#bbb',
+  },
+  {
+    name: 'Male',
+    color: '#232323',
+    images: [
+      '/images/empirehatmale.jpg',
+    ],
+    bg: '#232323',
+    border: '#fff',
+  },
 ];
 
-export default function EmpireHatPage() {
+function EmpireHatPage() {
   const [isMobile, setIsMobile] = useState(false);
   const [currentImageIdx, setCurrentImageIdx] = useState(0);
   const [spacerHeight, setSpacerHeight] = useState(2200); // default fallback
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
+  const [selectedImageIdx, setSelectedImageIdx] = useState(0);
+  const [sizeDropdownOpen, setSizeDropdownOpen] = useState(false);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL"];
   const { addToCart } = useCart();
 
   useEffect(() => {
@@ -107,12 +135,15 @@ export default function EmpireHatPage() {
   }, [isMobile]);
 
   const handleAddToCart = () => {
+    if (!selectedSize) return;
     addToCart({
       productId: "empire-hat",
       name: PRODUCT.name,
       price: PRODUCT.price,
-      image: empireHatImages[0],
+      image: selectedColor.images[selectedImageIdx],
       quantity: 1,
+      size: selectedSize,
+      color: selectedColor.name,
     });
   };
 
@@ -152,23 +183,104 @@ export default function EmpireHatPage() {
           gap: isMobile ? 0 : 48,
         }}
       >
-        {/* Image left */}
-        <div style={{ position: 'relative', width: isMobile ? '80vw' : 400, height: isMobile ? '90vw' : 500, maxWidth: 500, maxHeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {empireHatImages.map((img, idx) => (
+        {/* Main image and thumbnails as a block */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          {/* Main image */}
+          <div style={{ position: 'relative', width: isMobile ? '80vw' : 400, height: isMobile ? '90vw' : 500, maxWidth: 500, maxHeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Image
-              key={img}
-              src={img}
+              key={selectedColor.images[selectedImageIdx]}
+              src={selectedColor.images[selectedImageIdx]}
               alt={PRODUCT.name}
               fill
               style={{
                 objectFit: 'contain',
-                opacity: currentImageIdx === idx ? 1 : 0,
+                opacity: 1,
                 transition: 'opacity 0.7s cubic-bezier(.7,-0.2,.3,1.2)',
                 zIndex: 2,
               }}
-              priority={idx === 0}
+              priority
             />
-          ))}
+          </div>
+          {/* Thumbnails: right of image on desktop, below on mobile */}
+          <div
+            className="flex gap-2 justify-center"
+            style={{
+              flexDirection: isMobile ? 'row' : 'column',
+              marginLeft: isMobile ? 0 : 18,
+              marginTop: isMobile ? 12 : 0,
+              pointerEvents: 'auto',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minWidth: isMobile ? undefined : 56,
+              width: isMobile ? '100%' : undefined,
+            }}
+          >
+            {selectedColor.images.map((img, idx) => (
+              <button
+                key={img}
+                onClick={() => setSelectedImageIdx(idx)}
+                style={{
+                  border: selectedImageIdx === idx ? '2px solid #3B82F6' : '1px solid #bbb',
+                  borderRadius: 8,
+                  padding: 0,
+                  width: 48,
+                  height: 48,
+                  background: '#fff',
+                  marginBottom: isMobile ? 0 : 8,
+                  marginRight: isMobile ? 8 : 0,
+                  boxShadow: selectedImageIdx === idx ? '0 0 0 2px #3B82F6' : '0 1px 4px 0 rgba(0,0,0,0.07)',
+                  cursor: 'pointer',
+                  overflow: 'hidden',
+                  display: 'inline-block',
+                }}
+                aria-label={`View image ${idx + 1} of ${selectedColor.name}`}
+              >
+                <Image src={img} alt={PRODUCT.name} width={48} height={48} style={{ objectFit: 'cover', borderRadius: 8 }} />
+              </button>
+            ))}
+          </div>
+          {/* Color Picker below image+thumbnails, always */}
+          <div className="flex gap-3 mb-4 px-1 justify-center" style={{ marginTop: 12, marginBottom: 24, paddingTop: 8, paddingBottom: 8, minHeight: 48, justifyContent: 'center', pointerEvents: 'auto', width: '100%' }}>
+            {colorOptions.map((opt) => (
+              <button
+                key={opt.name}
+                aria-label={opt.name}
+                onClick={() => {
+                  setSelectedColor(opt);
+                  setSelectedImageIdx(0);
+                }}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: opt.color,
+                  border: selectedColor.name === opt.name ? '2px solid #232323' : '2px solid #bbb',
+                  outline: selectedColor.name === opt.name ? '2px solid #3B82F6' : 'none',
+                  boxShadow: '0 1px 4px 0 rgba(0,0,0,0.10)',
+                  display: 'inline-block',
+                  cursor: 'pointer',
+                  marginRight: 4,
+                  position: 'relative',
+                  pointerEvents: 'auto',
+                }}
+              >
+                {/* For white or very light colors, add a gray dot in the center for visibility */}
+                {opt.color === '#fff' && (
+                  <span style={{
+                    position: 'absolute',
+                    left: '50%',
+                    top: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: 10,
+                    height: 10,
+                    borderRadius: '50%',
+                    background: '#bbb',
+                    opacity: 0.5,
+                  }} />
+                )}
+              </button>
+            ))}
+          </div>
         </div>
         {/* Text right */}
         <div
@@ -191,6 +303,40 @@ export default function EmpireHatPage() {
           }}
         >
           <h1 style={{ fontSize: 32, fontWeight: 700, margin: '0 0 10px 0' }}>{PRODUCT.name}</h1>
+          {/* Size Dropdown */}
+          <div style={{ marginBottom: 18, position: 'relative', width: 180, alignSelf: isMobile ? 'center' : 'flex-start' }}>
+            <button
+              className="border border-white text-white px-5 py-2 rounded-lg font-semibold flex items-center justify-between w-full bg-black hover:bg-gray-800"
+              style={{ minWidth: 120, fontSize: 16 }}
+              onClick={() => setSizeDropdownOpen((open) => !open)}
+              type="button"
+              aria-haspopup="listbox"
+              aria-expanded={sizeDropdownOpen}
+            >
+              {selectedSize ? `Size: ${selectedSize}` : "Select Size"}
+              <span style={{ marginLeft: 8, fontSize: 18 }}>{sizeDropdownOpen ? "▲" : "▼"}</span>
+            </button>
+            {sizeDropdownOpen && (
+              <ul
+                className="absolute left-0 right-0 mt-2 bg-black border border-gray-200 rounded-lg shadow-lg z-20"
+                style={{ listStyle: 'none', padding: 0, margin: 0 }}
+                role="listbox"
+              >
+                {sizeOptions.map((size) => (
+                  <li
+                    key={size}
+                    className={`px-5 py-2 cursor-pointer hover:bg-gray-900 ${selectedSize === size ? 'bg-gray-700 font-bold' : ''}`}
+                    style={{ fontSize: 16, borderBottom: size !== sizeOptions[sizeOptions.length-1] ? '1px solid #222' : 'none' }}
+                    onClick={() => { setSelectedSize(size); setSizeDropdownOpen(false); }}
+                    role="option"
+                    aria-selected={selectedSize === size}
+                  >
+                    {size}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
           <p style={{ fontSize: 18, margin: '0 0 18px 0' }}>{PRODUCT.description}</p>
           <div style={{ fontSize: 26, fontWeight: 600, marginBottom: 12 }}>${PRODUCT.price}</div>
           <button
@@ -206,10 +352,13 @@ export default function EmpireHatPage() {
               marginTop: 8,
               boxShadow: '0 2px 12px 0 rgba(0,0,0,0.10)',
               transition: 'background 0.2s, color 0.2s',
+              opacity: !selectedSize ? 0.5 : 1,
+              pointerEvents: !selectedSize ? 'none' : 'auto',
             }}
+            disabled={!selectedSize}
             onClick={handleAddToCart}
           >
-            Add to Cart
+            {!selectedSize ? 'Pick a size to add to cart' : 'Add to Cart'}
           </button>
         </div>
       </div>
@@ -253,3 +402,5 @@ export default function EmpireHatPage() {
     </>
   );
 }
+
+export default EmpireHatPage;

@@ -17,8 +17,14 @@ const PRODUCT = {
   description: "Modern tracksuit, comfortable and stylish for any occasion.",
 };
 
-export default function TracksuitPage() {
-  const [selectedImage, setSelectedImage] = useState(tracksuitImages[0]);
+function TracksuitPage() {
+  const colorOptions = [
+    { name: 'Black', color: '#232323', image: '/images/B&Wtracksuitmale1.jpeg', bg: '#232323' },
+    { name: 'Maroon', color: '#800000', image: '/images/maroontracksuitmale1.jpeg', bg: '#fbeaea' },
+    { name: 'Cover', color: '#b2bec3', image: '/images/tracksuitscovermodels.jpeg', bg: '#eaeaea' },
+  ];
+  const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
+  const [selectedImage, setSelectedImage] = useState(colorOptions[0].image);
   const [sizeDropdownOpen, setSizeDropdownOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL"];
@@ -34,6 +40,7 @@ export default function TracksuitPage() {
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
+      color: selectedColor.name,
     });
   };
 
@@ -75,15 +82,29 @@ export default function TracksuitPage() {
               priority
             />
           </div>
-          <div className="flex gap-2 justify-center">
-            {tracksuitImages.map((img) => (
+          {/* Color Picker */}
+          <div className="flex gap-3 mb-4 px-1 justify-center" style={{ overflowX: 'auto', marginBottom: 24, paddingTop: 8, paddingBottom: 8, minHeight: 48 }}>
+            {colorOptions.map((opt) => (
               <button
-                key={img}
-                onClick={() => setSelectedImage(img)}
-                className={`relative w-16 h-16 rounded border ${selectedImage === img ? "ring-2 ring-black" : ""}`}
-              >
-                <Image src={img} alt="Tracksuit" fill style={{ objectFit: "contain", background: "#fff" }} />
-              </button>
+                key={opt.name}
+                aria-label={opt.name}
+                onClick={() => {
+                  setSelectedColor(opt);
+                  setSelectedImage(opt.image);
+                }}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: opt.color,
+                  border: selectedColor.name === opt.name ? '2px solid #232323' : '2px solid #fff',
+                  outline: selectedColor.name === opt.name ? '2px solid #3B82F6' : 'none',
+                  boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #3B82F6' : '0 1px 4px 0 rgba(0,0,0,0.07)',
+                  display: 'inline-block',
+                  cursor: 'pointer',
+                  marginRight: 4,
+                }}
+              />
             ))}
           </div>
         </div>
@@ -139,3 +160,5 @@ export default function TracksuitPage() {
     </>
   );
 }
+
+export default TracksuitPage;

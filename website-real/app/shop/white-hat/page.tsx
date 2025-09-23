@@ -16,8 +16,13 @@ const PRODUCT = {
   description: "Crisp white hat, clean look for any outfit.",
 };
 
-export default function WhiteHatPage() {
-  const [selectedImage, setSelectedImage] = useState(whiteHatImages[0]);
+function WhiteHatPage() {
+  const colorOptions = [
+    { name: 'White', color: '#fff', image: '/images/whitehatmale1.jpeg', bg: '#f8f8f8', border: '#bbb' },
+    { name: 'Beige', color: '#e5d1b8', image: '/images/whitehatsolo.jpeg', bg: '#f7f3ed' },
+  ];
+  const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
+  const [selectedImage, setSelectedImage] = useState(colorOptions[0].image);
   const [sizeDropdownOpen, setSizeDropdownOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL"];
@@ -33,6 +38,7 @@ export default function WhiteHatPage() {
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
+      color: selectedColor.name,
     });
   };
 
@@ -74,15 +80,29 @@ export default function WhiteHatPage() {
               priority
             />
           </div>
-          <div className="flex gap-2 justify-center">
-            {whiteHatImages.map((img) => (
+          {/* Color Picker */}
+          <div className="flex gap-3 mb-4 px-1 justify-center" style={{ overflowX: 'auto', marginBottom: 24, paddingTop: 8, paddingBottom: 8, minHeight: 48 }}>
+            {colorOptions.map((opt) => (
               <button
-                key={img}
-                onClick={() => setSelectedImage(img)}
-                className={`relative w-16 h-16 rounded border ${selectedImage === img ? "ring-2 ring-black" : ""}`}
-              >
-                <Image src={img} alt="White Hat" fill style={{ objectFit: "contain", background: "#fff" }} />
-              </button>
+                key={opt.name}
+                aria-label={opt.name}
+                onClick={() => {
+                  setSelectedColor(opt);
+                  setSelectedImage(opt.image);
+                }}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: opt.color,
+                  border: selectedColor.name === opt.name ? '2px solid #232323' : (opt.border || '2px solid #fff'),
+                  outline: selectedColor.name === opt.name ? '2px solid #3B82F6' : 'none',
+                  boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #3B82F6' : '0 1px 4px 0 rgba(0,0,0,0.07)',
+                  display: 'inline-block',
+                  cursor: 'pointer',
+                  marginRight: 4,
+                }}
+              />
             ))}
           </div>
         </div>
@@ -138,3 +158,5 @@ export default function WhiteHatPage() {
     </>
   );
 }
+
+export default WhiteHatPage;
