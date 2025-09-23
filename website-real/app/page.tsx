@@ -4,10 +4,10 @@ import { animate } from "animejs"
 import { useRef, useEffect, useState, useContext } from "react"
 import { LogoVisibilityContext } from "../components/ClientRootLayout"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
 import ProductsGridHome from "../components/ProductsGridHome"
 import { SignupModal } from "../components/SIgnUpModal"
 import { useScrollTrigger } from "../hooks/useScrollTrigger"
+import StaggeredMenu from "../components/StagerredMenu"
 
 export default function Home() {
   const { setHideLogo } = useContext(LogoVisibilityContext)
@@ -43,14 +43,12 @@ export default function Home() {
     }
   }, [showMain, setHideLogo])
   const [showScrollArrow, setShowScrollArrow] = useState(false)
-  const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalDismissed, setModalDismissed] = useState(false) // Track if user manually closed modal
   
-  const [menuButtonState, setMenuButtonState] = useState<"burger" | "close">("burger")
   const secondVideoRef = useRef<HTMLVideoElement>(null)
 
   // Hide logo during intro, show after
@@ -200,9 +198,6 @@ export default function Home() {
     }
   }, [showMain])
 
-  const menuRef = useRef<HTMLDivElement>(null)
-  const menuButtonRef = useRef<HTMLButtonElement>(null)
-  const menuItemsRef = useRef<(HTMLButtonElement | null)[]>([])
   const titleRef = useRef<HTMLHeadingElement>(null)
   const subtitleRef = useRef<HTMLParagraphElement>(null)
   const logoRef = useRef<HTMLDivElement>(null)
@@ -229,7 +224,6 @@ export default function Home() {
     }
     return true;
   });
-  const [isMobile, setIsMobile] = useState(false)
 
   // Translations for 'Fruitstand' in different languages (unchanged)
   const fruitstandTranslations = [
@@ -244,20 +238,6 @@ export default function Home() {
     "フルーツスタンド", // Japanese
     "فروٹ اسٹینڈ", // Urdu
   ]
-
-  // Detect mobile screen size
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768)
-    }
-    
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
-
 
   useEffect(() => {
     if (titleRef.current && showLangFlip) {
@@ -329,47 +309,6 @@ export default function Home() {
       return () => clearInterval(langFlipInterval)
     }
   }, [fruitstandTranslations.length, showLangFlip])
-
-  // Function to close the menu
-  const closeMenu = () => {
-    setMenuOpen(false)
-    setMenuButtonState("burger")
-  }
-
-  // Function to open the menu
-  const openMenu = () => {
-    setMenuOpen(true)
-    setMenuButtonState("close")
-  }
-
-  // Handle navigation clicks (unchanged)
-  const handleNavClick = (navItem: string) => {
-    // Add a small delay before closing to show the selection
-    setTimeout(() => {
-      closeMenu()
-    }, 200)
-
-    switch (navItem) {
-      case "SHOP":
-        console.log("🛍️ Opening Shop - Browse our fruit collection!")
-        router.push("/shop")
-        break
-      case "ACCOUNT":
-        console.log("👤 Account accessed")
-        router.push("/account")
-        break
-      case "CART":
-        console.log("🛒 Cart opened")
-        router.push("/cart")
-        break
-      case "CONTACT":
-        console.log("📞 Contact page accessed")
-        router.push("/contact")
-        break
-      default:
-        console.log(`Navigating to ${navItem}`)
-    }
-  }
 
   return (
     <>
@@ -667,264 +606,88 @@ export default function Home() {
         </div>
       )}
 
-      {/* Top header FRUITSTAND text and menu button only after transition */}
+      {/* StaggeredMenu Component */}
       {showMain && (
-        <>
-          {/* Header */}
-          <div
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100vw",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 10002,
-              pointerEvents: "none",
-              height: "80px",
-            }}
-          ></div>
-          {/* Animated Menu Button */}
-          <div style={{ position: "fixed", top: "clamp(15px, 4vw, 20px)", right: "clamp(15px, 4vw, 20px)", zIndex: 10001 }}>
-            <button
-              ref={menuButtonRef}
+        <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 10001, pointerEvents: "auto" }}>
+          <StaggeredMenu
+            position="right"
+            colors={['#18191a', '#232324']}
+            className="custom-staggered-menu"
+            items={[
+              { label: "Shop", ariaLabel: "Browse our fruit collection", link: "/shop" },
+              { label: "Account", ariaLabel: "Access your account", link: "/account" },
+              { label: "Cart", ariaLabel: "View your cart", link: "/cart" },
+              { label: "Contact", ariaLabel: "Contact us", link: "/contact" }
+            ]}
+            socialItems={[
+              { label: "Instagram", link: "https://instagram.com" },
+              { label: "Twitter", link: "https://twitter.com" }
+            ]}
+            displaySocials={true}
+            displayItemNumbering={true}
+            logoUrl="/images/Fruitscale Logo.png"
+            menuButtonColor="#fff"
+            openMenuButtonColor="#fff"
+            changeMenuColorOnOpen={false}
+            accentColor="#ff6b6b"
+            onMenuOpen={() => setMenuOpen(true)}
+            onMenuClose={() => setMenuOpen(false)}
+          />
+          
+          {/* Image Placeholder - positioned over the menu panel */}
+          {menuOpen && (
+            <div
               style={{
-                width: "clamp(50px, 12vw, 60px)",
-                height: "clamp(50px, 12vw, 60px)",
-                background: "rgba(0, 0, 0, 0.1)",
-                border: "2px solid rgba(0, 0, 0, 0.3)",
-                borderRadius: "50%",
-                cursor: "pointer",
+                position: "absolute",
+                top: "50%",
+                left: "clamp(20px, 4vw, 60px)",
+                transform: "translateY(-50%)",
+                width: "clamp(200px, 25vw, 350px)",
+                height: "clamp(150px, 20vh, 300px)",
+                background: "rgba(255, 255, 255, 0.1)",
+                borderRadius: "clamp(12px, 3vw, 24px)",
+                border: "2px dashed rgba(255, 255, 255, 0.3)",
                 display: "flex",
-                flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: "4px",
-                backdropFilter: "blur(10px)",
-                transition: "all 0.3s ease",
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                willChange: "transform, opacity",
-              }}
-              onClick={openMenu}
-              onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-                e.currentTarget.style.background = "rgba(0, 0, 0, 0.2)"
-                e.currentTarget.style.transform = "scale(1.05)"
-              }}
-              onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-                e.currentTarget.style.background = "rgba(0, 0, 0, 0.1)"
-                e.currentTarget.style.transform = "scale(1)"
+                zIndex: 5,
+                pointerEvents: "none",
               }}
             >
-              {/* Hamburger lines */}
-              <div
-                style={{
-                  width: "clamp(20px, 5vw, 24px)",
-                  height: "2px",
-                  background: "black",
-                  borderRadius: "2px",
-                  transform: menuButtonState === "close" ? "rotate(45deg) translateY(6px)" : "none",
-                  transition: "all 0.3s ease",
-                }}
-              />
-              <div
-                style={{
-                  width: "clamp(20px, 5vw, 24px)",
-                  height: "2px",
-                  background: "black",
-                  borderRadius: "2px",
-                  opacity: menuButtonState === "close" ? 0 : 1,
-                  transition: "all 0.3s ease",
-                }}
-              />
-              <div
-                style={{
-                  width: "clamp(20px, 5vw, 24px)",
-                  height: "2px",
-                  background: "black",
-                  borderRadius: "2px",
-                  transform: menuButtonState === "close" ? "rotate(-45deg) translateY(-6px)" : "none",
-                  transition: "all 0.3s ease",
-                }}
-              />
-            </button>
-          </div>
-          {/* Simple crossfade menu overlay, no blocks */}
-          {/* Menu Overlay (crossfade only) */}
-          {menuOpen && (
-            <>
-              {/* Scroll blocking overlay */}
-              <div
-                style={{
-                  position: "fixed",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  height: "calc(var(--app-vh) * 100)",
-                  zIndex: 20001,
-                  background: "transparent",
-                  pointerEvents: "none",
-                }}
-                onWheel={(e: React.WheelEvent<HTMLDivElement>) => e.preventDefault()}
-                onTouchMove={(e: React.TouchEvent<HTMLDivElement>) => e.preventDefault()}
-                onScroll={(e: React.UIEvent<HTMLDivElement>) => e.preventDefault()}
-              />
-              {/* Menu content */}
-            <div
-              ref={menuRef}
-              style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "calc(var(--app-vh) * 100)",
-                zIndex: 20002,
-                display: "flex",
-                flexDirection: isMobile ? "column" : "row",
-                alignItems: "center",
-                justifyContent: isMobile ? "center" : "space-between",
-                background: "#18191a",
-                opacity: 1,
-                willChange: "opacity, transform",
-                contain: "paint layout size",
-                padding: "clamp(20px, 5vw, 40px)",
-                overflow: "hidden",
-                gap: isMobile ? "clamp(20px, 5vw, 40px)" : "0",
-                overscrollBehavior: "none",
-                paddingTop: "env(safe-area-inset-top)",
-                paddingBottom: "env(safe-area-inset-bottom)",
-              }}
-              onWheel={(e: React.WheelEvent<HTMLDivElement>) => e.preventDefault()}
-              onTouchMove={(e: React.TouchEvent<HTMLDivElement>) => e.preventDefault()}
-              onScroll={(e: React.UIEvent<HTMLDivElement>) => e.preventDefault()}
-            >
-              {/* Left side placeholder */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: isMobile ? "100%" : "clamp(20%, 250px, 30%)",
-                  height: isMobile ? "clamp(150px, 30vh, 40vh)" : "100%",
-                  contain: "paint layout size",
-                  flexShrink: 0,
-                  padding: isMobile ? "15px" : "clamp(20px, 3vw, 40px)",
-                  marginLeft: isMobile ? "0" : "clamp(30px, 4vw, 60px)",
-                  background: "rgba(255, 255, 255, 0.1)",
-                  borderRadius: "clamp(12px, 3vw, 48px)",
-                  border: "2px dashed rgba(255, 255, 255, 0.3)",
-                }}
-              >
-                <div style={{
-                  color: "rgba(255, 255, 255, 0.6)",
-                  fontSize: "clamp(14px, 3vw, 18px)",
-                  textAlign: "center",
-                  padding: "20px",
-                }}>
-                  Image Placeholder
-                </div>
-              </div>
-              {/* Menu: Right side */}
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  width: isMobile ? "100%" : "clamp(55%, 180px, 65%)",
-                  height: isMobile ? "auto" : "100%",
-                  flexGrow: 1,
-                  paddingRight: isMobile ? "0" : "clamp(30px, 4vw, 60px)",
-                  paddingLeft: isMobile ? "0" : "clamp(20px, 3vw, 40px)",
-                }}
-              >
-                {["SHOP", "ACCOUNT", "CART", "CONTACT"].map((nav, index) => (
-                  <button
-                    key={nav}
-                    ref={(el) => {
-                      menuItemsRef.current[index] = el
-                    }}
-                    style={{
-                      margin: "clamp(8px, 2vw, 12px) 0",
-                      padding: "clamp(12px, 3vw, 15px) clamp(16px, 4vw, 30px)",
-                      fontSize: "clamp(16px, 5vw, 24px)",
-                      fontWeight: "bold",
-                      background: "transparent",
-                      color: "rgba(255, 255, 255, 0.9)",
-                      border: "none",
-                      borderRadius: "0",
-                      boxShadow: "none",
-                      cursor: "pointer",
-                      transition: "all 0.3s ease",
-                      opacity: 1,
-                      transform: "translateY(0px) scale(1)",
-                      willChange: "transform, opacity",
-                      backfaceVisibility: "hidden",
-                      WebkitBackfaceVisibility: "hidden",
-                      minHeight: "clamp(40px, 10vw, 50px)", // Touch-friendly minimum height
-                      WebkitTapHighlightColor: "transparent",
-                      touchAction: "manipulation",
-                    }}
-                    onClick={() => handleNavClick(nav)}
-                  >
-                    {nav === "SHOP" && "🛍️ "}
-                    {nav === "ACCOUNT" && "👤 "}
-                    {nav === "CART" && "🛒 "}
-                    {nav === "CONTACT" && "📞 "}
-                    {nav}
-                  </button>
-                ))}
-                <button
-                  ref={(el) => {
-                    menuItemsRef.current[4] = el
-                  }}
-                  style={{
-                    marginTop: "clamp(15px, 4vw, 25px)",
-                    padding: "clamp(12px, 3vw, 15px) clamp(16px, 4vw, 24px)",
-                    fontSize: "clamp(12px, 3vw, 16px)",
-                    background: "transparent",
-                    color: "rgba(255, 255, 255, 0.7)",
-                    border: "none",
-                    borderRadius: "0",
-                    cursor: "pointer",
-                    backdropFilter: "none",
-                    transition: "all 0.3s ease",
-                    opacity: 1,
-                    transform: "translateY(0px) scale(1)",
-                    willChange: "transform, opacity",
-                    minHeight: "clamp(36px, 8vw, 44px)", // Touch-friendly minimum height
-                    WebkitTapHighlightColor: "transparent",
-                    touchAction: "manipulation",
-                    textShadow: "none",
-                  }}
-                  onClick={closeMenu}
-                  onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-                    e.currentTarget.style.background = "rgba(0, 0, 0, 0.2)"
-                    e.currentTarget.style.transform = "scale(1.05)"
-                  }}
-                  onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-                    e.currentTarget.style.background = "rgba(0, 0, 0, 0.1)"
-                    e.currentTarget.style.transform = "scale(1)"
-                  }}
-                  onTouchStart={(e: React.TouchEvent<HTMLButtonElement>) => {
-                    e.currentTarget.style.background = "rgba(0, 0, 0, 0.2)"
-                    e.currentTarget.style.transform = "scale(1.05)"
-                  }}
-                  onTouchEnd={(e: React.TouchEvent<HTMLButtonElement>) => {
-                    setTimeout(() => {
-                      e.currentTarget.style.background = "rgba(0, 0, 0, 0.1)"
-                      e.currentTarget.style.transform = "scale(1)"
-                    }, 100)
-                  }}
-                >
-                  ✕ Close
-                </button>
+              <div style={{
+                color: "rgba(255, 255, 255, 0.6)",
+                fontSize: "clamp(14px, 3vw, 18px)",
+                textAlign: "center",
+                padding: "20px",
+              }}>
+                Image Placeholder
               </div>
             </div>
-            </>
           )}
-        </>
+        </div>
       )}
+
+      {/* Custom styles for StaggeredMenu visibility */}
+      <style>{`
+        .custom-staggered-menu .sm-toggle {
+          background: rgba(0, 0, 0, 0.3) !important;
+          border: 2px solid rgba(255, 255, 255, 0.8) !important;
+          border-radius: 50% !important;
+          width: 50px !important;
+          height: 50px !important;
+          backdrop-filter: blur(10px) !important;
+          color: white !important;
+        }
+        .custom-staggered-menu .sm-toggle:hover {
+          background: rgba(0, 0, 0, 0.5) !important;
+          transform: scale(1.05) !important;
+        }
+        .custom-staggered-menu[data-open] .sm-toggle {
+          background: rgba(255, 255, 255, 0.2) !important;
+          border-color: rgba(255, 255, 255, 0.9) !important;
+          color: white !important;
+        }
+      `}</style>
     </div>
     <footer style={{
       width: '100vw',

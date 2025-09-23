@@ -1,45 +1,12 @@
 "use client"
 
 import { motion } from "framer-motion"
-import Link from "next/link"
 import { useState } from "react"
 import Navbar from "../../components/Navbar"
+import ProductsGrid from "../../components/ProductsGridHome"
 
 export default function ShopPage() {
   const [isShopDropdownOpen, setIsShopDropdownOpen] = useState(false)
-
-  const categories = [
-    {
-      name: "T-Shirts",
-      href: "/tshirts",
-      image: "/images//black1.jpeg",
-      description: "Fresh and vibrant t-shirts for every occasion",
-    },
-    {
-      name: "Tracksuits",
-      href: "/tracksuits",
-      image: "/images/black2.jpeg",
-      description: "Comfortable tracksuits for active lifestyles",
-    },
-    {
-      name: "Jerseys",
-      href: "/jerseys",
-      image: "/images/green1.jpeg",
-      description: "Premium jerseys for sports enthusiasts",
-    },
-    {
-      name: "Hats",
-      href: "/hats",
-      image: "/images/white1.jpeg",
-      description: "Trendy hats to complete your look",
-    },
-    {
-      name: "Socks",
-      href: "/socks",
-      image: "/images/red1.jpeg",
-      description: "Comfortable and stylish socks for every day",
-    },
-  ]
 
   return (
   <div className="min-h-screen" style={{ background: '#fff' }}>
@@ -68,40 +35,9 @@ export default function ShopPage() {
         </div>
       </div>
 
-      {/* Categories Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {categories.map((category, index) => (
-            <motion.div
-              key={category.name}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-            >
-              <Link href={category.href} className="group block">
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                  <div className="p-4 sm:p-6">
-                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors">
-                      {category.name}
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed text-sm sm:text-base">{category.description}</p>
-                    <div className="mt-4 flex items-center text-emerald-600 font-medium group-hover:text-emerald-700">
-                      Shop Now
-                      <svg
-                        className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+      {/* Products Grid */}
+      <div className="pb-16">
+        <ProductsGrid />
       </div>
 
       {/* Featured Section */}
