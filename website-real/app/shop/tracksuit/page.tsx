@@ -1,7 +1,8 @@
 "use client";
 import Image from "next/image";
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import CartBar from "../../../components/CartBar";
 import { useCart } from "../../../components/CartContext";
 
 const tracksuitImages = [
@@ -18,32 +19,24 @@ const PRODUCT = {
 
 export default function TracksuitPage() {
   const [selectedImage, setSelectedImage] = useState(tracksuitImages[0]);
-  const { addToCart, items } = useCart();
-  const [showPopup, setShowPopup] = useState(false);
-  const [popupPhase, setPopupPhase] = useState<'center'|'toTaskbar'|null>(null);
-  const popupRef = useRef<HTMLDivElement>(null);
+  const [sizeDropdownOpen, setSizeDropdownOpen] = useState(false);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL"];
   const router = useRouter();
+  const { addToCart } = useCart();
 
   const handleAddToCart = () => {
+    if (!selectedSize) return;
     addToCart({
       productId: "tracksuit",
       name: PRODUCT.name,
       price: PRODUCT.price,
-      image: tracksuitImages[0],
+      image: selectedImage,
       quantity: 1,
+      size: selectedSize,
     });
-    setShowPopup(true);
-    setPopupPhase('center');
-    setTimeout(() => {
-      setPopupPhase('toTaskbar');
-      setTimeout(() => {
-        setShowPopup(false);
-        setPopupPhase(null);
-      }, 500);
-    }, 900);
   };
 
-  const taskbarHeight = items.length > 0 && !showPopup ? 64 : 0;
   return (
     <>
       {/* Go Back text link top left */}
@@ -69,45 +62,80 @@ export default function TracksuitPage() {
       </span>
       <div
         className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
-        style={{ paddingBottom: taskbarHeight }}
       >
-      {/* Images */}
-      <div className="flex flex-col gap-4 md:w-1/2">
-        <div className="w-full rounded-lg overflow-hidden bg-white flex items-center justify-center" style={{ height: 600, minHeight: 600, position: 'relative' }}>
-          <Image
-            src={selectedImage}
-            alt={PRODUCT.name}
-            style={{ objectFit: "contain", background: "#fff" }}
-            fill
-            sizes="(max-width: 768px) 100vw, 500px"
-            priority
-          />
+        {/* Images */}
+        <div className="flex flex-col gap-4 md:w-1/2">
+          <div className="w-full rounded-lg overflow-hidden bg-white flex items-center justify-center" style={{ height: 600, minHeight: 600, position: 'relative' }}>
+            <Image
+              src={selectedImage}
+              alt={PRODUCT.name}
+              style={{ objectFit: "contain", background: "#fff" }}
+              fill
+              sizes="(max-width: 768px) 100vw, 500px"
+              priority
+            />
+          </div>
+          <div className="flex gap-2 justify-center">
+            {tracksuitImages.map((img) => (
+              <button
+                key={img}
+                onClick={() => setSelectedImage(img)}
+                className={`relative w-16 h-16 rounded border ${selectedImage === img ? "ring-2 ring-black" : ""}`}
+              >
+                <Image src={img} alt="Tracksuit" fill style={{ objectFit: "contain", background: "#fff" }} />
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex gap-2 justify-center">
-          {tracksuitImages.map((img) => (
+        {/* Product Info */}
+        <div className="md:w-1/2 flex flex-col justify-center">
+          <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
+          {/* Size Dropdown */}
+          <div style={{ marginBottom: 18, position: 'relative', width: 180 }}>
             <button
-              key={img}
-              onClick={() => setSelectedImage(img)}
-              className={`relative w-16 h-16 rounded border ${selectedImage === img ? "ring-2 ring-black" : ""}`}
+              className="border border-black text-black px-5 py-2 rounded-lg font-semibold flex items-center justify-between w-full bg-white hover:bg-gray-50"
+              style={{ minWidth: 120, fontSize: 16 }}
+              onClick={() => setSizeDropdownOpen((open) => !open)}
+              type="button"
+              aria-haspopup="listbox"
+              aria-expanded={sizeDropdownOpen}
             >
-              <Image src={img} alt="Tracksuit" fill style={{ objectFit: "contain", background: "#fff" }} />
+              {selectedSize ? `Size: ${selectedSize}` : "Select Size"}
+              <span style={{ marginLeft: 8, fontSize: 18 }}>{sizeDropdownOpen ? "▲" : "▼"}</span>
             </button>
-          ))}
+            {sizeDropdownOpen && (
+              <ul
+                className="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-20"
+                style={{ listStyle: 'none', padding: 0, margin: 0 }}
+                role="listbox"
+              >
+                {sizeOptions.map((size) => (
+                  <li
+                    key={size}
+                    className={`px-5 py-2 cursor-pointer hover:bg-gray-100 ${selectedSize === size ? 'bg-gray-200 font-bold' : ''}`}
+                    style={{ fontSize: 16, borderBottom: size !== sizeOptions[sizeOptions.length-1] ? '1px solid #eee' : 'none' }}
+                    onClick={() => { setSelectedSize(size); setSizeDropdownOpen(false); }}
+                    role="option"
+                    aria-selected={selectedSize === size}
+                  >
+                    {size}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <p className="text-lg text-gray-700 mb-4">{PRODUCT.description}</p>
+          <div className="text-2xl font-semibold mb-6">${PRODUCT.price}</div>
+          <button
+            className={`bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2 ${!selectedSize ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={!selectedSize}
+            onClick={handleAddToCart}
+          >
+            {!selectedSize ? 'Pick a size to add to cart' : 'Add to Cart'}
+          </button>
         </div>
       </div>
-      {/* Product Info */}
-      <div className="md:w-1/2 flex flex-col justify-center">
-        <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
-        <p className="text-lg mb-4">{PRODUCT.description}</p>
-        <div className="text-2xl font-semibold mb-6">${PRODUCT.price}</div>
-        <button
-          className="bg-black text-white px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-900 transition"
-          onClick={handleAddToCart}
-        >
-          Add to Cart
-        </button>
-      </div>
-      </div>
+      <CartBar />
     </>
   );
 }

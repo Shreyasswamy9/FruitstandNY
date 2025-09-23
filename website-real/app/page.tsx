@@ -28,10 +28,19 @@ export default function Home() {
     };
   }, []);
 
-  const [showMain, setShowMain] = useState(false)
+  // Only show intro if not already played this session
+  const [showMain, setShowMain] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !!window.sessionStorage.getItem('introPlayed');
+    }
+    return false;
+  });
   // Hide logo during intro, show after
   useEffect(() => {
     setHideLogo(!showMain)
+    if (showMain && typeof window !== 'undefined') {
+      window.sessionStorage.setItem('introPlayed', '1');
+    }
   }, [showMain, setHideLogo])
   const [showScrollArrow, setShowScrollArrow] = useState(false)
   const router = useRouter()
@@ -214,7 +223,12 @@ export default function Home() {
   }, [isTriggered, isModalOpen, modalDismissed])
 
   const [currentLangIndex, setCurrentLangIndex] = useState(0)
-  const [showLangFlip, setShowLangFlip] = useState(true)
+  const [showLangFlip, setShowLangFlip] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !window.sessionStorage.getItem('introPlayed');
+    }
+    return true;
+  });
   const [isMobile, setIsMobile] = useState(false)
 
   // Translations for 'Fruitstand' in different languages (unchanged)

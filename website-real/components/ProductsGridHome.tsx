@@ -35,6 +35,8 @@ export const products: Product[] = [
   { id: 10, name: "Beige Hat", price: "$40", image: "/images/beigehatfemale1.jpeg", hoverImage: "/images/beigehatsolo.jpeg" },
   // Empire Hat (NEW)
   { id: 11, name: "Empire Hat", price: "$42", image: "/images/empirehatfemale.jpg", hoverImage: "/images/empirehatsolo.jpg" },
+  // Product Page Tester (for skeleton testing)
+  { id: 99, name: "Product Page Tester", price: "$99", image: "/images/classicteemale1.jpeg", hoverImage: "/images/denimhatfemale1.jpeg" },
 ];
 
 export default function ProductsGrid() {
@@ -115,6 +117,8 @@ export default function ProductsGrid() {
               return "/shop/white-hat";
             case "Beige Hat":
               return "/shop/beige-hat";
+            case "Product Page Tester":
+              return "/shop/productpagetester";
             default:
               return `/products/${product.id}`;
           }

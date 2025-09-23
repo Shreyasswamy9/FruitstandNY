@@ -6,10 +6,18 @@ import { LogoVisibilityContext } from "./ClientRootLayout"
 export default function LogoButton() {
   const { hideLogo } = useContext(LogoVisibilityContext)
   if (hideLogo) return null
+  // On click, clear introPlayed so rotator plays again
+  const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.removeItem('introPlayed');
+    }
+    // Let navigation proceed
+  };
   return (
     <a
       href="/"
       aria-label="Home"
+      onClick={handleLogoClick}
       style={{
         position: "fixed",
   top: "clamp(0px, 2vw, 8px)",
