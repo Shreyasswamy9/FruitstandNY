@@ -9,40 +9,51 @@ export interface Product {
   price: string;
   image: string;
   hoverImage?: string;
+  category?: string;
 }
 
 // Editable product list for the homepage grid
 export const products: Product[] = [
   // Hockey Jersey
-  { id: 1, name: "Hockey Jersey", price: "$90", image: "/images/hockeyjerseymale1.jpeg", hoverImage: "/images/hockeyjerseymale2.jpeg" },
+  { id: 1, name: "Hockey Jersey", price: "$90", image: "/images/hockeyjerseymale1.jpeg", hoverImage: "/images/hockeyjerseymale2.jpeg", category: "Jerseys" },
   // Classic Tee (cover models)
-  { id: 2, name: "Classic Tee", price: "$55", image: "/images/classicteemale1.jpeg", hoverImage: "/images/classicteecovermodels.jpeg" },
+  { id: 2, name: "Classic Tee", price: "$55", image: "/images/classicteemale1.jpeg", hoverImage: "/images/classicteecovermodels.jpeg", category: "T-Shirts" },
   // Classic Tee (female)
-  { id: 3, name: "Classic Tee", price: "$55", image: "/images/classicteefemale1.jpeg", hoverImage: "/images/classicteefemale2.jpeg" },
+  { id: 3, name: "Classic Tee", price: "$55", image: "/images/classicteefemale1.jpeg", hoverImage: "/images/classicteefemale2.jpeg", category: "T-Shirts" },
   // Classic Tee (male)
-  { id: 4, name: "Classic Tee", price: "$55", image: "/images/classicteemale2.jpeg", hoverImage: "/images/classicteecovermodels.jpeg" },
+  { id: 4, name: "Classic Tee", price: "$55", image: "/images/classicteemale2.jpeg", hoverImage: "/images/classicteecovermodels.jpeg", category: "T-Shirts" },
   // Tracksuit (B&W)
-  { id: 5, name: "Tracksuit", price: "$120", image: "/images/B&Wtracksuitmale1.jpeg", hoverImage: "/images/tracksuitscovermodels.jpeg" },
+  { id: 5, name: "Tracksuit", price: "$120", image: "/images/B&Wtracksuitmale1.jpeg", hoverImage: "/images/tracksuitscovermodels.jpeg", category: "Tracksuits" },
   // Tracksuit (Maroon)
-  { id: 6, name: "Tracksuit", price: "$120", image: "/images/maroontracksuitmale1.jpeg", hoverImage: "/images/tracksuitscovermodels.jpeg" },
+  { id: 6, name: "Tracksuit", price: "$120", image: "/images/maroontracksuitmale1.jpeg", hoverImage: "/images/tracksuitscovermodels.jpeg", category: "Tracksuits" },
   // Denim Hat (male)
-  { id: 7, name: "Denim Hat", price: "$40", image: "/images/denimhatmale1.jpeg", hoverImage: "/images/denimhatmale2.jpeg" },
+  { id: 7, name: "Denim Hat", price: "$40", image: "/images/denimhatmale1.jpeg", hoverImage: "/images/denimhatmale2.jpeg", category: "Hats" },
   // Denim Hat (female)
-  { id: 8, name: "Denim Hat", price: "$40", image: "/images/denimhatfemale1.jpeg", hoverImage: "/images/denimhatsolo.jpeg" },
+  { id: 8, name: "Denim Hat", price: "$40", image: "/images/denimhatfemale1.jpeg", hoverImage: "/images/denimhatsolo.jpeg", category: "Hats" },
   // White Hat (male)
-  { id: 9, name: "White Hat", price: "$40", image: "/images/whitehatmale1.jpeg", hoverImage: "/images/whitehatsolo.jpeg" },
+  { id: 9, name: "White Hat", price: "$40", image: "/images/whitehatmale1.jpeg", hoverImage: "/images/whitehatsolo.jpeg", category: "Hats" },
   // Beige Hat (female)
-  { id: 10, name: "Beige Hat", price: "$40", image: "/images/beigehatfemale1.jpeg", hoverImage: "/images/beigehatsolo.jpeg" },
+  { id: 10, name: "Beige Hat", price: "$40", image: "/images/beigehatfemale1.jpeg", hoverImage: "/images/beigehatsolo.jpeg", category: "Hats" },
   // Empire Hat (NEW)
-  { id: 11, name: "Empire Hat", price: "$42", image: "/images/empirehatfemale.jpg", hoverImage: "/images/empirehatsolo.jpg" },
+  { id: 11, name: "Empire Hat", price: "$42", image: "/images/empirehatfemale.jpg", hoverImage: "/images/empirehatsolo.jpg", category: "Hats" },
   // Product Page Tester (for skeleton testing)
-  { id: 99, name: "Product Page Tester", price: "$99", image: "/images/classicteemale1.jpeg", hoverImage: "/images/denimhatfemale1.jpeg" },
+  { id: 99, name: "Product Page Tester", price: "$99", image: "/images/classicteemale1.jpeg", hoverImage: "/images/denimhatfemale1.jpeg", category: "T-Shirts" },
+  // Jacket (placeholder - can be updated with actual jacket images)
+  { id: 12, name: "Premium Jacket", price: "$150", image: "/images/classicteemale1.jpeg", hoverImage: "/images/classicteecovermodels.jpeg", category: "Jackets" },
 ];
 
-export default function ProductsGrid() {
+interface ProductsGridProps {
+  categoryFilter?: string | null;
+}
+
+export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {}) {
   const [hovered, setHovered] = useState<number | null>(null);
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
-  const gridProducts = products;
+  
+  // Filter products based on category
+  const gridProducts = categoryFilter 
+    ? products.filter(product => product.category === categoryFilter)
+    : products;
   // Store touch state for each product card
   const touchState = useRef<{ [key: number]: { start: number; moved: boolean } }>({});
   // Track which product is showing hover image on mobile

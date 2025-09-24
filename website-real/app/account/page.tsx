@@ -4,7 +4,8 @@
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Navbar from "../../components/Navbar";
+import StaggeredMenu from "../../components/StagerredMenu";
+import { motion } from "framer-motion";
 import { OrderService } from "@/lib/services/api";
 
 interface Order {
@@ -21,7 +22,7 @@ interface Order {
 }
 
 export default function AccountPage() {
-  const [isShopDropdownOpen, setIsShopDropdownOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -61,8 +62,7 @@ export default function AccountPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar isShopDropdownOpen={isShopDropdownOpen} setIsShopDropdownOpen={setIsShopDropdownOpen} />
+      <div className="min-h-screen" style={{ background: '#fff' }}>
         <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <div className="bg-white rounded-lg shadow-md p-8">
@@ -74,15 +74,42 @@ export default function AccountPage() {
             </div>
           </div>
         </div>
+        
+        {/* StaggeredMenu Component */}
+        <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 10001, pointerEvents: menuOpen ? "auto" : "none" }}>
+          <StaggeredMenu
+            position="right"
+            colors={['#18191a', '#232324']}
+            className="custom-staggered-menu"
+            items={[
+              { label: "Home", ariaLabel: "Go to homepage", link: "/" },
+              { label: "Collections", ariaLabel: "Browse collections", link: "/shop" },
+              { label: "Cart", ariaLabel: "View your cart", link: "/cart" },
+              { label: "Contact", ariaLabel: "Contact us", link: "/contact" },
+              { label: "Sign In/Sign Up", ariaLabel: "Sign in to your account", link: "/auth/signin" }
+            ]}
+            socialItems={[
+              { label: "Instagram", link: "https://instagram.com" },
+              { label: "Twitter", link: "https://twitter.com" }
+            ]}
+            displaySocials={true}
+            displayItemNumbering={true}
+            logoUrl="/images/Fruitscale Logo.png"
+            menuButtonColor="#000"
+            openMenuButtonColor="#000"
+            changeMenuColorOnOpen={false}
+            accentColor="#ff6b6b"
+            onMenuOpen={() => setMenuOpen(true)}
+            onMenuClose={() => setMenuOpen(false)}
+          />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar isShopDropdownOpen={isShopDropdownOpen} setIsShopDropdownOpen={setIsShopDropdownOpen} />
-
-      <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen" style={{ background: '#fff' }}>
+      <motion.div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8" style={{ position: 'relative', zIndex: 5 }}>
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-lg shadow-md p-8 mb-8">
             <div className="flex justify-between items-start mb-6">
@@ -191,7 +218,141 @@ export default function AccountPage() {
             )}
           </div>
         </div>
+      </motion.div>
+
+      {/* StaggeredMenu Component */}
+      <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 10001, pointerEvents: menuOpen ? "auto" : "none" }}>
+        <StaggeredMenu
+          position="right"
+          colors={['#18191a', '#232324']}
+          className="custom-staggered-menu"
+          items={[
+            { label: "Home", ariaLabel: "Go to homepage", link: "/" },
+            { label: "Collections", ariaLabel: "Browse collections", link: "/shop" },
+            { label: "Cart", ariaLabel: "View your cart", link: "/cart" },
+            { label: "Contact", ariaLabel: "Contact us", link: "/contact" },
+            { label: "Sign In/Sign Up", ariaLabel: "Sign in to your account", link: "/auth/signin" }
+          ]}
+          socialItems={[
+            { label: "Instagram", link: "https://instagram.com" },
+            { label: "Twitter", link: "https://twitter.com" }
+          ]}
+          displaySocials={true}
+          displayItemNumbering={true}
+          logoUrl="/images/Fruitscale Logo.png"
+          menuButtonColor="#000"
+          openMenuButtonColor="#000"
+          changeMenuColorOnOpen={false}
+          accentColor="#ff6b6b"
+          onMenuOpen={() => setMenuOpen(true)}
+          onMenuClose={() => setMenuOpen(false)}
+        />
+        
+        {/* Image Placeholder - positioned over the menu panel */}
+        {menuOpen && (
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "clamp(20px, 4vw, 60px)",
+              transform: "translateY(-50%)",
+              width: "clamp(200px, 25vw, 350px)",
+              height: "clamp(150px, 20vh, 300px)",
+              background: "rgba(255, 255, 255, 0.1)",
+              borderRadius: "clamp(12px, 3vw, 24px)",
+              border: "2px dashed rgba(255, 255, 255, 0.3)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "clamp(12px, 2vw, 16px)",
+              color: "rgba(255, 255, 255, 0.7)",
+              fontWeight: "300",
+              textAlign: "center",
+              padding: "clamp(16px, 4vw, 32px)",
+              backdropFilter: "blur(10px)",
+              zIndex: 10002,
+            }}
+          >
+            Featured Collection Image
+          </div>
+        )}
       </div>
+
+      {/* Custom styles for StaggeredMenu visibility */}
+      <style jsx>{`
+        /* Ensure menu button header is always clickable */
+        .custom-staggered-menu .staggered-menu-header {
+          pointer-events: auto !important;
+          position: relative !important;
+          z-index: 10003 !important;
+        }
+
+        .custom-staggered-menu .sm-toggle {
+          background: rgba(255, 255, 255, 0.9) !important;
+          border: 2px solid rgba(0, 0, 0, 0.1) !important;
+          color: #000 !important;
+          border-radius: 12px !important;
+          min-width: 80px !important;
+          height: 44px !important;
+          backdrop-filter: blur(10px) !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+          padding: 0 16px !important;
+          font-size: 14px !important;
+          font-weight: 500 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          transition: all 0.3s ease !important;
+          pointer-events: auto !important;
+          cursor: pointer !important;
+        }
+
+        .custom-staggered-menu .sm-toggle:hover {
+          background: rgba(255, 255, 255, 1) !important;
+          border-color: rgba(0, 0, 0, 0.2) !important;
+          transform: scale(1.05) !important;
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .custom-staggered-menu[data-open] .sm-toggle {
+          background: rgba(255, 255, 255, 0.2) !important;
+          border-color: rgba(255, 255, 255, 0.9) !important;
+          color: white !important;
+        }
+
+        /* When menu is open, allow interactions with the menu panel */
+        .custom-staggered-menu[data-open] {
+          pointer-events: auto !important;
+        }
+        
+        /* Force all menu components to be clickable */
+        .custom-staggered-menu * {
+          pointer-events: auto !important;
+        }
+        
+        /* Override for non-interactive areas when menu is closed */
+        .custom-staggered-menu:not([data-open]) .staggered-menu-panel {
+          pointer-events: none !important;
+        }
+
+        @media (max-width: 768px) {
+          .custom-staggered-menu .sm-toggle {
+            min-width: 60px !important;
+            height: 36px !important;
+            font-size: 12px !important;
+            padding: 0 12px !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .custom-staggered-menu .sm-toggle {
+            min-width: 50px !important;
+            height: 32px !important;
+            font-size: 11px !important;
+            padding: 0 10px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
