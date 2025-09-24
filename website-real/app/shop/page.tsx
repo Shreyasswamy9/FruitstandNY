@@ -165,38 +165,9 @@ export default function ShopPage() {
           openMenuButtonColor="#000"
           changeMenuColorOnOpen={false}
           accentColor="#ff6b6b"
-          onMenuOpen={() => setMenuOpen(true)}
+          onMenuOpen={() => {setMenuOpen(true)}}
           onMenuClose={() => setMenuOpen(false)}
         />
-        
-        {/* Image Placeholder - positioned over the menu panel */}
-        {menuOpen && (
-          <div
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "clamp(20px, 4vw, 60px)",
-              transform: "translateY(-50%)",
-              width: "clamp(200px, 25vw, 350px)",
-              height: "clamp(150px, 20vh, 300px)",
-              background: "rgba(255, 255, 255, 0.1)",
-              borderRadius: "clamp(12px, 3vw, 24px)",
-              border: "2px dashed rgba(255, 255, 255, 0.3)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "clamp(12px, 2vw, 16px)",
-              color: "rgba(255, 255, 255, 0.7)",
-              fontWeight: "300",
-              textAlign: "center",
-              padding: "clamp(16px, 4vw, 32px)",
-              backdropFilter: "blur(10px)",
-              zIndex: 10002,
-            }}
-          >
-            Featured Collection Image
-          </div>
-        )}
       </div>
 
       {/* Custom styles for StaggeredMenu visibility */}

@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 
@@ -28,9 +28,7 @@ export default function DenimHatPage() {
   const [selectedImage, setSelectedImage] = useState(colorOptions[0].image);
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
-  const popupRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const [sizeDropdownOpen, setSizeDropdownOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL"];
 
@@ -52,13 +50,45 @@ export default function DenimHatPage() {
   // Height of the taskbar (matches py-3 + px-2, but add extra for safety)
   const taskbarHeight = items.length > 0 && !showPopup ? 64 : 0;
 
+  // Sample data for "bought together" items
+  const boughtTogetherItems = [
+    { id: 'classic-tee', name: 'Classic Tee', price: 25, image: '/images/classicteemale1.jpeg' },
+    { id: 'white-hat', name: 'White Hat', price: 18, image: '/images/beigehatfemale1.jpeg' },
+    { id: 'tracksuit', name: 'Tracksuit', price: 45, image: '/images/B&Wtracksuitmale1.jpeg' },
+  ];
+
+  // Sample customer reviews
+  const customerReviews = [
+    {
+      id: 1,
+      name: 'Sarah M.',
+      rating: 5,
+      review: 'Perfect fit and great quality! The denim material feels premium and the hat looks exactly like the photos.',
+      date: '2 weeks ago'
+    },
+    {
+      id: 2,
+      name: 'Mike R.',
+      rating: 4,
+      review: 'Really comfortable and stylish. Goes well with any outfit. Shipping was fast too!',
+      date: '1 month ago'
+    },
+    {
+      id: 3,
+      name: 'Emma K.',
+      rating: 5,
+      review: 'Love this hat! The blue color is beautiful and it fits perfectly. Definitely recommending to friends.',
+      date: '3 weeks ago'
+    },
+  ];
+
   return (
-    <>
+    <div style={{ height: '100vh', overflowY: 'auto', scrollSnapType: 'y mandatory' }}>
       {/* Go Back text link top left */}
       <span
         onClick={() => router.back()}
         style={{
-          position: 'absolute',
+          position: 'fixed',
           top: 24,
           right: 24,
           fontSize: 18,
@@ -75,9 +105,17 @@ export default function DenimHatPage() {
       >
         Go Back
       </span>
+      
+      {/* Section 1: Product Details */}
       <div
         className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
-        style={{ paddingBottom: taskbarHeight }}
+        style={{ 
+          paddingBottom: taskbarHeight,
+          minHeight: '100vh',
+          scrollSnapAlign: 'start',
+          display: 'flex',
+          alignItems: 'center'
+        }}
       >
       {/* Images */}
       <div className="flex flex-col gap-4 md:w-1/2">
@@ -131,39 +169,26 @@ export default function DenimHatPage() {
             />
           ))}
         </div>
-        {/* Size Dropdown */}
-        <div style={{ marginBottom: 18, position: 'relative', width: 180 }}>
-          <button
-            className="border border-black text-black px-5 py-2 rounded-lg font-semibold flex items-center justify-between w-full bg-white hover:bg-gray-50"
-            style={{ minWidth: 120, fontSize: 16 }}
-            onClick={() => setSizeDropdownOpen((open) => !open)}
-            type="button"
-            aria-haspopup="listbox"
-            aria-expanded={sizeDropdownOpen}
-          >
-            {selectedSize ? `Size: ${selectedSize}` : "Select Size"}
-            <span style={{ marginLeft: 8, fontSize: 18 }}>{sizeDropdownOpen ? "▲" : "▼"}</span>
-          </button>
-          {sizeDropdownOpen && (
-            <ul
-              className="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-20"
-              style={{ listStyle: 'none', padding: 0, margin: 0 }}
-              role="listbox"
-            >
-              {sizeOptions.map((size) => (
-                <li
-                  key={size}
-                  className={`px-5 py-2 cursor-pointer hover:bg-gray-100 ${selectedSize === size ? 'bg-gray-200 font-bold' : ''}`}
-                  style={{ fontSize: 16, borderBottom: size !== sizeOptions[sizeOptions.length-1] ? '1px solid #eee' : 'none' }}
-                  onClick={() => { setSelectedSize(size); setSizeDropdownOpen(false); }}
-                  role="option"
-                  aria-selected={selectedSize === size}
-                >
-                  {size}
-                </li>
-              ))}
-            </ul>
-          )}
+        {/* Size Selection Buttons */}
+        <div style={{ marginBottom: 18 }}>
+          <p className="text-sm font-medium text-gray-700 mb-3">Size:</p>
+          <div className="flex gap-2 flex-wrap">
+            {sizeOptions.map((size) => (
+              <button
+                key={size}
+                className={`px-4 py-2 rounded-lg font-semibold border-2 transition-all ${
+                  selectedSize === size
+                    ? 'border-black bg-black text-white'
+                    : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'
+                }`}
+                style={{ minWidth: 48, fontSize: 14 }}
+                onClick={() => setSelectedSize(size)}
+                type="button"
+              >
+                {size}
+              </button>
+            ))}
+          </div>
         </div>
         <p className="text-lg text-gray-700 mb-4">{PRODUCT.description}</p>
         <div className="text-2xl font-semibold mb-6">${PRODUCT.price}</div>
@@ -176,7 +201,97 @@ export default function DenimHatPage() {
         </button>
         {/* Buy Now button removed as requested */}
       </div>
-    </div>
+      </div>
+
+      {/* Section 2: Items Bought Together */}
+      <div
+        style={{
+          minHeight: '100vh',
+          scrollSnapAlign: 'start',
+          display: 'flex',
+          alignItems: 'center',
+          background: '#f8f9fa'
+        }}
+        className="py-12 px-4"
+      >
+        <div className="max-w-4xl mx-auto w-full">
+          <h2 className="text-3xl font-bold text-center mb-8">Frequently Bought Together</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {boughtTogetherItems.map((item) => (
+              <div key={item.id} className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
+                <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden">
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    style={{ objectFit: "cover" }}
+                    sizes="(max-width: 768px) 100vw, 300px"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">{item.name}</h3>
+                <p className="text-lg font-bold text-gray-800 mb-4">${item.price}</p>
+                <button className="w-full bg-black text-white py-2 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors">
+                  Add to Cart
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+              Add All to Cart - Save 15%
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Section 3: Customer Reviews */}
+      <div
+        style={{
+          minHeight: '100vh',
+          scrollSnapAlign: 'start',
+          display: 'flex',
+          alignItems: 'center',
+          background: '#ffffff'
+        }}
+        className="py-12 px-4"
+      >
+        <div className="max-w-4xl mx-auto w-full">
+          <h2 className="text-3xl font-bold text-center mb-8">Customer Reviews</h2>
+          <div className="space-y-6">
+            {customerReviews.map((review) => (
+              <div key={review.id} className="bg-gray-50 rounded-lg p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center font-bold text-gray-700">
+                      {review.name.charAt(0)}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-lg">{review.name}</h4>
+                      <div className="flex items-center gap-1">
+                        {[...Array(5)].map((_, index) => (
+                          <span
+                            key={index}
+                            className={`text-lg ${index < review.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                          >
+                            ★
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-gray-500 text-sm">{review.date}</span>
+                </div>
+                <p className="text-gray-700 leading-relaxed">{review.review}</p>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <button className="bg-gray-800 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-700 transition-colors">
+              View All Reviews
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* No add to cart popup or animation */}
 
@@ -199,6 +314,6 @@ export default function DenimHatPage() {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
