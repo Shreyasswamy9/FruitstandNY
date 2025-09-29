@@ -3,7 +3,6 @@ import Image from "next/image";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
-import CartBar from "../../../components/CartBar";
 
 const whiteHatImages = [
   "/images/whitehatmale1.jpeg",
@@ -154,7 +153,6 @@ function WhiteHatPage() {
           </button>
         </div>
       </div>
-      <CartBar />
     </>
   );
 }

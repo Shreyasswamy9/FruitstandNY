@@ -2,7 +2,6 @@
 import Image from "next/image";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import CartBar from "../../../components/CartBar";
 import { useCart } from "../../../components/CartContext";
 
 const tracksuitImages = [
@@ -156,7 +155,6 @@ function TracksuitPage() {
           </button>
         </div>
       </div>
-      <CartBar />
     </>
   );
 }

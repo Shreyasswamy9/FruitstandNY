@@ -6,34 +6,68 @@ export default function CartBar() {
   const { items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
   const [showCartBar, setShowCartBar] = useState(false);
-  const prevCount = useRef(items.reduce((a, b) => a + b.quantity, 0));
-  const didMount = useRef(false);
+  const prevCount = useRef(0);
+  const isInitialized = useRef(false);
+  const popupTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
     const count = items.reduce((a, b) => a + b.quantity, 0);
-    if (!didMount.current) {
-      prevCount.current = count;
-      didMount.current = true;
+    
+    // On initial mount, get the previous count from localStorage
+    if (!isInitialized.current) {
+      const storedCount = typeof window !== 'undefined' ? 
+        parseInt(localStorage.getItem('cartCount') || '0') : 0;
+      prevCount.current = storedCount;
+      isInitialized.current = true;
       setShowCartBar(count > 0);
+      
+      // Update localStorage with current count
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('cartCount', count.toString());
+      }
       return;
     }
+    
+    // Only show popup if count actually increased (item was added)
     if (count > prevCount.current) {
+      // Clear any existing timeout
+      if (popupTimeoutRef.current) {
+        clearTimeout(popupTimeoutRef.current);
+      }
+      
       setShowPopup(true);
       // Only hide cart bar if this is the first item being added
       if (prevCount.current === 0) {
         setShowCartBar(false);
-        setTimeout(() => {
+        popupTimeoutRef.current = setTimeout(() => {
           setShowPopup(false);
           setTimeout(() => setShowCartBar(items.length > 0), 50);
         }, 1500);
       } else {
         // For subsequent adds, keep cart bar visible
-        setTimeout(() => setShowPopup(false), 1500);
+        popupTimeoutRef.current = setTimeout(() => setShowPopup(false), 1500);
       }
-    } else {
+    } else if (count < prevCount.current) {
+      // Item was removed, update cart bar visibility
       setShowCartBar(count > 0 && !showPopup);
     }
+    // If count is the same, don't do anything (no popup)
+    
     prevCount.current = count;
+    
+    // Update localStorage with current count
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cartCount', count.toString());
+    }
   }, [items]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (popupTimeoutRef.current) {
+        clearTimeout(popupTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <>
