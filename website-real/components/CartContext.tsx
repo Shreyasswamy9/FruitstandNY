@@ -22,23 +22,43 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // Load cart from localStorage on mount
   useEffect(() => {
     const stored = typeof window !== 'undefined' ? localStorage.getItem('cart') : null;
+    console.log('Loading cart from localStorage:', stored);
     if (stored) {
       try {
-        setItems(JSON.parse(stored));
-      } catch {}
+        const parsedItems = JSON.parse(stored);
+        console.log('Parsed cart items:', parsedItems);
+        setItems(parsedItems);
+      } catch (error) {
+        console.error('Error parsing cart from localStorage:', error);
+        localStorage.removeItem('cart'); // Clear corrupted data
+      }
+    }
+    setIsLoaded(true);
+  }, []);
+
+  // Listen for cart cleared event from success page
+  useEffect(() => {
+    const handleCartCleared = () => {
+      setItems([]);
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('cartCleared', handleCartCleared);
+      return () => window.removeEventListener('cartCleared', handleCartCleared);
     }
   }, []);
 
-  // Save cart to localStorage whenever it changes
+  // Save cart to localStorage whenever it changes (only after initial load)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (isLoaded && typeof window !== 'undefined') {
       localStorage.setItem('cart', JSON.stringify(items));
     }
-  }, [items]);
+  }, [items, isLoaded]);
 
   const addToCart = (item: CartItem) => {
     setItems(prev => {
@@ -58,7 +78,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setItems(prev => prev.filter(i => i.productId !== productId));
   };
 
-  const clearCart = () => setItems([]);
+  const clearCart = () => {
+    console.log('Cart cleared manually');
+    setItems([]);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('cart');
+    }
+  };
 
   return (
     <CartContext.Provider value={{ items, addToCart, removeFromCart, clearCart }}>
