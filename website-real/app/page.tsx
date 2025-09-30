@@ -626,8 +626,8 @@ export default function Home() {
             displayItemNumbering={true}
             logoUrl="/images/Fruitscale Logo.png"
             menuButtonColor="#fff"
-            openMenuButtonColor="#fff"
-            changeMenuColorOnOpen={false}
+            openMenuButtonColor="#000"
+            changeMenuColorOnOpen={true}
             accentColor="#ff6b6b"
             onMenuOpen={() => {}}
             onMenuClose={() => {}}
@@ -653,7 +653,7 @@ export default function Home() {
         .custom-staggered-menu[data-open] .sm-toggle {
           background: rgba(255, 255, 255, 0.2) !important;
           border-color: rgba(255, 255, 255, 0.9) !important;
-          color: white !important;
+          color: black !important;
         }
       `}</style>
     </div>

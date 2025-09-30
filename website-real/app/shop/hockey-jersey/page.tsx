@@ -47,6 +47,36 @@ export default function HockeyJerseyPage() {
     setTimeout(() => setShowPopup(false), 1500);
   };
 
+  // Handle adding items from "Frequently Bought Together" section
+  const handleAddBoughtTogetherItem = (item: { id: string; name: string; price: number; image: string }) => {
+    addToCart({
+      productId: item.id,
+      name: item.name,
+      price: item.price,
+      image: item.image,
+      quantity: 1,
+      size: "M", // Default size for bought together items
+    });
+    setShowPopup(true);
+    setTimeout(() => setShowPopup(false), 1500);
+  };
+
+  // Handle adding all items from "Frequently Bought Together" section
+  const handleAddAllToCart = () => {
+    boughtTogetherItems.forEach(item => {
+      addToCart({
+        productId: item.id,
+        name: item.name,
+        price: item.price * 0.85, // 15% discount
+        image: item.image,
+        quantity: 1,
+        size: "M", // Default size for bought together items
+      });
+    });
+    setShowPopup(true);
+    setTimeout(() => setShowPopup(false), 1500);
+  };
+
   // Height of the taskbar (matches py-3 + px-2, but add extra for safety)
   const taskbarHeight = items.length > 0 && !showPopup ? 64 : 0;
 
@@ -83,7 +113,7 @@ export default function HockeyJerseyPage() {
   ];
 
   return (
-    <div style={{ height: '100vh', overflowY: 'auto', scrollSnapType: 'y mandatory' }}>
+    <div style={{ height: '100vh', overflowY: 'auto' }}>
       {/* Go Back text link top left */}
       <span
         onClick={() => router.back()}
@@ -112,7 +142,6 @@ export default function HockeyJerseyPage() {
         style={{ 
           paddingBottom: taskbarHeight,
           minHeight: '100vh',
-          scrollSnapAlign: 'start',
           display: 'flex',
           alignItems: 'center'
         }}
@@ -207,7 +236,6 @@ export default function HockeyJerseyPage() {
       <div
         style={{
           minHeight: '100vh',
-          scrollSnapAlign: 'start',
           display: 'flex',
           alignItems: 'center',
           background: '#f8f9fa'
@@ -230,14 +258,20 @@ export default function HockeyJerseyPage() {
                 </div>
                 <h3 className="text-xl font-semibold mb-2">{item.name}</h3>
                 <p className="text-lg font-bold text-gray-800 mb-4">${item.price}</p>
-                <button className="w-full bg-black text-white py-2 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors">
+                <button 
+                  onClick={() => handleAddBoughtTogetherItem(item)}
+                  className="w-full bg-black text-white py-2 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors"
+                >
                   Add to Cart
                 </button>
               </div>
             ))}
           </div>
           <div className="text-center mt-8">
-            <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+            <button 
+              onClick={handleAddAllToCart}
+              className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+            >
               Add All to Cart - Save 15%
             </button>
           </div>
@@ -248,7 +282,6 @@ export default function HockeyJerseyPage() {
       <div
         style={{
           minHeight: '100vh',
-          scrollSnapAlign: 'start',
           display: 'flex',
           alignItems: 'center',
           background: '#ffffff'
