@@ -101,7 +101,7 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
           width: 'fit-content',
           margin: '0 auto',
           padding: isMobile ? '18px 0' : 0,
-          gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, auto)',
+          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, auto)',
           gridAutoRows: 'auto',
           gridAutoFlow: 'row dense',
           overflowX: 'visible',

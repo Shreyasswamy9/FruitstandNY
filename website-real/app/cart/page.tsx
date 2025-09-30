@@ -5,10 +5,16 @@ import StaggeredMenu from "../../components/StagerredMenu"
 import { motion } from "framer-motion"
 import { useCart } from "../../components/CartContext"
 import Image from "next/image"
+import { useCheckout } from "../../hooks/useCheckout"
 
 export default function CartPage() {
   const [menuOpen, setMenuOpen] = useState(false)
   const { items, removeFromCart, clearCart, addToCart } = useCart();
+  const { redirectToCheckout, loading: checkoutLoading, error: checkoutError } = useCheckout();
+
+  const getCartTotal = () => {
+    return items.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
 
   const updateQuantity = (productId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -25,10 +31,25 @@ export default function CartPage() {
     }
   };
 
-  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const shipping = subtotal >= 75 ? 0 : 8.99;
-  const tax = subtotal * 0.0875; // 8.75% tax
+  const subtotal = getCartTotal();
+  const shipping = subtotal >= 20 ? 0 : 8.99;
+  const isPriorityShipping = subtotal >= 125;
+  const tax = subtotal * 0.08875; // NY tax rate
   const total = subtotal + shipping + tax;
+
+  const handleCheckout = async () => {
+    if (items.length === 0) return;
+
+    try {
+      await redirectToCheckout({
+        items: items,
+        shipping: shipping,
+        tax: tax,
+      });
+    } catch (error) {
+      console.error('Checkout failed:', error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -206,18 +227,30 @@ export default function CartPage() {
                   
                   <div className="flex justify-between text-gray-600">
                     <span>Shipping</span>
-                    <span>{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span>
+                    <span>{shipping === 0 ? (isPriorityShipping ? 'FREE PRIORITY' : 'FREE') : `$${shipping.toFixed(2)}`}</span>
                   </div>
                   
-                  {shipping === 0 && (
+                  {shipping === 0 && isPriorityShipping && (
+                    <p className="text-sm text-purple-600 font-medium">
+                      ⚡ Priority shipping included!
+                    </p>
+                  )}
+                  
+                  {shipping === 0 && !isPriorityShipping && (
                     <p className="text-sm text-green-600 font-medium">
                       🎉 You qualify for free shipping!
                     </p>
                   )}
                   
-                  {shipping > 0 && (
+                  {subtotal < 20 && subtotal > 0 && (
                     <p className="text-sm text-gray-500">
-                      Spend ${(75 - subtotal).toFixed(2)} more for free shipping
+                      Add ${(20 - subtotal).toFixed(2)} more for free shipping
+                    </p>
+                  )}
+                  
+                  {subtotal >= 20 && subtotal < 125 && (
+                    <p className="text-sm text-purple-500">
+                      Add ${(125 - subtotal).toFixed(2)} more for priority shipping!
                     </p>
                   )}
                   
@@ -238,11 +271,26 @@ export default function CartPage() {
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
                   transition={{ duration: 0.15 }}
-                  className="w-full mt-8 py-4 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors"
+                  onClick={handleCheckout}
+                  disabled={items.length === 0 || checkoutLoading}
+                  className="w-full mt-8 py-4 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ willChange: "transform" }}
                 >
-                  Proceed to Checkout
+                  {checkoutLoading ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Processing...
+                    </div>
+                  ) : (
+                    'Proceed to Checkout'
+                  )}
                 </motion.button>
+                
+                {checkoutError && (
+                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-600 text-sm">{checkoutError}</p>
+                  </div>
+                )}
                 
                 <motion.a
                   href="/shop"
