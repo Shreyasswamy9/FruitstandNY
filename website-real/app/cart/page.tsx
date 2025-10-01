@@ -9,11 +9,54 @@ import { useCheckout } from "../../hooks/useCheckout"
 
 export default function CartPage() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [couponCode, setCouponCode] = useState("")
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number; type: 'percentage' | 'fixed' | 'shipping' } | null>(null)
+  const [couponError, setCouponError] = useState("")
+  const [couponLoading, setCouponLoading] = useState(false)
   const { items, removeFromCart, clearCart, addToCart } = useCart();
   const { redirectToCheckout, loading: checkoutLoading, error: checkoutError } = useCheckout();
 
   const getCartTotal = () => {
     return items.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
+
+  // Coupon validation function
+  const validateCoupon = async (code: string) => {
+    setCouponLoading(true);
+    setCouponError("");
+    
+    // Simulate API call - replace with actual coupon validation logic
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+      
+      // Mock coupon codes for demonstration
+      const validCoupons = {
+        'SAVE10': { discount: 10, type: 'percentage' as const },
+        'WELCOME20': { discount: 20, type: 'percentage' as const },
+        'SAVE5': { discount: 5, type: 'fixed' as const },
+        'FREESHIP': { discount: 0, type: 'shipping' as const },
+        'STUDENT15': { discount: 15, type: 'percentage' as const },
+      };
+      
+      const coupon = validCoupons[code.toUpperCase() as keyof typeof validCoupons];
+      
+      if (coupon) {
+        setAppliedCoupon({ code: code.toUpperCase(), ...coupon });
+        setCouponCode("");
+        setCouponError("");
+      } else {
+        setCouponError("Invalid coupon code. Please try again.");
+      }
+    } catch (error) {
+      setCouponError("Error validating coupon. Please try again.");
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponError("");
   };
 
   const updateQuantity = (productId: string, newQuantity: number) => {
@@ -34,8 +77,27 @@ export default function CartPage() {
   const subtotal = getCartTotal();
   const shipping = subtotal >= 20 ? 0 : 8.99;
   const isPriorityShipping = subtotal >= 125;
-  const tax = subtotal * 0.08875; // NY tax rate
-  const total = subtotal + shipping + tax;
+  
+  // Apply coupon discount
+  let discount = 0;
+  let discountedSubtotal = subtotal;
+  let freeShipping = shipping === 0;
+  
+  if (appliedCoupon) {
+    if (appliedCoupon.type === 'percentage') {
+      discount = subtotal * (appliedCoupon.discount / 100);
+      discountedSubtotal = subtotal - discount;
+    } else if (appliedCoupon.type === 'fixed') {
+      discount = Math.min(appliedCoupon.discount, subtotal);
+      discountedSubtotal = subtotal - discount;
+    } else if (appliedCoupon.type === 'shipping') {
+      freeShipping = true;
+    }
+  }
+  
+  const finalShipping = freeShipping ? 0 : shipping;
+  const tax = discountedSubtotal * 0.08875; // NY tax rate
+  const total = discountedSubtotal + finalShipping + tax;
 
   const handleCheckout = async () => {
     if (items.length === 0) return;
@@ -43,7 +105,7 @@ export default function CartPage() {
     try {
       await redirectToCheckout({
         items: items,
-        shipping: shipping,
+        shipping: finalShipping,
         tax: tax,
       });
     } catch (error) {
@@ -219,36 +281,113 @@ export default function CartPage() {
               >
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">Order Summary</h2>
                 
+                {/* Coupon Code Section */}
+                <div className="mb-6 p-4 bg-gray-50 rounded-xl">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-3">Promo Code</h3>
+                  
+                  {appliedCoupon ? (
+                    <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="text-sm font-medium text-green-700">
+                          {appliedCoupon.code} applied
+                        </span>
+                      </div>
+                      <button
+                        onClick={removeCoupon}
+                        className="text-green-600 hover:text-green-800 text-sm font-medium"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex space-x-2">
+                        <input
+                          type="text"
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                          placeholder="Enter promo code"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-sm"
+                          disabled={couponLoading}
+                        />
+                        <button
+                          onClick={() => validateCoupon(couponCode)}
+                          disabled={!couponCode.trim() || couponLoading}
+                          className="px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {couponLoading ? (
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          ) : (
+                            'Apply'
+                          )}
+                        </button>
+                      </div>
+                      
+                      {couponError && (
+                        <p className="text-red-500 text-xs mt-1">{couponError}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
                 <div className="space-y-4">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal</span>
                     <span>${subtotal.toFixed(2)}</span>
                   </div>
                   
+                  {appliedCoupon && discount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount ({appliedCoupon.code})</span>
+                      <span>-${discount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  
                   <div className="flex justify-between text-gray-600">
                     <span>Shipping</span>
-                    <span>{shipping === 0 ? (isPriorityShipping ? 'FREE PRIORITY' : 'FREE') : `$${shipping.toFixed(2)}`}</span>
+                    <span>
+                      {finalShipping === 0 ? (
+                        appliedCoupon?.type === 'shipping' ? (
+                          <span className="text-green-600">FREE (Promo)</span>
+                        ) : isPriorityShipping ? (
+                          'FREE PRIORITY'
+                        ) : (
+                          'FREE'
+                        )
+                      ) : (
+                        `$${finalShipping.toFixed(2)}`
+                      )}
+                    </span>
                   </div>
                   
-                  {shipping === 0 && isPriorityShipping && (
+                  {finalShipping === 0 && isPriorityShipping && appliedCoupon?.type !== 'shipping' && (
                     <p className="text-sm text-purple-600 font-medium">
                       ⚡ Priority shipping included!
                     </p>
                   )}
                   
-                  {shipping === 0 && !isPriorityShipping && (
+                  {finalShipping === 0 && !isPriorityShipping && appliedCoupon?.type !== 'shipping' && (
                     <p className="text-sm text-green-600 font-medium">
                       🎉 You qualify for free shipping!
                     </p>
                   )}
                   
-                  {subtotal < 20 && subtotal > 0 && (
+                  {appliedCoupon?.type === 'shipping' && (
+                    <p className="text-sm text-green-600 font-medium">
+                      🎫 Free shipping from promo code!
+                    </p>
+                  )}
+                  
+                  {subtotal < 20 && subtotal > 0 && appliedCoupon?.type !== 'shipping' && (
                     <p className="text-sm text-gray-500">
                       Add ${(20 - subtotal).toFixed(2)} more for free shipping
                     </p>
                   )}
                   
-                  {subtotal >= 20 && subtotal < 125 && (
+                  {subtotal >= 20 && subtotal < 125 && appliedCoupon?.type !== 'shipping' && (
                     <p className="text-sm text-purple-500">
                       Add ${(125 - subtotal).toFixed(2)} more for priority shipping!
                     </p>
