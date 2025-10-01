@@ -7,7 +7,7 @@ import { motion } from "framer-motion"
 import { useCart } from "../../components/CartContext"
 import Image from "next/image"
 import { useCheckout } from "../../hooks/useCheckout"
-import { useUser } from "@clerk/nextjs"
+import { useUser, SignInButton } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 
 export default function CartPage() {
@@ -138,7 +138,7 @@ export default function CartPage() {
 
     // Check if user is authenticated
     if (!isSignedIn && !showGuestCheckout) {
-      setShowSignInModal(true);
+      // Clerk will handle the sign in modal
       return;
     }
 
@@ -607,8 +607,6 @@ export default function CartPage() {
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                       Processing...
                     </div>
-                  ) : !isSignedIn && !showGuestCheckout ? (
-                    'Sign In to Checkout'
                   ) : (
                     'Proceed to Checkout'
                   )}
@@ -621,17 +619,16 @@ export default function CartPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <div className="flex-1">
-                        <h4 className="text-sm font-semibold text-blue-800 mb-1">Choose Your Checkout Method</h4>
+                        <h4 className="text-sm font-semibold text-blue-800 mb-1">Sign In or Continue as Guest</h4>
                         <p className="text-xs text-blue-700 mb-3">
-                          Create an account for faster future checkouts and exclusive offers, or continue as a guest.
+                          Sign in for faster checkout and exclusive offers, or continue as a guest.
                         </p>
                         <div className="flex flex-col space-y-2">
-                          <button
-                            onClick={() => router.push("/auth/signin?redirect=cart")}
-                            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                          >
-                            Sign In / Create Account
-                          </button>
+                          <SignInButton mode="modal">
+                            <button className="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                              Sign In for Faster Checkout
+                            </button>
+                          </SignInButton>
                           <button
                             onClick={handleContinueAsGuest}
                             className="px-4 py-2 border border-blue-300 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-50 transition-colors"
