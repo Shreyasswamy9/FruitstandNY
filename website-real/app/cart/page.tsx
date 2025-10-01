@@ -6,6 +6,8 @@ import { motion } from "framer-motion"
 import { useCart } from "../../components/CartContext"
 import Image from "next/image"
 import { useCheckout } from "../../hooks/useCheckout"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 export default function CartPage() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -13,8 +15,39 @@ export default function CartPage() {
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number; type: 'percentage' | 'fixed' | 'shipping' } | null>(null)
   const [couponError, setCouponError] = useState("")
   const [couponLoading, setCouponLoading] = useState(false)
+  const [showSignInModal, setShowSignInModal] = useState(false)
+  const [showGuestCheckout, setShowGuestCheckout] = useState(false)
+  const [guestFormErrors, setGuestFormErrors] = useState({
+    email: "",
+    firstName: "",
+    lastName: "",
+    phone: "",
+    street: "",
+    city: "",
+    state: "",
+    zipCode: ""
+  })
+  const [guestData, setGuestData] = useState({
+    email: "",
+    firstName: "",
+    lastName: "",
+    phone: "",
+    address: {
+      street: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      country: "US"
+    },
+    marketing: {
+      emailUpdates: false,
+      analytics: true
+    }
+  })
   const { items, removeFromCart, clearCart, addToCart } = useCart();
   const { redirectToCheckout, loading: checkoutLoading, error: checkoutError } = useCheckout();
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
   const getCartTotal = () => {
     return items.reduce((total, item) => total + (item.price * item.quantity), 0);
@@ -102,15 +135,168 @@ export default function CartPage() {
   const handleCheckout = async () => {
     if (items.length === 0) return;
 
+    // Check if user is authenticated
+    if (status === "unauthenticated" && !showGuestCheckout) {
+      setShowSignInModal(true);
+      return;
+    }
+
+    // For guest checkout, validate essential info
+    if (showGuestCheckout) {
+      if (!validateGuestForm()) {
+        // Error messages are already set by validateGuestForm()
+        return;
+      }
+    }
+
+    // Check if user has completed their profile (you'll need to add this to your user model)
+    // For now, we'll assume all authenticated users can checkout
+    // if (!session?.user?.profileComplete) {
+    //   router.push("/account/complete-profile?redirect=cart");
+    //   return;
+    // }
+
     try {
-      await redirectToCheckout({
-        items: items,
-        shipping: finalShipping,
-        tax: tax,
-      });
+      if (showGuestCheckout) {
+        // Guest checkout with collected data
+        await redirectToCheckout({
+          items: items,
+          shipping: finalShipping,
+          tax: tax,
+          guestData: {
+            email: guestData.email,
+            firstName: guestData.firstName,
+            lastName: guestData.lastName,
+            phone: guestData.phone,
+            address: guestData.address,
+          },
+        });
+      } else {
+        // Authenticated user checkout
+        await redirectToCheckout({
+          items: items,
+          shipping: finalShipping,
+          tax: tax,
+          customerData: session?.user ? {
+            email: session.user.email || "",
+            name: session.user.name || "",
+            // Add more user data if available from session
+          } : undefined,
+        });
+      }
     } catch (error) {
       console.error('Checkout failed:', error);
     }
+  };
+
+  // Validation functions
+  const validateEmail = (email: string): string => {
+    if (!email) return "Email is required";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return "Please enter a valid email address";
+    return "";
+  };
+
+  const validateZipCode = (zipCode: string): string => {
+    if (!zipCode) return "ZIP code is required";
+    const zipRegex = /^\d{5}(-\d{4})?$/;
+    if (!zipRegex.test(zipCode)) return "Please enter a valid ZIP code (e.g., 12345 or 12345-6789)";
+    return "";
+  };
+
+  const validatePhone = (phone: string): string => {
+    if (!phone) return ""; // Phone is optional
+    const phoneRegex = /^[\+]?[1-9][\d]{0,2}?[-\s\.]?[\(]?\d{3}[\)]?[-\s\.]?\d{3}[-\s\.]?\d{4}$/;
+    if (!phoneRegex.test(phone.replace(/\s/g, ''))) return "Please enter a valid phone number";
+    return "";
+  };
+
+  const validateRequired = (value: string, fieldName: string): string => {
+    if (!value || value.trim() === "") return `${fieldName} is required`;
+    return "";
+  };
+
+  const validateField = (field: string, value: string): string => {
+    switch (field) {
+      case "email":
+        return validateEmail(value);
+      case "firstName":
+        return validateRequired(value, "First name");
+      case "lastName":
+        return validateRequired(value, "Last name");
+      case "phone":
+        return validatePhone(value);
+      case "address.street":
+        return validateRequired(value, "Street address");
+      case "address.city":
+        return validateRequired(value, "City");
+      case "address.state":
+        return validateRequired(value, "State");
+      case "address.zipCode":
+        return validateZipCode(value);
+      default:
+        return "";
+    }
+  };
+
+  const handleGuestInputChange = (field: string, value: string | boolean) => {
+    // Clear error for this field when user starts typing
+    if (typeof value === "string") {
+      const errorKey = field.includes(".") ? field.split(".")[1] : field;
+      setGuestFormErrors(prev => ({
+        ...prev,
+        [errorKey]: ""
+      }));
+    }
+
+    // Update the form data
+    if (field.includes(".")) {
+      const [parent, child] = field.split(".");
+      setGuestData(prev => ({
+        ...prev,
+        [parent]: {
+          ...(prev[parent as keyof typeof guestData] as object),
+          [child]: value
+        }
+      }));
+    } else {
+      setGuestData(prev => ({
+        ...prev,
+        [field]: value
+      }));
+    }
+  };
+
+  const validateGuestForm = (): boolean => {
+    const errors = {
+      email: validateField("email", guestData.email),
+      firstName: validateField("firstName", guestData.firstName),
+      lastName: validateField("lastName", guestData.lastName),
+      phone: validateField("phone", guestData.phone),
+      street: validateField("address.street", guestData.address.street),
+      city: validateField("address.city", guestData.address.city),
+      state: validateField("address.state", guestData.address.state),
+      zipCode: validateField("address.zipCode", guestData.address.zipCode)
+    };
+
+    setGuestFormErrors(errors);
+
+    // Return true if no errors
+    return !Object.values(errors).some(error => error !== "");
+  };
+
+  const handleGuestCheckoutSubmit = async () => {
+    if (!validateGuestForm()) {
+      return; // Don't proceed if validation fails
+    }
+
+    // Proceed with checkout if validation passes
+    await handleCheckout();
+  };
+
+  const handleContinueAsGuest = () => {
+    setShowGuestCheckout(true);
+    setShowSignInModal(false);
   };
 
   return (
@@ -420,10 +606,44 @@ export default function CartPage() {
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                       Processing...
                     </div>
+                  ) : status === "unauthenticated" && !showGuestCheckout ? (
+                    'Sign In to Checkout'
                   ) : (
                     'Proceed to Checkout'
                   )}
                 </motion.button>
+                
+                {status === "unauthenticated" && !showGuestCheckout && (
+                  <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                    <div className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-blue-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-semibold text-blue-800 mb-1">Choose Your Checkout Method</h4>
+                        <p className="text-xs text-blue-700 mb-3">
+                          Create an account for faster future checkouts and exclusive offers, or continue as a guest.
+                        </p>
+                        <div className="flex flex-col space-y-2">
+                          <button
+                            onClick={() => router.push("/auth/signin?redirect=cart")}
+                            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                          >
+                            Sign In / Create Account
+                          </button>
+                          <button
+                            onClick={handleContinueAsGuest}
+                            className="px-4 py-2 border border-blue-300 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-50 transition-colors"
+                          >
+                            Continue as Guest
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+
                 
                 {checkoutError && (
                   <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -441,6 +661,212 @@ export default function CartPage() {
                 >
                   Continue Shopping
                 </motion.a>
+
+                {/* Guest Checkout Form - Moved below Continue Shopping */}
+                {showGuestCheckout && (
+                  <div className="mt-6 p-4 bg-gray-50 rounded-xl">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-sm font-semibold text-gray-800">Guest Checkout Information</h4>
+                      <button
+                        onClick={() => setShowGuestCheckout(false)}
+                        className="text-gray-500 hover:text-gray-700 text-sm"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {/* Contact Information */}
+                      <div>
+                        <h5 className="text-xs font-medium text-gray-700 mb-2">CONTACT INFORMATION</h5>
+                        <div className="space-y-3">
+                          <input
+                            type="email"
+                            placeholder="Email address *"
+                            value={guestData.email}
+                            onChange={(e) => handleGuestInputChange("email", e.target.value)}
+                            className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                              guestFormErrors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                            }`}
+                            required
+                          />
+                          {guestFormErrors.email && (
+                            <p className="text-red-500 text-xs mt-1">{guestFormErrors.email}</p>
+                          )}
+                          <div className="grid grid-cols-2 gap-3">
+                            <input
+                              type="text"
+                              placeholder="First name *"
+                              value={guestData.firstName}
+                              onChange={(e) => handleGuestInputChange("firstName", e.target.value)}
+                              className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                                guestFormErrors.firstName ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                              }`}
+                              required
+                            />
+                            {guestFormErrors.firstName && (
+                              <p className="text-red-500 text-xs mt-1">{guestFormErrors.firstName}</p>
+                            )}
+                            <input
+                              type="text"
+                              placeholder="Last name *"
+                              value={guestData.lastName}
+                              onChange={(e) => handleGuestInputChange("lastName", e.target.value)}
+                              className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                                guestFormErrors.lastName ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                              }`}
+                              required
+                            />
+                            {guestFormErrors.lastName && (
+                              <p className="text-red-500 text-xs mt-1">{guestFormErrors.lastName}</p>
+                            )}
+                          </div>
+                          <input
+                            type="tel"
+                            placeholder="Phone number"
+                            value={guestData.phone}
+                            onChange={(e) => handleGuestInputChange("phone", e.target.value)}
+                            className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                              guestFormErrors.phone ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                            }`}
+                          />
+                          {guestFormErrors.phone && (
+                            <p className="text-red-500 text-xs mt-1">{guestFormErrors.phone}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Shipping Address */}
+                      <div>
+                        <h5 className="text-xs font-medium text-gray-700 mb-2">SHIPPING ADDRESS</h5>
+                        <div className="space-y-3">
+                          <input
+                            type="text"
+                            placeholder="Street address *"
+                            value={guestData.address.street}
+                            onChange={(e) => handleGuestInputChange("address.street", e.target.value)}
+                            className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                              guestFormErrors.street ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                            }`}
+                            required
+                          />
+                          {guestFormErrors.street && (
+                            <p className="text-red-500 text-xs mt-1">{guestFormErrors.street}</p>
+                          )}
+                          <div className="grid grid-cols-3 gap-3">
+                            <div>
+                              <input
+                                type="text"
+                                placeholder="City *"
+                                value={guestData.address.city}
+                                onChange={(e) => handleGuestInputChange("address.city", e.target.value)}
+                                className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                                  guestFormErrors.city ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                                }`}
+                                required
+                              />
+                              {guestFormErrors.city && (
+                                <p className="text-red-500 text-xs mt-1">{guestFormErrors.city}</p>
+                              )}
+                            </div>
+                            <div>
+                              <input
+                                type="text"
+                                placeholder="State *"
+                                value={guestData.address.state}
+                                onChange={(e) => handleGuestInputChange("address.state", e.target.value)}
+                                className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                                  guestFormErrors.state ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                                }`}
+                                required
+                              />
+                              {guestFormErrors.state && (
+                                <p className="text-red-500 text-xs mt-1">{guestFormErrors.state}</p>
+                              )}
+                            </div>
+                            <div>
+                              <input
+                                type="text"
+                                placeholder="ZIP *"
+                                value={guestData.address.zipCode}
+                                onChange={(e) => handleGuestInputChange("address.zipCode", e.target.value)}
+                                className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                                  guestFormErrors.zipCode ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                                }`}
+                                required
+                              />
+                              {guestFormErrors.zipCode && (
+                                <p className="text-red-500 text-xs mt-1">{guestFormErrors.zipCode}</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Marketing Preferences */}
+                      <div className="pt-3 border-t border-gray-200">
+                        <div className="space-y-2">
+                          <label className="flex items-start">
+                            <input
+                              type="checkbox"
+                              checked={guestData.marketing.emailUpdates}
+                              onChange={(e) => handleGuestInputChange("marketing.emailUpdates", e.target.checked)}
+                              className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black mt-0.5"
+                            />
+                            <span className="ml-2 text-xs text-gray-600">
+                              Email me about new products and exclusive offers
+                            </span>
+                          </label>
+                          <label className="flex items-start">
+                            <input
+                              type="checkbox"
+                              checked={guestData.marketing.analytics}
+                              onChange={(e) => handleGuestInputChange("marketing.analytics", e.target.checked)}
+                              className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black mt-0.5"
+                            />
+                            <span className="ml-2 text-xs text-gray-600">
+                              Help improve our service with anonymous usage data
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="pt-3 border-t border-gray-200">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-gray-500">
+                            Want faster checkout next time?
+                          </p>
+                          <button
+                            onClick={() => router.push("/auth/signup?redirect=cart")}
+                            className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                          >
+                            Create Account
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Complete Guest Checkout Button */}
+                    <motion.button
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                      transition={{ duration: 0.15 }}
+                      onClick={handleGuestCheckoutSubmit}
+                      disabled={items.length === 0 || checkoutLoading}
+                      className="w-full mt-6 py-4 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{ willChange: "transform" }}
+                    >
+                      {checkoutLoading ? (
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                          Processing...
+                        </div>
+                      ) : (
+                        'Complete Guest Checkout'
+                      )}
+                    </motion.button>
+                  </div>
+                )}
                 
                 {/* Security Badges */}
                 <div className="mt-8 pt-6 border-t border-gray-200">

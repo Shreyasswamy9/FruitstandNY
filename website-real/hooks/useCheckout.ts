@@ -17,16 +17,43 @@ interface UseCheckoutProps {
   items: CheckoutItem[];
   shipping: number;
   tax: number;
+  guestData?: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    phone?: string;
+    address: {
+      street: string;
+      city: string;
+      state: string;
+      zipCode: string;
+      country: string;
+    };
+  };
+  customerData?: {
+    email: string;
+    name: string;
+    phone?: string;
+    address?: {
+      street: string;
+      city: string;
+      state: string;
+      zipCode: string;
+      country: string;
+    };
+  };
 }
 
 export const useCheckout = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const redirectToCheckout = async ({ items, shipping, tax }: UseCheckoutProps) => {
+  const redirectToCheckout = async ({ items, shipping, tax, guestData, customerData }: UseCheckoutProps) => {
     try {
       setLoading(true);
       setError(null);
+
+      console.log('Starting checkout with data:', { items, shipping, tax, guestData, customerData });
 
       const response = await fetch('/api/checkout', {
         method: 'POST',
@@ -37,30 +64,47 @@ export const useCheckout = () => {
           items,
           shipping,
           tax,
+          guestData,
+          customerData,
         }),
       });
 
+      console.log('Checkout API response status:', response.status);
+      console.log('Checkout API response ok:', response.ok);
+
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        const errorData = await response.json();
+        console.error('Checkout API error response:', errorData);
+        
+        // Show user-friendly error message
+        const errorMessage = errorData.error || `Network response was not ok: ${response.status}`;
+        throw new Error(errorMessage);
       }
 
-      const { sessionId } = await response.json();
+      const responseData = await response.json();
+      console.log('Checkout API response data:', responseData);
+      
+      const { sessionId } = responseData;
+
       const stripe = await stripePromise;
 
       if (!stripe) {
         throw new Error('Stripe failed to load');
       }
 
+      console.log('Redirecting to Stripe with sessionId:', sessionId);
+
       const { error } = await stripe.redirectToCheckout({
         sessionId,
       });
 
       if (error) {
+        console.error('Stripe redirect error:', error);
         throw new Error(error.message);
       }
     } catch (err) {
+      console.error('Full checkout error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
-      console.error('Checkout error:', err);
     } finally {
       setLoading(false);
     }

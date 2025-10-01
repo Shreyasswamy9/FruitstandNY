@@ -1,13 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-});
+console.log('Stripe secret key available:', !!process.env.STRIPE_SECRET_KEY);
+console.log('Base URL:', process.env.NEXT_PUBLIC_BASE_URL);
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(request: NextRequest) {
   try {
-    const { items, shipping, tax } = await request.json();
+    console.log('Checkout API called');
+    const requestData = await request.json();
+    console.log('Request data received:', requestData);
+    
+    const { items, shipping, tax, guestData, customerData } = requestData;
+
+    if (!items || items.length === 0) {
+      console.error('No items provided');
+      return NextResponse.json(
+        { error: 'No items provided' },
+        { status: 400 }
+      );
+    }
+
+    console.log('Processing items:', items);
+    console.log('Guest data:', guestData);
+    console.log('Customer data:', customerData);
+
+    // Server-side validation
+    const customerInfo = customerData || guestData;
+    
+    if (customerInfo && customerInfo.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(customerInfo.email)) {
+        console.error('Invalid email format:', customerInfo.email);
+        return NextResponse.json(
+          { error: 'Invalid email address format. Please enter a valid email address.' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validate required environment variables
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.error('Stripe secret key not configured');
+      return NextResponse.json(
+        { error: 'Payment system configuration error. Please try again later.' },
+        { status: 500 }
+      );
+    }
+
+    if (!process.env.NEXT_PUBLIC_BASE_URL) {
+      console.error('Base URL not configured');
+      return NextResponse.json(
+        { error: 'System configuration error. Please try again later.' },
+        { status: 500 }
+      );
+    }
 
     // Create line items for Stripe
     const lineItems = items.map((item: any) => ({
@@ -56,7 +104,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
+    // Prepare session configuration
+    const sessionConfig: any = {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
@@ -69,13 +118,29 @@ export async function POST(request: NextRequest) {
         allowed_countries: ['US', 'CA'],
       },
       billing_address_collection: 'required',
-    });
+    };
+
+    // If customer information is available, pre-fill the form
+    if (customerInfo && customerInfo.email) {
+      sessionConfig.customer_email = customerInfo.email;
+    }
+
+    // Add customer creation if we have enough info for returning customers
+    if (customerInfo && customerInfo.email && customerInfo.name) {
+      sessionConfig.customer_creation = 'always';
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
+    
+    console.log('Stripe session created successfully:', session.id);
+    console.log('Session config used:', sessionConfig);
 
     return NextResponse.json({ sessionId: session.id });
   } catch (error) {
     console.error('Error creating checkout session:', error);
+    console.error('Error details:', error);
     return NextResponse.json(
-      { error: 'Error creating checkout session' },
+      { error: 'Error creating checkout session', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
