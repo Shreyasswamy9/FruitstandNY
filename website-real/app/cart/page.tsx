@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
 import React, { useState } from "react"
@@ -6,7 +7,7 @@ import { motion } from "framer-motion"
 import { useCart } from "../../components/CartContext"
 import Image from "next/image"
 import { useCheckout } from "../../hooks/useCheckout"
-import { useSession } from "next-auth/react"
+import { useUser } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 
 export default function CartPage() {
@@ -46,7 +47,7 @@ export default function CartPage() {
   })
   const { items, removeFromCart, clearCart, addToCart } = useCart();
   const { redirectToCheckout, loading: checkoutLoading, error: checkoutError } = useCheckout();
-  const { data: session, status } = useSession();
+  const { isSignedIn, user } = useUser();
   const router = useRouter();
 
   const getCartTotal = () => {
@@ -80,7 +81,7 @@ export default function CartPage() {
       } else {
         setCouponError("Invalid coupon code. Please try again.");
       }
-    } catch (error) {
+    } catch{
       setCouponError("Error validating coupon. Please try again.");
     } finally {
       setCouponLoading(false);
@@ -136,7 +137,7 @@ export default function CartPage() {
     if (items.length === 0) return;
 
     // Check if user is authenticated
-    if (status === "unauthenticated" && !showGuestCheckout) {
+    if (!isSignedIn && !showGuestCheckout) {
       setShowSignInModal(true);
       return;
     }
@@ -177,9 +178,9 @@ export default function CartPage() {
           items: items,
           shipping: finalShipping,
           tax: tax,
-          customerData: session?.user ? {
-            email: session.user.email || "",
-            name: session.user.name || "",
+          customerData: user ? {
+            email: user.emailAddresses[0]?.emailAddress || "",
+            name: user.fullName || "",
             // Add more user data if available from session
           } : undefined,
         });
@@ -331,7 +332,7 @@ export default function CartPage() {
             </div>
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Your cart is empty</h2>
             <p className="text-gray-600 mb-8 max-w-md mx-auto">
-              Looks like you haven't added any items to your cart yet. Start shopping to fill it up!
+              Looks like you haven`t added any items to your cart yet. Start shopping to fill it up!
             </p>
             <motion.a
               href="/shop"
@@ -606,14 +607,14 @@ export default function CartPage() {
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                       Processing...
                     </div>
-                  ) : status === "unauthenticated" && !showGuestCheckout ? (
+                  ) : !isSignedIn && !showGuestCheckout ? (
                     'Sign In to Checkout'
                   ) : (
                     'Proceed to Checkout'
                   )}
                 </motion.button>
                 
-                {status === "unauthenticated" && !showGuestCheckout && (
+                {!isSignedIn && !showGuestCheckout && (
                   <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
                     <div className="flex items-start space-x-3">
                       <svg className="w-5 h-5 text-blue-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

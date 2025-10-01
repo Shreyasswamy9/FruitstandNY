@@ -1,8 +1,9 @@
 
-// removed duplicate React import
-
 import type { Metadata } from "next"
-import { AuthProvider } from "./providers/AuthProvider"
+import {
+  ClerkProvider
+} from '@clerk/nextjs'
+import { Geist, Geist_Mono } from 'next/font/google'
 import "./globals.css"
 import ClientRootLayout from "../components/ClientRootLayout"
 import { CartProvider } from "../components/CartContext"
@@ -13,6 +14,15 @@ declare global {
   }
 }
 
+const geistSans = Geist({
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
+})
+
+const geistMono = Geist_Mono({
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
+})
 
 export const metadata: Metadata = {
   title: "fruitstand - New Collection 2025",
@@ -33,16 +43,19 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className="antialiased">
-        <CartProvider>
-          <ClientRootLayout>
-            <AuthProvider>
+    <ClerkProvider>
+      <html lang="en">
+        <body 
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          suppressHydrationWarning
+        >
+          <CartProvider>
+            <ClientRootLayout>
               {children}
-            </AuthProvider>
-          </ClientRootLayout>
-        </CartProvider>
-      </body>
-    </html>
+            </ClientRootLayout>
+          </CartProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }

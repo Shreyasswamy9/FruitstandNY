@@ -152,7 +152,6 @@ export default function ShopPage() {
             { label: "Collections", ariaLabel: "Browse collections", link: "/shop" },
             { label: "Cart", ariaLabel: "View your cart", link: "/cart" },
             { label: "Contact", ariaLabel: "Contact us", link: "/contact" },
-            { label: "Sign In/Sign Up", ariaLabel: "Sign in to your account", link: "/auth/signin" }
           ]}
           socialItems={[
             { label: "Instagram", link: "https://instagram.com" },

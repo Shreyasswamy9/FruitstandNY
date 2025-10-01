@@ -2,6 +2,7 @@ import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { gsap } from 'gsap';
+import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton, useUser } from '@clerk/nextjs';
 
 export interface StaggeredMenuItem {
   label: string;
@@ -47,6 +48,8 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 }: StaggeredMenuProps) => {
   const [open, setOpen] = useState(false);
   const openRef = useRef(false);
+  const { user } = useUser();
+  const isAdmin = user?.publicMetadata?.role === 'admin';
 
   const panelRef = useRef<HTMLDivElement | null>(null);
   const preLayersRef = useRef<HTMLDivElement | null>(null);
@@ -427,6 +430,66 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
           aria-hidden={!open}
         >
           <div className="sm-panel-inner flex-1 flex flex-col gap-5">
+            {/* Authentication Section */}
+            <div className="mb-8">
+              <SignedIn>
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-4">
+                    <UserButton
+                      afterSignOutUrl="/"
+                      appearance={{
+                        elements: {
+                          avatarBox: "w-10 h-10",
+                          userButtonPopoverCard: "bg-white shadow-lg rounded-lg",
+                          userButtonPopoverActionButton: "text-sm text-gray-700 hover:bg-gray-100 w-full text-left px-4 py-2"
+                        }
+                      }}
+                    />
+                    <span className="text-lg font-medium">{user?.fullName || 'Welcome'}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Link
+                      href="/account"
+                      className="text-gray-700 hover:text-black transition-colors"
+                      onClick={() => {
+                        if (openRef.current) {
+                          toggleMenu();
+                        }
+                      }}
+                    >
+                      My Account
+                    </Link>
+                    {isAdmin && (
+                      <Link
+                        href="/admin"
+                        className="text-gray-700 hover:text-black transition-colors"
+                        onClick={() => {
+                          if (openRef.current) {
+                            toggleMenu();
+                          }
+                        }}
+                      >
+                        Admin Dashboard
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </SignedIn>
+              <SignedOut>
+                <div className="flex flex-col gap-3 mb-6">
+                  <SignInButton mode="modal">
+                    <button className="w-full py-2 px-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors">
+                      Sign In
+                    </button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <button className="w-full py-2 px-4 border-2 border-black text-black rounded-lg hover:bg-gray-100 transition-colors">
+                      Sign Up
+                    </button>
+                  </SignUpButton>
+                </div>
+              </SignedOut>
+            </div>
             <ul
               className="sm-panel-list list-none m-0 p-0 flex flex-col gap-2"
               role="list"

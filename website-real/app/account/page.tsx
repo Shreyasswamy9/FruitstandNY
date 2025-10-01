@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession, signOut } from "next-auth/react";
+import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import StaggeredMenu from "../../components/StagerredMenu";
 import { motion } from "framer-motion";
@@ -26,13 +26,13 @@ export default function AccountPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const { data: session, status } = useSession();
+  const { isLoaded, isSignedIn, user } = useUser();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "loading") return; // Still loading
+    if (!isLoaded) return; // Still loading
     
-    if (status === "unauthenticated") {
+    if (!isSignedIn) {
       router.push("/auth/signin");
       return;
     }
@@ -51,16 +51,16 @@ export default function AccountPage() {
       }
     };
 
-    if (session) {
+    if (isSignedIn) {
       fetchOrders();
     }
-  }, [session, status, router]);
+  }, [isLoaded, isSignedIn, router]);
 
-  const handleSignOut = async () => {
-    await signOut({ callbackUrl: "/" });
+  const handleSignOut = () => {
+    router.push("/");
   };
 
-  if (status === "loading" || loading) {
+  if (!isLoaded || loading) {
     return (
       <div className="min-h-screen" style={{ background: '#fff' }}>
         <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
@@ -115,7 +115,7 @@ export default function AccountPage() {
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">My Account</h1>
-                <p className="text-gray-600">Welcome back, {session?.user?.name}!</p>
+                <p className="text-gray-600">Welcome back, {user?.fullName}!</p>
               </div>
               <button
                 onClick={handleSignOut}
@@ -129,9 +129,9 @@ export default function AccountPage() {
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Account Information</h3>
                 <div className="space-y-2">
-                  <p><span className="font-medium">Name:</span> {session?.user?.name}</p>
-                  <p><span className="font-medium">Email:</span> {session?.user?.email}</p>
-                  <p><span className="font-medium">Role:</span> {session?.user?.role}</p>
+                  <p><span className="font-medium">Name:</span> {user?.fullName}</p>
+                  <p><span className="font-medium">Email:</span> {user?.emailAddresses[0]?.emailAddress}</p>
+                  <p><span className="font-medium">Role:</span> {user?.publicMetadata?.role || 'user'}</p>
                 </div>
               </div>
 
@@ -144,7 +144,7 @@ export default function AccountPage() {
                   <button className="block w-full text-left px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors">
                     Change Password
                   </button>
-                  {session?.user?.role === "admin" && (
+                  {user?.publicMetadata?.role === "admin" && (
                     <button
                       onClick={() => router.push("/admin")}
                       className="block w-full text-left px-4 py-2 text-green-600 hover:bg-green-50 rounded-md transition-colors"
