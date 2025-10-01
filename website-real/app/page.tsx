@@ -662,7 +662,7 @@ export default function Home() {
       fontSize: '0.92rem',
       color: '#111',
       padding: '32px 16px 18px 16px',
-      paddingBottom: '88px', // Add extra padding to account for cart bar
+      paddingBottom: '50px', // Add extra padding to account for cart bar
       background: 'white',
       letterSpacing: '0.01em',
       fontWeight: 400,
