@@ -131,7 +131,7 @@ export default function AccountPage() {
                 <div className="space-y-2">
                   <p><span className="font-medium">Name:</span> {user?.fullName}</p>
                   <p><span className="font-medium">Email:</span> {user?.emailAddresses[0]?.emailAddress}</p>
-                  <p><span className="font-medium">Role:</span> {user?.publicMetadata?.role || 'user'}</p>
+                  <p><span className="font-medium">Role:</span> {typeof user?.publicMetadata?.role === "string" ? user.publicMetadata.role : 'user'}</p>
                 </div>
               </div>
 
