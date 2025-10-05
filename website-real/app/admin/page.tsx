@@ -1,23 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 
 export default function AdminPage() {
   const [isShopDropdownOpen, setIsShopDropdownOpen] = useState(false);
-  const { data: session, status } = useSession();
+  const { isLoaded, isSignedIn, user } = useUser();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "loading") return;
+    if (!isLoaded) return; // Still loading
     
-    if (status === "unauthenticated" || session?.user?.role !== "admin") {
-      router.push("/auth/signin");
+    if (!isSignedIn || user?.publicMetadata?.role !== "admin") {
+      // Stay on current page, Clerk will handle authentication via modal
       return;
     }
-  }, [session, status, router]);
+  }, [isLoaded, isSignedIn, user]);
 
   const seedDatabase = async () => {
     try {
@@ -58,7 +58,7 @@ export default function AdminPage() {
     );
   }
 
-  if (session?.user?.role !== "admin") {
+  if (user?.publicMetadata?.role !== "admin") {
     return null;
   }
 

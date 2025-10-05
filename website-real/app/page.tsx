@@ -29,12 +29,18 @@ export default function Home() {
   }, []);
 
   // Only show intro if not already played this session
-  const [showMain, setShowMain] = useState(() => {
+  const [showMain, setShowMain] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+  
+  // Handle hydration and check sessionStorage after client-side mount
+  useEffect(() => {
+    setIsHydrated(true);
     if (typeof window !== 'undefined') {
-      return !!window.sessionStorage.getItem('introPlayed');
+      const introPlayed = !!window.sessionStorage.getItem('introPlayed');
+      setShowMain(introPlayed);
     }
-    return false;
-  });
+  }, []);
+  
   // Hide logo during intro, show after
   useEffect(() => {
     setHideLogo(!showMain)
@@ -637,23 +643,39 @@ export default function Home() {
 
       {/* Custom styles for StaggeredMenu visibility */}
       <style>{`
+        .custom-staggered-menu .staggered-menu-header {
+          pointer-events: auto !important;
+          position: relative !important;
+          z-index: 10003 !important;
+        }
+
         .custom-staggered-menu .sm-toggle {
-          background: rgba(0, 0, 0, 0.3) !important;
-          border: 2px solid rgba(255, 255, 255, 0.8) !important;
-          border-radius: 50% !important;
-          width: 50px !important;
-          height: 50px !important;
-          backdrop-filter: blur(10px) !important;
-          color: white !important;
+          background: transparent !important;
+          border: none !important;
+          color: #000000 !important;
+          font-size: 16px !important;
+          font-weight: 400 !important;
+          padding: 8px 12px !important;
+          border-radius: 0 !important;
+          min-width: auto !important;
+          height: auto !important;
+          box-shadow: none !important;
+          backdrop-filter: none !important;
+          transition: color 0.2s ease !important;
+          pointer-events: auto !important;
+          cursor: pointer !important;
         }
+
         .custom-staggered-menu .sm-toggle:hover {
-          background: rgba(0, 0, 0, 0.5) !important;
-          transform: scale(1.05) !important;
+          color: #333333 !important;
+          background: transparent !important;
+          transform: none !important;
+          box-shadow: none !important;
         }
+
         .custom-staggered-menu[data-open] .sm-toggle {
-          background: rgba(255, 255, 255, 0.2) !important;
-          border-color: rgba(255, 255, 255, 0.9) !important;
-          color: black !important;
+          color: #000000 !important;
+          background: transparent !important;
         }
       `}</style>
     </div>

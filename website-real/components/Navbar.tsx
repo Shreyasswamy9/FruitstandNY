@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { useSession, signOut } from "next-auth/react"
+import { useUser, useClerk } from "@clerk/nextjs"
 import Link from "next/link"
 import ShopDropdown from "./ShopDropdown"
 
@@ -14,7 +14,8 @@ interface NavbarProps {
 export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-  const { data: session, status } = useSession()
+  const { isLoaded, isSignedIn, user } = useUser()
+  const { signOut } = useClerk()
 
   const handleShopHover = (open: boolean) => {
     if (window.innerWidth > 768) {
@@ -29,7 +30,9 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
   }
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: "/" })
+    await signOut(() => {
+      window.location.href = "/"
+    })
   }
 
   return (
@@ -63,15 +66,15 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
           {/* Right - Navigation Links */}
           <div className="flex items-center space-x-4">
             {/* Authentication Links */}
-            {status === "loading" ? (
+            {!isLoaded ? (
               <div className="hidden md:block w-16 h-4 bg-gray-300 rounded animate-pulse"></div>
-            ) : session ? (
+            ) : isSignedIn ? (
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="hidden md:flex items-center text-white hover:text-gray-300 transition-colors duration-200"
                 >
-                  <span className="mr-1">Hi, {session.user?.name?.split(' ')[0]}</span>
+                  <span className="mr-1">Hi, {user?.firstName || user?.fullName?.split(' ')[0] || 'User'}</span>
                   <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
@@ -93,7 +96,7 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
                       >
                         My Account
                       </Link>
-                      {session.user?.role === "admin" && (
+                      {user?.publicMetadata?.role === "admin" && (
                         <Link
                           href="/admin"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -225,10 +228,10 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
                 )}
                 
                 {/* Mobile Authentication */}
-                {session ? (
+                {isSignedIn ? (
                   <div className="border-t border-gray-600 pt-2 mt-2">
                     <div className="px-3 py-2 text-white font-medium">
-                      Hi, {session.user?.name}
+                      Hi, {user?.fullName || 'User'}
                     </div>
                     <Link 
                       href="/account" 
@@ -236,7 +239,7 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
                     >
                       My Account
                     </Link>
-                    {session.user?.role === "admin" && (
+                    {user?.publicMetadata?.role === "admin" && (
                       <Link 
                         href="/admin" 
                         className="block text-white hover:text-gray-300 px-3 py-2 text-base font-medium"

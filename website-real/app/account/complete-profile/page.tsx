@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSession, signIn } from "next-auth/react"
+import { useUser } from "@clerk/nextjs"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
 import StaggeredMenu from "../../../components/StagerredMenu"
@@ -52,26 +52,28 @@ export default function CompleteProfilePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   
-  const { data: session, status } = useSession()
+  const { isLoaded, isSignedIn, user } = useUser()
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get("redirect") || "account"
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push(`/auth/signin?redirect=account/complete-profile${redirectTo !== "account" ? `?redirect=${redirectTo}` : ""}`)
+    if (!isLoaded) return // Still loading
+    
+    if (!isSignedIn) {
+      // Stay on current page, Clerk will handle authentication via modal
       return
     }
 
-    if (session?.user) {
+    if (user) {
       setFormData(prev => ({
         ...prev,
-        firstName: session.user.name?.split(" ")[0] || "",
-        lastName: session.user.name?.split(" ").slice(1).join(" ") || "",
-        email: session.user.email || ""
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.emailAddresses[0]?.emailAddress || ""
       }))
     }
-  }, [session, status, router, redirectTo])
+  }, [isLoaded, isSignedIn, user, router, redirectTo])
 
   const handleInputChange = (field: string, value: string | boolean) => {
     if (field.includes(".")) {
@@ -104,7 +106,7 @@ export default function CompleteProfilePage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: session?.user?.id,
+          userId: user?.id,
           ...formData
         }),
       })
@@ -127,12 +129,11 @@ export default function CompleteProfilePage() {
   }
 
   const handleSocialSignIn = (provider: string) => {
-    signIn(provider, { 
-      callbackUrl: `/account/complete-profile${redirectTo !== "account" ? `?redirect=${redirectTo}` : ""}` 
-    })
+    // Clerk handles social sign-in through its components - no redirect needed
+    console.log(`Social sign-in with ${provider} - handled by Clerk modal`)
   }
 
-  if (status === "loading") {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
@@ -155,7 +156,7 @@ export default function CompleteProfilePage() {
             </p>
           </div>
 
-          {!session && (
+          {!isSignedIn && (
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Sign In Options</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -385,6 +386,7 @@ export default function CompleteProfilePage() {
           items={[
             { label: "Home", ariaLabel: "Go to homepage", link: "/" },
             { label: "Shop", ariaLabel: "Browse our products", link: "/shop" },
+            { label: "Account", ariaLabel: "View your account", link: "/account" },
             { label: "Cart", ariaLabel: "View your cart", link: "/cart" },
             { label: "Contact", ariaLabel: "Contact us", link: "/contact" }
           ]}
@@ -412,36 +414,32 @@ export default function CompleteProfilePage() {
         }
 
         .custom-staggered-menu .sm-toggle {
-          background: rgba(255, 255, 255, 0.9) !important;
-          border: 2px solid rgba(0, 0, 0, 0.1) !important;
-          color: #000 !important;
-          border-radius: 12px !important;
-          min-width: 80px !important;
-          height: 44px !important;
-          backdrop-filter: blur(10px) !important;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-          padding: 0 16px !important;
-          font-size: 14px !important;
-          font-weight: 500 !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          transition: all 0.3s ease !important;
+          background: transparent !important;
+          border: none !important;
+          color: #000000 !important;
+          font-size: 16px !important;
+          font-weight: 400 !important;
+          padding: 8px 12px !important;
+          border-radius: 0 !important;
+          min-width: auto !important;
+          height: auto !important;
+          box-shadow: none !important;
+          backdrop-filter: none !important;
+          transition: color 0.2s ease !important;
           pointer-events: auto !important;
           cursor: pointer !important;
         }
 
         .custom-staggered-menu .sm-toggle:hover {
-          background: rgba(255, 255, 255, 1) !important;
-          border-color: rgba(0, 0, 0, 0.2) !important;
-          transform: scale(1.05) !important;
-          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;
+          color: #333333 !important;
+          background: transparent !important;
+          transform: none !important;
+          box-shadow: none !important;
         }
 
         .custom-staggered-menu[data-open] .sm-toggle {
-          background: rgba(255, 255, 255, 0.2) !important;
-          border-color: rgba(255, 255, 255, 0.9) !important;
-          color: white !important;
+          color: #ffffff !important;
+          background: transparent !important;
         }
 
         .custom-staggered-menu[data-open] {

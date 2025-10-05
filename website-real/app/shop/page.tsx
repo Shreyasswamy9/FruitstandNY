@@ -160,8 +160,8 @@ export default function ShopPage() {
           displaySocials={true}
           displayItemNumbering={true}
           logoUrl="/images/Fruitscale Logo.png"
-          menuButtonColor="#000"
-          openMenuButtonColor="#000"
+          menuButtonColor="#000000"
+          openMenuButtonColor="#000000"
           changeMenuColorOnOpen={false}
           accentColor="#ff6b6b"
           onMenuOpen={() => {setMenuOpen(true)}}
@@ -170,7 +170,7 @@ export default function ShopPage() {
       </div>
 
       {/* Custom styles for StaggeredMenu visibility */}
-      <style jsx>{`
+      <style jsx global>{`
         /* Ensure menu button header is always clickable */
         .custom-staggered-menu .staggered-menu-header {
           pointer-events: auto !important;
@@ -178,37 +178,86 @@ export default function ShopPage() {
           z-index: 10003 !important;
         }
 
-        .custom-staggered-menu .sm-toggle {
-          background: rgba(255, 255, 255, 0.9) !important;
-          border: 2px solid rgba(0, 0, 0, 0.1) !important;
-          color: #000 !important;
-          border-radius: 12px !important;
-          min-width: 80px !important;
-          height: 44px !important;
-          backdrop-filter: blur(10px) !important;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-          padding: 0 16px !important;
-          font-size: 14px !important;
-          font-weight: 500 !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          transition: all 0.3s ease !important;
+        /* Force black text on menu button with highest specificity */
+        .custom-staggered-menu.custom-staggered-menu .sm-toggle {
+          background: transparent !important;
+          border: none !important;
+          color: #000000 !important;
+          font-size: 16px !important;
+          font-weight: 400 !important;
+          padding: 8px 12px !important;
+          border-radius: 0 !important;
+          min-width: auto !important;
+          height: auto !important;
+          box-shadow: none !important;
+          backdrop-filter: none !important;
+          transition: color 0.2s ease !important;
           pointer-events: auto !important;
           cursor: pointer !important;
         }
 
-        .custom-staggered-menu .sm-toggle:hover {
-          background: rgba(255, 255, 255, 1) !important;
-          border-color: rgba(0, 0, 0, 0.2) !important;
-          transform: scale(1.05) !important;
-          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;
+        .custom-staggered-menu.custom-staggered-menu .sm-toggle * {
+          color: #000000 !important;
         }
 
-        .custom-staggered-menu[data-open] .sm-toggle {
-          background: rgba(255, 255, 255, 0.2) !important;
-          border-color: rgba(255, 255, 255, 0.9) !important;
-          color: white !important;
+        .custom-staggered-menu.custom-staggered-menu .sm-toggle .sm-toggle-textWrap {
+          color: #000000 !important;
+        }
+
+        .custom-staggered-menu.custom-staggered-menu .sm-toggle .sm-toggle-textInner {
+          color: #000000 !important;
+        }
+
+        .custom-staggered-menu.custom-staggered-menu .sm-toggle .sm-toggle-line {
+          color: #000000 !important;
+        }
+
+        .custom-staggered-menu.custom-staggered-menu .sm-toggle:hover {
+          color: #333333 !important;
+          background: transparent !important;
+          transform: none !important;
+          box-shadow: none !important;
+        }
+
+        .custom-staggered-menu.custom-staggered-menu .sm-toggle:hover * {
+          color: #333333 !important;
+        }
+
+        .custom-staggered-menu.custom-staggered-menu[data-open] .sm-toggle {
+          color: #000000 !important;
+          background: transparent !important;
+        }
+
+        .custom-staggered-menu.custom-staggered-menu[data-open] .sm-toggle * {
+          color: #000000 !important;
+        }
+
+        /* Override any inline styles that might be applied */
+        .custom-staggered-menu .sm-toggle[style] {
+          color: #000000 !important;
+        }
+
+        /* Target the button element directly */
+        .custom-staggered-menu button.sm-toggle {
+          color: #000000 !important;
+        }
+
+        .custom-staggered-menu button.sm-toggle * {
+          color: #000000 !important;
+        }
+
+        /* Override GSAP inline styles with highest specificity */
+        .custom-staggered-menu .sm-toggle[style*="color"] {
+          color: #000000 !important;
+        }
+
+        /* Additional override for any inline color styles */
+        .custom-staggered-menu .sm-toggle {
+          color: #000000 !important;
+        }
+
+        .custom-staggered-menu .sm-toggle:not([style*="color: rgb"]) {
+          color: #000000 !important;
         }
 
         /* When menu is open, allow interactions with the menu panel */

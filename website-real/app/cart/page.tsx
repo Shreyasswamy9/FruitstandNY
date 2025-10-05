@@ -7,7 +7,7 @@ import { motion } from "framer-motion"
 import { useCart } from "../../components/CartContext"
 import Image from "next/image"
 import { useCheckout } from "../../hooks/useCheckout"
-import { useUser, SignInButton } from "@clerk/nextjs"
+import { useUser, SignInButton, SignUpButton } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 
 export default function CartPage() {
@@ -834,12 +834,11 @@ export default function CartPage() {
                           <p className="text-xs text-gray-500">
                             Want faster checkout next time?
                           </p>
-                          <button
-                            onClick={() => router.push("/auth/signup?redirect=cart")}
-                            className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-                          >
-                            Create Account
-                          </button>
+                          <SignUpButton mode="modal">
+                            <button className="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                              Create Account
+                            </button>
+                          </SignUpButton>
                         </div>
                       </div>
                     </div>
@@ -937,17 +936,33 @@ export default function CartPage() {
         }
 
         .custom-staggered-menu .sm-toggle {
-          background: rgba(0, 0, 0, 0.8) !important;
-          border: 2px solid rgba(255, 255, 255, 0.2) !important;
-          color: #fff !important;
-          border-radius: 12px !important;
-          min-width: 80px !important;
-          height: 44px !important;
-          backdrop-filter: blur(10px) !important;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-          padding: 0 16px !important;
-          font-size: 14px !important;
-          font-weight: 500 !important;
+          background: transparent !important;
+          border: none !important;
+          color: #000000 !important;
+          font-size: 16px !important;
+          font-weight: 400 !important;
+          padding: 8px 12px !important;
+          border-radius: 0 !important;
+          min-width: auto !important;
+          height: auto !important;
+          box-shadow: none !important;
+          backdrop-filter: none !important;
+          transition: color 0.2s ease !important;
+          pointer-events: auto !important;
+          cursor: pointer !important;
+        }
+
+        .custom-staggered-menu .sm-toggle:hover {
+          color: #333333 !important;
+          background: transparent !important;
+          transform: none !important;
+          box-shadow: none !important;
+        }
+
+        .custom-staggered-menu[data-open] .sm-toggle {
+          color: #ffffff !important;
+          background: transparent !important;
+        }
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
