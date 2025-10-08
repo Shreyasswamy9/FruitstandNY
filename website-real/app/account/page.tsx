@@ -271,7 +271,7 @@ export default function AccountPage() {
                        }}></div>
                   
                   {/* Apple leaf */}
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 translate-x-2 -translate-y-1"
+                  <div className="absolute top-0 left-1/2 transform translate-x-2 -translate-y-1"
                        style={{
                          width: '6px',
                          height: '4px',
@@ -564,7 +564,7 @@ export default function AccountPage() {
           className="custom-staggered-menu"
           items={[
             { label: "Home", ariaLabel: "Go to homepage", link: "/" },
-            { label: "Shop", ariaLabel: "Browse collections", link: "/shop" },
+            { label: "Shop", ariaLabel: "Browse our shop", link: "/shop" },
             { label: "Cart", ariaLabel: "View your cart", link: "/cart" },
             { label: "Contact", ariaLabel: "Contact us", link: "/contact" }
           ]}

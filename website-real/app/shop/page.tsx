@@ -149,9 +149,9 @@ export default function ShopPage() {
           className="custom-staggered-menu"
           items={[
             { label: "Home", ariaLabel: "Go to homepage", link: "/" },
-            { label: "Collections", ariaLabel: "Browse collections", link: "/shop" },
+            { label: "Account", ariaLabel: "Access your account", link: "/account" },
             { label: "Cart", ariaLabel: "View your cart", link: "/cart" },
-            { label: "Contact", ariaLabel: "Contact us", link: "/contact" },
+            { label: "Contact", ariaLabel: "Contact us", link: "/contact" }
           ]}
           socialItems={[
             { label: "Instagram", link: "https://instagram.com" },

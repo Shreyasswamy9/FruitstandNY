@@ -619,7 +619,7 @@ export default function Home() {
             colors={['#18191a', '#232324']}
             className="custom-staggered-menu"
             items={[
-              { label: "Shop", ariaLabel: "Browse our fruit collection", link: "/shop" },
+              { label: "Shop", ariaLabel: "Browse our shop", link: "/shop" },
               { label: "Account", ariaLabel: "Access your account", link: "/account" },
               { label: "Cart", ariaLabel: "View your cart", link: "/cart" },
               { label: "Contact", ariaLabel: "Contact us", link: "/contact" }

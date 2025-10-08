@@ -2,6 +2,7 @@
 "use client"
 
 import React, { useState } from "react"
+import Link from "next/link"
 import StaggeredMenu from "../../components/StagerredMenu"
 import { motion } from "framer-motion"
 import { useCart } from "../../components/CartContext"
@@ -18,6 +19,41 @@ export default function CartPage() {
   const [couponLoading, setCouponLoading] = useState(false)
   const [showSignInModal, setShowSignInModal] = useState(false)
   const [showGuestCheckout, setShowGuestCheckout] = useState(false)
+  const [addressSuggestions, setAddressSuggestions] = useState<Array<{
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+  }>>([])
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false)
+
+  // Country codes for phone numbers
+  const countryCodes = [
+    { code: "+1", country: "US", name: "United States" },
+    { code: "+1", country: "CA", name: "Canada" },
+    { code: "+44", country: "GB", name: "United Kingdom" },
+    { code: "+33", country: "FR", name: "France" },
+    { code: "+49", country: "DE", name: "Germany" },
+    { code: "+39", country: "IT", name: "Italy" },
+    { code: "+34", country: "ES", name: "Spain" },
+    { code: "+31", country: "NL", name: "Netherlands" },
+    { code: "+32", country: "BE", name: "Belgium" },
+    { code: "+41", country: "CH", name: "Switzerland" },
+    { code: "+43", country: "AT", name: "Austria" },
+    { code: "+45", country: "DK", name: "Denmark" },
+    { code: "+46", country: "SE", name: "Sweden" },
+    { code: "+47", country: "NO", name: "Norway" },
+    { code: "+358", country: "FI", name: "Finland" },
+    { code: "+91", country: "IN", name: "India" },
+    { code: "+86", country: "CN", name: "China" },
+    { code: "+81", country: "JP", name: "Japan" },
+    { code: "+82", country: "KR", name: "South Korea" },
+    { code: "+61", country: "AU", name: "Australia" },
+    { code: "+64", country: "NZ", name: "New Zealand" },
+    { code: "+55", country: "BR", name: "Brazil" },
+    { code: "+52", country: "MX", name: "Mexico" },
+    { code: "+27", country: "ZA", name: "South Africa" }
+  ];
   const [guestFormErrors, setGuestFormErrors] = useState({
     email: "",
     firstName: "",
@@ -33,6 +69,7 @@ export default function CartPage() {
     firstName: "",
     lastName: "",
     phone: "",
+    phoneCountryCode: "+1",
     address: {
       street: "",
       city: "",
@@ -133,6 +170,163 @@ export default function CartPage() {
   const tax = discountedSubtotal * 0.08875; // NY tax rate
   const total = discountedSubtotal + finalShipping + tax;
 
+  // Calculate available offers to entice more purchases
+  const getAvailableOffers = () => {
+    const offers = [];
+    
+    // Free shipping offer
+    if (subtotal < 20 && subtotal > 0) {
+      const needed = 20 - subtotal;
+      offers.push({
+        type: 'shipping',
+        message: `Add $${needed.toFixed(2)} more for FREE shipping!`,
+        savings: 8.99,
+        threshold: 20,
+        current: subtotal
+      });
+    }
+    
+    // Priority shipping offer
+    if (subtotal >= 20 && subtotal < 125) {
+      const needed = 125 - subtotal;
+      offers.push({
+        type: 'priority',
+        message: `Add $${needed.toFixed(2)} more for FREE priority shipping!`,
+        savings: 15.99,
+        threshold: 125,
+        current: subtotal
+      });
+    }
+    
+    // Bulk discount offers
+    if (subtotal < 50) {
+      const needed = 50 - subtotal;
+      offers.push({
+        type: 'bulk',
+        message: `Spend $${needed.toFixed(2)} more and save 10% with code SAVE10!`,
+        savings: subtotal * 0.1 + needed * 0.1,
+        threshold: 50,
+        current: subtotal
+      });
+    }
+    
+    if (subtotal < 100) {
+      const needed = 100 - subtotal;
+      offers.push({
+        type: 'bulk',
+        message: `Spend $${needed.toFixed(2)} more and save 20% with code WELCOME20!`,
+        savings: subtotal * 0.2 + needed * 0.2,
+        threshold: 100,
+        current: subtotal
+      });
+    }
+    
+    return offers;
+  };
+
+  const availableOffers = getAvailableOffers();
+
+  // Address autocomplete function
+  const fetchAddressSuggestions = async (query: string) => {
+    if (query.length < 2) {
+      setAddressSuggestions([]);
+      setShowAddressSuggestions(false);
+      return;
+    }
+
+    try {
+      // Try to use the Places API first
+      try {
+        const response = await fetch(`/api/places?query=${encodeURIComponent(query)}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.suggestions && data.suggestions.length > 0) {
+            setAddressSuggestions(data.suggestions);
+            setShowAddressSuggestions(true);
+            return;
+          }
+        }
+      } catch (apiError) {
+        console.log('Places API not available, using fallback');
+      }
+
+      // Fallback to expanded mock address database
+      const mockAddressDatabase = [
+        // New York addresses
+        { street: "123 Main Street", city: "New York", state: "NY", zipCode: "10001" },
+        { street: "456 Broadway", city: "New York", state: "NY", zipCode: "10012" },
+        { street: "789 Fifth Avenue", city: "New York", state: "NY", zipCode: "10022" },
+        { street: "321 Park Avenue", city: "New York", state: "NY", zipCode: "10016" },
+        { street: "654 Wall Street", city: "New York", state: "NY", zipCode: "10005" },
+        { street: "987 Madison Avenue", city: "New York", state: "NY", zipCode: "10021" },
+        { street: "147 Central Park West", city: "New York", state: "NY", zipCode: "10023" },
+        { street: "258 West 14th Street", city: "New York", state: "NY", zipCode: "10011" },
+        { street: "369 East 76th Street", city: "New York", state: "NY", zipCode: "10021" },
+        { street: "741 Amsterdam Avenue", city: "New York", state: "NY", zipCode: "10025" },
+        
+        // Los Angeles addresses
+        { street: "1001 Wilshire Boulevard", city: "Los Angeles", state: "CA", zipCode: "90017" },
+        { street: "2020 Santa Monica Boulevard", city: "Los Angeles", state: "CA", zipCode: "90404" },
+        { street: "3030 Sunset Boulevard", city: "Los Angeles", state: "CA", zipCode: "90026" },
+        { street: "4040 Hollywood Boulevard", city: "Los Angeles", state: "CA", zipCode: "90028" },
+        { street: "5050 Melrose Avenue", city: "Los Angeles", state: "CA", zipCode: "90038" },
+        
+        // Chicago addresses
+        { street: "100 North Michigan Avenue", city: "Chicago", state: "IL", zipCode: "60601" },
+        { street: "200 South State Street", city: "Chicago", state: "IL", zipCode: "60604" },
+        { street: "300 West Roosevelt Road", city: "Chicago", state: "IL", zipCode: "60607" },
+        
+        // Miami addresses
+        { street: "1500 Ocean Drive", city: "Miami Beach", state: "FL", zipCode: "33139" },
+        { street: "2600 Biscayne Boulevard", city: "Miami", state: "FL", zipCode: "33137" },
+        
+        // Common street patterns that match any input
+        { street: `${query.charAt(0).toUpperCase() + query.slice(1)} Street`, city: "New York", state: "NY", zipCode: "10001" },
+        { street: `${query.charAt(0).toUpperCase() + query.slice(1)} Avenue`, city: "New York", state: "NY", zipCode: "10003" },
+        { street: `${query.charAt(0).toUpperCase() + query.slice(1)} Boulevard`, city: "Los Angeles", state: "CA", zipCode: "90210" },
+        { street: `${query.charAt(0).toUpperCase() + query.slice(1)} Drive`, city: "Chicago", state: "IL", zipCode: "60601" },
+        { street: `${query.charAt(0).toUpperCase() + query.slice(1)} Lane`, city: "Miami", state: "FL", zipCode: "33101" }
+      ];
+
+      // Smart filtering with multiple match criteria
+      const filteredSuggestions = mockAddressDatabase.filter(addr => {
+        const queryLower = query.toLowerCase();
+        return (
+          addr.street.toLowerCase().includes(queryLower) ||
+          addr.city.toLowerCase().includes(queryLower) ||
+          addr.state.toLowerCase().includes(queryLower) ||
+          addr.zipCode.includes(query) ||
+          // Partial word matching
+          addr.street.toLowerCase().split(' ').some(word => word.startsWith(queryLower)) ||
+          addr.city.toLowerCase().split(' ').some(word => word.startsWith(queryLower))
+        );
+      }).slice(0, 8); // Limit to 8 suggestions
+
+      setAddressSuggestions(filteredSuggestions);
+      setShowAddressSuggestions(filteredSuggestions.length > 0);
+
+    } catch (error) {
+      console.error('Error fetching address suggestions:', error);
+      setAddressSuggestions([]);
+      setShowAddressSuggestions(false);
+    }
+  };
+
+  const selectAddressSuggestion = (suggestion: { street: string; city: string; state: string; zipCode: string }) => {
+    setGuestData(prev => ({
+      ...prev,
+      address: {
+        ...prev.address,
+        street: suggestion.street,
+        city: suggestion.city,
+        state: suggestion.state,
+        zipCode: suggestion.zipCode
+      }
+    }));
+    setShowAddressSuggestions(false);
+    setAddressSuggestions([]);
+  };
+
   const handleCheckout = async () => {
     if (items.length === 0) return;
 
@@ -168,7 +362,7 @@ export default function CartPage() {
             email: guestData.email,
             firstName: guestData.firstName,
             lastName: guestData.lastName,
-            phone: guestData.phone,
+            phone: guestData.phoneCountryCode + guestData.phone,
             address: guestData.address,
           },
         });
@@ -370,22 +564,30 @@ export default function CartPage() {
                       style={{ willChange: "transform", backfaceVisibility: "hidden" }}
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-4 sm:space-y-0">
-                        {/* Product Image */}
-                        <div className="relative w-20 h-20 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                        {/* Product Image - Clickable */}
+                        <Link 
+                          href={`/shop/${item.productId}`}
+                          className="relative w-20 h-20 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 hover:ring-2 hover:ring-black hover:ring-opacity-50 transition-all duration-200 cursor-pointer"
+                        >
                           <Image
                             src={item.image}
                             alt={item.name}
                             fill
-                            className="object-cover"
+                            className="object-cover hover:scale-105 transition-transform duration-200"
                             sizes="80px"
                           />
-                        </div>
+                        </Link>
                         
                         {/* Product Details - Full width on mobile */}
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-semibold text-gray-900 truncate">
-                            {item.name}
-                          </h3>
+                          <Link 
+                            href={`/shop/${item.productId}`}
+                            className="block hover:text-blue-600 transition-colors duration-200"
+                          >
+                            <h3 className="text-lg font-semibold text-gray-900 truncate hover:text-blue-600 transition-colors">
+                              {item.name}
+                            </h3>
+                          </Link>
                           <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 mt-1 space-y-1 sm:space-y-0">
                             {item.size && (
                               <span className="text-sm text-gray-500">Size: {item.size}</span>
@@ -520,6 +722,37 @@ export default function CartPage() {
                   )}
                 </div>
                 
+                {/* Available Offers Section */}
+                {availableOffers.length > 0 && (
+                  <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-4 mb-6">
+                    <h4 className="text-sm font-semibold text-purple-800 mb-3 flex items-center">
+                      <span className="mr-2">🎉</span>
+                      Available Offers - Save More!
+                    </h4>
+                    <div className="space-y-3">
+                      {availableOffers.map((offer, index) => (
+                        <div key={index} className="bg-white rounded-lg p-3 border border-purple-100">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <p className="text-sm text-gray-700 font-medium">{offer.message}</p>
+                              <div className="mt-1 w-full bg-gray-200 rounded-full h-2">
+                                <div 
+                                  className="bg-gradient-to-r from-purple-400 to-blue-400 h-2 rounded-full transition-all duration-300"
+                                  style={{ width: `${(offer.current / offer.threshold) * 100}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                            <div className="ml-3 text-right">
+                              <p className="text-xs text-gray-500">Save up to</p>
+                              <p className="text-sm font-bold text-green-600">${offer.savings.toFixed(2)}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-4">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal</span>
@@ -719,15 +952,29 @@ export default function CartPage() {
                               <p className="text-red-500 text-xs mt-1">{guestFormErrors.lastName}</p>
                             )}
                           </div>
-                          <input
-                            type="tel"
-                            placeholder="Phone number"
-                            value={guestData.phone}
-                            onChange={(e) => handleGuestInputChange("phone", e.target.value)}
-                            className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
-                              guestFormErrors.phone ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                            }`}
-                          />
+                          <div className="flex space-x-2">
+                            <select
+                              value={guestData.phoneCountryCode}
+                              onChange={(e) => handleGuestInputChange("phoneCountryCode", e.target.value)}
+                              className="w-20 px-2 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white"
+                              title="Select country code"
+                            >
+                              {countryCodes.map((country) => (
+                                <option key={`${country.code}-${country.country}`} value={country.code}>
+                                  {country.code}
+                                </option>
+                              ))}
+                            </select>
+                            <input
+                              type="tel"
+                              placeholder="Phone number"
+                              value={guestData.phone}
+                              onChange={(e) => handleGuestInputChange("phone", e.target.value)}
+                              className={`flex-1 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                                guestFormErrors.phone ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                              }`}
+                            />
+                          </div>
                           {guestFormErrors.phone && (
                             <p className="text-red-500 text-xs mt-1">{guestFormErrors.phone}</p>
                           )}
@@ -738,16 +985,47 @@ export default function CartPage() {
                       <div>
                         <h5 className="text-xs font-medium text-gray-700 mb-2">SHIPPING ADDRESS</h5>
                         <div className="space-y-3">
-                          <input
-                            type="text"
-                            placeholder="Street address *"
-                            value={guestData.address.street}
-                            onChange={(e) => handleGuestInputChange("address.street", e.target.value)}
-                            className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
-                              guestFormErrors.street ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                            }`}
-                            required
-                          />
+                          <div className="relative">
+                            <input
+                              type="text"
+                              placeholder="Street address * (start typing for suggestions)"
+                              value={guestData.address.street}
+                              onChange={(e) => {
+                                handleGuestInputChange("address.street", e.target.value);
+                                fetchAddressSuggestions(e.target.value);
+                              }}
+                              onFocus={() => {
+                                if (guestData.address.street.length >= 3) {
+                                  fetchAddressSuggestions(guestData.address.street);
+                                }
+                              }}
+                              onBlur={() => {
+                                // Delay hiding suggestions to allow selection
+                                setTimeout(() => setShowAddressSuggestions(false), 200);
+                              }}
+                              className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                                guestFormErrors.street ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                              }`}
+                              required
+                            />
+                            {showAddressSuggestions && addressSuggestions.length > 0 && (
+                              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                {addressSuggestions.map((suggestion, index) => (
+                                  <button
+                                    key={index}
+                                    type="button"
+                                    onClick={() => selectAddressSuggestion(suggestion)}
+                                    className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                                  >
+                                    <div className="font-medium">{suggestion.street}</div>
+                                    <div className="text-gray-500 text-xs">
+                                      {suggestion.city}, {suggestion.state} {suggestion.zipCode}
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                           {guestFormErrors.street && (
                             <p className="text-red-500 text-xs mt-1">{guestFormErrors.street}</p>
                           )}
@@ -899,7 +1177,7 @@ export default function CartPage() {
           className="custom-staggered-menu"
           items={[
             { label: "Home", ariaLabel: "Go to homepage", link: "/" },
-            { label: "Shop", ariaLabel: "Browse our products", link: "/shop" },
+            { label: "Shop", ariaLabel: "Browse our shop", link: "/shop" },
             { label: "Contact", ariaLabel: "Contact us", link: "/contact" },
             { label: "Account", ariaLabel: "Access your account", link: "/account" }
           ]}

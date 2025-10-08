@@ -343,7 +343,7 @@ export default function ContactPage() {
           className="custom-staggered-menu"
           items={[
             { label: "Home", ariaLabel: "Go to homepage", link: "/" },
-            { label: "Shop", ariaLabel: "Browse our collection", link: "/shop" },
+            { label: "Shop", ariaLabel: "Browse our shop", link: "/shop" },
             { label: "Account", ariaLabel: "Access your account", link: "/account" },
             { label: "Cart", ariaLabel: "View your cart", link: "/cart" }
           ]}
