@@ -4,7 +4,6 @@ import { animate } from "animejs"
 import { useRef, useEffect, useState, useContext } from "react"
 import { LogoVisibilityContext } from "../components/ClientRootLayout"
 import Image from "next/image"
-import ProductsGridHome from "../components/ProductsGridHome"
 import { SignupModal } from "../components/SIgnUpModal"
 import { useScrollTrigger } from "../hooks/useScrollTrigger"
 import StaggeredMenu from "../components/StagerredMenu"
@@ -61,53 +60,92 @@ export default function Home() {
     setHideLogo(!showMain)
   }, [showMain, setHideLogo])
 
-  // Comprehensive Safari autoplay fix - tries multiple aggressive techniques
+  // Enhanced mobile autoplay with immediate interaction handling
   useEffect(() => {
     if (secondVideoRef.current) {
       const video = secondVideoRef.current
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
       
-      // Force Safari to allow autoplay
+      // Force all autoplay attributes
       video.muted = true
       video.playsInline = true
+      video.controls = false
       video.setAttribute('webkit-playsinline', 'true')
       video.setAttribute('x-webkit-airplay', 'allow')
+      video.setAttribute('playsinline', 'true')
+      video.setAttribute('disablepictureinpicture', 'true')
+      video.setAttribute('disableremoteplayback', 'true')
       
-      // Try multiple autoplay strategies
+      // Mobile-specific immediate interaction handling
+      if (isMobile) {
+        const startVideoOnInteraction = async (e: Event) => {
+          e.preventDefault()
+          try {
+            video.muted = true
+            video.controls = false
+            await video.play()
+            console.log('Video started on mobile interaction')
+            // Remove listeners after successful play
+            document.removeEventListener('touchstart', startVideoOnInteraction)
+            document.removeEventListener('click', startVideoOnInteraction)
+            document.removeEventListener('scroll', startVideoOnInteraction)
+          } catch (error) {
+            console.log('Mobile video play failed:', error)
+          }
+        }
+        
+        // Add multiple interaction listeners for mobile
+        document.addEventListener('touchstart', startVideoOnInteraction, { once: true, passive: false })
+        document.addEventListener('click', startVideoOnInteraction, { once: true })
+        document.addEventListener('scroll', startVideoOnInteraction, { once: true, passive: true })
+        
+        // Also try to play immediately on mobile
+        setTimeout(async () => {
+          try {
+            await video.play()
+            console.log('Mobile autoplay succeeded')
+          } catch {
+            console.log('Mobile autoplay failed - waiting for user interaction')
+          }
+        }, 100)
+      }
+      
+      // Desktop autoplay strategies
       const forcePlay = async () => {
         try {
-          // Strategy 1: Direct play
           await video.play()
           console.log('Video autoplay succeeded!')
         } catch {
           try {
-            // Strategy 2: Wait a bit and try again
             await new Promise(resolve => setTimeout(resolve, 100))
             await video.play()
             console.log('Video autoplay succeeded on retry 1!')
           } catch {
             try {
-              // Strategy 3: Set currentTime and try again
               video.currentTime = 0
               await video.play()
               console.log('Video autoplay succeeded on retry 2!')
             } catch {
               try {
-                // Strategy 4: Load and play
                 video.load()
                 await video.play()
                 console.log('Video autoplay succeeded on retry 3!')
               } catch {
-                // Strategy 5: Final attempt with longer delay
-                setTimeout(async () => {
+                console.log('Desktop autoplay failed - adding interaction listeners')
+                
+                const startOnInteraction = async () => {
                   try {
                     video.muted = true
-                    video.playsInline = true
+                    video.controls = false
                     await video.play()
-                    console.log('Video autoplay succeeded on final retry!')
-                  } catch {
-                    console.log('All autoplay strategies failed')
+                    console.log('Video started after user interaction')
+                  } catch (e) {
+                    console.log('Failed to start video even after interaction:', e)
                   }
-                }, 500)
+                }
+                
+                document.addEventListener('click', startOnInteraction, { once: true })
+                document.addEventListener('keydown', startOnInteraction, { once: true })
               }
             }
           }
@@ -484,9 +522,27 @@ export default function Home() {
           paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
+        {/* Fallback background image for when video doesn't load */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundImage: "url('/images/home.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            opacity: 0.8,
+            zIndex: 1,
+          }}
+        />
+        
         <video
           ref={secondVideoRef}
           style={{
+            position: "relative",
+            zIndex: 2,
             width: "100vw",
             height: "calc(var(--app-vh) * 100)",
             objectFit: "cover",
@@ -507,12 +563,51 @@ export default function Home() {
           playsInline
           preload="auto"
           loop
+          controls={false}
+          disablePictureInPicture
+          disableRemotePlayback
+          webkit-playsinline="true"
+          x-webkit-airplay="allow"
+          poster="/images/home.jpg"
+          onLoadStart={() => console.log('Video load started')}
+          onCanPlay={() => console.log('Video can play')}
+          onPlay={() => console.log('Video playing')}
         >
           <source
             src="https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/Videos/homevideo.mp4"
             type="video/mp4"
           />
         </video>
+        
+        {/* Hide video controls completely */}
+        <style>{`
+          video::-webkit-media-controls {
+            display: none !important;
+            -webkit-appearance: none;
+          }
+          
+          video::-webkit-media-controls-play-button {
+            display: none !important;
+            -webkit-appearance: none;
+          }
+          
+          video::-webkit-media-controls-start-playback-button {
+            display: none !important;
+            -webkit-appearance: none;
+          }
+          
+          video::-webkit-media-controls-enclosure {
+            display: none !important;
+          }
+          
+          video::-webkit-media-controls-panel {
+            display: none !important;
+          }
+          
+          video {
+            outline: none !important;
+          }
+        `}</style>
       </div>
 
       {/* Scroll Down Arrow */}
@@ -589,24 +684,598 @@ export default function Home() {
               boxSizing: "border-box",
             }}
           >
-            <h2
+            <div 
               id="products-grid-anchor"
               style={{
-                fontSize: "clamp(2.2rem, 8vw, 3.5rem)",
-                marginBottom: 32,
-                background: "linear-gradient(135deg, #18191a, #232324)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-                fontWeight: 700,
-                letterSpacing: "0.04em",
-                fontFamily: "FruitstandLight, Arial, Helvetica, sans-serif",
+                width: "100%",
+                maxWidth: "1400px",
+                margin: "0 auto",
+                padding: "0 clamp(16px, 4vw, 20px)",
               }}
             >
-              Welcome to Fruitstand
-            </h2>
-            {/* Product grid is now part of the main page flow, no extra scrollbars */}
-            <ProductsGridHome />
+              {/* Hero Section */}
+              <div 
+                className="hero-grid-container"
+                style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "clamp(16px, 3vw, 24px)",
+                marginBottom: "clamp(48px, 8vw, 80px)",
+                minHeight: "clamp(400px, 60vw, 500px)",
+              }}
+              >
+                {/* Large Feature - New Collection */}
+                <div style={{
+                  position: "relative",
+                  borderRadius: "clamp(16px, 3vw, 24px)",
+                  overflow: "hidden",
+                  background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "flex-end",
+                  padding: "clamp(24px, 6vw, 48px)",
+                  cursor: "pointer",
+                  transition: "transform 0.3s ease",
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.02)"}
+                onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+                onClick={() => window.location.href = "/shop"}
+                >
+                  <div style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundImage: "url('/images/classicteecovermodels.jpeg')",
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    opacity: 0.9,
+                  }}></div>
+                  <div style={{
+                    position: "relative",
+                    zIndex: 2,
+                    color: "#fff",
+                  }}>
+                    <h1 style={{
+                      fontSize: "clamp(2rem, 6vw, 4rem)",
+                      fontWeight: 700,
+                      marginBottom: "16px",
+                      lineHeight: 1.1,
+                      textShadow: "0 2px 12px rgba(0,0,0,0.3)",
+                    }}>
+                      New Collection
+                    </h1>
+                    <p style={{
+                      fontSize: "clamp(1rem, 2vw, 1.2rem)",
+                      opacity: 0.95,
+                      marginBottom: "32px",
+                      textShadow: "0 1px 8px rgba(0,0,0,0.2)",
+                    }}>
+                      Discover our latest arrivals
+                    </p>
+                    <button style={{
+                      background: "rgba(255,255,255,0.95)",
+                      color: "#111",
+                      border: "none",
+                      padding: "16px 32px",
+                      borderRadius: "12px",
+                      fontSize: "1rem",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                      backdropFilter: "blur(10px)",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "#fff";
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "rgba(255,255,255,0.95)";
+                      e.currentTarget.style.transform = "translateY(0)";
+                    }}
+                    >
+                      Shop Now
+                    </button>
+                  </div>
+                </div>
+
+                {/* Right Side - Two Stacked Cards */}
+                <div style={{
+                  display: "grid",
+                  gridTemplateRows: "1fr 1fr",
+                  gap: "24px",
+                }}>
+                  {/* Best Sellers */}
+                  <div style={{
+                    position: "relative",
+                    borderRadius: "20px",
+                    overflow: "hidden",
+                    background: "#111",
+                    padding: "32px",
+                    cursor: "pointer",
+                    transition: "transform 0.3s ease",
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.02)"}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+                  onClick={() => window.location.href = "/shop/hockey-jersey"}
+                  >
+                    <div style={{
+                      position: "absolute",
+                      top: 0,
+                      right: 0,
+                      width: "40%",
+                      height: "100%",
+                      backgroundImage: "url('/images/hockeyjerseymale1.jpeg')",
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      opacity: 0.8,
+                    }}></div>
+                    <div style={{
+                      position: "relative",
+                      zIndex: 2,
+                      color: "#fff",
+                      maxWidth: "60%",
+                    }}>
+                      <h3 style={{
+                        fontSize: "1.8rem",
+                        fontWeight: 600,
+                        marginBottom: "12px",
+                        lineHeight: 1.2,
+                      }}>
+                        Best Seller
+                      </h3>
+                      <p style={{
+                        fontSize: "1rem",
+                        opacity: 0.9,
+                        marginBottom: "20px",
+                      }}>
+                        Hockey Jersey
+                      </p>
+                      <span style={{
+                        fontSize: "1.1rem",
+                        fontWeight: 600,
+                        color: "#ff6b6b",
+                      }}>
+                        $90
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Featured Hat */}
+                  <div style={{
+                    position: "relative",
+                    borderRadius: "20px",
+                    overflow: "hidden",
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    padding: "32px",
+                    cursor: "pointer",
+                    transition: "transform 0.3s ease",
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.02)"}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+                  onClick={() => window.location.href = "/shop/empire-hat"}
+                  >
+                    <div style={{
+                      position: "absolute",
+                      top: 0,
+                      right: 0,
+                      width: "45%",
+                      height: "100%",
+                      backgroundImage: "url('/images/empirehatsolo.jpg')",
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      opacity: 0.9,
+                    }}></div>
+                    <div style={{
+                      position: "relative",
+                      zIndex: 2,
+                      color: "#fff",
+                      maxWidth: "55%",
+                    }}>
+                      <h3 style={{
+                        fontSize: "1.6rem",
+                        fontWeight: 600,
+                        marginBottom: "12px",
+                        lineHeight: 1.2,
+                      }}>
+                        New Drop
+                      </h3>
+                      <p style={{
+                        fontSize: "1rem",
+                        opacity: 0.95,
+                        marginBottom: "16px",
+                      }}>
+                        Empire Hat
+                      </p>
+                      <span style={{
+                        fontSize: "1.1rem",
+                        fontWeight: 600,
+                      }}>
+                        $42
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Products Grid - Modern Layout */}
+              <div style={{
+                marginBottom: "64px",
+              }}>
+                <h2 style={{
+                  fontSize: "clamp(1.8rem, 5vw, 2.5rem)",
+                  fontWeight: 600,
+                  textAlign: "center",
+                  marginBottom: "clamp(24px, 6vw, 48px)",
+                  color: "#111",
+                  letterSpacing: "-0.02em",
+                }}>
+                  Shop the Collection
+                </h2>
+                
+                <div 
+                  className="products-grid-container"
+                  style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(clamp(240px, 45vw, 280px), 1fr))",
+                  gap: "clamp(16px, 4vw, 32px)",
+                  marginBottom: "clamp(48px, 8vw, 80px)",
+                }}
+                >
+                  {/* Product Cards */}
+                  {[
+                    { name: "Classic Tee", price: "$55", image: "/images/classicteemale1.jpeg", hoverImage: "/images/classicteefemale1.jpeg", link: "/shop/classic-tee" },
+                    { name: "Tracksuit", price: "$120", image: "/images/B&Wtracksuitmale1.jpeg", hoverImage: "/images/maroontracksuitmale1.jpeg", link: "/shop/tracksuit" },
+                    { name: "Denim Hat", price: "$40", image: "/images/denimhatmale1.jpeg", hoverImage: "/images/denimhatfemale1.jpeg", link: "/shop/denim-hat" },
+                    { name: "White Hat", price: "$40", image: "/images/whitehatmale1.jpeg", hoverImage: "/images/whitehatsolo.jpeg", link: "/shop/white-hat" },
+                  ].map((product, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        position: "relative",
+                        borderRadius: "16px",
+                        overflow: "hidden",
+                        cursor: "pointer",
+                        transition: "all 0.3s ease",
+                        background: "#fff",
+                        boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateY(-8px)";
+                        e.currentTarget.style.boxShadow = "0 12px 40px rgba(0,0,0,0.15)";
+                        const img = e.currentTarget.querySelector('img');
+                        if (img && product.hoverImage) {
+                          img.src = product.hoverImage;
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                        e.currentTarget.style.boxShadow = "0 4px 24px rgba(0,0,0,0.08)";
+                        const img = e.currentTarget.querySelector('img');
+                        if (img) {
+                          img.src = product.image;
+                        }
+                      }}
+                      onClick={() => window.location.href = product.link}
+                    >
+                      <div style={{
+                        position: "relative",
+                        paddingBottom: "120%",
+                        overflow: "hidden",
+                      }}>
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            transition: "all 0.3s ease",
+                          }}
+                        />
+                      </div>
+                      <div style={{
+                        padding: "24px",
+                      }}>
+                        <h3 style={{
+                          fontSize: "1.3rem",
+                          fontWeight: 500,
+                          marginBottom: "8px",
+                          color: "#111",
+                        }}>
+                          {product.name}
+                        </h3>
+                        <p style={{
+                          fontSize: "1.1rem",
+                          fontWeight: 600,
+                          color: "#666",
+                        }}>
+                          {product.price}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Brand Story Section */}
+              <div 
+                className="brand-story-container"
+                style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "clamp(24px, 6vw, 48px)",
+                alignItems: "center",
+                marginBottom: "clamp(48px, 8vw, 80px)",
+                padding: "clamp(24px, 6vw, 48px)",
+                borderRadius: "clamp(16px, 3vw, 24px)",
+                background: "linear-gradient(135deg, #f8f9fa 0%, #fff 100%)",
+              }}
+              >
+                <div>
+                  <h2 style={{
+                    fontSize: "clamp(1.8rem, 6vw, 2.8rem)",
+                    fontWeight: 700,
+                    marginBottom: "clamp(16px, 4vw, 24px)",
+                    color: "#111",
+                    lineHeight: 1.1,
+                    letterSpacing: "-0.02em",
+                  }}>
+                    Crafted for the Modern Individual
+                  </h2>
+                  <p style={{
+                    fontSize: "clamp(1rem, 2.5vw, 1.2rem)",
+                    lineHeight: 1.6,
+                    color: "#666",
+                    marginBottom: "clamp(20px, 5vw, 32px)",
+                  }}>
+                    Every piece in our collection is thoughtfully designed and carefully crafted to meet the demands of contemporary lifestyle while maintaining timeless appeal.
+                  </p>
+                  <button
+                    style={{
+                      background: "#111",
+                      color: "#fff",
+                      border: "none",
+                      padding: "clamp(12px, 3vw, 16px) clamp(24px, 6vw, 32px)",
+                      borderRadius: "12px",
+                      fontSize: "clamp(0.9rem, 2vw, 1rem)",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "#333";
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "#111";
+                      e.currentTarget.style.transform = "translateY(0)";
+                    }}
+                    onClick={() => window.location.href = "/contact"}
+                  >
+                    Learn More
+                  </button>
+                </div>
+                <div style={{
+                  position: "relative",
+                  borderRadius: "20px",
+                  overflow: "hidden",
+                  paddingBottom: "120%",
+                }}>
+                  <img
+                    src="/images/beigehatfemale1.jpeg"
+                    alt="Brand Story"
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Mobile Responsive Styles */}
+              <style>{`
+                /* Enhanced Mobile-First Responsive Design */
+                @media (max-width: 768px) {
+                  .hero-grid-container {
+                    grid-template-columns: 1fr !important;
+                    gap: 16px !important;
+                    margin-bottom: 48px !important;
+                    padding: 0 16px !important;
+                  }
+                  
+                  .products-grid-container {
+                    grid-template-columns: repeat(2, 1fr) !important;
+                    gap: 16px !important;
+                    padding: 0 16px !important;
+                    margin-bottom: 48px !important;
+                  }
+                  
+                  .brand-story-container {
+                    grid-template-columns: 1fr !important;
+                    gap: 24px !important;
+                    padding: 32px 20px !important;
+                    margin: 0 16px 48px 16px !important;
+                    border-radius: 20px !important;
+                  }
+
+                  /* Hero Section Mobile Optimizations */
+                  .hero-grid-container > div:first-child {
+                    padding: 32px 24px !important;
+                    min-height: 320px !important;
+                    border-radius: 20px !important;
+                  }
+
+                  .hero-grid-container > div:first-child h1 {
+                    font-size: clamp(1.8rem, 8vw, 2.5rem) !important;
+                    margin-bottom: 12px !important;
+                  }
+
+                  .hero-grid-container > div:first-child p {
+                    font-size: 1rem !important;
+                    margin-bottom: 24px !important;
+                  }
+
+                  .hero-grid-container > div:first-child button {
+                    padding: 14px 28px !important;
+                    font-size: 0.95rem !important;
+                  }
+
+                  /* Right Side Cards Mobile */
+                  .hero-grid-container > div:last-child {
+                    gap: 16px !important;
+                  }
+
+                  .hero-grid-container > div:last-child > div {
+                    padding: 24px 20px !important;
+                    border-radius: 16px !important;
+                    min-height: 140px !important;
+                  }
+
+                  .hero-grid-container > div:last-child h3 {
+                    font-size: 1.4rem !important;
+                    margin-bottom: 8px !important;
+                  }
+
+                  .hero-grid-container > div:last-child p {
+                    font-size: 0.9rem !important;
+                    margin-bottom: 12px !important;
+                  }
+
+                  /* Products Grid Mobile */
+                  .products-grid-container > div {
+                    border-radius: 12px !important;
+                  }
+
+                  .products-grid-container > div > div:first-child {
+                    padding-bottom: 130% !important;
+                  }
+
+                  .products-grid-container > div > div:last-child {
+                    padding: 16px !important;
+                  }
+
+                  .products-grid-container h3 {
+                    font-size: 1.1rem !important;
+                    margin-bottom: 6px !important;
+                  }
+
+                  .products-grid-container p {
+                    font-size: 1rem !important;
+                  }
+
+                  /* Brand Story Mobile */
+                  .brand-story-container h2 {
+                    font-size: 2rem !important;
+                    margin-bottom: 16px !important;
+                    line-height: 1.2 !important;
+                  }
+
+                  .brand-story-container p {
+                    font-size: 1rem !important;
+                    line-height: 1.5 !important;
+                    margin-bottom: 24px !important;
+                  }
+
+                  .brand-story-container button {
+                    padding: 14px 28px !important;
+                    font-size: 0.95rem !important;
+                  }
+
+                  .brand-story-container > div:last-child {
+                    padding-bottom: 100% !important;
+                    border-radius: 16px !important;
+                  }
+
+                  /* Section Titles Mobile */
+                  h2 {
+                    font-size: 2rem !important;
+                    margin-bottom: 32px !important;
+                    padding: 0 16px !important;
+                  }
+                }
+                
+                @media (max-width: 480px) {
+                  .products-grid-container {
+                    grid-template-columns: 1fr !important;
+                    gap: 20px !important;
+                    padding: 0 20px !important;
+                  }
+
+                  /* Extra small mobile adjustments */
+                  .hero-grid-container > div:first-child {
+                    padding: 28px 20px !important;
+                    min-height: 280px !important;
+                  }
+
+                  .hero-grid-container > div:first-child h1 {
+                    font-size: clamp(1.6rem, 10vw, 2.2rem) !important;
+                  }
+
+                  .hero-grid-container > div:last-child > div {
+                    padding: 20px 16px !important;
+                    min-height: 120px !important;
+                  }
+
+                  .brand-story-container {
+                    padding: 24px 16px !important;
+                    margin: 0 20px 40px 20px !important;
+                  }
+
+                  .brand-story-container h2 {
+                    font-size: 1.8rem !important;
+                  }
+
+                  h2 {
+                    font-size: 1.8rem !important;
+                    margin-bottom: 24px !important;
+                    padding: 0 20px !important;
+                  }
+                }
+
+                @media (max-width: 360px) {
+                  /* Ultra small screens */
+                  .hero-grid-container,
+                  .products-grid-container,
+                  .brand-story-container {
+                    margin-left: 12px !important;
+                    margin-right: 12px !important;
+                  }
+
+                  .hero-grid-container > div:first-child {
+                    padding: 24px 16px !important;
+                  }
+
+                  .brand-story-container {
+                    padding: 20px 12px !important;
+                  }
+                }
+
+                /* Touch optimizations for mobile */
+                @media (hover: none) and (pointer: coarse) {
+                  .hero-grid-container > div,
+                  .products-grid-container > div,
+                  .brand-story-container button {
+                    transform: none !important;
+                  }
+
+                  .hero-grid-container > div:active,
+                  .products-grid-container > div:active {
+                    transform: scale(0.98) !important;
+                    transition: transform 0.1s ease !important;
+                  }
+                }
+              `}</style>
+
+            </div>
           </div>
         </div>
       )}
