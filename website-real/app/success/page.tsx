@@ -1,32 +1,39 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 export default function SuccessPage() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
-  const [orderDetails, setOrderDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  const router = useRouter();
 
   useEffect(() => {
     if (sessionId) {
-      // Here you could fetch order details from your API if needed
-      // For now, we'll just show a success message
-      setLoading(false);
+      // Check if the user came from the create-account page
+      const fromAccountCreation = searchParams.get('from') === 'account-creation';
+      
+      if (!fromAccountCreation) {
+        // If not from account creation, redirect to the create-account page
+        router.push(`/success/create-account?session_id=${sessionId}`);
+        return;
+      }
       
       // Clear the cart from localStorage only on successful payment
       localStorage.removeItem('cart');
       
       // Also trigger a custom event to notify CartContext
       window.dispatchEvent(new Event('cartCleared'));
+      setLoading(false);
     } else {
       // If no session ID, just stop loading (this means they came here directly)
       setLoading(false);
     }
-  }, [sessionId]);
+  }, [sessionId, router, searchParams]);
 
   if (loading) {
     return (
@@ -84,7 +91,7 @@ export default function SuccessPage() {
           transition={{ delay: 0.4 }}
           className="text-gray-600 mb-6"
         >
-          Thank you for your order. We've received your payment and will process your order shortly.
+          Thank you for your order. We&apos;ve received your payment and will process your order shortly.
         </motion.p>
 
         {sessionId && (
