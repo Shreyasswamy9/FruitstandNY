@@ -58,7 +58,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Create line items for Stripe
-    const lineItems = items.map((item: any) => ({
+    type CheckoutItem = {
+      name: string;
+      image?: string;
+      productId: string;
+      size?: string;
+      color?: string;
+      price: number;
+      quantity: number;
+    };
+
+    const lineItems = items.map((item: CheckoutItem) => ({
       price_data: {
         currency: 'usd',
         product_data: {
@@ -105,9 +115,9 @@ export async function POST(request: NextRequest) {
 
     // Create Stripe checkout session
     // Prepare session configuration
-    const sessionConfig: any = {
+    const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ['card'],
-      line_items: lineItems,
+      line_items: lineItems as Stripe.Checkout.SessionCreateParams.LineItem[],
       mode: 'payment',
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cart`,
