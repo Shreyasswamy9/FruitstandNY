@@ -98,9 +98,10 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
           zIndex: 1,
           display: 'grid',
           gap: isMobile ? 18 : 32,
-          width: 'fit-content',
+          width: '100%',
+          maxWidth: isMobile ? '100%' : 'fit-content',
           margin: '0 auto',
-          padding: isMobile ? '18px 0' : 0,
+          padding: isMobile ? '12px 16px' : 0,
           gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, auto)',
           gridAutoRows: 'auto',
           gridAutoFlow: 'row dense',
@@ -139,7 +140,7 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
             key={product.id}
             style={{
               background: 'transparent',
-              borderRadius: isMobile ? 18 : 0,
+              borderRadius: isMobile ? 16 : 0,
               boxShadow: isMobile ? '0 4px 24px 0 rgba(0,0,0,0.10)' : 'none',
               overflow: 'hidden',
               cursor: 'pointer',
@@ -151,10 +152,10 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
               color: 'inherit',
               minHeight: isMobile ? 'auto' : 0,
               height: isMobile ? 'auto' : '100%',
-              width: isMobile ? '92vw' : '100%',
-              maxWidth: isMobile ? '96vw' : '100vw',
-              margin: isMobile ? '0 auto' : 0,
-              marginBottom: isMobile ? 12 : 0,
+              width: isMobile ? '100%' : '100%',
+              maxWidth: isMobile ? '100%' : '100vw',
+              margin: 0,
+              marginBottom: 0,
               boxSizing: 'border-box',
               position: 'relative',
               transform: isActive ? 'scale(1.01)' : 'none',
@@ -195,7 +196,7 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
                 setMobileHover(null);
               }
             }}
-            onClick={e => {
+            onClick={() => {
               if (!isMobile) {
                 window.location.href = getProductLink();
               }
@@ -211,11 +212,11 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              width: 'fit-content',
+              width: '100%',
               height: 'fit-content',
               margin: 0,
               padding: 0,
-              borderRadius: 18,
+              borderRadius: isMobile ? 16 : 18,
               boxShadow: '0 4px 18px 0 rgba(0,0,0,0.10)',
             }}>
               <Image
@@ -231,6 +232,8 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
                   transition: 'opacity 0.5s cubic-bezier(.4,0,.2,1)',
                   opacity: isActive ? 0 : 1,
                   zIndex: 1,
+                  width: '100%',
+                  height: 'auto',
                 }}
                 priority
               />
@@ -248,6 +251,8 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
                     transition: 'opacity 0.5s cubic-bezier(.4,0,.2,1)',
                     opacity: isActive ? 1 : 0,
                     zIndex: 1,
+                    width: '100%',
+                    height: 'auto',
                   }}
                   priority
                 />
@@ -289,7 +294,7 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
                 <p style={{
                   color: '#444',
                   fontWeight: 500,
-                  fontSize: isMobile ? '1.08rem' : '1.13rem',
+                  fontSize: isMobile ? '0.85rem' : '1.13rem',
                   margin: 0,
                   lineHeight: 1.13,
                   letterSpacing: '0.01em',

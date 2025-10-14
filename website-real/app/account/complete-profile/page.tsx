@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useUser } from "@clerk/nextjs"
+import { supabase } from "../../supabase-client"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
 import StaggeredMenu from "../../../components/StagerredMenu"
@@ -52,7 +52,32 @@ export default function CompleteProfilePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   
-  const { isLoaded, isSignedIn, user } = useUser()
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [isSignedIn, setIsSignedIn] = useState(false)
+  const [user, setUser] = useState<any | null>(null)
+
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      const { data } = await supabase.auth.getUser()
+      if (!mounted) return
+      setUser(data.user ?? null)
+      setIsSignedIn(!!data.user)
+      setIsLoaded(true)
+    })()
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      const u = session?.user ?? null
+      setUser(u)
+      setIsSignedIn(!!u)
+      setIsLoaded(true)
+    })
+
+    return () => {
+      mounted = false
+      listener.subscription.unsubscribe()
+    }
+  }, [])
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get("redirect") || "account"
@@ -128,9 +153,9 @@ export default function CompleteProfilePage() {
     }
   }
 
-  const handleSocialSignIn = (provider: string) => {
-    // Clerk handles social sign-in through its components - no redirect needed
-    console.log(`Social sign-in with ${provider} - handled by Clerk modal`)
+  const handleSocialSignIn = async (provider: string) => {
+    // Use Supabase OAuth flow
+    await supabase.auth.signInWithOAuth({ provider: provider as any })
   }
 
   if (!isLoaded) {

@@ -8,7 +8,8 @@ import { motion } from "framer-motion"
 import { useCart } from "../../components/CartContext"
 import Image from "next/image"
 import { useCheckout } from "../../hooks/useCheckout"
-import { useUser, SignInButton, SignUpButton } from "@clerk/nextjs"
+import { supabase } from "../supabase-client"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 
 export default function CartPage() {
@@ -84,7 +85,29 @@ export default function CartPage() {
   })
   const { items, removeFromCart, clearCart, addToCart } = useCart();
   const { redirectToCheckout, loading: checkoutLoading, error: checkoutError } = useCheckout();
-  const { isSignedIn, user } = useUser();
+  const [isSignedIn, setIsSignedIn] = React.useState(false)
+  const [user, setUser] = React.useState<any | null>(null)
+
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      const { data } = await supabase.auth.getUser()
+      if (!mounted) return
+      setUser(data.user ?? null)
+      setIsSignedIn(!!data.user)
+    })()
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      const u = session?.user ?? null
+      setUser(u)
+      setIsSignedIn(!!u)
+    })
+
+    return () => {
+      mounted = false
+      listener.subscription.unsubscribe()
+    }
+  }, [])
   const router = useRouter();
 
   const getCartTotal = () => {
@@ -332,7 +355,8 @@ export default function CartPage() {
 
     // Check if user is authenticated
     if (!isSignedIn && !showGuestCheckout) {
-      // Clerk will handle the sign in modal
+      // Redirect to Supabase sign-in page
+      router.push('/signin')
       return;
     }
 

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
+import { supabase } from "../supabase-client";
 import { useRouter } from "next/navigation";
 import StaggeredMenu from "../../components/StagerredMenu";
 import { motion } from "framer-motion";
@@ -27,7 +27,32 @@ export default function AccountPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'settings'>('profile');
-  const { isLoaded, isSignedIn, user } = useUser();
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [isSignedIn, setIsSignedIn] = useState(false)
+  const [user, setUser] = useState<any | null>(null)
+
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      const { data } = await supabase.auth.getUser()
+      if (!mounted) return
+      setUser(data.user ?? null)
+      setIsSignedIn(!!data.user)
+      setIsLoaded(true)
+    })()
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      const u = session?.user ?? null
+      setUser(u)
+      setIsSignedIn(!!u)
+      setIsLoaded(true)
+    })
+
+    return () => {
+      mounted = false
+      listener.subscription.unsubscribe()
+    }
+  }, [])
   const router = useRouter();
 
   useEffect(() => {
@@ -143,7 +168,7 @@ export default function AccountPage() {
                   <li>• Saved addresses</li>
                 </ul>
                 <button
-                  onClick={() => window.location.reload()}
+                  onClick={() => router.push('/signin')}
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105"
                 >
                   Sign In
