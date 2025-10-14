@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { useUser, useClerk } from "@clerk/nextjs"
+import { supabase } from "../app/supabase-client"
 import Link from "next/link"
 import ShopDropdown from "./ShopDropdown"
 
@@ -14,8 +14,35 @@ interface NavbarProps {
 export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-  const { isLoaded, isSignedIn, user } = useUser()
-  const { signOut } = useClerk()
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [isSignedIn, setIsSignedIn] = useState(false)
+  const [user, setUser] = useState<any | null>(null)
+
+  useEffect(() => {
+    let mounted = true
+
+    async function init() {
+      const { data } = await supabase.auth.getUser()
+      if (!mounted) return
+      setUser(data.user ?? null)
+      setIsSignedIn(!!data.user)
+      setIsLoaded(true)
+    }
+
+    init()
+
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      const u = session?.user ?? null
+      setUser(u)
+      setIsSignedIn(!!u)
+      setIsLoaded(true)
+    })
+
+    return () => {
+      mounted = false
+      listener.subscription.unsubscribe()
+    }
+  }, [])
 
   const handleShopHover = (open: boolean) => {
     if (window.innerWidth > 768) {
@@ -30,9 +57,8 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
   }
 
   const handleSignOut = async () => {
-    await signOut(() => {
-      window.location.href = "/"
-    })
+    await supabase.auth.signOut()
+    window.location.href = "/"
   }
 
   return (
@@ -96,7 +122,8 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
                       >
                         My Account
                       </Link>
-                      {user?.publicMetadata?.role === "admin" && (
+                      {/* Note: Clerk publicMetadata.role replaced. If you store role in user metadata or a separate table, adapt accordingly. */}
+                      {user?.user_metadata?.role === "admin" && (
                         <Link
                           href="/admin"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

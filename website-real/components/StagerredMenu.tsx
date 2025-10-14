@@ -1,8 +1,18 @@
-import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
-import Image from 'next/image';
+"use client";
+
+import React, { useCallback, useLayoutEffect, useRef, useState, useEffect } from 'react';
+//import Image from 'next/image';
 import Link from 'next/link';
 import { gsap } from 'gsap';
-import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton, useUser } from '@clerk/nextjs';
+import { supabase } from '../app/supabase-client';
+import type { User } from '@supabase/supabase-js';
+
+// minimal shape for Supabase user metadata used in the UI
+interface SupabaseUserMetadata {
+  avatar_url?: string;
+  full_name?: string;
+  role?: string;
+}
 
 export interface StaggeredMenuItem {
   label: string;
@@ -38,7 +48,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   displaySocials = true,
   displayItemNumbering = true,
   className,
-  logoUrl = '/src/assets/logos/reactbits-gh-white.svg',
+  // logoUrl intentionally omitted (not used in this component)
   menuButtonColor = '#fff',
   openMenuButtonColor = '#fff',
   changeMenuColorOnOpen = true,
@@ -48,8 +58,40 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 }: StaggeredMenuProps) => {
   const [open, setOpen] = useState(false);
   const openRef = useRef(false);
-  const { user } = useUser();
-  const isAdmin = user?.publicMetadata?.role === 'admin';
+
+  // Supabase user state
+  const [user, setUser] = useState<User | null>(null);
+  const userMeta = (user as unknown as { user_metadata?: SupabaseUserMetadata })?.user_metadata;
+  const isAdmin = userMeta?.role === 'admin';
+
+  useEffect(() => {
+    let mounted = true;
+
+    // get current user
+    supabase.auth.getUser().then(({ data }) => {
+      if (!mounted) return;
+      setUser(data.user ?? null);
+    });
+
+    // subscribe to auth state changes
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      mounted = false;
+      // unsubscribe shapes differ between versions of supabase-js
+      const sub = subscription as unknown as {
+        subscription?: { unsubscribe?: () => void };
+        unsubscribe?: () => void;
+      };
+      sub.subscription?.unsubscribe?.();
+      sub.unsubscribe?.();
+    };
+  }, []);
+
+  // (Google OAuth is handled on the /signin page using @supabase/auth-ui-react)
 
   const panelRef = useRef<HTMLDivElement | null>(null);
   const preLayersRef = useRef<HTMLDivElement | null>(null);
@@ -193,6 +235,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
     openTlRef.current = tl;
     return tl;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   },[position]);
 
   const playOpen = useCallback(() => {
@@ -432,20 +475,16 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
           <div className="sm-panel-inner flex-1 flex flex-col gap-5">
             {/* Authentication Section */}
             <div className="mb-8">
-              <SignedIn>
+              {user ? (
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-4">
-                    <UserButton
-                      afterSignOutUrl="/"
-                      appearance={{
-                        elements: {
-                          avatarBox: "w-10 h-10",
-                          userButtonPopoverCard: "bg-white shadow-lg rounded-lg",
-                          userButtonPopoverActionButton: "text-sm text-gray-700 hover:bg-gray-100 w-full text-left px-4 py-2"
-                        }
-                      }}
-                    />
-                    <span className="text-lg font-medium">{user?.fullName || 'Welcome'}</span>
+                    {userMeta?.avatar_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={userMeta.avatar_url} alt="avatar" className="w-10 h-10 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-10 h-10 bg-gray-200 rounded-full" />
+                    )}
+                    <span className="text-lg font-medium">{userMeta?.full_name || user?.email || 'Welcome'}</span>
                   </div>
                   <div className="flex flex-col gap-2">
                     <Link
@@ -472,23 +511,35 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                         Admin Dashboard
                       </Link>
                     )}
+                    <button
+                      onClick={async () => {
+                        // sign out via supabase
+                        await supabase.auth.signOut();
+                        setUser(null);
+                        if (openRef.current) {
+                          toggleMenu();
+                        }
+                      }}
+                      className="text-left text-gray-700 hover:text-black transition-colors mt-2"
+                    >
+                      Sign out
+                    </button>
                   </div>
                 </div>
-              </SignedIn>
-              <SignedOut>
+              ) : (
                 <div className="flex flex-col gap-3 mb-6">
-                  <SignInButton mode="modal">
+                  <Link href="/signin">
                     <button className="w-full py-2 px-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors">
                       Sign In
                     </button>
-                  </SignInButton>
-                  <SignUpButton mode="modal">
+                  </Link>
+                  <Link href="/signup">
                     <button className="w-full py-2 px-4 border-2 border-black text-black rounded-lg hover:bg-gray-100 transition-colors">
                       Sign Up
                     </button>
-                  </SignUpButton>
+                  </Link>
                 </div>
-              </SignedOut>
+              )}
             </div>
             <ul
               className="sm-panel-list list-none m-0 p-0 flex flex-col gap-2"

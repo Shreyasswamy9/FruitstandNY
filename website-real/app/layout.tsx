@@ -1,8 +1,6 @@
 
 import type { Metadata } from "next"
-import {
-  ClerkProvider
-} from '@clerk/nextjs'
+// Clerk removed. Use Supabase client or custom auth provider if needed.
 import { Geist, Geist_Mono } from 'next/font/google'
 import "./globals.css"
 import ClientRootLayout from "../components/ClientRootLayout"
@@ -43,19 +41,17 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body 
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-          suppressHydrationWarning
-        >
-          <CartProvider>
-            <ClientRootLayout>
-              {children}
-            </ClientRootLayout>
-          </CartProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en">
+      <body 
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
+      >
+        <CartProvider>
+          <ClientRootLayout>
+            {children}
+          </ClientRootLayout>
+        </CartProvider>
+      </body>
+    </html>
   )
 }

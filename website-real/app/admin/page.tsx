@@ -1,21 +1,49 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
+import { supabase } from "../supabase-client";
 import Navbar from "@/components/Navbar";
 
 export default function AdminPage() {
   const [isShopDropdownOpen, setIsShopDropdownOpen] = useState(false);
-  const { isLoaded, isSignedIn, user } = useUser();
-  const router = useRouter();
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [isSignedIn, setIsSignedIn] = useState(false)
+  const [user, setUser] = useState<unknown | null>(null)
 
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      const { data } = await supabase.auth.getUser()
+      if (!mounted) return
+      setUser(data.user ?? null)
+      setIsSignedIn(!!data.user)
+      setIsLoaded(true)
+    })()
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      const u = session?.user ?? null
+      setUser(u)
+      setIsSignedIn(!!u)
+      setIsLoaded(true)
+    })
+
+    return () => {
+      mounted = false
+      listener.subscription.unsubscribe()
+    }
+  }, [])
   useEffect(() => {
     if (!isLoaded) return; // Still loading
     
-    if (!isSignedIn || user?.publicMetadata?.role !== "admin") {
-      // Stay on current page, Clerk will handle authentication via modal
-      return;
+    // If not signed in or not admin, don't render admin UI.
+    type UserWithMetadata = { user_metadata?: { role?: string } }
+    let role: string | undefined = undefined
+    if (user && typeof user === 'object') {
+      const u = user as UserWithMetadata
+      role = u.user_metadata?.role
+    }
+    if (!isSignedIn || role !== "admin") {
+      return
     }
   }, [isLoaded, isSignedIn, user]);
 
@@ -40,7 +68,7 @@ export default function AdminPage() {
     }
   };
 
-  if (status === "loading") {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar isShopDropdownOpen={isShopDropdownOpen} setIsShopDropdownOpen={setIsShopDropdownOpen} />
@@ -58,7 +86,13 @@ export default function AdminPage() {
     );
   }
 
-  if (user?.publicMetadata?.role !== "admin") {
+  type UserWithMetadata = { user_metadata?: { role?: string } }
+  let role: string | undefined = undefined
+  if (user && typeof user === 'object') {
+    const u = user as UserWithMetadata
+    role = u.user_metadata?.role
+  }
+  if (role !== "admin") {
     return null;
   }
 

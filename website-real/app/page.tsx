@@ -918,9 +918,10 @@ export default function Home() {
                   className="products-grid-container"
                   style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(clamp(240px, 45vw, 280px), 1fr))",
-                  gap: "clamp(16px, 4vw, 32px)",
+                  gridTemplateColumns: window.innerWidth <= 768 ? "repeat(2, 1fr)" : "repeat(auto-fit, minmax(280px, 1fr))",
+                  gap: window.innerWidth <= 768 ? "12px" : "clamp(16px, 4vw, 32px)",
                   marginBottom: "clamp(48px, 8vw, 80px)",
+                  padding: window.innerWidth <= 768 ? "0 16px" : "0",
                 }}
                 >
                   {/* Product Cards */}
@@ -934,12 +935,13 @@ export default function Home() {
                       key={index}
                       style={{
                         position: "relative",
-                        borderRadius: "16px",
+                        borderRadius: window.innerWidth <= 768 ? "12px" : "16px",
                         overflow: "hidden",
                         cursor: "pointer",
                         transition: "all 0.3s ease",
                         background: "#fff",
                         boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+                        width: "100%",
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.transform = "translateY(-8px)";
@@ -961,7 +963,7 @@ export default function Home() {
                     >
                       <div style={{
                         position: "relative",
-                        paddingBottom: "120%",
+                        paddingBottom: window.innerWidth <= 768 ? "130%" : "120%",
                         overflow: "hidden",
                       }}>
                         <img
@@ -979,20 +981,21 @@ export default function Home() {
                         />
                       </div>
                       <div style={{
-                        padding: "24px",
+                        padding: window.innerWidth <= 768 ? "12px 16px" : "24px",
                       }}>
                         <h3 style={{
-                          fontSize: "1.3rem",
+                          fontSize: window.innerWidth <= 768 ? "0.95rem" : "1.3rem",
                           fontWeight: 500,
-                          marginBottom: "8px",
+                          marginBottom: window.innerWidth <= 768 ? "4px" : "8px",
                           color: "#111",
                         }}>
                           {product.name}
                         </h3>
                         <p style={{
-                          fontSize: "1.1rem",
+                          fontSize: window.innerWidth <= 768 ? "0.9rem" : "1.1rem",
                           fontWeight: 600,
                           color: "#666",
+                          margin: 0,
                         }}>
                           {product.price}
                         </p>
@@ -1153,6 +1156,7 @@ export default function Home() {
                   /* Products Grid Mobile */
                   .products-grid-container > div {
                     border-radius: 12px !important;
+                    width: 100% !important;
                   }
 
                   .products-grid-container > div > div:first-child {
@@ -1169,7 +1173,8 @@ export default function Home() {
                   }
 
                   .products-grid-container p {
-                    font-size: 1rem !important;
+                    font-size: 0.9rem !important;
+                    margin: 0 !important;
                   }
 
                   /* Brand Story Mobile */
@@ -1206,8 +1211,12 @@ export default function Home() {
                 @media (max-width: 480px) {
                   .products-grid-container {
                     grid-template-columns: 1fr !important;
-                    gap: 20px !important;
-                    padding: 0 20px !important;
+                    gap: 12px !important;
+                    padding: 0 16px !important;
+                  }
+
+                  .products-grid-container > div > div:first-child {
+                  padding-bottom: 140% !important;
                   }
 
                   /* Extra small mobile adjustments */
