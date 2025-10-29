@@ -10,10 +10,14 @@ export default function ShopPage() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
 
   return (
-  <div className="min-h-screen" style={{ background: '#fff' }}>
+  <div className="min-h-screen" style={{ background: '#fff', overflow: menuOpen ? 'hidden' : 'auto' }}>
 
       {/* Category Navigation */}
-      <div className="pt-20 pb-8 px-4 sm:px-6 lg:px-8" style={{ position: 'relative', zIndex: 10 }}>
+      <div 
+        className="pt-20 pb-8 px-4 sm:px-6 lg:px-8" 
+        style={{ position: 'relative', zIndex: 10, pointerEvents: 'none' }}
+        onClick={() => console.log('Category container clicked - should NOT see this')}
+      >
         <div className="max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -21,6 +25,7 @@ export default function ShopPage() {
             transition={{ duration: 0.6 }}
             className="flex flex-wrap justify-center gap-3 sm:gap-4"
             style={{ pointerEvents: 'auto' }}
+            onClick={() => console.log('Motion div clicked - OK to see this')}
           >
             {['T-Shirts', 'Jackets', 'Tracksuits', 'Jerseys', 'Hats'].map((category, index) => {
               const isActive = activeCategory === category;
@@ -45,11 +50,12 @@ export default function ShopPage() {
                       ? 'bg-black text-white border-black shadow-lg' 
                       : 'bg-white text-gray-700 border-gray-200 hover:bg-black hover:text-white hover:border-black'
                   }`}
+                  style={{ pointerEvents: 'auto' }}
                   onClick={(e) => {
+                    console.log('Button clicked:', category);
                     e.preventDefault();
                     e.stopPropagation();
                     setActiveCategory(activeCategory === category ? null : category);
-                    console.log(`Filter by ${category}`);
                   }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -77,7 +83,8 @@ export default function ShopPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         className="pb-16"
-        style={{ position: 'relative', zIndex: 5, pointerEvents: 'auto' }}
+        style={{ position: 'relative', zIndex: 1 }}
+        onClick={() => console.log('Products grid container clicked - OK to see this')}
       >
         <ProductsGrid categoryFilter={activeCategory} />
       </motion.div>
@@ -142,7 +149,10 @@ export default function ShopPage() {
       </footer>
 
       {/* StaggeredMenu Component */}
-      <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 10001, pointerEvents: menuOpen ? "auto" : "none" }}>
+      <div 
+        style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 10001, pointerEvents: "none" }}
+        onClick={() => console.log('Menu wrapper clicked - should NOT see this unless menu is open')}
+      >
         <StaggeredMenu
           position="right"
           colors={['#18191a', '#232324']}
@@ -176,6 +186,37 @@ export default function ShopPage() {
           pointer-events: auto !important;
           position: relative !important;
           z-index: 10003 !important;
+        }
+
+        /* Menu button should always be clickable */
+        .custom-staggered-menu .sm-toggle {
+          pointer-events: auto !important;
+        }
+
+        /* Ensure the menu wrapper doesn't block content below */
+        .custom-staggered-menu:not([data-open]) {
+          pointer-events: none !important;
+        }
+
+        /* But keep the button clickable even when menu is closed */
+        .custom-staggered-menu:not([data-open]) .staggered-menu-header,
+        .custom-staggered-menu:not([data-open]) .sm-toggle {
+          pointer-events: auto !important;
+        }
+
+        /* When menu is open, everything should be interactive */
+        .custom-staggered-menu[data-open] {
+          pointer-events: auto !important;
+        }
+
+        /* When menu is open, allow panel interactions */
+        .custom-staggered-menu[data-open] .staggered-menu-panel {
+          pointer-events: auto !important;
+        }
+
+        /* When menu is closed, block panel but allow button */
+        .custom-staggered-menu:not([data-open]) .staggered-menu-panel {
+          pointer-events: none !important;
         }
 
         /* Force black text on menu button with highest specificity */
@@ -260,19 +301,9 @@ export default function ShopPage() {
           color: #000000 !important;
         }
 
-        /* When menu is open, allow interactions with the menu panel */
-        .custom-staggered-menu[data-open] {
-          pointer-events: auto !important;
-        }
-        
         /* Force all menu components to be clickable */
-        .custom-staggered-menu * {
+        .custom-staggered-menu[data-open] * {
           pointer-events: auto !important;
-        }
-        
-        /* Override for non-interactive areas when menu is closed */
-        .custom-staggered-menu:not([data-open]) .staggered-menu-panel {
-          pointer-events: none !important;
         }
 
         @media (max-width: 768px) {

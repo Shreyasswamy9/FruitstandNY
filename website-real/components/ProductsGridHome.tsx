@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export interface Product {
   id: number;
@@ -48,7 +48,15 @@ interface ProductsGridProps {
 
 export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {}) {
   const [hovered, setHovered] = useState<number | null>(null);
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+  const [isMobile, setIsMobile] = useState(true);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   // Filter products based on category
   const gridProducts = categoryFilter 
@@ -98,16 +106,18 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
           zIndex: 1,
           display: 'grid',
           gap: isMobile ? 18 : 32,
-          width: '100%',
-          maxWidth: isMobile ? '100%' : 'fit-content',
+          width: isMobile ? '100%' : 'auto',
+          maxWidth: '100%',
           margin: '0 auto',
           padding: isMobile ? '12px 16px' : 0,
           gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, auto)',
           gridAutoRows: 'auto',
           gridAutoFlow: 'row dense',
-          overflowX: 'visible',
+          overflowX: 'auto',
           alignItems: 'start',
           background: 'transparent',
+          justifyContent : 'center',
+          outline: '2px solid red',
         }}
       >
       {gridProducts.map((product) => {
@@ -151,9 +161,9 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
               textDecoration: 'none',
               color: 'inherit',
               minHeight: isMobile ? 'auto' : 0,
-              height: isMobile ? 'auto' : '100%',
-              width: isMobile ? '100%' : '100%',
-              maxWidth: isMobile ? '100%' : '100vw',
+              height: 'auto',
+              width: isMobile ? '100%' : '320px',
+              maxWidth: '100%',
               margin: 0,
               marginBottom: 0,
               boxSizing: 'border-box',
@@ -161,16 +171,26 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
               transform: isActive ? 'scale(1.01)' : 'none',
               zIndex: isActive ? 10 : 1,
               justifyContent: isMobile ? 'center' : 'stretch',
+              pointerEvents: 'auto',
+              outline: '2px solid blue',
             }}
-            onMouseEnter={() => { if (!isMobile) setHovered(product.id); }}
-            onMouseLeave={() => { if (!isMobile) setHovered(null); }}
+            onMouseEnter={() => { 
+              console.log('MOUSE ENTER:', product.name);
+              if (!isMobile) setHovered(product.id); 
+            }}
+            onMouseLeave={() => { 
+              console.log('MOUSE LEAVE:', product.name);
+              if (!isMobile) setHovered(null); 
+            }}
             onTouchStart={() => {
+              console.log('TOUCH START:', product.name);
               if (isMobile) {
                 touchState.current[product.id] = { start: Date.now(), moved: false };
                 setMobileHover(product.id);
               }
             }}
             onTouchMove={() => {
+              console.log('TOUCH MOVE:', product.name);
               if (isMobile) {
                 if (touchState.current[product.id]) {
                   touchState.current[product.id].moved = true;
@@ -178,26 +198,31 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
               }
             }}
             onTouchEnd={() => {
+              console.log('TOUCH END:', product.name, 'isMobile:', isMobile);
               if (isMobile) {
                 const state = touchState.current[product.id];
                 const touchTime = state ? Date.now() - state.start : 0;
+                console.log('Touch state:', state, 'time:', touchTime);
                 if (state && !state.moved && touchTime < 250) {
-                  // Tap: open product page
-                  setMobileHover(null);
+                  console.log('NAVIGATING TO:', getProductLink());
                   window.location.href = getProductLink();
                 } else {
-                  // Hold or scroll: revert hover image immediately on release
                   setMobileHover(null);
                 }
+                delete touchState.current[product.id];
               }
             }}
             onTouchCancel={() => {
+              console.log('TOUCH CANCEL:', product.name);
               if (isMobile) {
                 setMobileHover(null);
+                delete touchState.current[product.id];
               }
             }}
             onClick={() => {
+              console.log("CLICKED:", product.name, "isMobile:", isMobile);
               if (!isMobile) {
+                console.log('NAVIGATING TO:', getProductLink());
                 window.location.href = getProductLink();
               }
             }}
@@ -205,9 +230,10 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
             tabIndex={0}
           >
             <div style={{
+              pointerEvents: 'none',
               position: 'relative',
               background: 'transparent',
-              overflow: 'hidden', // ensure child corners are clipped
+              overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
