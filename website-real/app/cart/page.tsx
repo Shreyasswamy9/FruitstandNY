@@ -3,7 +3,7 @@
 
 import React, { useState } from "react"
 import Link from "next/link"
-import StaggeredMenu from "../../components/StagerredMenu"
+// import StaggeredMenu from "../../components/StagerredMenu"
 import { motion } from "framer-motion"
 import { useCart } from "../../components/CartContext"
 import Image from "next/image"
@@ -11,9 +11,10 @@ import { useCheckout } from "../../hooks/useCheckout"
 import { supabase } from "../supabase-client"
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import type { User } from "@supabase/supabase-js"
 
 export default function CartPage() {
-  const [menuOpen, setMenuOpen] = useState(false)
+  // const [menuOpen, setMenuOpen] = useState(false)
   const [couponCode, setCouponCode] = useState("")
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number; type: 'percentage' | 'fixed' | 'shipping' } | null>(null)
   const [couponError, setCouponError] = useState("")
@@ -85,8 +86,8 @@ export default function CartPage() {
   })
   const { items, removeFromCart, clearCart, addToCart } = useCart();
   const { redirectToCheckout, loading: checkoutLoading, error: checkoutError } = useCheckout();
-  const [isSignedIn, setIsSignedIn] = React.useState(false)
-  const [user, setUser] = React.useState<any | null>(null)
+  const [isSignedIn, setIsSignedIn] = useState(false)
+  const [user, setUser] = React.useState<User | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -397,8 +398,8 @@ export default function CartPage() {
           shipping: finalShipping,
           tax: tax,
           customerData: user ? {
-            email: user.emailAddresses[0]?.emailAddress || "",
-            name: user.fullName || "",
+            email: user.email || "",
+            name: user.user_metadata?.full_name || user.user_metadata?.name || "",
             // Add more user data if available from session
           } : undefined,
         });
@@ -521,8 +522,8 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="bg-white shadow-sm border-b pt-20 sm:pt-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
           <motion.h1 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -881,11 +882,12 @@ export default function CartPage() {
                           Sign in for faster checkout and exclusive offers, or continue as a guest.
                         </p>
                         <div className="flex flex-col space-y-2">
-                          <SignInButton mode="modal">
-                            <button className="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                          <button
+                            onClick={() => router.push('/signin')}
+                            className="w-full px-4 py- bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                            >
                               Sign In for Faster Checkout
                             </button>
-                          </SignInButton>
                           <button
                             onClick={handleContinueAsGuest}
                             className="px-4 py-2 border border-blue-300 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-50 transition-colors"
@@ -1136,11 +1138,11 @@ export default function CartPage() {
                           <p className="text-xs text-gray-500">
                             Want faster checkout next time?
                           </p>
-                          <SignUpButton mode="modal">
-                            <button className="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                            <button 
+                            onClick={() => router.push('/signup')}
+                            className="text-xs text-blue-600 hover:text-blue-700 font-medium">
                               Create Account
                             </button>
-                          </SignUpButton>
                         </div>
                       </div>
                     </div>
@@ -1181,163 +1183,6 @@ export default function CartPage() {
         )}
       </div>
 
-      {/* StaggeredMenu Component */}
-      <div 
-        style={{ 
-          position: "fixed", 
-          top: 0, 
-          left: 0, 
-          width: "100vw", 
-          height: "100vh", 
-          zIndex: 10001, 
-          pointerEvents: menuOpen ? "auto" : "none",
-          opacity: 1,
-          visibility: "visible"
-        }}
-      >
-        <StaggeredMenu
-          position="right"
-          colors={['#18191a', '#232324']}
-          className="custom-staggered-menu"
-          items={[
-            { label: "Home", ariaLabel: "Go to homepage", link: "/" },
-            { label: "Shop", ariaLabel: "Browse our shop", link: "/shop" },
-            { label: "Contact", ariaLabel: "Contact us", link: "/contact" },
-            { label: "Account", ariaLabel: "Access your account", link: "/account" }
-          ]}
-          socialItems={[
-            { label: "Instagram", link: "https://instagram.com" },
-            { label: "Twitter", link: "https://twitter.com" }
-          ]}
-          displaySocials={true}
-          displayItemNumbering={true}
-          logoUrl="/images/Fruitscale Logo.png"
-          menuButtonColor="#000"
-          openMenuButtonColor="#000"
-          changeMenuColorOnOpen={false}
-          accentColor="#ff6b6b"
-          onMenuOpen={() => setMenuOpen(true)}
-          onMenuClose={() => setMenuOpen(false)}
-        />
-      </div>
-
-      {/* Optimized styles for StaggeredMenu performance */}
-      <style jsx>{`
-        .custom-staggered-menu {
-          will-change: transform;
-          backface-visibility: hidden;
-          perspective: 1000px;
-          opacity: 1 !important;
-          visibility: visible !important;
-        }
-
-        .custom-staggered-menu .staggered-menu-header {
-          pointer-events: auto !important;
-          position: relative !important;
-          z-index: 10003 !important;
-        }
-
-        .custom-staggered-menu .sm-toggle {
-          background: transparent !important;
-          border: none !important;
-          color: #000000 !important;
-          font-size: 16px !important;
-          font-weight: 400 !important;
-          padding: 8px 12px !important;
-          border-radius: 0 !important;
-          min-width: auto !important;
-          height: auto !important;
-          box-shadow: none !important;
-          backdrop-filter: none !important;
-          transition: color 0.2s ease !important;
-          pointer-events: auto !important;
-          cursor: pointer !important;
-        }
-
-        .custom-staggered-menu .sm-toggle:hover {
-          color: #333333 !important;
-          background: transparent !important;
-          transform: none !important;
-          box-shadow: none !important;
-        }
-
-        .custom-staggered-menu[data-open] .sm-toggle {
-          color: #ffffff !important;
-          background: transparent !important;
-        }
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease !important;
-          pointer-events: auto !important;
-          cursor: pointer !important;
-          will-change: transform, background-color !important;
-          transform: translateZ(0) !important;
-          opacity: 1 !important;
-          visibility: visible !important;
-        }
-
-        .custom-staggered-menu .sm-toggle:hover {
-          background: rgba(0, 0, 0, 0.9) !important;
-          border-color: rgba(255, 255, 255, 0.3) !important;
-          color: #fff !important;
-          transform: translateZ(0) scale(1.05) !important;
-          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
-        }
-
-        .custom-staggered-menu[data-open] .sm-toggle {
-          background: rgba(255, 255, 255, 0.95) !important;
-          border: 2px solid rgba(0, 0, 0, 0.2) !important;
-          color: #000 !important;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
-        }
-
-        .custom-staggered-menu[data-open] .sm-toggle:hover {
-          background: rgba(255, 255, 255, 1) !important;
-          border-color: rgba(0, 0, 0, 0.3) !important;
-          color: #000 !important;
-          transform: translateZ(0) scale(1.05) !important;
-        }
-
-        .custom-staggered-menu[data-open] {
-          pointer-events: auto !important;
-        }
-        
-        .custom-staggered-menu * {
-          pointer-events: auto !important;
-        }
-        
-        .custom-staggered-menu:not([data-open]) .staggered-menu-panel {
-          pointer-events: none !important;
-        }
-
-        /* Hardware acceleration for better performance */
-        .custom-staggered-menu .sm-panel,
-        .custom-staggered-menu .sm-prelayer,
-        .custom-staggered-menu .sm-toggle {
-          transform: translateZ(0);
-          will-change: transform;
-          backface-visibility: hidden;
-        }
-
-        @media (max-width: 768px) {
-          .custom-staggered-menu .sm-toggle {
-            min-width: 60px !important;
-            height: 36px !important;
-            font-size: 12px !important;
-            padding: 0 12px !important;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .custom-staggered-menu .sm-toggle {
-            min-width: 50px !important;
-            height: 32px !important;
-            font-size: 11px !important;
-            padding: 0 10px !important;
-          }
-        }
-      `}</style>
     </div>
   )
 }
