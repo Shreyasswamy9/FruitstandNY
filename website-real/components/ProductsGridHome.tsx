@@ -117,7 +117,6 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
           alignItems: 'start',
           background: 'transparent',
           justifyContent : 'center',
-          outline: '2px solid red',
         }}
       >
       {gridProducts.map((product) => {
@@ -172,25 +171,20 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
               zIndex: isActive ? 10 : 1,
               justifyContent: isMobile ? 'center' : 'stretch',
               pointerEvents: 'auto',
-              outline: '2px solid blue',
             }}
             onMouseEnter={() => { 
-              console.log('MOUSE ENTER:', product.name);
               if (!isMobile) setHovered(product.id); 
             }}
             onMouseLeave={() => { 
-              console.log('MOUSE LEAVE:', product.name);
               if (!isMobile) setHovered(null); 
             }}
             onTouchStart={() => {
-              console.log('TOUCH START:', product.name);
               if (isMobile) {
                 touchState.current[product.id] = { start: Date.now(), moved: false };
                 setMobileHover(product.id);
               }
             }}
             onTouchMove={() => {
-              console.log('TOUCH MOVE:', product.name);
               if (isMobile) {
                 if (touchState.current[product.id]) {
                   touchState.current[product.id].moved = true;
@@ -198,13 +192,10 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
               }
             }}
             onTouchEnd={() => {
-              console.log('TOUCH END:', product.name, 'isMobile:', isMobile);
               if (isMobile) {
                 const state = touchState.current[product.id];
                 const touchTime = state ? Date.now() - state.start : 0;
-                console.log('Touch state:', state, 'time:', touchTime);
                 if (state && !state.moved && touchTime < 250) {
-                  console.log('NAVIGATING TO:', getProductLink());
                   window.location.href = getProductLink();
                 } else {
                   setMobileHover(null);
@@ -213,16 +204,13 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
               }
             }}
             onTouchCancel={() => {
-              console.log('TOUCH CANCEL:', product.name);
               if (isMobile) {
                 setMobileHover(null);
                 delete touchState.current[product.id];
               }
             }}
             onClick={() => {
-              console.log("CLICKED:", product.name, "isMobile:", isMobile);
               if (!isMobile) {
-                console.log('NAVIGATING TO:', getProductLink());
                 window.location.href = getProductLink();
               }
             }}

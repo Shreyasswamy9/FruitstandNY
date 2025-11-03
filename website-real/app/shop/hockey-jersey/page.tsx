@@ -114,26 +114,52 @@ export default function HockeyJerseyPage() {
 
   return (
     <div style={{ height: '100vh', overflowY: 'auto' }}>
-      {/* Go Back text link top left */}
+      {/* Go Back button - top center to avoid overlap with logo (left) and menu (right) */}
       <span
-        onClick={() => router.back()}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('Go back button clicked');
+          try {
+            router.back();
+          } catch (error) {
+            console.log('Router.back failed, using window.history.back');
+            window.history.back();
+          }
+        }}
         style={{
           position: 'fixed',
           top: 24,
-          right: 24,
-          fontSize: 18,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontSize: 16,
           color: '#232323',
           cursor: 'pointer',
           fontWeight: 500,
-          zIndex: 100,
+          zIndex: 10005,
           userSelect: 'none',
-          background: 'none',
-          border: 'none',
-          padding: 0,
-          textDecoration: 'underline',
+          background: 'rgba(255, 255, 255, 0.9)',
+          border: '1px solid #e0e0e0',
+          borderRadius: '20px',
+          padding: '8px 16px',
+          textDecoration: 'none',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.2s ease',
+          pointerEvents: 'auto',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'rgba(255, 255, 255, 1)';
+          e.currentTarget.style.transform = 'translateX(-50%) translateY(-2px)';
+          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)';
+          e.currentTarget.style.transform = 'translateX(-50%) translateY(0px)';
+          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
         }}
       >
-        Go Back
+        ← Go Back
       </span>
       
       {/* Section 1: Product Details */}

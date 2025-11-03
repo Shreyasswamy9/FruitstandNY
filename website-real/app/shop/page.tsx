@@ -16,7 +16,6 @@ export default function ShopPage() {
       <div 
         className="pt-20 pb-8 px-4 sm:px-6 lg:px-8" 
         style={{ position: 'relative', zIndex: 10, pointerEvents: 'none' }}
-        onClick={() => console.log('Category container clicked - should NOT see this')}
       >
         <div className="max-w-4xl mx-auto">
           <motion.div
@@ -25,7 +24,6 @@ export default function ShopPage() {
             transition={{ duration: 0.6 }}
             className="flex flex-wrap justify-center gap-3 sm:gap-4"
             style={{ pointerEvents: 'auto' }}
-            onClick={() => console.log('Motion div clicked - OK to see this')}
           >
             {['T-Shirts', 'Jackets', 'Tracksuits', 'Jerseys', 'Hats'].map((category, index) => {
               const isActive = activeCategory === category;
@@ -52,7 +50,6 @@ export default function ShopPage() {
                   }`}
                   style={{ pointerEvents: 'auto' }}
                   onClick={(e) => {
-                    console.log('Button clicked:', category);
                     e.preventDefault();
                     e.stopPropagation();
                     setActiveCategory(activeCategory === category ? null : category);
@@ -84,7 +81,6 @@ export default function ShopPage() {
         transition={{ duration: 0.4 }}
         className="pb-16"
         style={{ position: 'relative', zIndex: 1 }}
-        onClick={() => console.log('Products grid container clicked - OK to see this')}
       >
         <ProductsGrid categoryFilter={activeCategory} />
       </motion.div>
@@ -150,8 +146,7 @@ export default function ShopPage() {
 
       {/* StaggeredMenu Component */}
       <div 
-        style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 10001, pointerEvents: "none" }}
-        onClick={() => console.log('Menu wrapper clicked - should NOT see this unless menu is open')}
+        style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 10001, pointerEvents: menuOpen ? "auto" : "none" }}
       >
         <StaggeredMenu
           position="right"
