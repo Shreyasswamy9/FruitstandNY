@@ -58,7 +58,7 @@ export default function SupabaseAuth() {
                 <Auth
                   supabaseClient={supabase}
                   appearance={appearance}
-                  providers={['google']}
+                  providers={['google','apple']}
                   socialLayout="horizontal"
                   localization={{
                     variables: {

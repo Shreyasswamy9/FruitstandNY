@@ -487,17 +487,6 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                     <span className="text-lg font-medium">{userMeta?.full_name || user?.email || 'Welcome'}</span>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <Link
-                      href="/account"
-                      className="text-gray-700 hover:text-black transition-colors"
-                      onClick={() => {
-                        if (openRef.current) {
-                          toggleMenu();
-                        }
-                      }}
-                    >
-                      My Account
-                    </Link>
                     {isAdmin && (
                       <Link
                         href="/admin"
@@ -511,19 +500,6 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                         Admin Dashboard
                       </Link>
                     )}
-                    <button
-                      onClick={async () => {
-                        // sign out via supabase
-                        await supabase.auth.signOut();
-                        setUser(null);
-                        if (openRef.current) {
-                          toggleMenu();
-                        }
-                      }}
-                      className="text-left text-gray-700 hover:text-black transition-colors mt-2"
-                    >
-                      Sign out
-                    </button>
                   </div>
                 </div>
               ) : (
