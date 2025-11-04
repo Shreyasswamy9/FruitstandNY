@@ -421,7 +421,7 @@ export default function CompleteProfilePage() {
           ]}
           displaySocials={true}
           displayItemNumbering={true}
-          logoUrl="/images/Fruitscale Logo.png"
+          logoUrl="/images/newlogo.png"
           menuButtonColor="#000"
           openMenuButtonColor="#000"
           changeMenuColorOnOpen={false}

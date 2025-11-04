@@ -26,8 +26,8 @@ export default function LogoButton() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        width: "clamp(70px, 16vw, 90px)",
-        height: "clamp(70px, 16vw, 90px)",
+        width: "clamp(100px, 20vw, 140px)",
+        height: "clamp(100px, 20vw, 140px)",
         background: "none",
         border: "none",
         borderRadius: 0,
@@ -52,7 +52,7 @@ export default function LogoButton() {
       }}
     >
       <img
-        src="/images/Fruitscale Logo.png"
+        src="/images/newlogo.png"
         alt="Fruitstand Logo"
         style={{ width: "100%", height: "100%", objectFit: "contain", border: "none", borderRadius: 0, boxShadow: "none", background: "none", display: "block", pointerEvents: "none" }}
       />

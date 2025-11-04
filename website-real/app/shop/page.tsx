@@ -164,7 +164,7 @@ export default function ShopPage() {
           ]}
           displaySocials={true}
           displayItemNumbering={true}
-          logoUrl="/images/Fruitscale Logo.png"
+          logoUrl="/images/newlogo.png"
           menuButtonColor="#000000"
           openMenuButtonColor="#000000"
           changeMenuColorOnOpen={false}

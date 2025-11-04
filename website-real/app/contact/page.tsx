@@ -646,7 +646,7 @@ export default function ContactPage() {
           ]}
           displaySocials={true}
           displayItemNumbering={true}
-          logoUrl="/images/Fruitscale Logo.png"
+          logoUrl="/images/newlogo.png"
           menuButtonColor="#ffffff"
           openMenuButtonColor="#000000"
           changeMenuColorOnOpen={true}

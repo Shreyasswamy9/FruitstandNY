@@ -119,7 +119,7 @@ export default function AccountPage() {
             ]}
             displaySocials={true}
             displayItemNumbering={true}
-            logoUrl="/images/Fruitscale Logo.png"
+            logoUrl="/images/newlogo.png"
             menuButtonColor="#ffffff"
             openMenuButtonColor="#000000"
             changeMenuColorOnOpen={true}
@@ -196,7 +196,7 @@ export default function AccountPage() {
             ]}
             displaySocials={true}
             displayItemNumbering={true}
-            logoUrl="/images/Fruitscale Logo.png"
+            logoUrl="/images/newlogo.png"
             menuButtonColor="#ffffff"
             openMenuButtonColor="#000000"
             changeMenuColorOnOpen={true}
@@ -238,7 +238,7 @@ export default function AccountPage() {
             ]}
             displaySocials={true}
             displayItemNumbering={true}
-            logoUrl="/images/Fruitscale Logo.png"
+            logoUrl="/images/newlogo.png"
             menuButtonColor="#ffffff"
             openMenuButtonColor="#000000"
             changeMenuColorOnOpen={true}
@@ -599,7 +599,7 @@ export default function AccountPage() {
           ]}
           displaySocials={true}
           displayItemNumbering={true}
-          logoUrl="/images/Fruitscale Logo.png"
+          logoUrl="/images/newlogo.png"
           menuButtonColor="#ffffff"
           openMenuButtonColor="#000000"
           changeMenuColorOnOpen={true}

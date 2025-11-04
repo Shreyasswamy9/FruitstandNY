@@ -1308,7 +1308,7 @@ export default function Home() {
             ]}
             displaySocials={true}
             displayItemNumbering={true}
-            logoUrl="/images/Fruitscale Logo.png"
+            logoUrl="/images/newlogo.png"
             menuButtonColor="#fff"
             openMenuButtonColor="#000"
             changeMenuColorOnOpen={true}

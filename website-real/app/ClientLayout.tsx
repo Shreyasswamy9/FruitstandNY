@@ -37,7 +37,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           ]}
           displaySocials={true}
           displayItemNumbering={true}
-          logoUrl="/images/Fruitscale Logo.png"
+          logoUrl="https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY@main/website-real/public/images/newlogo.png"
           menuButtonColor="#000000"
           openMenuButtonColor="#000000"
           changeMenuColorOnOpen={false}
