@@ -340,7 +340,7 @@ export default function ContactPage() {
             { label: "Cart", ariaLabel: "View your cart", link: "/cart" }
           ]}
           socialItems={[
-            { label: "Instagram", link: "https://instagram.com" },
+            { label: "Instagram", link: "https://www.instagram.com/fruitstandny/" },
             { label: "Twitter", link: "https://twitter.com" }
           ]}
           displaySocials={true}

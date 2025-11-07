@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { useState } from "react"
 import ProductsGrid from "../../components/ProductsGridHome"
 import StaggeredMenu from "../../components/StagerredMenu"
+import Link from "next/link"
 
 export default function ShopPage() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -104,17 +105,17 @@ export default function ShopPage() {
 
             {/* Quick Links */}
             <div className="flex flex-wrap justify-center gap-6 mb-8 text-sm">
-              <a href="/about" className="text-gray-600 hover:text-gray-900 transition-colors">About Us</a>
-              <a href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors">Contact</a>
-              <a href="/shipping" className="text-gray-600 hover:text-gray-900 transition-colors">Shipping</a>
-              <a href="/returns" className="text-gray-600 hover:text-gray-900 transition-colors">Returns</a>
-              <a href="/privacy" className="text-gray-600 hover:text-gray-900 transition-colors">Privacy Policy</a>
-              <a href="/terms" className="text-gray-600 hover:text-gray-900 transition-colors">Terms of Service</a>
+              <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors">About Us</Link>
+              <Link href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors">Contact</Link>
+              <Link href="/cookie-policy" className="text-gray-600 hover:text-gray-900 transition-colors">Cookie Policy</Link>
+              <Link href="/return-policy" className="text-gray-600 hover:text-gray-900 transition-colors">Return Policy</Link>
+              <Link href="/privacy-policy" className="text-gray-600 hover:text-gray-900 transition-colors">Privacy Policy</Link>
+              <Link href="/terms-and-conditions" className="text-gray-600 hover:text-gray-900 transition-colors">Terms and Conditions</Link>
             </div>
 
             {/* Social Media */}
             <div className="flex justify-center gap-6 mb-8">
-              <a href="https://instagram.com" className="text-gray-400 hover:text-gray-600 transition-colors">
+              <a href="https://www.instagram.com/fruitstandny/" className="text-gray-400 hover:text-gray-600 transition-colors">
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.618 5.367 11.986 11.988 11.986s11.987-5.368 11.987-11.986C24.004 5.367 18.635.001 12.017.001zM8.449 16.988c-1.297 0-2.348-1.051-2.348-2.348s1.051-2.348 2.348-2.348 2.348 1.051 2.348 2.348-1.051 2.348-2.348 2.348zm7.718 0c-1.297 0-2.348-1.051-2.348-2.348s1.051-2.348 2.348-2.348 2.348 1.051 2.348 2.348-1.051 2.348-2.348 2.348z"/>
                 </svg>
@@ -159,7 +160,7 @@ export default function ShopPage() {
             { label: "Contact", ariaLabel: "Contact us", link: "/contact" }
           ]}
           socialItems={[
-            { label: "Instagram", link: "https://instagram.com" },
+            { label: "Instagram", link: "https://www.instagram.com/fruitstandny/" },
             { label: "Twitter", link: "https://twitter.com" }
           ]}
           displaySocials={true}

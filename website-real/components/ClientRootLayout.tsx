@@ -48,7 +48,7 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
             { label: "Contact", ariaLabel: "Contact us", link: "/contact" }
           ]}
           socialItems={[
-            { label: "Instagram", link: "https://instagram.com" },
+            { label: "Instagram", link: "https://www.instagram.com/fruitstandny/" },
             { label: "Twitter", link: "https://twitter.com" }
           ]}
           displaySocials={true}
