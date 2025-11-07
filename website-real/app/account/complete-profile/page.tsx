@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { supabase } from "../../supabase-client"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
@@ -28,7 +28,7 @@ interface ProfileData {
   }
 }
 
-export default function CompleteProfilePage() {
+function CompleteProfileContent() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [formData, setFormData] = useState<ProfileData>({
     firstName: "",
@@ -94,9 +94,9 @@ export default function CompleteProfilePage() {
     if (user) {
       setFormData(prev => ({
         ...prev,
-        firstName: user.firstName || "",
-        lastName: user.lastName || "",
-        email: user.emailAddresses[0]?.emailAddress || ""
+        firstName: user.user_metadata?.first_name || "",
+        lastName: user.user_metadata?.last_name || "",
+        email: user.email || ""
       }))
     }
   }, [isLoaded, isSignedIn, user, router, redirectTo])
@@ -155,9 +155,21 @@ export default function CompleteProfilePage() {
     }
   }
 
-  const handleSocialSignIn = async (provider: 'google' | 'facebook' | 'github') => {
-    // Use Supabase OAuth flow
-    await supabase.auth.signInWithOAuth({ provider })
+  const handleSocialSignIn = async (provider: 'google' | 'apple') => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({ 
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/account/complete-profile`
+        }
+      })
+      if (error) {
+        setError(`Failed to sign in with ${provider}`)
+      }
+    } catch (error) {
+      console.error('OAuth sign-in error:', error)
+      setError(`Failed to sign in with ${provider}`)
+    }
   }
 
   if (!isLoaded) {
@@ -500,5 +512,13 @@ export default function CompleteProfilePage() {
         }
       `}</style>
     </div>
+  )
+}
+
+export default function CompleteProfilePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div></div>}>
+      <CompleteProfileContent />
+    </Suspense>
   )
 }

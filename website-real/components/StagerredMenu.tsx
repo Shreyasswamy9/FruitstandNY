@@ -10,6 +10,7 @@ import type { User } from '@supabase/supabase-js';
 // minimal shape for Supabase user metadata used in the UI
 interface SupabaseUserMetadata {
   avatar_url?: string;
+  picture?: string;
   full_name?: string;
   role?: string;
 }
@@ -63,6 +64,8 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   const [user, setUser] = useState<User | null>(null);
   const userMeta = (user as unknown as { user_metadata?: SupabaseUserMetadata })?.user_metadata;
   const isAdmin = userMeta?.role === 'admin';
+  // Resolved avatar URL (from user metadata or storage fallback)
+  const [resolvedAvatarUrl, setResolvedAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -90,6 +93,67 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       sub.unsubscribe?.();
     };
   }, []);
+
+  // Resolve avatar: prefer user metadata avatar_url, else attempt storage bucket fallback
+  useEffect(() => {
+    let cancelled = false;
+    async function resolveAvatar() {
+      if (!user) {
+        if (!cancelled) setResolvedAvatarUrl(null);
+        return;
+      }
+      // 1) Prefer Google-provided avatar URL from user metadata (avatar_url or picture)
+      const metaUrl = userMeta?.avatar_url || userMeta?.picture;
+      if (metaUrl) {
+        if (!cancelled) setResolvedAvatarUrl(metaUrl);
+        return;
+      }
+
+      // 2) Try identities payload for Google avatar (avatar_url or picture)
+      try {
+        const identities = (user as unknown as {
+          identities?: Array<{
+            provider?: string;
+            identity_data?: { avatar_url?: string; picture?: string };
+          }>;
+        })?.identities;
+        const googleIdentity = identities?.find((id) => id?.provider === 'google');
+        const idData = googleIdentity?.identity_data;
+        const idUrl = idData?.avatar_url || idData?.picture;
+        if (idUrl) {
+          if (!cancelled) setResolvedAvatarUrl(idUrl);
+          return;
+        }
+      } catch {
+        // ignore and fall through to storage fallback
+      }
+      // Attempt to find an uploaded profile picture in the 'users' bucket under user.id
+      try {
+        const { data, error } = await supabase.storage.from('users').list(user.id, { limit: 20 });
+        if (error || !data || !data.length) return; // nothing found
+        // Prefer a file starting with 'avatar', else first image file
+        const candidate =
+          data.find(f => /^avatar/i.test(f.name)) ||
+          data.find(f => /\.(png|jpg|jpeg|webp)$/i.test(f.name));
+        if (!candidate) return;
+        const path = `${user.id}/${candidate.name}`;
+        // Prefer a signed URL to work with private buckets; fall back to public URL if signing fails
+        const { data: signed, error: signErr } = await supabase.storage.from('users').createSignedUrl(path, 60 * 60);
+        if (!cancelled) {
+          if (!signErr && signed?.signedUrl) {
+            setResolvedAvatarUrl(signed.signedUrl);
+          } else {
+            const { data: pub } = supabase.storage.from('users').getPublicUrl(path);
+            if (pub?.publicUrl) setResolvedAvatarUrl(pub.publicUrl);
+          }
+        }
+      } catch {
+        // silent; fallback stays null
+      }
+    }
+    resolveAvatar();
+    return () => { cancelled = true; };
+  }, [user, userMeta?.avatar_url, userMeta?.picture]);
 
   // (Google OAuth is handled on the /signin page using @supabase/auth-ui-react)
 
@@ -478,11 +542,16 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
               {user ? (
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-4">
-                    {userMeta?.avatar_url ? (
+                    {resolvedAvatarUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={userMeta.avatar_url} alt="avatar" className="w-10 h-10 rounded-full object-cover" />
+                      <img
+                        src={resolvedAvatarUrl}
+                        alt="profile avatar"
+                        className="w-10 h-10 rounded-full object-cover"
+                        onError={() => setResolvedAvatarUrl(null)}
+                      />
                     ) : (
-                      <div className="w-10 h-10 bg-gray-200 rounded-full" />
+                      <div className="w-10 h-10 bg-gray-200 rounded-full" aria-label="No profile photo" />
                     )}
                     <span className="text-lg font-medium">{userMeta?.full_name || user?.email || 'Welcome'}</span>
                   </div>

@@ -1,72 +1,30 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { supabase } from "../supabase-client"
 import StaggeredMenu from "../../components/StagerredMenu"
-import FileAttachment from "../../components/FileAttachment"
-import { UploadResult } from "@/lib/storage"
-import type { User, Session } from "@supabase/supabase-js"
-
-interface TicketFormData {
-  name: string;
-  email: string;
-  phone: string;
-  subject: string;
-  category: string;
-  priority: string;
-  description: string;
-  orderId: string;
-  productId: string;
-}
-
-interface UserTicket {
-  ticketId: string;
-  subject: string;
-  category: string;
-  priority: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-  messages: Array<{
-    id: string;
-    message: string;
-    sender: 'user' | 'support';
-    timestamp: string;
-  }>;
-}
+import { useAuthUser } from "./hooks/useAuthUser"
+import { useTickets } from "./hooks/useTickets"
+import TicketForm from "./components/TicketForm"
+import TicketList from "./components/TicketList"
+import type { TicketFormData } from "./types"
+import type { UploadResult } from "@/lib/storage"
 
 export default function ContactPage() {
   const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'submit' | 'track'>('submit')
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState('')
-  const [userTickets, setUserTickets] = useState<UserTicket[]>([])
   const [trackingEmail, setTrackingEmail] = useState('')
-  const [selectedTicket, setSelectedTicket] = useState<UserTicket | null>(null)
-  const [newMessage, setNewMessage] = useState('')
-  const [user, setUser] = useState<User | null>(null)
-  const [userSession, setUserSession] = useState<Session | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [attachedFiles, setAttachedFiles] = useState<UploadResult[]>([])
+  const { user, session: userSession } = useAuthUser()
+  const { tickets: userTickets, fetchTickets, submitTicket, addMessage } = useTickets({ user, session: userSession })
 
-  // Get current user
-  useEffect(() => {
-    const getCurrentUser = async () => {
-      const { data } = await supabase.auth.getUser()
-      setUser(data.user)
-    }
-    getCurrentUser()
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null)
-      setUserSession(session)
-    })
-
-    return () => {
-      listener?.subscription?.unsubscribe()
-    }
-  }, [])
+  // Refs to scroll into view for each section
+  const submitRef = useRef<HTMLDivElement | null>(null)
+  const trackRef = useRef<HTMLDivElement | null>(null)
+  const [pendingScroll, setPendingScroll] = useState<"submit" | "track" | null>(null)
 
   const [formData, setFormData] = useState<TicketFormData>({
     name: '',
@@ -92,6 +50,19 @@ export default function ContactPage() {
     }
   }, [user])
 
+  // When a tab is activated via hero buttons, smooth scroll to the section
+  useEffect(() => {
+    if (!pendingScroll) return
+    if (pendingScroll !== activeTab) return
+    const el = pendingScroll === 'submit' ? submitRef.current : trackRef.current
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      // Optional: focus for accessibility after a brief delay
+      // setTimeout(() => el.focus?.(), 350)
+      setPendingScroll(null)
+    }
+  }, [activeTab, pendingScroll])
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
@@ -99,135 +70,9 @@ export default function ContactPage() {
     })
   }
 
-  const handleSubmitTicket = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    // Check if user is authenticated
-    if (!user) {
-      setSubmitMessage('Please sign in to submit a support ticket.')
-      // Redirect to sign-in page after a brief delay
-      setTimeout(() => {
-        router.push('/auth/signin')
-      }, 2000)
-      return
-    }
-    
-    setIsSubmitting(true)
-    setSubmitMessage('')
-
-    try {
-      // Prepare attachments data
-      const attachments = attachedFiles
-        .filter(file => file.success && file.data)
-        .map(file => ({
-          filename: file.data!.path.split('/').pop() || 'unknown',
-          url: file.data!.publicUrl,
-          size: file.data!.size,
-          type: file.data!.type
-        }));
-
-      const response = await fetch('/api/tickets', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(user && { 'Authorization': `Bearer ${userSession?.access_token}` })
-        },
-        body: JSON.stringify({
-          userName: formData.name,
-          userEmail: formData.email,
-          userPhone: formData.phone,
-          subject: formData.subject,
-          category: formData.category,
-          priority: formData.priority,
-          description: formData.description,
-          orderId: formData.orderId || undefined,
-          productId: formData.productId || undefined,
-          attachments
-        })
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        setSubmitMessage(`Ticket created successfully! Your ticket ID is: ${data.ticket.ticketId}`)
-        setFormData({
-          name: user?.user_metadata?.name || user?.email?.split('@')[0] || '',
-          email: user?.email || '',
-          phone: '',
-          subject: '',
-          category: '',
-          priority: 'medium',
-          description: '',
-          orderId: '',
-          productId: ''
-        })
-        setAttachedFiles([])
-        // Switch to tracking tab to show the new ticket
-        setActiveTab('track')
-        fetchUserTickets()
-      } else {
-        setSubmitMessage(`Error: ${data.error}`)
-      }
-    } catch (error) {
-      setSubmitMessage('Failed to submit ticket. Please try again.')
-      console.error('Error submitting ticket:', error)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const fetchUserTickets = async () => {
-    const email = user?.email || trackingEmail
-    if (!email) return
-
-    try {
-      const response = await fetch(`/api/tickets?email=${encodeURIComponent(email)}`, {
-        headers: {
-          ...(user && { 'Authorization': `Bearer ${userSession?.access_token}` })
-        }
-      })
-
-      const data = await response.json()
-      if (response.ok) {
-        setUserTickets(data.tickets || [])
-      }
-    } catch (error) {
-      console.error('Error fetching tickets:', error)
-    }
-  }
-
   const handleTrackTickets = () => {
     if (trackingEmail || user?.email) {
-      fetchUserTickets()
-    }
-  }
-
-  const addMessageToTicket = async (ticketId: string) => {
-    if (!newMessage.trim()) return
-
-    try {
-      const response = await fetch(`/api/tickets/${ticketId}/messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(user && { 'Authorization': `Bearer ${userSession?.access_token}` })
-        },
-        body: JSON.stringify({
-          message: newMessage
-        })
-      })
-
-      if (response.ok) {
-        setNewMessage('')
-        fetchUserTickets()
-        // Refresh selected ticket details
-        if (selectedTicket) {
-          const updatedTicket = userTickets.find(t => t.ticketId === ticketId)
-          if (updatedTicket) setSelectedTicket(updatedTicket)
-        }
-      }
-    } catch (error) {
-      console.error('Error adding message:', error)
+      fetchTickets(trackingEmail)
     }
   }
 
@@ -283,7 +128,7 @@ export default function ContactPage() {
           {/* Tab Navigation */}
           <div className="flex flex-wrap justify-center gap-4 mb-16">
             <button
-              onClick={() => setActiveTab('submit')}
+              onClick={() => { setActiveTab('submit'); setPendingScroll('submit') }}
               className={`px-8 py-3 rounded-full font-medium transition-all duration-300 transform hover:scale-105 ${
                 activeTab === 'submit'
                   ? 'bg-gray-900 text-white'
@@ -293,7 +138,7 @@ export default function ContactPage() {
               Submit Ticket
             </button>
             <button
-              onClick={() => setActiveTab('track')}
+              onClick={() => { setActiveTab('track'); setPendingScroll('track') }}
               className={`px-8 py-3 rounded-full font-medium transition-all duration-300 transform hover:scale-105 ${
                 activeTab === 'track'
                   ? 'bg-gray-900 text-white'
@@ -312,230 +157,77 @@ export default function ContactPage() {
           
           {/* Submit Ticket Tab */}
           {activeTab === 'submit' && (
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-200 shadow-xl max-w-4xl mx-auto">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-light text-gray-900 mb-4">Submit a Support Ticket</h2>
-                <p className="text-gray-600 text-lg">Provide detailed information about your issue for faster resolution</p>
-                
-                {/* Authentication Notice */}
-                {!user && (
-                  <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-                    <div className="flex items-center justify-center text-blue-700">
-                      <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                      </svg>
-                      <span className="font-medium">Authentication Required</span>
-                    </div>
-                    <p className="text-blue-600 text-sm mt-2">
-                      You must be signed in to submit a support ticket. 
-                      <button 
-                        onClick={() => router.push('/auth/signin')}
-                        className="ml-1 underline hover:text-blue-800 font-medium"
-                      >
-                        Sign in here
-                      </button>
-                      {" "}or{" "}
-                      <button 
-                        onClick={() => router.push('/auth/signup')}
-                        className="underline hover:text-blue-800 font-medium"
-                      >
-                        create an account
-                      </button>
-                      .
-                    </p>
-                  </div>
-                )}
-              </div>
+            <div ref={submitRef} id="submit-ticket-section" className="scroll-mt-24 outline-none" tabIndex={-1}>
+            <TicketForm
+              user={user}
+              formData={formData}
+              onInputChange={handleInputChange}
+              onSubmit={async (e) => {
+                e.preventDefault()
+                if (!user) {
+                  setSubmitMessage('Please sign in to submit a support ticket.')
+                  setTimeout(() => router.push('/auth/signin'), 2000)
+                  return
+                }
+                setIsSubmitting(true)
+                setSubmitMessage('')
+                // prepare payload from uploaded files
+                const attachments = attachedFiles
+                  .filter(file => file.success && file.data)
+                  .map(file => ({
+                    filename: file.data!.path.split('/').pop() || 'unknown',
+                    url: file.data!.publicUrl,
+                    size: file.data!.size,
+                    type: file.data!.type
+                  }))
 
-              <form onSubmit={handleSubmitTicket} className="space-y-6">
-                {/* Contact Information */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">Full Name *</label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      disabled={!user}
-                      className={`w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all ${
-                        !user ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50'
-                      }`}
-                      placeholder="Your full name"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">Email Address *</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      disabled={!user}
-                      className={`w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all ${
-                        !user ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50'
-                      }`}
-                      placeholder="your@email.com"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Phone Number</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    disabled={!user}
-                    className={`w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all ${
-                      !user ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50'
-                    }`}
-                    placeholder="Optional phone number"
-                  />
-                </div>
-
-                {/* Issue Details */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Category *</label>
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleInputChange}
-                    disabled={!user}
-                    className={`w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 transition-all ${
-                      !user ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50'
-                    }`}
-                    required
-                  >
-                    <option value="" className="bg-white">Select issue category...</option>
-                    <option value="order-issue" className="bg-white">Order Issue</option>
-                    <option value="product-inquiry" className="bg-white">Product Inquiry</option>
-                    <option value="shipping" className="bg-white">Shipping & Delivery</option>
-                    <option value="return-refund" className="bg-white">Return & Refund</option>
-                    <option value="technical-issue" className="bg-white">Technical Issue</option>
-                    <option value="billing" className="bg-white">Billing & Payment</option>
-                    <option value="other" className="bg-white">Other</option>
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">Priority Level</label>
-                    <select
-                      name="priority"
-                      value={formData.priority}
-                      onChange={handleInputChange}
-                      disabled={!user}
-                      className={`w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 transition-all ${
-                        !user ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50'
-                      }`}
-                    >
-                      <option value="low" className="bg-white">Low - General Question</option>
-                      <option value="medium" className="bg-white">Medium - Standard Issue</option>
-                      <option value="high" className="bg-white">High - Urgent Issue</option>
-                      <option value="urgent" className="bg-white">Urgent - Critical Problem</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">Order ID (if applicable)</label>
-                    <input
-                      type="text"
-                      name="orderId"
-                      value={formData.orderId}
-                      onChange={handleInputChange}
-                      disabled={!user}
-                      className={`w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all ${
-                        !user ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50'
-                      }`}
-                      placeholder="Order ID or reference number"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Subject *</label>
-                  <input
-                    type="text"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleInputChange}
-                    disabled={!user}
-                    className={`w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all ${
-                      !user ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50'
-                    }`}
-                    placeholder="Brief description of your issue"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Description *</label>
-                  <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    disabled={!user}
-                    rows={6}
-                    className={`w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all resize-none ${
-                      !user ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50'
-                    }`}
-                    placeholder="Please provide as much detail as possible about your issue. Include steps to reproduce the problem, error messages, and any relevant information."
-                    required
-                  />
-                </div>
-
-                {/* File Attachments */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Attachments</label>
-                  <div className={!user ? 'opacity-50 pointer-events-none' : ''}>
-                    <FileAttachment
-                      bucket="tickets"
-                      onFilesUploaded={(files) => setAttachedFiles(prev => [...prev, ...files])}
-                      onFilesRemoved={(index) => setAttachedFiles(prev => prev.filter((_, i) => i !== index))}
-                      maxFiles={5}
-                      userId={user?.id}
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    You can attach screenshots, documents, or other files to help us understand your issue better.
-                  </p>
-                </div>
-
-                {submitMessage && (
-                  <div className={`p-4 rounded-xl ${submitMessage.includes('Error') ? 'bg-red-50 border border-red-300 text-red-700' : 'bg-green-50 border border-green-300 text-green-700'}`}>
-                    {submitMessage}
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting || !user}
-                  className={`w-full px-8 py-4 rounded-xl font-medium transition-all duration-300 transform focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white ${
-                    !user
-                      ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                      : isSubmitting
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white opacity-50 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 hover:scale-[1.02]'
-                  }`}
-                  >
-                  {!user 
-                    ? 'Sign In Required' 
-                    : isSubmitting 
-                    ? 'Submitting...' 
-                    : 'Submit Ticket'
-                  }
-                </button>
-              </form>
+                const result = await submitTicket({
+                  userName: formData.name,
+                  userEmail: formData.email,
+                  userPhone: formData.phone,
+                  subject: formData.subject,
+                  category: formData.category,
+                  priority: formData.priority,
+                  description: formData.description,
+                  orderId: formData.orderId || undefined,
+                  productId: formData.productId || undefined,
+                  attachments
+                })
+                if (result.success) {
+                  const ticketId = result.data.ticket.ticketId
+                  setSubmitMessage(`Ticket created successfully! Your ticket ID is: ${ticketId}`)
+                  setFormData({
+                    name: user?.user_metadata?.name || user?.email?.split('@')[0] || '',
+                    email: user?.email || '',
+                    phone: '',
+                    subject: '',
+                    category: '',
+                    priority: 'medium',
+                    description: '',
+                    orderId: '',
+                    productId: ''
+                  })
+                  setAttachedFiles([])
+                  setActiveTab('track')
+                  fetchTickets()
+                } else {
+                  setSubmitMessage(`Error: ${result.error}`)
+                }
+                setIsSubmitting(false)
+              }}
+              isSubmitting={isSubmitting}
+              submitMessage={submitMessage}
+              attachedFiles={attachedFiles}
+              setAttachedFiles={setAttachedFiles}
+              onSignIn={() => router.push('/auth/signin')}
+              onSignUp={() => router.push('/auth/signup')}
+            />
             </div>
           )}
 
           {/* Track Tickets Tab */}
           {activeTab === 'track' && (
-            <div className="space-y-8">
-              {/* Email Input for Guests */}
+            <div ref={trackRef} id="track-ticket-section" className="space-y-8 scroll-mt-24 outline-none" tabIndex={-1}>
               {!user && (
                 <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-300 max-w-2xl mx-auto">
                   <h3 className="text-xl font-medium text-gray-900 mb-4 text-center">Track Your Tickets</h3>
@@ -556,91 +248,13 @@ export default function ContactPage() {
                   </div>
                 </div>
               )}
-
-              {/* Tickets List */}
               {userTickets.length > 0 ? (
-                <div className="grid gap-6">
-                  {userTickets.map((ticket) => (
-                    <div key={ticket.ticketId} className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 border border-gray-300">
-                      <div className="flex flex-wrap items-start justify-between mb-4">
-                        <div>
-                          <h3 className="text-xl font-medium text-gray-900 mb-2">{ticket.subject}</h3>
-                          <p className="text-gray-600 text-sm">Ticket ID: {ticket.ticketId}</p>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(ticket.status)} border border-current`}>
-                            {ticket.status.replace('-', ' ').toUpperCase()}
-                          </span>
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(ticket.priority)} border border-current`}>
-                            {ticket.priority.toUpperCase()}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
-                        <div>
-                          <span className="text-gray-600">Category:</span>
-                          <p className="text-gray-900">{ticket.category.replace('-', ' ')}</p>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Created:</span>
-                          <p className="text-gray-900">{new Date(ticket.createdAt).toLocaleDateString()}</p>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Last Update:</span>
-                          <p className="text-gray-900">{new Date(ticket.updatedAt).toLocaleDateString()}</p>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Messages:</span>
-                          <p className="text-gray-900">{ticket.messages.length}</p>
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() => setSelectedTicket(selectedTicket?.ticketId === ticket.ticketId ? null : ticket)}
-                        className="w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-lg transition-colors"
-                      >
-                        {selectedTicket?.ticketId === ticket.ticketId ? 'Hide Details' : 'View Details'}
-                      </button>
-
-                      {/* Ticket Details */}
-                      {selectedTicket?.ticketId === ticket.ticketId && (
-                        <div className="mt-6 pt-6 border-t border-gray-300">
-                          <div className="space-y-4 mb-6">
-                            {ticket.messages.map((message, index) => (
-                              <div key={index} className={`p-4 rounded-lg ${message.sender === 'user' ? 'bg-blue-50 ml-8 border border-blue-200' : 'bg-gray-50 mr-8 border border-gray-200'}`}>
-                                <div className="flex justify-between items-center mb-2">
-                                  <span className="font-medium text-gray-900">{message.sender === 'user' ? 'You' : 'Support Team'}</span>
-                                  <span className="text-sm text-gray-600">{new Date(message.timestamp).toLocaleString()}</span>
-                                </div>
-                                <p className="text-gray-800">{message.message}</p>
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Add New Message */}
-                          {ticket.status !== 'closed' && (
-                            <div className="space-y-4">
-                              <textarea
-                                value={newMessage}
-                                onChange={(e) => setNewMessage(e.target.value)}
-                                rows={3}
-                                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-500 resize-none"
-                                placeholder="Add a message to this ticket..."
-                              />
-                              <button
-                                onClick={() => addMessageToTicket(ticket.ticketId)}
-                                className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
-                              >
-                                Send Message
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                <TicketList
+                  tickets={userTickets}
+                  onAddMessage={(id, msg) => addMessage(id, msg)}
+                  getStatusColor={getStatusColor}
+                  getPriorityColor={getPriorityColor}
+                />
               ) : (
                 <div className="text-center py-12">
                   <p className="text-gray-600 text-lg">No tickets found</p>

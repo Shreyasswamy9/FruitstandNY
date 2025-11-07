@@ -1,40 +1,74 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+import { TICKETS_TABLE, TICKET_MESSAGES_TABLE } from '@/lib/tickets/config'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ ticketId: string }> }) {
   try {
-    const resolvedParams = await params
-    const { ticketId } = resolvedParams
-    const body = await request.json()
-    const { message } = body
+    const { ticketId } = await params
+    const { message } = await request.json()
 
     if (!message || !message.trim()) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Message is required' 
-      }, { status: 400 })
+      return NextResponse.json({ success: false, error: 'Message is required' }, { status: 400 })
     }
 
-    // Create new message (mock implementation)
-    const newMessage = {
-      id: `msg_${Date.now()}`,
-      message: message.trim(),
-      sender: 'user',
-      timestamp: new Date().toISOString(),
-      ticketId
+    // Auth required
+    const authHeader = request.headers.get('authorization')
+    if (!authHeader) {
+      return NextResponse.json({ error: 'No authorization header' }, { status: 401 })
+    }
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token)
+    if (userError || !user) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    console.log('New message added to ticket:', newMessage)
+    // Resolve ticket ownership
+    const { data: ticket, error: ticketError } = await supabase
+      .from(TICKETS_TABLE)
+      .select('id, user_id, user_email')
+      .eq('ticket_id', ticketId)
+      .single()
 
-    return NextResponse.json({ 
-      success: true, 
-      message: newMessage 
-    })
+    if (ticketError || !ticket) {
+      return NextResponse.json({ success: false, error: 'Ticket not found' }, { status: 404 })
+    }
 
+    const owns = (ticket.user_id && ticket.user_id === user.id) || (ticket.user_email && ticket.user_email.toLowerCase() === user.email?.toLowerCase())
+    if (!owns) {
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
+    }
+
+    // Insert message
+    const { data: inserted, error: insertError } = await supabase
+      .from(TICKET_MESSAGES_TABLE)
+      .insert([{
+        ticket_id: ticket.id,
+        sender_type: 'user',
+        message: message.trim(),
+        attachments: [],
+        is_internal: false,
+      }])
+      .select('id, message, sender_type, created_at')
+      .single()
+
+    if (insertError || !inserted) {
+      return NextResponse.json({ success: false, error: 'Failed to add message' }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true, message: {
+      id: inserted.id,
+      message: inserted.message,
+      sender: inserted.sender_type === 'admin' ? 'support' : 'user',
+      timestamp: inserted.created_at,
+      ticketId,
+    } })
   } catch (error) {
     console.error('Error adding message to ticket:', error)
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Failed to add message' 
-    }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Failed to add message' }, { status: 500 })
   }
 }

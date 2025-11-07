@@ -1,11 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 //import Link from 'next/link';
-
-export default function CreateAccountPage() {
+function CreateAccountContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
@@ -44,7 +43,6 @@ export default function CreateAccountPage() {
         throw new Error('Failed to create account');
       }
 
-      // Account created successfully
       router.push('/account');
     } catch (err) {
       setError('Failed to create account. Please try again.');
@@ -125,5 +123,13 @@ export default function CreateAccountPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function CreateAccountPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div></div>}>
+      <CreateAccountContent />
+    </Suspense>
   );
 }

@@ -3,6 +3,7 @@ import Image from "next/image";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
+import SizeGuide from "@/components/SizeGuide";
 
 const classicTeeImages = [
   "/images/classicteemale1.jpeg",
@@ -226,10 +227,11 @@ export default function ClassicTeePage() {
             />
           ))}
         </div>
-        {/* Size Selection Buttons */}
+        {/* Size Selection + Size Guide */}
         <div style={{ marginBottom: 18 }}>
           <p className="text-sm font-medium text-gray-700 mb-3">Size:</p>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex gap-2 flex-wrap">
             {sizeOptions.map((size) => (
               <button
                 key={size}
@@ -245,6 +247,8 @@ export default function ClassicTeePage() {
                 {size}
               </button>
             ))}
+            </div>
+            <SizeGuide productSlug="classic-tee" className="mt-2" />
           </div>
         </div>
         <p className="text-lg text-gray-700 mb-4">{PRODUCT.description}</p>

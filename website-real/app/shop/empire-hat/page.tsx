@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import React, { useState } from "react";
+import SizeGuide from "@/components/SizeGuide";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 
@@ -222,25 +223,28 @@ export default function EmpireHatPage() {
             />
           ))}
         </div>
-        {/* Size Selection Buttons */}
+        {/* Size Selection + Size Guide */}
         <div style={{ marginBottom: 18 }}>
           <p className="text-sm font-medium text-gray-700 mb-3">Size:</p>
-          <div className="flex gap-2 flex-wrap">
-            {sizeOptions.map((size) => (
-              <button
-                key={size}
-                className={`px-4 py-2 rounded-lg font-semibold border-2 transition-all ${
-                  selectedSize === size
-                    ? 'border-black bg-black text-white'
-                    : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'
-                }`}
-                style={{ minWidth: 48, fontSize: 14 }}
-                onClick={() => setSelectedSize(size)}
-                type="button"
-              >
-                {size}
-              </button>
-            ))}
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex gap-2 flex-wrap">
+              {sizeOptions.map((size) => (
+                <button
+                  key={size}
+                  className={`px-4 py-2 rounded-lg font-semibold border-2 transition-all ${
+                    selectedSize === size
+                      ? 'border-black bg-black text-white'
+                      : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'
+                  }`}
+                  style={{ minWidth: 48, fontSize: 14 }}
+                  onClick={() => setSelectedSize(size)}
+                  type="button"
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+            <SizeGuide productSlug="empire-hat" className="mt-2" />
           </div>
         </div>
         <p className="text-lg text-gray-700 mb-4">{PRODUCT.description}</p>

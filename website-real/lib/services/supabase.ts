@@ -1,5 +1,6 @@
 // Supabase-based database services to replace MongoDB
 import { supabase } from '@/app/supabase-client';
+import { TICKETS_TABLE, TICKET_MESSAGES_TABLE } from '@/lib/tickets/config';
 
 // Types for Supabase tables
 export interface Product {
@@ -555,7 +556,7 @@ export interface TicketMessage {
 export class SupabaseTicketService {
   static async createTicket(ticketData: Omit<SupportTicket, 'id' | 'ticket_id' | 'created_at' | 'updated_at'>) {
     const { data, error } = await supabase
-      .from('support_tickets')
+      .from(TICKETS_TABLE)
       .insert([ticketData])
       .select()
       .single();
@@ -565,30 +566,30 @@ export class SupabaseTicketService {
   }
 
   static async getTicket(ticketId: string) {
-    const { data, error } = await supabase
-      .from('support_tickets')
-      .select(`
-        *,
-        ticket_messages (
-          id,
-          sender_id,
-          sender_type,
-          message,
-          attachments,
-          is_internal,
-          created_at
-        )
-      `)
+    // Fetch the ticket row by public ticket_id
+    const { data: ticket, error: ticketError } = await supabase
+      .from(TICKETS_TABLE)
+      .select('*')
       .eq('ticket_id', ticketId)
       .single();
-    
-    if (error) throw error;
-    return data as SupportTicket & { ticket_messages: TicketMessage[] };
+
+    if (ticketError) throw ticketError;
+
+    // Fetch messages separately by internal UUID
+    const { data: messages, error: messagesError } = await supabase
+      .from(TICKET_MESSAGES_TABLE)
+      .select('*')
+      .eq('ticket_id', ticket.id)
+      .order('created_at', { ascending: true });
+
+    if (messagesError) throw messagesError;
+
+    return { ...(ticket as SupportTicket), ticket_messages: (messages || []) as TicketMessage[] };
   }
 
   static async getUserTickets(userId: string) {
     const { data, error } = await supabase
-      .from('support_tickets')
+      .from(TICKETS_TABLE)
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
@@ -599,7 +600,7 @@ export class SupabaseTicketService {
 
   static async getTicketsByEmail(email: string) {
     const { data, error } = await supabase
-      .from('support_tickets')
+      .from(TICKETS_TABLE)
       .select('*')
       .eq('user_email', email)
       .order('created_at', { ascending: false });
@@ -610,7 +611,7 @@ export class SupabaseTicketService {
 
   static async updateTicketStatus(ticketId: string, status: SupportTicket['status']) {
     const { data, error } = await supabase
-      .from('support_tickets')
+      .from(TICKETS_TABLE)
       .update({ status, updated_at: new Date().toISOString() })
       .eq('ticket_id', ticketId)
       .select()
@@ -623,7 +624,7 @@ export class SupabaseTicketService {
   static async addTicketMessage(ticketId: string, messageData: Omit<TicketMessage, 'id' | 'created_at'>) {
     // First get the ticket UUID from ticket_id
     const { data: ticket, error: ticketError } = await supabase
-      .from('support_tickets')
+      .from(TICKETS_TABLE)
       .select('id')
       .eq('ticket_id', ticketId)
       .single();
@@ -631,7 +632,7 @@ export class SupabaseTicketService {
     if (ticketError) throw ticketError;
 
     const { data, error } = await supabase
-      .from('ticket_messages')
+      .from(TICKET_MESSAGES_TABLE)
       .insert([{ ...messageData, ticket_id: ticket.id }])
       .select()
       .single();
@@ -643,7 +644,7 @@ export class SupabaseTicketService {
   static async getTicketMessages(ticketId: string) {
     // First get the ticket UUID from ticket_id
     const { data: ticket, error: ticketError } = await supabase
-      .from('support_tickets')
+      .from(TICKETS_TABLE)
       .select('id')
       .eq('ticket_id', ticketId)
       .single();
@@ -651,7 +652,7 @@ export class SupabaseTicketService {
     if (ticketError) throw ticketError;
 
     const { data, error } = await supabase
-      .from('ticket_messages')
+      .from(TICKET_MESSAGES_TABLE)
       .select('*')
       .eq('ticket_id', ticket.id)
       .order('created_at', { ascending: true });
@@ -669,7 +670,7 @@ export class SupabaseTicketService {
     offset?: number;
   } = {}) {
     let query = supabase
-      .from('support_tickets')
+      .from(TICKETS_TABLE)
       .select('*');
 
     if (options.status) {
@@ -691,7 +692,7 @@ export class SupabaseTicketService {
       query = query.range(options.offset, options.offset + (options.limit || 10) - 1);
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false });
+  const { data, error } = await query.order('created_at', { ascending: false });
     
     if (error) throw error;
     return data as SupportTicket[];
@@ -699,7 +700,7 @@ export class SupabaseTicketService {
 
   static async assignTicket(ticketId: string, assignedTo: string) {
     const { data, error } = await supabase
-      .from('support_tickets')
+      .from(TICKETS_TABLE)
       .update({ assigned_to: assignedTo, updated_at: new Date().toISOString() })
       .eq('ticket_id', ticketId)
       .select()
