@@ -111,7 +111,8 @@ export default function FileAttachment({
             : f
         ));
 
-      } catch (error) {
+      } catch (err) {
+        console.error('Upload error:', err);
         setFiles(prev => prev.map(f => 
           f.file === filePreview.file 
             ? { 

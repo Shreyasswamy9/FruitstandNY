@@ -62,14 +62,16 @@ export default function Home() {
 
   // Enhanced mobile autoplay with immediate interaction handling
   useEffect(() => {
-    if (secondVideoRef.current) {
+    if (secondVideoRef.current && isHydrated) {
       const video = secondVideoRef.current
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
       
-      // Force all autoplay attributes
+      // Force all autoplay properties (avoid setAttribute for hydration safety)
       video.muted = true
       video.playsInline = true
       video.controls = false
+      
+      // Set attributes only after hydration to avoid mismatch
       video.setAttribute('webkit-playsinline', 'true')
       video.setAttribute('x-webkit-airplay', 'allow')
       video.setAttribute('playsinline', 'true')
@@ -184,7 +186,7 @@ export default function Home() {
         window.removeEventListener('focus', handleFocus)
       }
     }
-  }, [])
+  }, [isHydrated])
 
   // Show scroll arrow after 5 seconds when main video is visible
   useEffect(() => {
@@ -261,12 +263,15 @@ export default function Home() {
   }, [isTriggered, isModalOpen, modalDismissed])
 
   const [currentLangIndex, setCurrentLangIndex] = useState(0)
-  const [showLangFlip, setShowLangFlip] = useState(() => {
+  const [showLangFlip, setShowLangFlip] = useState(false) // Initialize as false to match server
+
+  // Set showLangFlip after hydration
+  useEffect(() => {
     if (typeof window !== 'undefined') {
-      return !window.sessionStorage.getItem('introPlayed');
+      const introPlayed = window.sessionStorage.getItem('introPlayed');
+      setShowLangFlip(!introPlayed);
     }
-    return true;
-  });
+  }, []);
 
   // Translations for 'Fruitstand' in different languages (unchanged)
   const fruitstandTranslations = [
@@ -407,7 +412,7 @@ export default function Home() {
           paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
-      {!showMain && (
+      {(!isHydrated || !showMain) && (
         <div
           style={{
             position: "fixed",
@@ -445,7 +450,7 @@ export default function Home() {
           <div
             ref={logoRef}
             style={{
-              opacity: showLangFlip ? 1 : 0,
+              opacity: (isHydrated && showLangFlip) ? 1 : 0,
               transform: "scale(0.8) translateZ(0)",
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
@@ -540,6 +545,7 @@ export default function Home() {
         
         <video
           ref={secondVideoRef}
+          suppressHydrationWarning={true}
           style={{
             position: "relative",
             zIndex: 2,
@@ -566,8 +572,6 @@ export default function Home() {
           controls={false}
           disablePictureInPicture
           disableRemotePlayback
-          webkit-playsinline="true"
-          x-webkit-airplay="allow"
           poster="/images/home.jpg"
           onLoadStart={() => console.log('Video load started')}
           onCanPlay={() => console.log('Video can play')}
@@ -662,7 +666,7 @@ export default function Home() {
   {/* Logo button removed from here; will be moved to layout.tsx for global visibility */}
 
       {/* Product grid and heading after video */}
-      {showMain && (
+      {(isHydrated && showMain) && (
         <div
           style={{
             position: "relative",
@@ -1290,7 +1294,7 @@ export default function Home() {
       )}
 
       {/* StaggeredMenu Component */}
-      {showMain && (
+      {(isHydrated && showMain) && (
         <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 10001, pointerEvents: "auto" }}>
           <StaggeredMenu
             position="right"

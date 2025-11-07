@@ -1,52 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/database';
-import { Product } from '@/database';
+import { SupabaseProductService } from '@/lib/services/supabase';
 
-// GET /api/products - Get all products with optional filtering
+// GET /api/products - Get all products with filtering
 export async function GET(request: NextRequest) {
   try {
-    await dbConnect();
-
     const searchParams = request.nextUrl.searchParams;
-    const category = searchParams.get('category');
-    const featured = searchParams.get('featured');
-    const search = searchParams.get('search');
+    const category = searchParams.get('category') || undefined;
+    const featured = searchParams.get('featured') === 'true' ? true : undefined;
+    const active = searchParams.get('active') !== 'false'; // Default to true
+    const limit = parseInt(searchParams.get('limit') || '50');
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const sortBy = searchParams.get('sortBy') || 'createdAt';
-    const sortOrder = searchParams.get('sortOrder') || 'desc';
+    const offset = (page - 1) * limit;
 
-    // Build query
-    const query: Record<string, unknown> = { active: true };
-
-    if (category) {
-      query.category = category;
-    }
-
-    if (featured === 'true') {
-      query.featured = true;
-    }
-
-    if (search) {
-      query.$text = { $search: search };
-    }
-
-    // Calculate skip for pagination
-    const skip = (page - 1) * limit;
-
-    // Build sort object
-    const sort: Record<string, 1 | -1> = {};
-    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
-
-    // Execute query
-    const products = await Product.find(query)
-      .sort(sort)
-      .skip(skip)
-      .limit(limit)
-      .lean();
-
-    // Get total count for pagination
-    const total = await Product.countDocuments(query);
+    const products = await SupabaseProductService.getProducts({
+      category,
+      featured,
+      active,
+      limit,
+      offset
+    });
 
     return NextResponse.json({
       success: true,
@@ -54,13 +26,12 @@ export async function GET(request: NextRequest) {
       pagination: {
         page,
         limit,
-        total,
-        pages: Math.ceil(total / limit)
+        total: products.length
       }
     });
 
   } catch (error) {
-    console.error('Products fetch error:', error);
+    console.error('Error fetching products:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch products' },
       { status: 500 }
@@ -68,28 +39,25 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/products - Create a new product (Admin only)
+// POST /api/products - Create a new product (admin only)
 export async function POST(request: NextRequest) {
   try {
-    await dbConnect();
+    // Check admin authentication
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // For now, we'll skip the admin check and let Supabase RLS handle it
+    // In production, you should verify the user's admin role
 
     const body = await request.json();
-    const {
-      name,
-      description,
-      price,
-      category,
-      subcategory,
-      images,
-      hoverImage,
-      inventory,
-      featured,
-      tags,
-      specifications,
-      seo
-    } = body;
-
+    
     // Validate required fields
+    const { name, description, price, category, images } = body;
     if (!name || !description || !price || !category || !images?.length) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
@@ -97,26 +65,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const product = new Product({
-      name,
-      description,
-      price,
-      category,
-      subcategory,
-      images,
-      hoverImage,
-      inventory: {
-        quantity: inventory?.quantity || 0,
-        sizes: inventory?.sizes || [],
-        colors: inventory?.colors || []
-      },
-      featured: featured || false,
-      tags: tags || [],
-      specifications: specifications || {},
-      seo: seo || {}
-    });
-
-    await product.save();
+    const product = await SupabaseProductService.createProduct(body);
 
     return NextResponse.json({
       success: true,
@@ -124,7 +73,7 @@ export async function POST(request: NextRequest) {
     }, { status: 201 });
 
   } catch (error) {
-    console.error('Product creation error:', error);
+    console.error('Error creating product:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create product' },
       { status: 500 }

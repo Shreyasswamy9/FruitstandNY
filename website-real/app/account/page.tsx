@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,7 +5,8 @@ import { supabase } from "../supabase-client";
 import { useRouter } from "next/navigation";
 import StaggeredMenu from "../../components/StagerredMenu";
 import { motion } from "framer-motion";
-import { OrderService } from "@/lib/services/api";
+import { OrderService, TicketService } from "@/lib/services/api";
+import type { User } from "@supabase/supabase-js";
 
 interface Order {
   _id: string;
@@ -21,28 +21,88 @@ interface Order {
   }>;
 }
 
+interface Ticket {
+  id: string;
+  subject: string;
+  description: string;
+  status: 'open' | 'in-progress' | 'resolved' | 'closed';
+  priority: 'low' | 'medium' | 'high';
+  createdAt: string;
+  updatedAt: string;
+  category: string;
+}
+
 export default function AccountPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'settings'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'profile-settings' | 'notifications' | 'security' | 'tickets'>('profile');
   const [isLoaded, setIsLoaded] = useState(false)
   const [isSignedIn, setIsSignedIn] = useState(false)
-  const [user, setUser] = useState<any | null>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const [profileData, setProfileData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: {
+      street: '',
+      city: '',
+      state: '',
+      zipCode: '',
+      country: 'US'
+    }
+  })
+  const [notifications, setNotifications] = useState({
+    email: true,
+    sms: false,
+    marketing: true,
+    orderUpdates: true
+  })
+  const [tickets, setTickets] = useState<Ticket[]>([])
+  const [saving, setSaving] = useState(false)
+  const [showTicketModal, setShowTicketModal] = useState(false)
 
   useEffect(() => {
     let mounted = true
     ;(async () => {
       const { data } = await supabase.auth.getUser()
       if (!mounted) return
+      console.log('Supabase user data:', data.user) // Debug log
       setUser(data.user ?? null)
       setIsSignedIn(!!data.user)
+      
+      // Load user profile data from metadata
+      if (data.user?.user_metadata) {
+        setProfileData({
+          firstName: data.user.user_metadata.firstName || '',
+          lastName: data.user.user_metadata.lastName || '',
+          email: data.user.email || '',
+          phone: data.user.user_metadata.phone || '',
+          address: data.user.user_metadata.address || {
+            street: '',
+            city: '',
+            state: '',
+            zipCode: '',
+            country: 'US'
+          }
+        })
+        
+        setNotifications(data.user.user_metadata.notifications || {
+          email: true,
+          sms: false,
+          marketing: true,
+          orderUpdates: true
+        })
+      }
+      
       setIsLoaded(true)
     })()
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       const u = session?.user ?? null
+      console.log('Auth state change - user:', u) // Debug log
       setUser(u)
       setIsSignedIn(!!u)
       setIsLoaded(true)
@@ -64,17 +124,24 @@ export default function AccountPage() {
       return;
     }
 
-    // Fetch user orders
-    const fetchOrders = async () => {
+    // Fetch user orders and tickets
+    const fetchUserData = async () => {
       try {
-        const response = await OrderService.getOrders();
-        if (response.success) {
-          setOrders(response.data);
+        // Fetch orders
+        const ordersResponse = await OrderService.getOrders();
+        if (ordersResponse.success) {
+          setOrders(ordersResponse.data);
         } else {
           setError("Failed to fetch orders");
         }
+        
+        // Fetch tickets
+        const ticketsResponse = await TicketService.getTickets();
+        if (ticketsResponse.success) {
+          setTickets(ticketsResponse.data);
+        }
       } catch (err) {
-        console.error("Orders fetch error:", err);
+        console.error("Data fetch error:", err);
         setError("Unable to connect to server. Please try again later.");
       } finally {
         setLoading(false);
@@ -82,22 +149,116 @@ export default function AccountPage() {
     };
 
     if (isSignedIn) {
-      fetchOrders();
+      fetchUserData();
     }
   }, [isLoaded, isSignedIn, router]);
 
-  const handleSignOut = () => {
-    router.push("/");
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      router.push("/");
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
+
+  const handleProfileUpdate = async (updatedData: typeof profileData) => {
+    setSaving(true)
+    try {
+      const { error } = await supabase.auth.updateUser({
+        email: updatedData.email,
+        data: {
+          firstName: updatedData.firstName,
+          lastName: updatedData.lastName,
+          phone: updatedData.phone,
+          address: updatedData.address
+        }
+      })
+      
+      if (error) throw error
+      
+      setProfileData(updatedData)
+      alert('Profile updated successfully!')
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      alert('Failed to update profile. Please try again.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleNotificationUpdate = async (updatedNotifications: typeof notifications) => {
+    setSaving(true)
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          notifications: updatedNotifications
+        }
+      })
+      
+      if (error) throw error
+      
+      setNotifications(updatedNotifications)
+      alert('Notification preferences updated!')
+    } catch (error) {
+      console.error('Error updating notifications:', error)
+      alert('Failed to update notification preferences.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handlePasswordUpdate = async (currentPassword: string, newPassword: string) => {
+    setSaving(true)
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      })
+      
+      if (error) throw error
+      
+      alert('Password updated successfully!')
+    } catch (error) {
+      console.error('Error updating password:', error)
+      alert('Failed to update password. Please try again.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleCreateTicket = async (ticketData: {
+    subject: string;
+    description: string;
+    category: string;
+    priority: string;
+  }) => {
+    setSaving(true)
+    try {
+      const response = await TicketService.createTicket(ticketData)
+      
+      if (response.success) {
+        setTickets(prev => [response.data, ...prev])
+        setShowTicketModal(false)
+        alert('Support ticket created successfully!')
+      } else {
+        alert('Failed to create ticket. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error creating ticket:', error)
+      alert('Failed to create ticket. Please try again.')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   // Show loading only while Clerk is initializing
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-black text-white">
+      <div className="min-h-screen bg-white text-gray-900">
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-400">Loading...</p>
+            <div className="w-16 h-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
           </div>
         </div>
         
@@ -135,13 +296,10 @@ export default function AccountPage() {
   // Show sign-in prompt if user is not authenticated
   if (!isSignedIn) {
     return (
-      <div className="min-h-screen bg-black text-white">
-        {/* Animated Background */}
-        <div className="fixed inset-0 opacity-20">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-purple-900/20 to-teal-900/20"></div>
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-2000"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-teal-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000"></div>
+      <div className="min-h-screen bg-white text-gray-900">
+        {/* Subtle Background Pattern */}
+        <div className="fixed inset-0 opacity-10">
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50"></div>
         </div>
 
         <div className="relative flex items-center justify-center min-h-screen px-4">
@@ -151,17 +309,17 @@ export default function AccountPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h1 className="text-4xl font-bold mb-6 bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold mb-6 bg-gradient-to-r from-gray-900 via-gray-700 to-gray-600 bg-clip-text text-transparent">
                 Account Access
               </h1>
-              <p className="text-gray-400 mb-8 text-lg">
+              <p className="text-gray-600 mb-8 text-lg">
                 Please sign in to view your account details and order history.
               </p>
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-                <p className="text-gray-300 mb-4">
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-lg">
+                <p className="text-gray-700 mb-4 font-medium">
                   Sign in to access:
                 </p>
-                <ul className="text-left text-gray-400 space-y-2 mb-6">
+                <ul className="text-left text-gray-600 space-y-2 mb-6">
                   <li>• Order history</li>
                   <li>• Account settings</li>
                   <li>• Profile management</li>
@@ -169,7 +327,7 @@ export default function AccountPage() {
                 </ul>
                 <button
                   onClick={() => router.push('/signin')}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105"
+                  className="w-full bg-black hover:bg-gray-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105"
                 >
                   Sign In
                 </button>
@@ -212,11 +370,11 @@ export default function AccountPage() {
   // Show loading while fetching orders for authenticated users
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white">
+      <div className="min-h-screen bg-white text-gray-900">
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-400">Loading your account...</p>
+            <div className="w-16 h-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your account...</p>
           </div>
         </div>
         
@@ -252,13 +410,13 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-x-hidden">
-      {/* Animated Background */}
-      <div className="fixed inset-0 opacity-20">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-purple-900/20 to-teal-900/20"></div>
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-2000"></div>
-        <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-teal-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000"></div>
+    <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden">
+      {/* Subtle Background Pattern */}
+      <div className="fixed inset-0 opacity-10">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50"></div>
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gray-200 rounded-full mix-blend-multiply filter blur-xl opacity-30"></div>
+        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-gray-300 rounded-full mix-blend-multiply filter blur-xl opacity-30"></div>
+        <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-gray-100 rounded-full mix-blend-multiply filter blur-xl opacity-30"></div>
       </div>
 
       {/* Hero Section */}
@@ -312,20 +470,20 @@ export default function AccountPage() {
                   <div className="absolute inset-0 flex items-center justify-center"
                        style={{ transform: 'rotate(15deg)' }}>
                     <span className="text-xl font-bold text-white drop-shadow-lg">
-                      {user?.firstName?.charAt(0) || user?.fullName?.charAt(0) || 'U'}
+                      {user?.user_metadata?.full_name?.charAt(0) || user?.user_metadata?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                     </span>
                   </div>
                 </div>
               </div>
             </div>
-            <h1 className="text-5xl md:text-6xl font-extralight tracking-wider mb-4 text-white">
+            <h1 className="text-5xl md:text-6xl font-extralight tracking-wider mb-4 text-gray-900">
               Welcome back,
             </h1>
-            <p className="text-2xl md:text-3xl text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-teal-400 font-light">
-              {user?.firstName || user?.fullName || 'User'}
+            <p className="text-2xl md:text-3xl text-transparent bg-clip-text bg-gradient-to-r from-gray-700 via-gray-900 to-gray-600 font-light">
+              {user?.user_metadata?.full_name || user?.user_metadata?.name || 'User'}
             </p>
-            <p className="text-gray-400 mt-4 text-lg">
-              {user?.emailAddresses[0]?.emailAddress}
+            <p className="text-gray-600 mt-4 text-lg">
+              {user?.email}
             </p>
           </motion.div>
 
@@ -336,20 +494,26 @@ export default function AccountPage() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="flex justify-center mb-12"
           >
-            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-2 border border-white/10">
-              {(['profile', 'orders', 'settings'] as const).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-8 py-3 rounded-xl font-medium transition-all duration-300 ${
-                    activeTab === tab
-                      ? 'bg-white text-black'
-                      : 'text-gray-300 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </button>
-              ))}
+            <div className="bg-gray-100 rounded-2xl p-2 border border-gray-200 overflow-x-auto">
+              <div className="flex space-x-2 min-w-max">
+                {(['profile', 'orders', 'profile-settings', 'notifications', 'security', 'tickets'] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 whitespace-nowrap ${
+                      activeTab === tab
+                        ? 'bg-black text-white shadow-md'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'
+                    }`}
+                  >
+                    {tab === 'profile-settings' ? 'Profile Settings' :
+                     tab === 'notifications' ? 'Notifications' :
+                     tab === 'security' ? 'Security' :
+                     tab === 'tickets' ? 'Tickets' :
+                     tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  </button>
+                ))}
+              </div>
             </div>
           </motion.div>
 
@@ -364,34 +528,34 @@ export default function AccountPage() {
             {activeTab === 'profile' && (
               <div className="space-y-8">
                 {/* Profile Info */}
-                <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-white/10">
-                  <h2 className="text-3xl font-light text-white mb-8">Account Information</h2>
+                <div className="bg-white border border-gray-200 rounded-3xl p-8 md:p-12 shadow-lg">
+                  <h2 className="text-3xl font-light text-gray-900 mb-8">Account Information</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
-                        <div className="px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white">
-                          {user?.fullName || 'Not provided'}
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                        <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900">
+                          {user?.user_metadata?.full_name || user?.user_metadata?.name || 'Not provided'}
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
-                        <div className="px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white">
-                          {user?.emailAddresses[0]?.emailAddress}
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                        <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900">
+                          {user?.email}
                         </div>
                       </div>
                     </div>
                     <div className="space-y-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Account Type</label>
-                        <div className="px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white">
-                          {typeof user?.publicMetadata?.role === "string" ? user.publicMetadata.role : 'Standard User'}
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Account Type</label>
+                        <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900">
+                          {user?.user_metadata?.role || 'Standard User'}
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Member Since</label>
-                        <div className="px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white">
-                          {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Member Since</label>
+                        <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900">
+                          {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'}
                         </div>
                       </div>
                     </div>
@@ -400,26 +564,26 @@ export default function AccountPage() {
 
                 {/* Quick Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 backdrop-blur-sm rounded-2xl p-6 border border-blue-500/20">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-6 shadow-md">
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-blue-400 mb-2">{orders.length}</div>
-                      <div className="text-gray-300">Total Orders</div>
+                      <div className="text-3xl font-bold text-blue-600 mb-2">{orders.length}</div>
+                      <div className="text-gray-700">Total Orders</div>
                     </div>
                   </div>
-                  <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 backdrop-blur-sm rounded-2xl p-6 border border-purple-500/20">
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-2xl p-6 shadow-md">
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-purple-400 mb-2">
+                      <div className="text-3xl font-bold text-purple-600 mb-2">
                         ${orders.reduce((sum, order) => sum + order.totalAmount, 0).toFixed(0)}
                       </div>
-                      <div className="text-gray-300">Total Spent</div>
+                      <div className="text-gray-700">Total Spent</div>
                     </div>
                   </div>
-                  <div className="bg-gradient-to-br from-teal-500/20 to-teal-600/20 backdrop-blur-sm rounded-2xl p-6 border border-teal-500/20">
+                  <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-2xl p-6 shadow-md">
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-teal-400 mb-2">
-                        {user?.publicMetadata?.role === "admin" ? "VIP" : "Member"}
+                      <div className="text-3xl font-bold text-emerald-600 mb-2">
+                        {user?.user_metadata?.role === "admin" ? "VIP" : "Member"}
                       </div>
-                      <div className="text-gray-300">Status</div>
+                      <div className="text-gray-700">Status</div>
                     </div>
                   </div>
                 </div>
@@ -428,26 +592,26 @@ export default function AccountPage() {
 
             {activeTab === 'orders' && (
               <div className="space-y-6">
-                <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-white/10">
-                  <h2 className="text-3xl font-light text-white mb-8">Order History</h2>
+                <div className="bg-white border border-gray-200 rounded-3xl p-8 md:p-12 shadow-lg">
+                  <h2 className="text-3xl font-light text-gray-900 mb-8">Order History</h2>
                   
                   {error && (
-                    <div className="bg-red-500/20 border border-red-500/30 text-red-400 px-6 py-4 rounded-xl mb-6">
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl mb-6">
                       {error}
                     </div>
                   )}
 
                   {orders.length === 0 ? (
                     <div className="text-center py-12">
-                      <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
                         <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                         </svg>
                       </div>
-                      <p className="text-gray-400 mb-6 text-lg">No orders yet</p>
+                      <p className="text-gray-600 mb-6 text-lg">No orders yet</p>
                       <button
                         onClick={() => router.push("/shop")}
-                        className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-xl font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-300"
+                        className="bg-black text-white px-8 py-3 rounded-xl font-medium hover:bg-gray-800 transition-all duration-300"
                       >
                         Start Shopping
                       </button>
@@ -455,35 +619,35 @@ export default function AccountPage() {
                   ) : (
                     <div className="space-y-4">
                       {orders.map((order) => (
-                        <div key={order._id} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+                        <div key={order._id} className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
                           <div className="flex justify-between items-start mb-4">
                             <div>
-                              <p className="font-semibold text-white">Order #{order.orderNumber}</p>
-                              <p className="text-sm text-gray-400">
+                              <p className="font-semibold text-gray-900">Order #{order.orderNumber}</p>
+                              <p className="text-sm text-gray-600">
                                 {new Date(order.createdAt).toLocaleDateString()}
                               </p>
                             </div>
                             <div className="text-right">
-                              <p className="font-semibold text-white text-lg">${order.totalAmount.toFixed(2)}</p>
+                              <p className="font-semibold text-gray-900 text-lg">${order.totalAmount.toFixed(2)}</p>
                               <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
                                 order.orderStatus === "delivered" 
-                                  ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                                  ? "bg-green-100 text-green-700 border border-green-200"
                                   : order.orderStatus === "shipped"
-                                  ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                                  ? "bg-blue-100 text-blue-700 border border-blue-200"
                                   : order.orderStatus === "cancelled"
-                                  ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                                  : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
+                                  ? "bg-red-100 text-red-700 border border-red-200"
+                                  : "bg-yellow-100 text-yellow-700 border border-yellow-200"
                               }`}>
                                 {order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
                               </span>
                             </div>
                           </div>
                           
-                          <div className="border-t border-white/10 pt-4">
-                            <p className="text-gray-300 mb-3">
+                          <div className="border-t border-gray-200 pt-4">
+                            <p className="text-gray-700 mb-3">
                               Items: {order.items.map(item => `${item.name} (x${item.quantity})`).join(", ")}
                             </p>
-                            <button className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
+                            <button className="text-black hover:text-gray-700 font-medium transition-colors">
                               View Details →
                             </button>
                           </div>
@@ -495,80 +659,418 @@ export default function AccountPage() {
               </div>
             )}
 
-            {activeTab === 'settings' && (
+            {/* Profile Settings Tab */}
+            {activeTab === 'profile-settings' && (
               <div className="space-y-6">
-                <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-white/10">
-                  <h2 className="text-3xl font-light text-white mb-8">Account Settings</h2>
+                <div className="bg-white border border-gray-200 rounded-3xl p-8 md:p-12 shadow-lg">
+                  <h2 className="text-3xl font-light text-gray-900 mb-8">Profile Settings</h2>
+                  
+                  <form onSubmit={(e) => {
+                    e.preventDefault()
+                    const formData = new FormData(e.target as HTMLFormElement)
+                    const updatedData = {
+                      firstName: formData.get('firstName') as string,
+                      lastName: formData.get('lastName') as string,
+                      email: formData.get('email') as string,
+                      phone: formData.get('phone') as string,
+                      address: {
+                        street: formData.get('street') as string,
+                        city: formData.get('city') as string,
+                        state: formData.get('state') as string,
+                        zipCode: formData.get('zipCode') as string,
+                        country: formData.get('country') as string
+                      }
+                    }
+                    handleProfileUpdate(updatedData)
+                  }} className="space-y-6">
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                          First Name
+                        </label>
+                        <input
+                          type="text"
+                          id="firstName"
+                          name="firstName"
+                          defaultValue={profileData.firstName}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                          placeholder="Enter your first name"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                          Last Name
+                        </label>
+                        <input
+                          type="text"
+                          id="lastName"
+                          name="lastName"
+                          defaultValue={profileData.lastName}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                          placeholder="Enter your last name"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        defaultValue={profileData.email}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                        placeholder="Enter your email address"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                        Phone Number
+                      </label>
+                      <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        defaultValue={profileData.phone}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                        placeholder="Enter your phone number"
+                      />
+                    </div>
+
+                    <div className="border-t border-gray-200 pt-6">
+                      <h3 className="text-xl font-medium text-gray-900 mb-4">Address Information</h3>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label htmlFor="street" className="block text-sm font-medium text-gray-700 mb-2">
+                            Street Address
+                          </label>
+                          <input
+                            type="text"
+                            id="street"
+                            name="street"
+                            defaultValue={profileData.address.street}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                            placeholder="Enter your street address"
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
+                              City
+                            </label>
+                            <input
+                              type="text"
+                              id="city"
+                              name="city"
+                              defaultValue={profileData.address.city}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                              placeholder="City"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-2">
+                              State
+                            </label>
+                            <input
+                              type="text"
+                              id="state"
+                              name="state"
+                              defaultValue={profileData.address.state}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                              placeholder="State"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-2">
+                              ZIP Code
+                            </label>
+                            <input
+                              type="text"
+                              id="zipCode"
+                              name="zipCode"
+                              defaultValue={profileData.address.zipCode}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                              placeholder="ZIP"
+                            />
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-2">
+                            Country
+                          </label>
+                          <select
+                            id="country"
+                            name="country"
+                            defaultValue={profileData.address.country}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                          >
+                            <option value="US">United States</option>
+                            <option value="CA">Canada</option>
+                            <option value="UK">United Kingdom</option>
+                            <option value="AU">Australia</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-6 border-t border-gray-200">
+                      <button
+                        type="submit"
+                        disabled={saving}
+                        className="bg-black text-white px-8 py-3 rounded-xl font-medium hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {saving ? 'Saving...' : 'Save Changes'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Notifications Tab */}
+            {activeTab === 'notifications' && (
+              <div className="space-y-6">
+                <div className="bg-white border border-gray-200 rounded-3xl p-8 md:p-12 shadow-lg">
+                  <h2 className="text-3xl font-light text-gray-900 mb-8">Notification Preferences</h2>
                   
                   <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <button className="p-6 bg-white/5 border border-white/10 rounded-2xl text-left hover:bg-white/10 transition-all duration-300 group">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
-                            <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                          </div>
-                          <div>
-                            <h3 className="font-medium text-white">Update Profile</h3>
-                            <p className="text-gray-400 text-sm">Change your personal information</p>
-                          </div>
+                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-medium text-gray-900">Email Notifications</h3>
+                          <p className="text-gray-600 text-sm">Receive updates via email</p>
                         </div>
-                      </button>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={notifications.email}
+                            onChange={(e) => setNotifications(prev => ({ ...prev, email: e.target.checked }))}
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                      </div>
+                    </div>
 
-                      <button className="p-6 bg-white/5 border border-white/10 rounded-2xl text-left hover:bg-white/10 transition-all duration-300 group">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
-                            <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
-                          </div>
-                          <div>
-                            <h3 className="font-medium text-white">Security Settings</h3>
-                            <p className="text-gray-400 text-sm">Manage your password and security</p>
-                          </div>
+                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-medium text-gray-900">SMS Notifications</h3>
+                          <p className="text-gray-600 text-sm">Receive text messages for important updates</p>
                         </div>
-                      </button>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={notifications.sms}
+                            onChange={(e) => setNotifications(prev => ({ ...prev, sms: e.target.checked }))}
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                      </div>
+                    </div>
 
-                      <button className="p-6 bg-white/5 border border-white/10 rounded-2xl text-left hover:bg-white/10 transition-all duration-300 group">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-teal-500/20 rounded-xl flex items-center justify-center group-hover:bg-teal-500/30 transition-colors">
-                            <svg className="w-6 h-6 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-5 5v-5zM4 19h10v-1a3 3 0 00-3-3H7a3 3 0 00-3 3v1zM9 12a3 3 0 100-6 3 3 0 000 6z" />
-                            </svg>
-                          </div>
-                          <div>
-                            <h3 className="font-medium text-white">Notifications</h3>
-                            <p className="text-gray-400 text-sm">Email and push notification preferences</p>
-                          </div>
+                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-medium text-gray-900">Marketing Communications</h3>
+                          <p className="text-gray-600 text-sm">Get notified about sales, new products, and promotions</p>
                         </div>
-                      </button>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={notifications.marketing}
+                            onChange={(e) => setNotifications(prev => ({ ...prev, marketing: e.target.checked }))}
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                      </div>
+                    </div>
 
-                      {user?.publicMetadata?.role === "admin" && (
-                        <button
-                          onClick={() => router.push("/admin")}
-                          className="p-6 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-2xl text-left hover:from-green-500/30 hover:to-emerald-500/30 transition-all duration-300 group"
-                        >
-                          <div className="flex items-center space-x-4">
-                            <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center group-hover:bg-green-500/30 transition-colors">
-                              <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                              </svg>
-                            </div>
-                            <div>
-                              <h3 className="font-medium text-white">Admin Dashboard</h3>
-                              <p className="text-gray-400 text-sm">Access administrative features</p>
-                            </div>
-                          </div>
-                        </button>
-                      )}
+                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-medium text-gray-900">Order Updates</h3>
+                          <p className="text-gray-600 text-sm">Get notified about order status changes and shipping updates</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={notifications.orderUpdates}
+                            onChange={(e) => setNotifications(prev => ({ ...prev, orderUpdates: e.target.checked }))}
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-6 border-t border-gray-200">
+                      <button
+                        onClick={() => handleNotificationUpdate(notifications)}
+                        disabled={saving}
+                        className="bg-black text-white px-8 py-3 rounded-xl font-medium hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {saving ? 'Saving...' : 'Save Preferences'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Security Tab */}
+            {activeTab === 'security' && (
+              <div className="space-y-6">
+                <div className="bg-white border border-gray-200 rounded-3xl p-8 md:p-12 shadow-lg">
+                  <h2 className="text-3xl font-light text-gray-900 mb-8">Security Settings</h2>
+                  
+                  <div className="space-y-8">
+                    {/* Change Password */}
+                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                      <h3 className="text-xl font-medium text-gray-900 mb-4">Change Password</h3>
+                      <form onSubmit={(e) => {
+                        e.preventDefault()
+                        const formData = new FormData(e.target as HTMLFormElement)
+                        const currentPassword = formData.get('currentPassword') as string
+                        const newPassword = formData.get('newPassword') as string
+                        const confirmPassword = formData.get('confirmPassword') as string
+                        
+                        if (newPassword !== confirmPassword) {
+                          alert('New passwords do not match')
+                          return
+                        }
+                        
+                        handlePasswordUpdate(currentPassword, newPassword)
+                      }} className="space-y-4">
+                        
+                        <div>
+                          <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                            Current Password
+                          </label>
+                          <input
+                            type="password"
+                            id="currentPassword"
+                            name="currentPassword"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                            placeholder="Enter current password"
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                            New Password
+                          </label>
+                          <input
+                            type="password"
+                            id="newPassword"
+                            name="newPassword"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                            placeholder="Enter new password"
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                            Confirm New Password
+                          </label>
+                          <input
+                            type="password"
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                            placeholder="Confirm new password"
+                            required
+                          />
+                        </div>
+                        
+                        <div className="flex justify-end">
+                          <button
+                            type="submit"
+                            disabled={saving}
+                            className="bg-black text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {saving ? 'Updating...' : 'Update Password'}
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+
+                    {/* Change Email */}
+                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                      <h3 className="text-xl font-medium text-gray-900 mb-4">Change Email Address</h3>
+                      <p className="text-gray-600 mb-4">Current email: {user?.email}</p>
+                      <form onSubmit={(e) => {
+                        e.preventDefault()
+                        const formData = new FormData(e.target as HTMLFormElement)
+                        const newEmail = formData.get('newEmail') as string
+                        
+                        const confirmChange = confirm('Are you sure you want to change your email? You will need to verify the new email address.')
+                        if (confirmChange) {
+                          supabase.auth.updateUser({ email: newEmail })
+                            .then(({ error }) => {
+                              if (error) {
+                                alert('Failed to update email: ' + error.message)
+                              } else {
+                                alert('Email update initiated. Please check your new email for verification.')
+                              }
+                            })
+                        }
+                      }} className="space-y-4">
+                        
+                        <div>
+                          <label htmlFor="newEmail" className="block text-sm font-medium text-gray-700 mb-2">
+                            New Email Address
+                          </label>
+                          <input
+                            type="email"
+                            id="newEmail"
+                            name="newEmail"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                            placeholder="Enter new email address"
+                            required
+                          />
+                        </div>
+                        
+                        <div className="flex justify-end">
+                          <button
+                            type="submit"
+                            disabled={saving}
+                            className="bg-black text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Update Email
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+
+                    {/* Two-Factor Authentication */}
+                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                      <h3 className="text-xl font-medium text-gray-900 mb-4">Two-Factor Authentication</h3>
+                      <p className="text-gray-600 mb-4">Add an extra layer of security to your account</p>
+                      <button className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-all duration-300">
+                        Enable 2FA
+                      </button>
                     </div>
 
                     {/* Sign Out Button */}
-                    <div className="pt-8 border-t border-white/10">
+                    <div className="pt-8 border-t border-gray-200">
                       <button
                         onClick={handleSignOut}
-                        className="w-full p-4 bg-red-500/20 border border-red-500/30 rounded-2xl text-red-400 hover:bg-red-500/30 transition-all duration-300 font-medium"
+                        className="w-full p-4 bg-red-50 border border-red-200 rounded-2xl text-red-600 hover:bg-red-100 transition-all duration-300 font-medium"
                       >
                         Sign Out
                       </button>
@@ -577,9 +1079,207 @@ export default function AccountPage() {
                 </div>
               </div>
             )}
+
+            {/* Tickets Tab */}
+            {activeTab === 'tickets' && (
+              <div className="space-y-6">
+                <div className="bg-white border border-gray-200 rounded-3xl p-8 md:p-12 shadow-lg">
+                  <div className="flex justify-between items-center mb-8">
+                    <div>
+                      <h2 className="text-3xl font-light text-gray-900">Support Tickets</h2>
+                      <p className="text-gray-600 mt-2">View and manage your support tickets. You can also submit tickets through our <a href="/contact" className="text-blue-600 hover:text-blue-800 underline">contact page</a>.</p>
+                    </div>
+                    <button 
+                      onClick={() => setShowTicketModal(true)}
+                      className="bg-black text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition-all duration-300"
+                    >
+                      New Ticket
+                    </button>
+                  </div>
+                  
+                  {tickets.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                      </div>
+                      <p className="text-gray-600 mb-6 text-lg">No support tickets yet</p>
+                      <p className="text-gray-500 text-sm">When you create a support ticket, it will appear here</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {tickets.map((ticket) => (
+                        <div key={ticket.id} className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h3 className="font-semibold text-gray-900">{ticket.subject}</h3>
+                              <p className="text-sm text-gray-600">
+                                Ticket #{ticket.id} • {ticket.category}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                Created: {new Date(ticket.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                                ticket.status === "resolved" 
+                                  ? "bg-green-100 text-green-700 border border-green-200"
+                                  : ticket.status === "in-progress"
+                                  ? "bg-blue-100 text-blue-700 border border-blue-200"
+                                  : ticket.status === "closed"
+                                  ? "bg-gray-100 text-gray-700 border border-gray-200"
+                                  : "bg-yellow-100 text-yellow-700 border border-yellow-200"
+                              }`}>
+                                {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
+                              </span>
+                              <div className="mt-2">
+                                <span className={`inline-block px-2 py-1 rounded text-xs ${
+                                  ticket.priority === "high" 
+                                    ? "bg-red-100 text-red-600"
+                                    : ticket.priority === "medium"
+                                    ? "bg-yellow-100 text-yellow-600"
+                                    : "bg-green-100 text-green-600"
+                                }`}>
+                                  {ticket.priority} priority
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="border-t border-gray-200 pt-4">
+                            <p className="text-gray-700 mb-3">{ticket.description}</p>
+                            <button className="text-black hover:text-gray-700 font-medium transition-colors">
+                              View Details →
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </motion.div>
         </div>
       </div>
+
+      {/* New Ticket Modal */}
+      {showTicketModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-8">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-light text-gray-900">Create Support Ticket</h3>
+                <button
+                  onClick={() => setShowTicketModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <form onSubmit={(e) => {
+                e.preventDefault()
+                const formData = new FormData(e.target as HTMLFormElement)
+                const ticketData = {
+                  subject: formData.get('subject') as string,
+                  description: formData.get('description') as string,
+                  category: formData.get('category') as string,
+                  priority: formData.get('priority') as string
+                }
+                handleCreateTicket(ticketData)
+              }} className="space-y-6">
+                
+                <div>
+                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
+                    Subject *
+                  </label>
+                  <input
+                    type="text"
+                    id="subject"
+                    name="subject"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                    placeholder="Brief description of your issue"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                      Category *
+                    </label>
+                    <select
+                      id="category"
+                      name="category"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                      required
+                    >
+                      <option value="">Select a category</option>
+                      <option value="Order Support">Order Support</option>
+                      <option value="Returns">Returns & Refunds</option>
+                      <option value="Product Question">Product Question</option>
+                      <option value="Technical Issue">Technical Issue</option>
+                      <option value="Account Issue">Account Issue</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-2">
+                      Priority
+                    </label>
+                    <select
+                      id="priority"
+                      name="priority"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                      defaultValue="medium"
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                    Description *
+                  </label>
+                  <textarea
+                    id="description"
+                    name="description"
+                    rows={5}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                    placeholder="Please provide detailed information about your issue..."
+                    required
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowTicketModal(false)}
+                    className="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-all duration-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="bg-black text-white px-8 py-3 rounded-xl font-medium hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {saving ? 'Creating...' : 'Create Ticket'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* StaggeredMenu Component */}
       <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 10001, pointerEvents: menuOpen ? "auto" : "none" }}>

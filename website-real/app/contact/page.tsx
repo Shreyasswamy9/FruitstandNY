@@ -1,10 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { supabase } from "../supabase-client"
 import StaggeredMenu from "../../components/StagerredMenu"
 import FileAttachment from "../../components/FileAttachment"
 import { UploadResult } from "@/lib/storage"
+import type { User, Session } from "@supabase/supabase-js"
 
 interface TicketFormData {
   name: string;
@@ -26,10 +28,16 @@ interface UserTicket {
   status: string;
   createdAt: string;
   updatedAt: string;
-  messages: any[];
+  messages: Array<{
+    id: string;
+    message: string;
+    sender: 'user' | 'support';
+    timestamp: string;
+  }>;
 }
 
 export default function ContactPage() {
+  const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'submit' | 'track'>('submit')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -38,8 +46,8 @@ export default function ContactPage() {
   const [trackingEmail, setTrackingEmail] = useState('')
   const [selectedTicket, setSelectedTicket] = useState<UserTicket | null>(null)
   const [newMessage, setNewMessage] = useState('')
-  const [user, setUser] = useState<any | null>(null)
-  const [userSession, setUserSession] = useState<any | null>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const [userSession, setUserSession] = useState<Session | null>(null)
   const [attachedFiles, setAttachedFiles] = useState<UploadResult[]>([])
 
   // Get current user
@@ -93,6 +101,17 @@ export default function ContactPage() {
 
   const handleSubmitTicket = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Check if user is authenticated
+    if (!user) {
+      setSubmitMessage('Please sign in to submit a support ticket.')
+      // Redirect to sign-in page after a brief delay
+      setTimeout(() => {
+        router.push('/auth/signin')
+      }, 2000)
+      return
+    }
+    
     setIsSubmitting(true)
     setSubmitMessage('')
 
@@ -297,6 +316,35 @@ export default function ContactPage() {
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-light text-gray-900 mb-4">Submit a Support Ticket</h2>
                 <p className="text-gray-600 text-lg">Provide detailed information about your issue for faster resolution</p>
+                
+                {/* Authentication Notice */}
+                {!user && (
+                  <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                    <div className="flex items-center justify-center text-blue-700">
+                      <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
+                      <span className="font-medium">Authentication Required</span>
+                    </div>
+                    <p className="text-blue-600 text-sm mt-2">
+                      You must be signed in to submit a support ticket. 
+                      <button 
+                        onClick={() => router.push('/auth/signin')}
+                        className="ml-1 underline hover:text-blue-800 font-medium"
+                      >
+                        Sign in here
+                      </button>
+                      {" "}or{" "}
+                      <button 
+                        onClick={() => router.push('/auth/signup')}
+                        className="underline hover:text-blue-800 font-medium"
+                      >
+                        create an account
+                      </button>
+                      .
+                    </p>
+                  </div>
+                )}
               </div>
 
               <form onSubmit={handleSubmitTicket} className="space-y-6">
@@ -309,7 +357,10 @@ export default function ContactPage() {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-4 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all"
+                      disabled={!user}
+                      className={`w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all ${
+                        !user ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50'
+                      }`}
                       placeholder="Your full name"
                       required
                     />
@@ -321,7 +372,10 @@ export default function ContactPage() {
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-4 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all"
+                      disabled={!user}
+                      className={`w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all ${
+                        !user ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50'
+                      }`}
                       placeholder="your@email.com"
                       required
                     />
@@ -335,7 +389,10 @@ export default function ContactPage() {
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-4 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all"
+                    disabled={!user}
+                    className={`w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all ${
+                      !user ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50'
+                    }`}
                     placeholder="Optional phone number"
                   />
                 </div>
@@ -347,7 +404,10 @@ export default function ContactPage() {
                     name="category"
                     value={formData.category}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-4 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 transition-all"
+                    disabled={!user}
+                    className={`w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 transition-all ${
+                      !user ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50'
+                    }`}
                     required
                   >
                     <option value="" className="bg-white">Select issue category...</option>
@@ -368,7 +428,10 @@ export default function ContactPage() {
                       name="priority"
                       value={formData.priority}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-4 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 transition-all"
+                      disabled={!user}
+                      className={`w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 transition-all ${
+                        !user ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50'
+                      }`}
                     >
                       <option value="low" className="bg-white">Low - General Question</option>
                       <option value="medium" className="bg-white">Medium - Standard Issue</option>
@@ -383,7 +446,10 @@ export default function ContactPage() {
                       name="orderId"
                       value={formData.orderId}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-4 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all"
+                      disabled={!user}
+                      className={`w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all ${
+                        !user ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50'
+                      }`}
                       placeholder="Order ID or reference number"
                     />
                   </div>
@@ -396,7 +462,10 @@ export default function ContactPage() {
                     name="subject"
                     value={formData.subject}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-4 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all"
+                    disabled={!user}
+                    className={`w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all ${
+                      !user ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50'
+                    }`}
                     placeholder="Brief description of your issue"
                     required
                   />
@@ -408,8 +477,11 @@ export default function ContactPage() {
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
+                    disabled={!user}
                     rows={6}
-                    className="w-full px-4 py-4 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all resize-none"
+                    className={`w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all resize-none ${
+                      !user ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50'
+                    }`}
                     placeholder="Please provide as much detail as possible about your issue. Include steps to reproduce the problem, error messages, and any relevant information."
                     required
                   />
@@ -418,13 +490,15 @@ export default function ContactPage() {
                 {/* File Attachments */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">Attachments</label>
-                  <FileAttachment
-                    bucket="tickets"
-                    onFilesUploaded={(files) => setAttachedFiles(prev => [...prev, ...files])}
-                    onFilesRemoved={(index) => setAttachedFiles(prev => prev.filter((_, i) => i !== index))}
-                    maxFiles={5}
-                    userId={user?.id}
-                  />
+                  <div className={!user ? 'opacity-50 pointer-events-none' : ''}>
+                    <FileAttachment
+                      bucket="tickets"
+                      onFilesUploaded={(files) => setAttachedFiles(prev => [...prev, ...files])}
+                      onFilesRemoved={(index) => setAttachedFiles(prev => prev.filter((_, i) => i !== index))}
+                      maxFiles={5}
+                      userId={user?.id}
+                    />
+                  </div>
                   <p className="text-xs text-gray-500 mt-2">
                     You can attach screenshots, documents, or other files to help us understand your issue better.
                   </p>
@@ -438,10 +512,21 @@ export default function ContactPage() {
 
                 <button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-xl font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isSubmitting || !user}
+                  className={`w-full px-8 py-4 rounded-xl font-medium transition-all duration-300 transform focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white ${
+                    !user
+                      ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                      : isSubmitting
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white opacity-50 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 hover:scale-[1.02]'
+                  }`}
                   >
-                  {isSubmitting ? 'Submitting...' : 'Submit Ticket'}
+                  {!user 
+                    ? 'Sign In Required' 
+                    : isSubmitting 
+                    ? 'Submitting...' 
+                    : 'Submit Ticket'
+                  }
                 </button>
               </form>
             </div>
@@ -523,9 +608,9 @@ export default function ContactPage() {
                         <div className="mt-6 pt-6 border-t border-gray-300">
                           <div className="space-y-4 mb-6">
                             {ticket.messages.map((message, index) => (
-                              <div key={index} className={`p-4 rounded-lg ${message.senderRole === 'user' ? 'bg-blue-50 ml-8 border border-blue-200' : 'bg-gray-50 mr-8 border border-gray-200'}`}>
+                              <div key={index} className={`p-4 rounded-lg ${message.sender === 'user' ? 'bg-blue-50 ml-8 border border-blue-200' : 'bg-gray-50 mr-8 border border-gray-200'}`}>
                                 <div className="flex justify-between items-center mb-2">
-                                  <span className="font-medium text-gray-900">{message.senderName}</span>
+                                  <span className="font-medium text-gray-900">{message.sender === 'user' ? 'You' : 'Support Team'}</span>
                                   <span className="text-sm text-gray-600">{new Date(message.timestamp).toLocaleString()}</span>
                                 </div>
                                 <p className="text-gray-800">{message.message}</p>

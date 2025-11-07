@@ -124,8 +124,8 @@ export default function ClassicTeePage() {
           console.log('Go back button clicked');
           try {
             router.back();
-          } catch (error) {
-            console.log('Router.back failed, using window.history.back');
+          } catch (err) {
+            console.log('Router.back failed, using window.history.back', err);
             window.history.back();
           }
         }}

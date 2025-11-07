@@ -347,14 +347,14 @@ export const uploadOrderDocument = (file: File, userId: string, orderId?: string
 export const initializeBuckets = async () => {
   const results = [];
   
-  for (const [key, bucketName] of Object.entries(STORAGE_BUCKETS)) {
+  for (const bucketName of Object.values(STORAGE_BUCKETS)) {
     try {
       const { data: buckets } = await supabase.storage.listBuckets();
       const exists = buckets?.some(b => b.name === bucketName);
       
       if (!exists) {
         const config = BUCKET_CONFIG[bucketName as BucketName];
-        const { data, error } = await supabase.storage.createBucket(bucketName, {
+        const { error } = await supabase.storage.createBucket(bucketName, {
           public: bucketName === 'products', // Make products public
           allowedMimeTypes: [...config.allowedTypes],
           fileSizeLimit: config.maxFileSize

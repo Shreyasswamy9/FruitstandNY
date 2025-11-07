@@ -1,5 +1,26 @@
-import { IProduct } from '@/database/Product';
-import { IShippingAddress } from '@/database/Order';
+import { 
+  SupabaseProductService, 
+  Product,
+  Cart,
+  CartItem,
+  Order
+} from '@/lib/services/supabase-existing';
+import { supabase } from '@/app/supabase-client';
+
+// Utility function to get auth headers with Supabase token
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  
+  // Get current session and add Authorization header
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.access_token) {
+    headers['Authorization'] = `Bearer ${session.access_token}`;
+  }
+
+  return headers;
+}
 
 // Utility function to get session headers
 function getSessionHeaders(): Record<string, string> {
@@ -19,128 +40,70 @@ function getSessionHeaders(): Record<string, string> {
 function getSessionId(): string | null {
   if (typeof window === 'undefined') return null;
   
-  // Try to get from cookie
-  const cookies = document.cookie.split(';');
-  for (const cookie of cookies) {
-    const [name, value] = cookie.trim().split('=');
-    if (name === 'guest-session-id') {
-      return value;
-    }
+  let sessionId = localStorage.getItem('guest-session-id');
+  if (!sessionId) {
+    sessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+    localStorage.setItem('guest-session-id', sessionId);
   }
-
-  return null;
+  return sessionId;
 }
 
-// API service functions
+// API service functions using Supabase
 export class ProductService {
-  private static baseUrl = '/api/products';
-
-  static async getProducts(params?: {
-    category?: string;
+  static async getProducts(options: {
+    category_id?: string;
     featured?: boolean;
-    search?: string;
-    page?: number;
+    is_active?: boolean;
     limit?: number;
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
-  }) {
-    const searchParams = new URLSearchParams();
-    
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined) {
-          searchParams.append(key, value.toString());
-        }
-      });
-    }
-
-    const response = await fetch(`${this.baseUrl}?${searchParams.toString()}`);
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch products');
-    }
-
-    return response.json();
+    offset?: number;
+  } = {}) {
+    return SupabaseProductService.getProducts(options);
   }
 
   static async getProduct(id: string) {
-    const response = await fetch(`${this.baseUrl}/${id}`);
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch product');
-    }
-
-    return response.json();
+    return SupabaseProductService.getProduct(id);
   }
 
-  static async createProduct(product: Partial<IProduct>) {
-    const response = await fetch(this.baseUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(product),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to create product');
-    }
-
-    return response.json();
-  }
-
-  static async updateProduct(id: string, updates: Partial<IProduct>) {
-    const response = await fetch(`${this.baseUrl}/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updates),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to update product');
-    }
-
-    return response.json();
-  }
-
-  static async deleteProduct(id: string) {
-    const response = await fetch(`${this.baseUrl}/${id}`, {
-      method: 'DELETE',
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to delete product');
-    }
-
-    return response.json();
+  static async getProductBySlug(slug: string) {
+    return SupabaseProductService.getProductBySlug(slug);
   }
 }
 
 export class CartService {
-  private static baseUrl = '/api/cart';
-
   static async getCart() {
-    const response = await fetch(this.baseUrl, {
-      headers: getSessionHeaders(),
+    const authHeaders = await getAuthHeaders();
+    const sessionHeaders = getSessionHeaders();
+    
+    const response = await fetch('/api/cart', {
+      headers: {
+        ...authHeaders,
+        ...sessionHeaders,
+      },
     });
 
     if (!response.ok) {
       throw new Error('Failed to fetch cart');
     }
 
-    return response.json();
+    const result = await response.json();
+    return result.data;
   }
 
-  static async addToCart(productId: string, quantity: number, size?: string, color?: string) {
-    const response = await fetch(this.baseUrl, {
+  static async addToCart(item: {
+    productId: string;
+    variantId?: string;
+    quantity: number;
+  }) {
+    const authHeaders = await getAuthHeaders();
+    const sessionHeaders = getSessionHeaders();
+    
+    const response = await fetch('/api/cart', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        ...getSessionHeaders(),
+        ...authHeaders,
+        ...sessionHeaders,
       },
-      body: JSON.stringify({ productId, quantity, size, color }),
+      body: JSON.stringify(item),
     });
 
     if (!response.ok) {
@@ -150,14 +113,17 @@ export class CartService {
     return response.json();
   }
 
-  static async updateCartItem(productId: string, quantity: number, size?: string, color?: string) {
-    const response = await fetch(this.baseUrl, {
+  static async updateCartItem(itemId: string, quantity: number) {
+    const authHeaders = await getAuthHeaders();
+    const sessionHeaders = getSessionHeaders();
+    
+    const response = await fetch('/api/cart', {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json',
-        ...getSessionHeaders(),
+        ...authHeaders,
+        ...sessionHeaders,
       },
-      body: JSON.stringify({ productId, quantity, size, color }),
+      body: JSON.stringify({ itemId, quantity }),
     });
 
     if (!response.ok) {
@@ -167,10 +133,35 @@ export class CartService {
     return response.json();
   }
 
-  static async clearCart() {
-    const response = await fetch(this.baseUrl, {
+  static async removeFromCart(itemId: string) {
+    const authHeaders = await getAuthHeaders();
+    const sessionHeaders = getSessionHeaders();
+    
+    const response = await fetch(`/api/cart?itemId=${itemId}`, {
       method: 'DELETE',
-      headers: getSessionHeaders(),
+      headers: {
+        ...authHeaders,
+        ...sessionHeaders,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to remove item from cart');
+    }
+
+    return response.json();
+  }
+
+  static async clearCart() {
+    const authHeaders = await getAuthHeaders();
+    const sessionHeaders = getSessionHeaders();
+    
+    const response = await fetch('/api/cart', {
+      method: 'DELETE',
+      headers: {
+        ...authHeaders,
+        ...sessionHeaders,
+      },
     });
 
     if (!response.ok) {
@@ -182,15 +173,12 @@ export class CartService {
 }
 
 export class OrderService {
-  private static baseUrl = '/api/orders';
-
   static async getOrders(page = 1, limit = 10) {
-    const searchParams = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
+    const authHeaders = await getAuthHeaders();
+    
+    const response = await fetch(`/api/orders?page=${page}&limit=${limit}`, {
+      headers: authHeaders,
     });
-
-    const response = await fetch(`${this.baseUrl}?${searchParams.toString()}`);
 
     if (!response.ok) {
       throw new Error('Failed to fetch orders');
@@ -200,7 +188,11 @@ export class OrderService {
   }
 
   static async getOrder(id: string) {
-    const response = await fetch(`${this.baseUrl}/${id}`);
+    const authHeaders = await getAuthHeaders();
+    
+    const response = await fetch(`/api/orders/${id}`, {
+      headers: authHeaders,
+    });
 
     if (!response.ok) {
       throw new Error('Failed to fetch order');
@@ -210,17 +202,25 @@ export class OrderService {
   }
 
   static async createOrder(orderData: {
-    email: string;
-    shippingAddress: IShippingAddress;
-    billingAddress?: IShippingAddress;
+    shippingAddress: {
+      street: string;
+      city: string;
+      state: string;
+      zipCode: string;
+      country: string;
+    };
     paymentMethod: string;
-    paymentId?: string;
+    stripePaymentIntentId?: string;
+    stripeCheckoutSessionId?: string;
   }) {
-    const response = await fetch(this.baseUrl, {
+    const authHeaders = await getAuthHeaders();
+    const sessionHeaders = getSessionHeaders();
+    
+    const response = await fetch('/api/orders', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        ...getSessionHeaders(),
+        ...authHeaders,
+        ...sessionHeaders,
       },
       body: JSON.stringify(orderData),
     });
@@ -234,24 +234,61 @@ export class OrderService {
 }
 
 export class AuthService {
-  static async register(userData: {
-    name: string;
-    email: string;
-    password: string;
-  }) {
-    const response = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(userData),
+  static async signOut() {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  }
+
+  static async getUser() {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) throw error;
+    return user;
+  }
+
+  static async getSession() {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    return session;
+  }
+}
+
+export class TicketService {
+  static async getTickets() {
+    const authHeaders = await getAuthHeaders();
+    
+    const response = await fetch('/api/tickets', {
+      method: 'GET',
+      headers: authHeaders,
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to register');
+      throw new Error('Failed to fetch tickets');
+    }
+
+    return response.json();
+  }
+
+  static async createTicket(ticketData: {
+    subject: string;
+    description: string;
+    category: string;
+    priority?: string;
+  }) {
+    const authHeaders = await getAuthHeaders();
+    
+    const response = await fetch('/api/tickets', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify(ticketData),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create ticket');
     }
 
     return response.json();
   }
 }
+
+// Export types
+export type { Product, Cart, CartItem, Order };

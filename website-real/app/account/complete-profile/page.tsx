@@ -5,6 +5,7 @@ import { supabase } from "../../supabase-client"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
 import StaggeredMenu from "../../../components/StagerredMenu"
+import type { User } from "@supabase/supabase-js"
 
 interface ProfileData {
   firstName: string
@@ -54,7 +55,7 @@ export default function CompleteProfilePage() {
   
   const [isLoaded, setIsLoaded] = useState(false)
   const [isSignedIn, setIsSignedIn] = useState(false)
-  const [user, setUser] = useState<any | null>(null)
+  const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -146,16 +147,17 @@ export default function CompleteProfilePage() {
       } else {
         router.push("/account")
       }
-    } catch (err) {
+    } catch (error) {
+      console.error("Profile save error:", error)
       setError("Failed to save profile. Please try again.")
     } finally {
       setLoading(false)
     }
   }
 
-  const handleSocialSignIn = async (provider: string) => {
+  const handleSocialSignIn = async (provider: 'google' | 'facebook' | 'github') => {
     // Use Supabase OAuth flow
-    await supabase.auth.signInWithOAuth({ provider: provider as any })
+    await supabase.auth.signInWithOAuth({ provider })
   }
 
   if (!isLoaded) {

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { supabase } from "../app/supabase-client"
 import Link from "next/link"
 import ShopDropdown from "./ShopDropdown"
+import type { User } from "@supabase/supabase-js"
 
 interface NavbarProps {
   isShopDropdownOpen: boolean
@@ -16,7 +17,7 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
   const [isSignedIn, setIsSignedIn] = useState(false)
-  const [user, setUser] = useState<any | null>(null)
+  const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -100,7 +101,7 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="hidden md:flex items-center text-white hover:text-gray-300 transition-colors duration-200"
                 >
-                  <span className="mr-1">Hi, {user?.firstName || user?.fullName?.split(' ')[0] || 'User'}</span>
+                  <span className="mr-1">Hi, {user?.user_metadata?.name || user?.email?.split('@')[0] || 'User'}</span>
                   <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
@@ -258,7 +259,7 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
                 {isSignedIn ? (
                   <div className="border-t border-gray-600 pt-2 mt-2">
                     <div className="px-3 py-2 text-white font-medium">
-                      Hi, {user?.fullName || 'User'}
+                      Hi, {user?.user_metadata?.name || user?.email?.split('@')[0] || 'User'}
                     </div>
                     <Link 
                       href="/account" 
@@ -266,7 +267,7 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
                     >
                       My Account
                     </Link>
-                    {user?.publicMetadata?.role === "admin" && (
+                    {user?.user_metadata?.role === "admin" && (
                       <Link 
                         href="/admin" 
                         className="block text-white hover:text-gray-300 px-3 py-2 text-base font-medium"

@@ -1,4 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'
+
+interface GooglePlacePrediction {
+  place_id: string;
+  description: string;
+}
+
+interface GooglePlaceDetails {
+  address_components: Array<{
+    long_name: string;
+    short_name: string;
+    types: string[];
+  }>;
+}
+
+interface GooglePlacesResponse {
+  predictions: GooglePlacePrediction[];
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,11 +51,11 @@ export async function GET(request: NextRequest) {
       throw new Error('Failed to fetch from Google Places API');
     }
 
-    const data = await response.json();
+    const data = await response.json() as GooglePlacesResponse;
     
     // Transform Google Places response to our format
     const suggestions = await Promise.all(
-      data.predictions.slice(0, 5).map(async (prediction: any) => {
+      data.predictions.slice(0, 5).map(async (prediction: GooglePlacePrediction) => {
         // Get place details to extract address components
         const detailsResponse = await fetch(
           `https://maps.googleapis.com/maps/api/place/details/json?place_id=${prediction.place_id}&fields=address_components&key=${apiKey}`
@@ -48,8 +65,8 @@ export async function GET(request: NextRequest) {
           return null;
         }
         
-        const detailsData = await detailsResponse.json();
-        const components = detailsData.result.address_components;
+        const detailsData = await detailsResponse.json() as { result: GooglePlaceDetails };
+        const components = detailsData.result.address_components || [];
         
         // Extract address components
         let street = '';
@@ -57,7 +74,7 @@ export async function GET(request: NextRequest) {
         let state = '';
         let zipCode = '';
         
-        components.forEach((component: any) => {
+        components.forEach((component) => {
           const types = component.types;
           if (types.includes('street_number') || types.includes('route')) {
             street += component.long_name + ' ';

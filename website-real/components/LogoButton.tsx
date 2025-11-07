@@ -2,19 +2,21 @@
 
 import React, { useContext } from "react"
 import { LogoVisibilityContext } from "./ClientRootLayout"
+import Link from "next/link"
 
 export default function LogoButton() {
   const { hideLogo } = useContext(LogoVisibilityContext)
   if (hideLogo) return null
+  
   // On click, clear introPlayed so rotator plays again
-  const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleLogoClick = () => {
     if (typeof window !== 'undefined') {
       window.sessionStorage.removeItem('introPlayed');
     }
-    // Let navigation proceed
   };
+  
   return (
-    <a
+    <Link
       href="/"
       aria-label="Home"
       onClick={handleLogoClick}
@@ -56,6 +58,6 @@ export default function LogoButton() {
         alt="Fruitstand Logo"
         style={{ width: "100%", height: "100%", objectFit: "contain", border: "none", borderRadius: 0, boxShadow: "none", background: "none", display: "block", pointerEvents: "none" }}
       />
-    </a>
+    </Link>
   )
 }

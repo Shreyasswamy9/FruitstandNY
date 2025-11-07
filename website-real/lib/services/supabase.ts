@@ -1,0 +1,711 @@
+// Supabase-based database services to replace MongoDB
+import { supabase } from '@/app/supabase-client';
+
+// Types for Supabase tables
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  subcategory?: string;
+  images: string[];
+  hover_image?: string;
+  inventory_quantity: number;
+  inventory_low_stock_threshold?: number;
+  sizes: string[];
+  colors: string[];
+  tags: string[];
+  active: boolean;
+  featured: boolean;
+  weight?: number;
+  dimensions_length?: number;
+  dimensions_width?: number;
+  dimensions_height?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CartItem {
+  id: string;
+  cart_id: string;
+  product_id: string;
+  quantity: number;
+  size?: string;
+  color?: string;
+  price: number;
+  created_at: string;
+  updated_at: string;
+  // Joined product data
+  product?: Product;
+}
+
+export interface Cart {
+  id: string;
+  user_id?: string;
+  session_id?: string;
+  created_at: string;
+  updated_at: string;
+  cart_items?: CartItem[];
+}
+
+export interface OrderItem {
+  id: string;
+  order_id: string;
+  product_id: string;
+  name: string;
+  quantity: number;
+  size?: string;
+  color?: string;
+  price: number;
+  image?: string;
+  created_at: string;
+}
+
+export interface Order {
+  id: string;
+  order_number: string;
+  user_id?: string;
+  email: string;
+  shipping_address: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  billing_address?: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  payment_method: 'stripe' | 'paypal' | 'cash';
+  payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
+  payment_id?: string;
+  stripe_session_id?: string;
+  order_status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  subtotal: number;
+  shipping_cost: number;
+  tax: number;
+  total_amount: number;
+  currency: string;
+  notes?: string;
+  tracking_number?: string;
+  shipped_at?: string;
+  delivered_at?: string;
+  cancelled_at?: string;
+  refunded_at?: string;
+  created_at: string;
+  updated_at: string;
+  order_items?: OrderItem[];
+}
+
+// Product Service
+export class SupabaseProductService {
+  static async getProducts(options: {
+    category?: string;
+    featured?: boolean;
+    active?: boolean;
+    limit?: number;
+    offset?: number;
+  } = {}) {
+    let query = supabase
+      .from('products')
+      .select('*');
+
+    if (options.category) {
+      query = query.eq('category', options.category);
+    }
+    if (options.featured !== undefined) {
+      query = query.eq('featured', options.featured);
+    }
+    if (options.active !== undefined) {
+      query = query.eq('active', options.active);
+    }
+    if (options.limit) {
+      query = query.limit(options.limit);
+    }
+    if (options.offset) {
+      query = query.range(options.offset, options.offset + (options.limit || 10) - 1);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data as Product[];
+  }
+
+  static async getProduct(id: string) {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data as Product;
+  }
+
+  static async createProduct(product: Omit<Product, 'id' | 'created_at' | 'updated_at'>) {
+    const { data, error } = await supabase
+      .from('products')
+      .insert(product)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as Product;
+  }
+
+  static async updateProduct(id: string, updates: Partial<Product>) {
+    const { data, error } = await supabase
+      .from('products')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as Product;
+  }
+
+  static async deleteProduct(id: string) {
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  }
+}
+
+// Cart Service
+export class SupabaseCartService {
+  static async getCart(userId?: string, sessionId?: string) {
+    let query = supabase
+      .from('carts')
+      .select(`
+        *,
+        cart_items (
+          *,
+          product:products (*)
+        )
+      `);
+
+    if (userId) {
+      query = query.eq('user_id', userId);
+    } else if (sessionId) {
+      query = query.eq('session_id', sessionId);
+    } else {
+      throw new Error('Either userId or sessionId is required');
+    }
+
+    const { data, error } = await query.single();
+    
+    if (error && error.code !== 'PGRST116') { // Not found error
+      throw error;
+    }
+    
+    return data as Cart | null;
+  }
+
+  static async createCart(userId?: string, sessionId?: string) {
+    const cartData: Partial<Cart> = {};
+    if (userId) {
+      cartData.user_id = userId;
+    } else if (sessionId) {
+      cartData.session_id = sessionId;
+    } else {
+      throw new Error('Either userId or sessionId is required');
+    }
+
+    const { data, error } = await supabase
+      .from('carts')
+      .insert(cartData)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as Cart;
+  }
+
+  static async addToCart(cartId: string, item: {
+    product_id: string;
+    quantity: number;
+    size?: string;
+    color?: string;
+    price: number;
+  }) {
+    // Check if item already exists
+    const { data: existingItem } = await supabase
+      .from('cart_items')
+      .select('*')
+      .eq('cart_id', cartId)
+      .eq('product_id', item.product_id)
+      .eq('size', item.size || '')
+      .eq('color', item.color || '')
+      .single();
+
+    if (existingItem) {
+      // Update quantity
+      const { data, error } = await supabase
+        .from('cart_items')
+        .update({ quantity: existingItem.quantity + item.quantity })
+        .eq('id', existingItem.id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data as CartItem;
+    } else {
+      // Add new item
+      const { data, error } = await supabase
+        .from('cart_items')
+        .insert({ cart_id: cartId, ...item })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data as CartItem;
+    }
+  }
+
+  static async updateCartItem(itemId: string, quantity: number) {
+    if (quantity <= 0) {
+      return this.removeFromCart(itemId);
+    }
+
+    const { data, error } = await supabase
+      .from('cart_items')
+      .update({ quantity })
+      .eq('id', itemId)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as CartItem;
+  }
+
+  static async removeFromCart(itemId: string) {
+    const { error } = await supabase
+      .from('cart_items')
+      .delete()
+      .eq('id', itemId);
+    
+    if (error) throw error;
+  }
+
+  static async clearCart(cartId: string) {
+    const { error } = await supabase
+      .from('cart_items')
+      .delete()
+      .eq('cart_id', cartId);
+    
+    if (error) throw error;
+  }
+
+  static async deleteCart(cartId: string) {
+    const { error } = await supabase
+      .from('carts')
+      .delete()
+      .eq('id', cartId);
+    
+    if (error) throw error;
+  }
+}
+
+// Order Service
+export class SupabaseOrderService {
+  static async getOrders(userId: string, options: {
+    limit?: number;
+    offset?: number;
+  } = {}) {
+    let query = supabase
+      .from('orders')
+      .select(`
+        *,
+        order_items (*)
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (options.limit) {
+      query = query.limit(options.limit);
+    }
+    if (options.offset) {
+      query = query.range(options.offset, options.offset + (options.limit || 10) - 1);
+    }
+
+    const { data, error } = await query;
+    
+    if (error) throw error;
+    return data as Order[];
+  }
+
+  static async getOrder(id: string, userId?: string) {
+    let query = supabase
+      .from('orders')
+      .select(`
+        *,
+        order_items (*)
+      `)
+      .eq('id', id);
+
+    if (userId) {
+      query = query.eq('user_id', userId);
+    }
+
+    const { data, error } = await query.single();
+    
+    if (error) throw error;
+    return data as Order;
+  }
+
+  static async createOrder(order: {
+    user_id?: string;
+    email: string;
+    shipping_address: {
+      street: string;
+      city: string;
+      state: string;
+      zipCode: string;
+      country: string;
+    };
+    billing_address?: {
+      street: string;
+      city: string;
+      state: string;
+      zipCode: string;
+      country: string;
+    };
+    payment_method: string;
+    payment_status?: 'pending' | 'paid' | 'failed' | 'refunded';
+    order_status?: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+    payment_id?: string;
+    stripe_session_id?: string;
+    subtotal: number;
+    shipping_cost: number;
+    tax: number;
+    total_amount: number;
+    currency?: string;
+    items: Array<{
+      product_id: string;
+      name: string;
+      quantity: number;
+      size?: string;
+      color?: string;
+      price: number;
+      image?: string;
+    }>;
+  }) {
+    // Create order
+    const { items, ...orderData } = order;
+    const { data: newOrder, error: orderError } = await supabase
+      .from('orders')
+      .insert(orderData)
+      .select()
+      .single();
+
+    if (orderError) throw orderError;
+
+    // Create order items
+    const orderItems = items.map(item => ({
+      order_id: newOrder.id,
+      ...item
+    }));
+
+    const { data: newOrderItems, error: itemsError } = await supabase
+      .from('order_items')
+      .insert(orderItems)
+      .select();
+
+    if (itemsError) throw itemsError;
+
+    return { ...newOrder, order_items: newOrderItems } as Order;
+  }
+
+  static async updateOrder(id: string, updates: Partial<Order>) {
+    const { data, error } = await supabase
+      .from('orders')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as Order;
+  }
+
+  static async updateOrderStatus(id: string, status: Order['order_status']) {
+    return this.updateOrder(id, { order_status: status });
+  }
+
+  static async updatePaymentStatus(id: string, status: Order['payment_status']) {
+    return this.updateOrder(id, { payment_status: status });
+  }
+
+  static async getOrderByStripeSession(stripeSessionId: string) {
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        order_items (*)
+      `)
+      .eq('stripe_session_id', stripeSessionId)
+      .single();
+    
+    if (error) throw error;
+    return data as Order;
+  }
+}
+
+// User Profile Service
+export class SupabaseUserService {
+  static async getProfile(userId: string) {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') {
+      throw error;
+    }
+    return data;
+  }
+
+  static async createProfile(profile: {
+    id: string;
+    email: string;
+    name?: string;
+    phone?: string;
+    role?: string;
+  }) {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .insert(profile)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+
+  static async updateProfile(userId: string, updates: {
+    name?: string;
+    phone?: string;
+  }) {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .update(updates)
+      .eq('id', userId)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+}
+
+// Support Ticket Types
+export interface SupportTicket {
+  id: string;
+  ticket_id: string;
+  user_id?: string;
+  user_name: string;
+  user_email: string;
+  user_phone?: string;
+  subject: string;
+  category: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  description: string;
+  order_id?: string;
+  product_id?: string;
+  status: 'open' | 'in-progress' | 'resolved' | 'closed';
+  assigned_to?: string;
+  attachments: Array<{
+    filename: string;
+    url: string;
+    size: number;
+    type: string;
+  }>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TicketMessage {
+  id: string;
+  ticket_id: string;
+  sender_id?: string;
+  sender_type: 'user' | 'admin' | 'system';
+  message: string;
+  attachments: Array<{
+    filename: string;
+    url: string;
+    size: number;
+    type: string;
+  }>;
+  is_internal: boolean;
+  created_at: string;
+}
+
+// Support Ticket Service
+export class SupabaseTicketService {
+  static async createTicket(ticketData: Omit<SupportTicket, 'id' | 'ticket_id' | 'created_at' | 'updated_at'>) {
+    const { data, error } = await supabase
+      .from('support_tickets')
+      .insert([ticketData])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as SupportTicket;
+  }
+
+  static async getTicket(ticketId: string) {
+    const { data, error } = await supabase
+      .from('support_tickets')
+      .select(`
+        *,
+        ticket_messages (
+          id,
+          sender_id,
+          sender_type,
+          message,
+          attachments,
+          is_internal,
+          created_at
+        )
+      `)
+      .eq('ticket_id', ticketId)
+      .single();
+    
+    if (error) throw error;
+    return data as SupportTicket & { ticket_messages: TicketMessage[] };
+  }
+
+  static async getUserTickets(userId: string) {
+    const { data, error } = await supabase
+      .from('support_tickets')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data as SupportTicket[];
+  }
+
+  static async getTicketsByEmail(email: string) {
+    const { data, error } = await supabase
+      .from('support_tickets')
+      .select('*')
+      .eq('user_email', email)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data as SupportTicket[];
+  }
+
+  static async updateTicketStatus(ticketId: string, status: SupportTicket['status']) {
+    const { data, error } = await supabase
+      .from('support_tickets')
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('ticket_id', ticketId)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as SupportTicket;
+  }
+
+  static async addTicketMessage(ticketId: string, messageData: Omit<TicketMessage, 'id' | 'created_at'>) {
+    // First get the ticket UUID from ticket_id
+    const { data: ticket, error: ticketError } = await supabase
+      .from('support_tickets')
+      .select('id')
+      .eq('ticket_id', ticketId)
+      .single();
+    
+    if (ticketError) throw ticketError;
+
+    const { data, error } = await supabase
+      .from('ticket_messages')
+      .insert([{ ...messageData, ticket_id: ticket.id }])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as TicketMessage;
+  }
+
+  static async getTicketMessages(ticketId: string) {
+    // First get the ticket UUID from ticket_id
+    const { data: ticket, error: ticketError } = await supabase
+      .from('support_tickets')
+      .select('id')
+      .eq('ticket_id', ticketId)
+      .single();
+    
+    if (ticketError) throw ticketError;
+
+    const { data, error } = await supabase
+      .from('ticket_messages')
+      .select('*')
+      .eq('ticket_id', ticket.id)
+      .order('created_at', { ascending: true });
+    
+    if (error) throw error;
+    return data as TicketMessage[];
+  }
+
+  static async getAllTickets(options: {
+    status?: SupportTicket['status'];
+    category?: string;
+    priority?: SupportTicket['priority'];
+    assigned_to?: string;
+    limit?: number;
+    offset?: number;
+  } = {}) {
+    let query = supabase
+      .from('support_tickets')
+      .select('*');
+
+    if (options.status) {
+      query = query.eq('status', options.status);
+    }
+    if (options.category) {
+      query = query.eq('category', options.category);
+    }
+    if (options.priority) {
+      query = query.eq('priority', options.priority);
+    }
+    if (options.assigned_to) {
+      query = query.eq('assigned_to', options.assigned_to);
+    }
+    if (options.limit) {
+      query = query.limit(options.limit);
+    }
+    if (options.offset) {
+      query = query.range(options.offset, options.offset + (options.limit || 10) - 1);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data as SupportTicket[];
+  }
+
+  static async assignTicket(ticketId: string, assignedTo: string) {
+    const { data, error } = await supabase
+      .from('support_tickets')
+      .update({ assigned_to: assignedTo, updated_at: new Date().toISOString() })
+      .eq('ticket_id', ticketId)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as SupportTicket;
+  }
+}
