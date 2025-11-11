@@ -32,7 +32,6 @@ export default function ContactPage() {
     phone: '',
     subject: '',
     category: '',
-    priority: 'medium',
     description: '',
     orderId: '',
     productId: ''
@@ -118,7 +117,7 @@ export default function ContactPage() {
           <h1 className="text-6xl md:text-8xl font-extralight tracking-wider mb-8 text-gray-900 leading-tight">
             Submit a<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600">
-              Support Ticket
+              Ticket
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 mb-12 font-light max-w-3xl mx-auto leading-relaxed">
@@ -165,7 +164,7 @@ export default function ContactPage() {
               onSubmit={async (e) => {
                 e.preventDefault()
                 if (!user) {
-                  setSubmitMessage('Please sign in to submit a support ticket.')
+                  setSubmitMessage('Please sign in to submit a ticket.')
                   setTimeout(() => router.push('/auth/signin'), 2000)
                   return
                 }
@@ -187,7 +186,6 @@ export default function ContactPage() {
                   userPhone: formData.phone,
                   subject: formData.subject,
                   category: formData.category,
-                  priority: formData.priority,
                   description: formData.description,
                   orderId: formData.orderId || undefined,
                   productId: formData.productId || undefined,
@@ -202,7 +200,6 @@ export default function ContactPage() {
                     phone: '',
                     subject: '',
                     category: '',
-                    priority: 'medium',
                     description: '',
                     orderId: '',
                     productId: ''
@@ -276,11 +273,11 @@ export default function ContactPage() {
           <div className="space-y-6">
             {[
               {
-                question: "How do I submit a support ticket?",
+                question: "How do I submit a ticket?",
                 answer: "Use the 'Submit Ticket' tab above to create a new support request. Provide detailed information about your issue for faster resolution."
               },
               {
-                question: "How can I track my support tickets?",
+                question: "How can I track my tickets?",
                 answer: "Use the 'Track Tickets' tab with your email address to view all your submitted tickets and their current status."
               },
               {

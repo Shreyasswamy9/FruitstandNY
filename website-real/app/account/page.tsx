@@ -422,28 +422,6 @@ export default function AccountPage() {
       {/* Hero Section */}
       <div className="relative pt-20 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto relative">
-          {/* Top-right Logout button */}
-          <div className="absolute right-0 -top-2 sm:top-0">
-            <button
-              onClick={handleSignOut}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400 transition-colors"
-              aria-label="Log out"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                className="w-4 h-4"
-                aria-hidden="true"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9l3-3m0 0l3 3m-3-3v12" />
-              </svg>
-              <span className="hidden sm:inline">Log out</span>
-            </button>
-          </div>
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -538,6 +516,16 @@ export default function AccountPage() {
               </div>
             </div>
           </motion.div>
+
+          {/* Global Sign Out Button visible on all tabs */}
+          <div className="max-w-4xl mx-auto mb-8">
+            <button
+              onClick={handleSignOut}
+              className="w-full p-4 bg-red-50 border border-red-200 rounded-2xl text-red-600 hover:bg-red-100 transition-all duration-300 font-medium"
+            >
+              Sign Out
+            </button>
+          </div>
 
           {/* Content Sections */}
           <motion.div
@@ -1088,15 +1076,7 @@ export default function AccountPage() {
                       </button>
                     </div>
 
-                    {/* Sign Out Button */}
-                    <div className="pt-8 border-t border-gray-200">
-                      <button
-                        onClick={handleSignOut}
-                        className="w-full p-4 bg-red-50 border border-red-200 rounded-2xl text-red-600 hover:bg-red-100 transition-all duration-300 font-medium"
-                      >
-                        Sign Out
-                      </button>
-                    </div>
+                    {/* Sign Out Button now global above; removed duplicate here */}
                   </div>
                 </div>
               </div>

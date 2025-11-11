@@ -6,7 +6,6 @@ export interface TicketFormData {
   phone: string;
   subject: string;
   category: string;
-  priority: string;
   description: string;
   orderId: string;
   productId: string;
@@ -43,7 +42,6 @@ export type SubmitTicketPayload = {
   userPhone: string;
   subject: string;
   category: string;
-  priority: string;
   description: string;
   orderId?: string;
   productId?: string;

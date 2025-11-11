@@ -34,7 +34,7 @@ export default function TicketForm({
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-200 shadow-xl max-w-4xl mx-auto">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-light text-gray-900 mb-4">Submit a Support Ticket</h2>
+        <h2 className="text-3xl font-light text-gray-900 mb-4">Submit a Ticket</h2>
         <p className="text-gray-600 text-lg">Provide detailed information about your issue for faster resolution</p>
 
         {/* Authentication Notice */}
@@ -47,7 +47,7 @@ export default function TicketForm({
               <span className="font-medium">Authentication Required</span>
             </div>
             <p className="text-blue-600 text-sm mt-2">
-              You must be signed in to submit a support ticket.
+              You must be signed in to submit a ticket.
               <button onClick={onSignIn} className="ml-1 underline hover:text-blue-800 font-medium">Sign in here</button>
               {" "}or{" "}
               <button onClick={onSignUp} className="underline hover:text-blue-800 font-medium">create an account</button>.
@@ -128,26 +128,10 @@ export default function TicketForm({
             <option value="billing" className="bg-white">Billing & Payment</option>
             <option value="other" className="bg-white">Other</option>
           </select>
+          <p className="text-xs text-gray-500 mt-2">Priority will be set automatically based on the selected category.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Priority Level</label>
-            <select
-              name="priority"
-              value={formData.priority}
-              onChange={onInputChange}
-              disabled={!user}
-              className={`w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 transition-all ${
-                !user ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50'
-              }`}
-            >
-              <option value="low" className="bg-white">Low - General Question</option>
-              <option value="medium" className="bg-white">Medium - Standard Issue</option>
-              <option value="high" className="bg-white">High - Urgent Issue</option>
-              <option value="urgent" className="bg-white">Urgent - Critical Problem</option>
-            </select>
-          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">Order ID (if applicable)</label>
             <input
@@ -162,6 +146,7 @@ export default function TicketForm({
               placeholder="Order ID or reference number"
             />
           </div>
+          <div></div>
         </div>
 
         <div>

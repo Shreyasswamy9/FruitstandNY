@@ -167,7 +167,6 @@ export async function POST(request: NextRequest) {
         subject,
         description,
         category,
-        priority,
         orderId,
         productId,
         attachments
@@ -182,6 +181,25 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'Forbidden: email mismatch' }, { status: 403 })
       }
 
+      // Derive priority from category (server-side authoritative mapping)
+      const derivePriority = (cat: string): string => {
+        switch (cat) {
+          case 'billing':
+          case 'technical-issue':
+            return 'high'
+          case 'order-issue':
+          case 'shipping':
+          case 'return-refund':
+            return 'medium'
+          case 'product-inquiry':
+          case 'other':
+          default:
+            return 'low'
+        }
+      }
+
+      const computedPriority = derivePriority(category)
+
       // Insert ticket
       const { data: ticket, error: ticketError } = await supabase
         .from(TICKETS_TABLE)
@@ -192,7 +210,7 @@ export async function POST(request: NextRequest) {
           user_phone: userPhone,
           subject,
           category,
-          priority: (priority || 'medium'),
+          priority: computedPriority,
           description,
           order_id: orderId || null,
           product_id: productId || null,
@@ -244,7 +262,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, ticket: mappedTicket })
     }
 
-    const { subject, description, category, priority } = body
+  const { subject, description, category } = body
 
     // Validate required fields for account page
     if (!subject || !description || !category) {
@@ -253,6 +271,24 @@ export async function POST(request: NextRequest) {
         error: 'Missing required fields: subject, description, category' 
       }, { status: 400 })
     }
+
+    // Derive priority for account page submissions too
+    const derivePriority = (cat: string): string => {
+      switch (cat) {
+        case 'billing':
+        case 'technical-issue':
+          return 'high'
+        case 'order-issue':
+        case 'shipping':
+        case 'return-refund':
+          return 'medium'
+        case 'product-inquiry':
+        case 'other':
+        default:
+          return 'low'
+      }
+    }
+    const computedPriority = derivePriority(category)
 
     // Persist new ticket for authenticated user
     const { data: ticket, error: ticketError } = await supabase
@@ -263,7 +299,7 @@ export async function POST(request: NextRequest) {
         user_email: user.email,
         subject,
         category,
-        priority: priority || 'medium',
+        priority: computedPriority,
         description,
         status: 'open',
         attachments: [],
