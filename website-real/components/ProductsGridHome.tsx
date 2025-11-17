@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
+import { bundles } from '@/lib/bundles'
+import BundleSheet from './BundleSheet'
 
 export interface Product {
   id: number;
@@ -49,6 +51,10 @@ interface ProductsGridProps {
 export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {}) {
   const [hovered, setHovered] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(true);
+  const [bundleOpen, setBundleOpen] = useState(false);
+  const [teased, setTeased] = useState(false);
+  const maxDiscount = Math.max(0, ...bundles.map(b => b.discountPercent || 0));
+  const CARD_RADIUS = 16; // keep card/UI rounding consistent
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
@@ -57,6 +63,27 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const dismissed = sessionStorage.getItem('bundleTeaserDismissed');
+    if (!dismissed) {
+      // Show teaser pulse soon after load for mobile
+      const t = setTimeout(() => setTeased(true), 900);
+      return () => clearTimeout(t);
+    }
+  }, []);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!isMobile) return;
+    const autoShown = sessionStorage.getItem('bundleAutoShown');
+    if (!autoShown) {
+      const t = setTimeout(() => {
+        setBundleOpen(true);
+        sessionStorage.setItem('bundleAutoShown', '1');
+      }, 1200);
+      return () => clearTimeout(t);
+    }
+  }, [isMobile]);
   
   // Filter products based on category
   const gridProducts = categoryFilter 
@@ -119,8 +146,28 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
           justifyContent : 'center',
         }}
       >
+      {/* Bundle spotlight banner: ensure it sits below category bar with clear spacing */}
+      <div className="col-span-full w-full mx-auto max-w-md mt-2 mb-2">
+        <button
+          onClick={() => setBundleOpen(true)}
+          className="w-full relative rounded-2xl p-4 text-white font-semibold shadow-lg active:scale-[0.99]"
+          style={{
+            background: 'linear-gradient(90deg, #8B5CF6 0%, #EC4899 50%, #22D3EE 100%)',
+            boxShadow: '0 10px 28px rgba(139,92,246,0.35)'
+          }}
+          aria-label="Open bundle deals"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-lg">🔥 Bundle Deals</span>
+            <span className="text-xs font-medium bg-white/20 px-2 py-1 rounded-full">Save up to {maxDiscount}%</span>
+          </div>
+          <span className="block text-xs mt-1 text-white/90">Tap to see curated combos that pair perfectly</span>
+        </button>
+      </div>
+
       {gridProducts.map((product) => {
         const isActive = isMobile ? mobileHover === product.id : hovered === product.id;
+        const isBundled = bundles.some(b => b.itemIds.includes(product.id));
         // Custom link for Empire Hat and Denim Hat
         const getProductLink = () => {
           switch (product.name) {
@@ -149,8 +196,12 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
             key={product.id}
             style={{
               background: 'transparent',
-              borderRadius: isMobile ? 16 : 0,
-              boxShadow: isMobile ? '0 4px 24px 0 rgba(0,0,0,0.10)' : 'none',
+              borderRadius: CARD_RADIUS,
+              boxShadow: isMobile 
+                ? (isBundled 
+                    ? '0 0 0 2px rgba(139,92,246,0.6), 0 8px 24px rgba(139,92,246,0.25)'
+                    : '0 4px 24px 0 rgba(0,0,0,0.10)')
+                : (isBundled ? '0 0 0 2px rgba(139,92,246,0.5)' : 'none'),
               overflow: 'hidden',
               cursor: 'pointer',
               transition: 'transform 0.2s',
@@ -171,6 +222,7 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
               zIndex: isActive ? 10 : 1,
               justifyContent: isMobile ? 'center' : 'stretch',
               pointerEvents: 'auto',
+              border: '1px solid rgba(0,0,0,0.06)'
             }}
             onMouseEnter={() => { 
               if (!isMobile) setHovered(product.id); 
@@ -217,6 +269,20 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
             role="button"
             tabIndex={0}
           >
+            {/* Bundle badge (show when this product participates in at least one bundle) */}
+            {isBundled && (
+              <button
+                onClick={(e) => { e.stopPropagation(); e.preventDefault(); setBundleOpen(true) }}
+                className="absolute top-2 left-2 z-[2] px-2.5 py-1 rounded-full text-[11px] font-semibold text-white backdrop-blur shadow-md active:scale-95"
+                aria-label="Bundle and save"
+                style={{
+                  background: 'linear-gradient(90deg, rgba(139,92,246,0.95) 0%, rgba(236,72,153,0.95) 50%, rgba(34,211,238,0.95) 100%)',
+                  boxShadow: '0 6px 16px rgba(139,92,246,0.35)'
+                }}
+              >
+                ✨ Bundle & Save
+              </button>
+            )}
             <div style={{
               pointerEvents: 'none',
               position: 'relative',
@@ -230,8 +296,8 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
               height: 'fit-content',
               margin: 0,
               padding: 0,
-              borderRadius: isMobile ? 16 : 18,
-              boxShadow: '0 4px 18px 0 rgba(0,0,0,0.10)',
+              borderRadius: CARD_RADIUS,
+              boxShadow: '0 4px 18px rgba(0,0,0,0.08)',
             }}>
               <Image
                 src={product.image}
@@ -278,9 +344,9 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
                 right: 0,
                 bottom: 0,
                 background: 'rgba(255,255,255,0.97)',
-                padding: isMobile ? '18px 24px 16px 24px' : '18px 32px 16px 32px',
-                borderBottomLeftRadius: 18,
-                borderBottomRightRadius: 18,
+                padding: isMobile ? '16px 20px 14px 20px' : '16px 24px 14px 24px',
+                borderBottomLeftRadius: CARD_RADIUS,
+                borderBottomRightRadius: CARD_RADIUS,
                 boxSizing: 'border-box',
                 zIndex: 2,
                 display: 'flex',
@@ -291,8 +357,8 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
                 width: '100%',
                 minWidth: 0,
                 maxWidth: '100%',
-                boxShadow: '0 4px 18px 0 rgba(0,0,0,0.10)',
-                borderTop: '1.5px solid #ececec',
+                boxShadow: '0 -2px 12px rgba(0,0,0,0.06)',
+                borderTop: '1px solid #eee',
               }}>
                 <h3 style={{
                   fontSize: isMobile ? '1.18rem' : '1.22rem',
@@ -320,6 +386,32 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
           </div>
         );
       })}
+      {/* Floating Bundle CTA for mobile */}
+      {isMobile && !bundleOpen && (
+        <button
+          onClick={() => { setBundleOpen(true); sessionStorage.setItem('bundleTeaserDismissed', '1'); setTeased(false); }}
+          className={`fixed bottom-[calc(env(safe-area-inset-bottom)+16px)] left-1/2 -translate-x-1/2 z-[10005] px-5 py-3 rounded-full text-white font-semibold shadow-lg active:scale-95 transition-transform ${
+            teased ? 'animate-[pulseGlow_1.8s_ease-in-out_infinite]' : ''
+          }`}
+          style={{
+            background: 'linear-gradient(90deg, #8B5CF6 0%, #EC4899 50%, #22D3EE 100%)',
+            boxShadow: '0 8px 24px rgba(139,92,246,0.35)',
+          }}
+          aria-label="Open bundle deals"
+        >
+          ✨ Bundle & Save
+        </button>
+      )}
+      {/* Local keyframes for glowing pulse */}
+      <style>{`
+        @keyframes pulseGlow {
+          0% { filter: drop-shadow(0 0 0 rgba(236,72,153,0.0)); transform: translateX(-50%) scale(1); }
+          50% { filter: drop-shadow(0 0 16px rgba(236,72,153,0.45)); transform: translateX(-50%) scale(1.03); }
+          100% { filter: drop-shadow(0 0 0 rgba(236,72,153,0.0)); transform: translateX(-50%) scale(1); }
+        }
+      `}</style>
+      {/* Mobile bundle sheet */}
+      <BundleSheet open={bundleOpen} onClose={() => setBundleOpen(false)} />
     </div>
     </>
   );

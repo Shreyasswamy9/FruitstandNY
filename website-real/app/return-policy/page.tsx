@@ -241,8 +241,9 @@ export default function ReturnPolicyPage() {
           <Link 
             href="/shop"
             className="inline-block px-6 py-3 bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
+            aria-label="Return to Store"
           >
-            Continue Shopping
+            Return to Store
           </Link>
         </motion.div>
       </div>

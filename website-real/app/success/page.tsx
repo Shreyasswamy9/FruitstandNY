@@ -72,8 +72,8 @@ function SuccessContent() {
           </motion.div>
         )}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="space-y-3">
-          <Link href="/shop" className="w-full bg-black text-white py-3 px-6 rounded-lg hover:bg-gray-800 transition-colors font-semibold block">
-            Continue Shopping
+          <Link href="/shop" className="w-full bg-black text-white py-3 px-6 rounded-lg hover:bg-gray-800 transition-colors font-semibold block" aria-label="Return to Store">
+            Return to Store
           </Link>
           <Link href="/" className="w-full border border-gray-300 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-50 transition-colors block">
             Back to Home

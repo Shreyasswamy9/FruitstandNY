@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
+import { LogoVisibilityContext } from "./ClientRootLayout";
 import { useCart } from "./CartContext";
 import { usePathname } from "next/navigation";
 
@@ -7,49 +8,15 @@ export default function CartBar() {
   const { items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
   const [showCartBar, setShowCartBar] = useState(false);
-  const [hasScrolledOnHome, setHasScrolledOnHome] = useState(false);
   const prevCount = useRef(0);
   const isInitialized = useRef(false);
   const popupTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
+  const { hideLogo } = useContext(LogoVisibilityContext); // hideLogo true during intro on home
   
   // Don't show cart bar on cart page
   const isCartPage = pathname === '/cart';
   const isHomePage = pathname === '/';
-
-  // Handle scroll on home page to determine when to show cart bar
-  useEffect(() => {
-    if (!isHomePage) {
-      setHasScrolledOnHome(true); // On non-home pages, always allow cart bar
-      return;
-    }
-
-    const handleScroll = () => {
-      const scrollThreshold = 600; // Same threshold as sign-up modal
-      if (window.scrollY > scrollThreshold) {
-        setHasScrolledOnHome(true);
-      } else {
-        setHasScrolledOnHome(false);
-      }
-    };
-
-    // Check initial scroll position
-    handleScroll();
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isHomePage]);
-
-  // Reset scroll state when navigating to/from home page
-  useEffect(() => {
-    if (!isHomePage) {
-      setHasScrolledOnHome(true);
-    } else {
-      // Check initial scroll position on home page
-      const scrollThreshold = 600;
-      setHasScrolledOnHome(window.scrollY > scrollThreshold);
-    }
-  }, [pathname, isHomePage]);
   useEffect(() => {
     const count = items.reduce((a, b) => a + b.quantity, 0);
     
@@ -59,7 +26,7 @@ export default function CartBar() {
         parseInt(localStorage.getItem('cartCount') || '0') : 0;
       prevCount.current = storedCount;
       isInitialized.current = true;
-      const shouldShowCartBar = count > 0 && !isCartPage && (isHomePage ? hasScrolledOnHome : true);
+  const shouldShowCartBar = count > 0 && !isCartPage;
       setShowCartBar(shouldShowCartBar);
       
       // Update localStorage with current count
@@ -80,17 +47,17 @@ export default function CartBar() {
       // Show cart bar after popup
       popupTimeoutRef.current = setTimeout(() => {
         setShowPopup(false);
-        setTimeout(() => setShowCartBar(count > 0 && !isCartPage && (isHomePage ? hasScrolledOnHome : true)), 50);
+        setTimeout(() => setShowCartBar(count > 0 && !isCartPage), 50);
       }, 1500);
     } else if (count < prevCount.current) {
       // Item was removed, update cart bar visibility
-      const shouldShowCartBar = count > 0 && !showPopup && !isCartPage && (isHomePage ? hasScrolledOnHome : true);
+      const shouldShowCartBar = count > 0 && !showPopup && !isCartPage;
       setShowCartBar(shouldShowCartBar);
     } else {
       // Count is the same, but ensure cart bar is visible if we have items and not on cart page
-      if (count > 0 && !isCartPage && !showPopup && (isHomePage ? hasScrolledOnHome : true)) {
+      if (count > 0 && !isCartPage && !showPopup) {
         setShowCartBar(true);
-      } else if (count === 0 || isCartPage || (isHomePage && !hasScrolledOnHome)) {
+      } else if (count === 0 || isCartPage) {
         setShowCartBar(false);
       }
     }
@@ -102,17 +69,17 @@ export default function CartBar() {
     if (typeof window !== 'undefined') {
       localStorage.setItem('cartCount', count.toString());
     }
-  }, [items, isCartPage, isHomePage, hasScrolledOnHome]);
+  }, [items, isCartPage]);
 
   // Handle page navigation - ensure cart bar visibility is correct
   useEffect(() => {
     const count = items.reduce((a, b) => a + b.quantity, 0);
-    if (isInitialized.current && count > 0 && !isCartPage && !showPopup && (isHomePage ? hasScrolledOnHome : true)) {
+    if (isInitialized.current && count > 0 && !isCartPage && !showPopup) {
       setShowCartBar(true);
-    } else if (isCartPage || (isHomePage && !hasScrolledOnHome)) {
+    } else if (isCartPage) {
       setShowCartBar(false);
     }
-  }, [pathname, isCartPage, isHomePage, hasScrolledOnHome, showPopup]);
+  }, [pathname, isCartPage, showPopup]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -150,20 +117,26 @@ export default function CartBar() {
           Added to cart!
         </div>
       )}
-      {showCartBar && !isCartPage && (
+      {showCartBar && !isCartPage && !(isHomePage && hideLogo) && (
         <div
-          className="fixed left-0 right-0 bottom-0 z-40 bg-black text-white px-3 py-4 md:px-6 md:py-4 flex items-center justify-between"
+          className="fixed left-0 right-0 bottom-0 z-[10002] text-white px-3 md:px-6 flex items-center justify-between"
           style={{ 
-            borderTopLeftRadius: 20, 
-            borderTopRightRadius: 20, 
-            boxShadow: '0 -4px 24px 0 rgba(0,0,0,0.2)', 
+            background: 'rgba(0,0,0,0.92)',
+            backdropFilter: 'saturate(140%) blur(8px)',
+            WebkitBackdropFilter: 'saturate(140%) blur(8px)',
+            borderTopLeftRadius: 18, 
+            borderTopRightRadius: 18, 
+            borderTop: '1px solid rgba(255,255,255,0.12)',
+            boxShadow: '0 -6px 30px rgba(0,0,0,0.35)',
             borderBottom: 'none',
-            marginBottom: isHomePage ? '0' : '0' // Ensure no margin issues
+            paddingTop: '14px',
+            paddingBottom: 'calc(14px + env(safe-area-inset-bottom))',
+            marginBottom: '0'
           }}
         >
           <div className="flex items-center gap-3">
             <span className="font-medium text-sm md:text-base">Cart</span>
-            <span className="inline-block bg-white text-black rounded-full px-3 py-1 text-sm font-bold">
+            <span className="inline-block bg-white text-black rounded-full px-3 py-1 text-sm font-bold shadow">
               {items.reduce((a, b) => a + b.quantity, 0)}
             </span>
           </div>
@@ -171,9 +144,9 @@ export default function CartBar() {
             <span className="text-sm md:text-base font-semibold">
               ${items.reduce((sum, i) => sum + i.price * i.quantity, 0).toFixed(2)}
             </span>
-            <a 
-              href="/cart" 
-              className="bg-white text-black rounded-lg px-4 py-2 md:px-6 md:py-2 font-semibold hover:bg-gray-200 transition-colors text-sm md:text-base"
+            <a
+              href="/cart"
+              className="bg-white text-black rounded-lg px-4 py-2 md:px-6 md:py-2 font-semibold hover:bg-gray-200 transition-colors text-sm md:text-base shadow"
             >
               Checkout
             </a>

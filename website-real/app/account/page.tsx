@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../supabase-client";
 import { useRouter } from "next/navigation";
-import StaggeredMenu from "../../components/StagerredMenu";
 import { motion } from "framer-motion";
 import { OrderService, TicketService } from "@/lib/services/api";
 import type { User } from "@supabase/supabase-js";
@@ -48,6 +47,7 @@ export default function AccountPage() {
     phone: '',
     address: {
       street: '',
+      street2: '',
       city: '',
       state: '',
       zipCode: '',
@@ -82,6 +82,7 @@ export default function AccountPage() {
           phone: data.user.user_metadata.phone || '',
           address: data.user.user_metadata.address || {
             street: '',
+            street2: '',
             city: '',
             state: '',
             zipCode: '',
@@ -262,33 +263,7 @@ export default function AccountPage() {
           </div>
         </div>
         
-        {/* StaggeredMenu Component */}
-        <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 10001, pointerEvents: menuOpen ? "auto" : "none" }}>
-          <StaggeredMenu
-            position="right"
-            colors={['#18191a', '#232324']}
-            className="custom-staggered-menu"
-            items={[
-              { label: "Home", ariaLabel: "Go to homepage", link: "/" },
-              { label: "Shop", ariaLabel: "Browse collections", link: "/shop" },
-              { label: "Cart", ariaLabel: "View your cart", link: "/cart" },
-              { label: "Contact", ariaLabel: "Contact us", link: "/contact" }
-            ]}
-            socialItems={[
-              { label: "Instagram", link: "https://www.instagram.com/fruitstandny/" },
-              { label: "Twitter", link: "https://twitter.com" }
-            ]}
-            displaySocials={true}
-            displayItemNumbering={true}
-            logoUrl="/images/newlogo.png"
-            menuButtonColor="#ffffff"
-            openMenuButtonColor="#000000"
-            changeMenuColorOnOpen={true}
-            accentColor="#ff6b6b"
-            onMenuOpen={() => setMenuOpen(true)}
-            onMenuClose={() => setMenuOpen(false)}
-          />
-        </div>
+        
       </div>
     );
   }
@@ -336,33 +311,7 @@ export default function AccountPage() {
           </div>
         </div>
 
-        {/* StaggerredMenu Component */}
-        <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 10001, pointerEvents: menuOpen ? "auto" : "none" }}>
-          <StaggeredMenu
-            position="right"
-            colors={['#18191a', '#232324']}
-            className="custom-staggered-menu"
-            items={[
-              { label: "Home", ariaLabel: "Go to homepage", link: "/" },
-              { label: "Shop", ariaLabel: "Browse collections", link: "/shop" },
-              { label: "Cart", ariaLabel: "View your cart", link: "/cart" },
-              { label: "Contact", ariaLabel: "Contact us", link: "/contact" }
-            ]}
-            socialItems={[
-              { label: "Instagram", link: "https://www.instagram.com/fruitstandny/" },
-              { label: "Twitter", link: "https://twitter.com" }
-            ]}
-            displaySocials={true}
-            displayItemNumbering={true}
-            logoUrl="/images/newlogo.png"
-            menuButtonColor="#ffffff"
-            openMenuButtonColor="#000000"
-            changeMenuColorOnOpen={true}
-            accentColor="#ff6b6b"
-            onMenuOpen={() => setMenuOpen(true)}
-            onMenuClose={() => setMenuOpen(false)}
-          />
-        </div>
+        
       </div>
     );
   }
@@ -378,33 +327,7 @@ export default function AccountPage() {
           </div>
         </div>
         
-        {/* StaggeredMenu Component */}
-        <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 10001, pointerEvents: menuOpen ? "auto" : "none" }}>
-          <StaggeredMenu
-            position="right"
-            colors={['#18191a', '#232324']}
-            className="custom-staggered-menu"
-            items={[
-              { label: "Home", ariaLabel: "Go to homepage", link: "/" },
-              { label: "Shop", ariaLabel: "Browse collections", link: "/shop" },
-              { label: "Cart", ariaLabel: "View your cart", link: "/cart" },
-              { label: "Contact", ariaLabel: "Contact us", link: "/contact" }
-            ]}
-            socialItems={[
-              { label: "Instagram", link: "https://www.instagram.com/fruitstandny/" },
-              { label: "Twitter", link: "https://twitter.com" }
-            ]}
-            displaySocials={true}
-            displayItemNumbering={true}
-            logoUrl="/images/newlogo.png"
-            menuButtonColor="#ffffff"
-            openMenuButtonColor="#000000"
-            changeMenuColorOnOpen={true}
-            accentColor="#ff6b6b"
-            onMenuOpen={() => setMenuOpen(true)}
-            onMenuClose={() => setMenuOpen(false)}
-          />
-        </div>
+        
       </div>
     );
   }
@@ -685,6 +608,7 @@ export default function AccountPage() {
                       phone: formData.get('phone') as string,
                       address: {
                         street: formData.get('street') as string,
+                        street2: formData.get('street2') as string,
                         city: formData.get('city') as string,
                         state: formData.get('state') as string,
                         zipCode: formData.get('zipCode') as string,
@@ -767,6 +691,19 @@ export default function AccountPage() {
                             defaultValue={profileData.address.street}
                             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
                             placeholder="Enter your street address"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="street2" className="block text-sm font-medium text-gray-700 mb-2">
+                            Street Address Line 2 (Optional)
+                          </label>
+                          <input
+                            type="text"
+                            id="street2"
+                            name="street2"
+                            defaultValue={profileData.address.street2}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                            placeholder="Apartment, suite, unit, building, floor, etc."
                           />
                         </div>
                         
@@ -1283,61 +1220,9 @@ export default function AccountPage() {
         </div>
       )}
 
-      {/* StaggeredMenu Component */}
-      <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 10001, pointerEvents: menuOpen ? "auto" : "none" }}>
-        <StaggeredMenu
-          position="right"
-          colors={['#18191a', '#232324']}
-          className="custom-staggered-menu"
-          items={[
-            { label: "Home", ariaLabel: "Go to homepage", link: "/" },
-            { label: "Shop", ariaLabel: "Browse our shop", link: "/shop" },
-            { label: "Cart", ariaLabel: "View your cart", link: "/cart" },
-            { label: "Contact", ariaLabel: "Contact us", link: "/contact" }
-          ]}
-          socialItems={[
-            { label: "Instagram", link: "https://www.instagram.com/fruitstandny/" },
-            { label: "Twitter", link: "https://twitter.com" }
-          ]}
-          displaySocials={true}
-          displayItemNumbering={true}
-          logoUrl="/images/newlogo.png"
-          menuButtonColor="#ffffff"
-          openMenuButtonColor="#000000"
-          changeMenuColorOnOpen={true}
-          accentColor="#ff6b6b"
-          onMenuOpen={() => setMenuOpen(true)}
-          onMenuClose={() => setMenuOpen(false)}
-        />
-      </div>
+        
 
-      {/* Custom styles for StaggeredMenu visibility */}
-      <style jsx global>{`
-        /* Ensure menu button header is always clickable */
-        .custom-staggered-menu .staggered-menu-header {
-          pointer-events: auto !important;
-          position: relative !important;
-          z-index: 10003 !important;
-        }
-
-        /* Let the StaggeredMenu component handle color changes naturally */
-        .custom-staggered-menu .staggered-menu-button {
-          /* Allow dynamic color changes */
-        }
-
-        .custom-staggered-menu .staggered-menu-button span {
-          /* Allow dynamic color changes */
-        }
-
-        /* Animation delays for background elements */
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `}</style>
+      
     </div>
   );
 }

@@ -559,7 +559,7 @@ export default function CartPage() {
               whileTap={{ scale: 0.95 }}
               className="inline-flex items-center px-8 py-4 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors"
             >
-              Continue Shopping
+              Return to Store
               <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
@@ -916,7 +916,7 @@ export default function CartPage() {
                   className="w-full mt-4 py-4 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-center block"
                   style={{ willChange: "transform" }}
                 >
-                  Continue Shopping
+                  Return to Store
                 </motion.a>
 
                 {/* Guest Checkout Form - Moved below Continue Shopping */}

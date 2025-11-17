@@ -4,9 +4,10 @@ import { animate } from "animejs"
 import { useRef, useEffect, useState, useContext } from "react"
 import { LogoVisibilityContext } from "../components/ClientRootLayout"
 import Image from "next/image"
+import FeaturedBundle from "../components/FeaturedBundle"
+import BundleSheet from "../components/BundleSheet"
 import { SignupModal } from "../components/SIgnUpModal"
 import { useScrollTrigger } from "../hooks/useScrollTrigger"
-import StaggeredMenu from "../components/StagerredMenu"
 
 export default function Home() {
   const { setHideLogo } = useContext(LogoVisibilityContext)
@@ -264,6 +265,7 @@ export default function Home() {
 
   const [currentLangIndex, setCurrentLangIndex] = useState(0)
   const [showLangFlip, setShowLangFlip] = useState(false) // Initialize as false to match server
+  const [openBundlesSheet, setOpenBundlesSheet] = useState(false)
 
   // Set showLangFlip after hydration
   useEffect(() => {
@@ -903,6 +905,23 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* Bundles Section: show one featured, and open popup for all */}
+              <div style={{ margin: "0 0 64px 0" }}>
+                <FeaturedBundle className="max-w-4xl mx-auto" />
+                <div className="text-center mt-6">
+                  <button
+                    aria-label="Show all bundles"
+                    onClick={() => setOpenBundlesSheet(true)}
+                    className="inline-flex items-center justify-center px-5 py-3 rounded-xl bg-black text-white font-medium shadow-md hover:opacity-90 active:opacity-85"
+                  >
+                    Show all bundles
+                  </button>
+                </div>
+              </div>
+
+              {/* Global bundle sheet opened from the button above */}
+              <BundleSheet open={openBundlesSheet} onClose={() => setOpenBundlesSheet(false)} />
+
               {/* Products Grid - Modern Layout */}
               <div style={{
                 marginBottom: "64px",
@@ -1293,73 +1312,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* StaggeredMenu Component */}
-      {(isHydrated && showMain) && (
-        <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 10001, pointerEvents: "auto" }}>
-          <StaggeredMenu
-            position="right"
-            colors={['#18191a', '#232324']}
-            className="custom-staggered-menu"
-            items={[
-              { label: "Shop", ariaLabel: "Browse our shop", link: "/shop" },
-              { label: "Account", ariaLabel: "Access your account", link: "/account" },
-              { label: "Cart", ariaLabel: "View your cart", link: "/cart" },
-              { label: "Contact", ariaLabel: "Contact us", link: "/contact" }
-            ]}
-            socialItems={[
-              { label: "Instagram", link: "https://www.instagram.com/fruitstandny/" },
-              { label: "Twitter", link: "https://twitter.com" }
-            ]}
-            displaySocials={true}
-            displayItemNumbering={true}
-            logoUrl="/images/newlogo.png"
-            menuButtonColor="#fff"
-            openMenuButtonColor="#000"
-            changeMenuColorOnOpen={true}
-            accentColor="#ff6b6b"
-            onMenuOpen={() => {}}
-            onMenuClose={() => {}}
-          />
-        </div>
-      )}
-
-      {/* Custom styles for StaggeredMenu visibility */}
-      <style>{`
-        .custom-staggered-menu .staggered-menu-header {
-          pointer-events: auto !important;
-          position: relative !important;
-          z-index: 10003 !important;
-        }
-
-        .custom-staggered-menu .sm-toggle {
-          background: transparent !important;
-          border: none !important;
-          color: #000000 !important;
-          font-size: 16px !important;
-          font-weight: 400 !important;
-          padding: 8px 12px !important;
-          border-radius: 0 !important;
-          min-width: auto !important;
-          height: auto !important;
-          box-shadow: none !important;
-          backdrop-filter: none !important;
-          transition: color 0.2s ease !important;
-          pointer-events: auto !important;
-          cursor: pointer !important;
-        }
-
-        .custom-staggered-menu .sm-toggle:hover {
-          color: #333333 !important;
-          background: transparent !important;
-          transform: none !important;
-          box-shadow: none !important;
-        }
-
-        .custom-staggered-menu[data-open] .sm-toggle {
-          color: #000000 !important;
-          background: transparent !important;
-        }
-      `}</style>
+      
     </div>
     <footer style={{
       width: '100vw',

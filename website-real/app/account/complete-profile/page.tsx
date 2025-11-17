@@ -4,7 +4,6 @@ import { useState, useEffect, Suspense } from "react"
 import { supabase } from "../../supabase-client"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
-import StaggeredMenu from "../../../components/StagerredMenu"
 import type { User } from "@supabase/supabase-js"
 
 interface ProfileData {
@@ -16,6 +15,7 @@ interface ProfileData {
   gender: string
   address: {
     street: string
+    street2?: string
     city: string
     state: string
     zipCode: string
@@ -39,6 +39,7 @@ function CompleteProfileContent() {
     gender: "",
     address: {
       street: "",
+      street2: "",
       city: "",
       state: "",
       zipCode: "",
@@ -317,6 +318,16 @@ function CompleteProfileContent() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Street Address Line 2</label>
+                  <input
+                    type="text"
+                    value={formData.address.street2 || ""}
+                    onChange={(e) => handleInputChange("address.street2", e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                    placeholder="Apartment, suite, unit, building, floor, etc."
+                  />
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
@@ -416,101 +427,7 @@ function CompleteProfileContent() {
         </motion.div>
       </div>
 
-      {/* StaggeredMenu Component */}
-      <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 10001, pointerEvents: menuOpen ? "auto" : "none" }}>
-        <StaggeredMenu
-          position="right"
-          colors={['#18191a', '#232324']}
-          className="custom-staggered-menu"
-          items={[
-            { label: "Home", ariaLabel: "Go to homepage", link: "/" },
-            { label: "Shop", ariaLabel: "Browse our products", link: "/shop" },
-            { label: "Account", ariaLabel: "View your account", link: "/account" },
-            { label: "Cart", ariaLabel: "View your cart", link: "/cart" },
-            { label: "Contact", ariaLabel: "Contact us", link: "/contact" }
-          ]}
-          socialItems={[
-            { label: "Instagram", link: "https://www.instagram.com/fruitstandny/" },
-            { label: "Twitter", link: "https://twitter.com" }
-          ]}
-          displaySocials={true}
-          displayItemNumbering={true}
-          logoUrl="/images/newlogo.png"
-          menuButtonColor="#000"
-          openMenuButtonColor="#000"
-          changeMenuColorOnOpen={false}
-          accentColor="#ff6b6b"
-          onMenuOpen={() => setMenuOpen(true)}
-          onMenuClose={() => setMenuOpen(false)}
-        />
-      </div>
-
-      <style jsx>{`
-        .custom-staggered-menu .staggered-menu-header {
-          pointer-events: auto !important;
-          position: relative !important;
-          z-index: 10003 !important;
-        }
-
-        .custom-staggered-menu .sm-toggle {
-          background: transparent !important;
-          border: none !important;
-          color: #000000 !important;
-          font-size: 16px !important;
-          font-weight: 400 !important;
-          padding: 8px 12px !important;
-          border-radius: 0 !important;
-          min-width: auto !important;
-          height: auto !important;
-          box-shadow: none !important;
-          backdrop-filter: none !important;
-          transition: color 0.2s ease !important;
-          pointer-events: auto !important;
-          cursor: pointer !important;
-        }
-
-        .custom-staggered-menu .sm-toggle:hover {
-          color: #333333 !important;
-          background: transparent !important;
-          transform: none !important;
-          box-shadow: none !important;
-        }
-
-        .custom-staggered-menu[data-open] .sm-toggle {
-          color: #ffffff !important;
-          background: transparent !important;
-        }
-
-        .custom-staggered-menu[data-open] {
-          pointer-events: auto !important;
-        }
-        
-        .custom-staggered-menu * {
-          pointer-events: auto !important;
-        }
-        
-        .custom-staggered-menu:not([data-open]) .staggered-menu-panel {
-          pointer-events: none !important;
-        }
-
-        @media (max-width: 768px) {
-          .custom-staggered-menu .sm-toggle {
-            min-width: 60px !important;
-            height: 36px !important;
-            font-size: 12px !important;
-            padding: 0 12px !important;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .custom-staggered-menu .sm-toggle {
-            min-width: 50px !important;
-            height: 32px !important;
-            font-size: 11px !important;
-            padding: 0 10px !important;
-          }
-        }
-      `}</style>
+      
     </div>
   )
 }

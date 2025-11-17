@@ -573,13 +573,21 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                 </div>
               ) : (
                 <div className="flex flex-col gap-3 mb-6">
-                  <Link href="/signin">
-                    <button className="w-full py-2 px-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors">
+                  <Link href="/signin" onClick={() => { if (openRef.current) toggleMenu(); }}>
+                    <button
+                      className="w-full py-2 px-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+                      type="button"
+                      aria-label="Sign in to your account"
+                    >
                       Sign In
                     </button>
                   </Link>
-                  <Link href="/signup">
-                    <button className="w-full py-2 px-4 border-2 border-black text-black rounded-lg hover:bg-gray-100 transition-colors">
+                  <Link href="/signup" onClick={() => { if (openRef.current) toggleMenu(); }}>
+                    <button
+                      className="w-full py-2 px-4 border-2 border-black text-black rounded-lg hover:bg-gray-100 transition-colors"
+                      type="button"
+                      aria-label="Create a new account"
+                    >
                       Sign Up
                     </button>
                   </Link>

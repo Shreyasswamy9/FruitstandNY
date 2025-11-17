@@ -1,6 +1,7 @@
 "use client"
 
-import React, { createContext, useState } from "react"
+import React, { createContext, useState, useEffect } from "react"
+import { usePathname } from 'next/navigation'
 import LogoButton from "./LogoButton"
 import CartBar from "./CartBar"
 import StaggeredMenu from "./StagerredMenu"
@@ -14,6 +15,27 @@ type ClientRootLayoutProps = {
 
 export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
   const [hideLogo, setHideLogo] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const pathname = usePathname()
+
+  // Apply a global class to body for pages to react (e.g., hide category pills)
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const body = document.body
+      if (menuOpen) {
+        body.classList.add('menu-open')
+      } else {
+        body.classList.remove('menu-open')
+      }
+    }
+  }, [menuOpen])
+
+  // Auto-close menu on route change (App Router pathname observer)
+  useEffect(() => {
+    if (menuOpen) {
+      setMenuOpen(false)
+    }
+  }, [pathname])
   
   return (
     <LogoVisibilityContext.Provider value={{ hideLogo, setHideLogo }}>
@@ -58,8 +80,8 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
           openMenuButtonColor="#000000"
           changeMenuColorOnOpen={false}
           accentColor="#ff6b6b"
-          onMenuOpen={() => {}}
-          onMenuClose={() => {}}
+          onMenuOpen={() => setMenuOpen(true)}
+          onMenuClose={() => setMenuOpen(false)}
         />
       </div>
 
@@ -79,6 +101,33 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
           font-size: 16px !important;
           font-weight: 400 !important;
           padding: 8px 12px !important;
+        }
+
+        /* Ensure animated label is visible and safely clipped */
+        .custom-staggered-menu .sm-toggle {
+          gap: 0.3rem !important;
+        }
+        .custom-staggered-menu .sm-toggle-textWrap {
+          display: inline-block !important;
+          height: 1em !important;
+          overflow: hidden !important;
+          white-space: nowrap !important;
+          /* Reserve width for the longest word ("Close") to avoid jitter */
+          width: 5.2ch !important;
+          min-width: 5.2ch !important;
+          vertical-align: middle !important;
+          will-change: transform;
+        }
+        .custom-staggered-menu .sm-toggle-textInner {
+          display: flex !important;
+          flex-direction: column !important;
+          line-height: 1 !important;
+          will-change: transform;
+        }
+        .custom-staggered-menu .sm-toggle-line {
+          display: block !important;
+          height: 1em !important;
+          line-height: 1 !important;
         }
 
         .custom-staggered-menu:not([data-open]) {
@@ -111,6 +160,16 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
             font-size: 12px !important;
             padding: 0 12px !important;
           }
+        }
+
+        /* When menu is open, hide/fade category pills (shop page) */
+        body.menu-open .shop-category-nav {
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.25s ease;
+        }
+        .shop-category-nav {
+          transition: opacity 0.25s ease;
         }
       `}</style>
     </LogoVisibilityContext.Provider>

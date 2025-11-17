@@ -3,7 +3,6 @@
 import { motion } from "framer-motion"
 import { useState } from "react"
 import ProductsGrid from "../../components/ProductsGridHome"
-import StaggeredMenu from "../../components/StagerredMenu"
 import Link from "next/link"
 
 export default function ShopPage() {
@@ -15,8 +14,15 @@ export default function ShopPage() {
 
       {/* Category Navigation */}
       <div 
-        className="pt-20 pb-8 px-4 sm:px-6 lg:px-8" 
-        style={{ position: 'relative', zIndex: 10, pointerEvents: 'none' }}
+        className="shop-category-nav pb-12 px-4 sm:px-6 lg:px-8" 
+        style={{ 
+          position: 'relative', 
+          pointerEvents: 'none', 
+          // Push pills below the fixed 92px logo (top 14px + height 92px + extra spacing)
+          paddingTop: '130px',
+          // Ensure pills sit above logo so clicks go to buttons even if bounding boxes overlap
+          zIndex: 10020
+        }}
       >
         <div className="max-w-4xl mx-auto">
           <motion.div
@@ -145,181 +151,8 @@ export default function ShopPage() {
         </div>
       </footer>
 
-      {/* StaggeredMenu Component */}
-      <div 
-        style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 10001, pointerEvents: menuOpen ? "auto" : "none" }}
-      >
-        <StaggeredMenu
-          position="right"
-          colors={['#18191a', '#232324']}
-          className="custom-staggered-menu"
-          items={[
-            { label: "Home", ariaLabel: "Go to homepage", link: "/" },
-            { label: "Account", ariaLabel: "Access your account", link: "/account" },
-            { label: "Cart", ariaLabel: "View your cart", link: "/cart" },
-            { label: "Contact", ariaLabel: "Contact us", link: "/contact" }
-          ]}
-          socialItems={[
-            { label: "Instagram", link: "https://www.instagram.com/fruitstandny/" },
-            { label: "Twitter", link: "https://twitter.com" }
-          ]}
-          displaySocials={true}
-          displayItemNumbering={true}
-          logoUrl="/images/newlogo.png"
-          menuButtonColor="#000000"
-          openMenuButtonColor="#000000"
-          changeMenuColorOnOpen={false}
-          accentColor="#ff6b6b"
-          onMenuOpen={() => {setMenuOpen(true)}}
-          onMenuClose={() => setMenuOpen(false)}
-        />
-      </div>
-
-      {/* Custom styles for StaggeredMenu visibility */}
+      {/* Category Pills Styling */}
       <style jsx global>{`
-        /* Ensure menu button header is always clickable */
-        .custom-staggered-menu .staggered-menu-header {
-          pointer-events: auto !important;
-          position: relative !important;
-          z-index: 10003 !important;
-        }
-
-        /* Menu button should always be clickable */
-        .custom-staggered-menu .sm-toggle {
-          pointer-events: auto !important;
-        }
-
-        /* Ensure the menu wrapper doesn't block content below */
-        .custom-staggered-menu:not([data-open]) {
-          pointer-events: none !important;
-        }
-
-        /* But keep the button clickable even when menu is closed */
-        .custom-staggered-menu:not([data-open]) .staggered-menu-header,
-        .custom-staggered-menu:not([data-open]) .sm-toggle {
-          pointer-events: auto !important;
-        }
-
-        /* When menu is open, everything should be interactive */
-        .custom-staggered-menu[data-open] {
-          pointer-events: auto !important;
-        }
-
-        /* When menu is open, allow panel interactions */
-        .custom-staggered-menu[data-open] .staggered-menu-panel {
-          pointer-events: auto !important;
-        }
-
-        /* When menu is closed, block panel but allow button */
-        .custom-staggered-menu:not([data-open]) .staggered-menu-panel {
-          pointer-events: none !important;
-        }
-
-        /* Force black text on menu button with highest specificity */
-        .custom-staggered-menu.custom-staggered-menu .sm-toggle {
-          background: transparent !important;
-          border: none !important;
-          color: #000000 !important;
-          font-size: 16px !important;
-          font-weight: 400 !important;
-          padding: 8px 12px !important;
-          border-radius: 0 !important;
-          min-width: auto !important;
-          height: auto !important;
-          box-shadow: none !important;
-          backdrop-filter: none !important;
-          transition: color 0.2s ease !important;
-          pointer-events: auto !important;
-          cursor: pointer !important;
-        }
-
-        .custom-staggered-menu.custom-staggered-menu .sm-toggle * {
-          color: #000000 !important;
-        }
-
-        .custom-staggered-menu.custom-staggered-menu .sm-toggle .sm-toggle-textWrap {
-          color: #000000 !important;
-        }
-
-        .custom-staggered-menu.custom-staggered-menu .sm-toggle .sm-toggle-textInner {
-          color: #000000 !important;
-        }
-
-        .custom-staggered-menu.custom-staggered-menu .sm-toggle .sm-toggle-line {
-          color: #000000 !important;
-        }
-
-        .custom-staggered-menu.custom-staggered-menu .sm-toggle:hover {
-          color: #333333 !important;
-          background: transparent !important;
-          transform: none !important;
-          box-shadow: none !important;
-        }
-
-        .custom-staggered-menu.custom-staggered-menu .sm-toggle:hover * {
-          color: #333333 !important;
-        }
-
-        .custom-staggered-menu.custom-staggered-menu[data-open] .sm-toggle {
-          color: #000000 !important;
-          background: transparent !important;
-        }
-
-        .custom-staggered-menu.custom-staggered-menu[data-open] .sm-toggle * {
-          color: #000000 !important;
-        }
-
-        /* Override any inline styles that might be applied */
-        .custom-staggered-menu .sm-toggle[style] {
-          color: #000000 !important;
-        }
-
-        /* Target the button element directly */
-        .custom-staggered-menu button.sm-toggle {
-          color: #000000 !important;
-        }
-
-        .custom-staggered-menu button.sm-toggle * {
-          color: #000000 !important;
-        }
-
-        /* Override GSAP inline styles with highest specificity */
-        .custom-staggered-menu .sm-toggle[style*="color"] {
-          color: #000000 !important;
-        }
-
-        /* Additional override for any inline color styles */
-        .custom-staggered-menu .sm-toggle {
-          color: #000000 !important;
-        }
-
-        .custom-staggered-menu .sm-toggle:not([style*="color: rgb"]) {
-          color: #000000 !important;
-        }
-
-        /* Force all menu components to be clickable */
-        .custom-staggered-menu[data-open] * {
-          pointer-events: auto !important;
-        }
-
-        @media (max-width: 768px) {
-          .custom-staggered-menu .sm-toggle {
-            min-width: 60px !important;
-            height: 36px !important;
-            font-size: 12px !important;
-            padding: 0 12px !important;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .custom-staggered-menu .sm-toggle {
-            min-width: 50px !important;
-            height: 32px !important;
-            font-size: 11px !important;
-            padding: 0 10px !important;
-          }
-        }
-        
         /* Category Pills Styling */
         .category-pill {
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);

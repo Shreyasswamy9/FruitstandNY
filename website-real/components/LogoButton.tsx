@@ -18,45 +18,56 @@ export default function LogoButton() {
   return (
     <Link
       href="/"
-      aria-label="Home"
+      aria-label="Fruitstand home"
+      title="Fruitstand"
       onClick={handleLogoClick}
       style={{
-        position: "fixed",
-  top: "clamp(0px, 2vw, 8px)",
-        left: "clamp(15px, 4vw, 20px)",
-        zIndex: 10001,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: "clamp(100px, 20vw, 140px)",
-        height: "clamp(100px, 20vw, 140px)",
-        background: "none",
-        border: "none",
-        borderRadius: 0,
-        boxShadow: "none",
-        cursor: "pointer",
-        padding: 0,
-        transition: "transform 0.2s",
+        position: 'fixed',
+        top: '14px',
+        left: '16px',
+        zIndex: 10010,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '92px',
+        height: '92px',
+        cursor: 'pointer',
+        WebkitTapHighlightColor: 'transparent',
+        touchAction: 'manipulation',
+        outline: 'none',
+        borderRadius: '0',
+        transition: 'transform 0.25s ease',
+        background: 'transparent',
       }}
       onMouseEnter={e => {
-        e.currentTarget.style.transform = "scale(1.05)";
+        e.currentTarget.style.transform = 'scale(1.04)';
       }}
       onMouseLeave={e => {
-        e.currentTarget.style.transform = "scale(1)";
+        e.currentTarget.style.transform = 'scale(1)';
       }}
-      onTouchStart={e => {
-        e.currentTarget.style.transform = "scale(1.05)";
+      onFocus={e => {
+        e.currentTarget.style.outline = '2px solid rgba(139,92,246,0.6)';
+        e.currentTarget.style.outlineOffset = '4px';
       }}
-      onTouchEnd={e => {
-        setTimeout(() => {
-          e.currentTarget.style.transform = "scale(1)";
-        }, 100);
+      onBlur={e => {
+        e.currentTarget.style.outline = 'none';
+        e.currentTarget.style.outlineOffset = '0px';
       }}
     >
       <img
         src="/images/newlogo.png"
         alt="Fruitstand Logo"
-        style={{ width: "100%", height: "100%", objectFit: "contain", border: "none", borderRadius: 0, boxShadow: "none", background: "none", display: "block", pointerEvents: "none" }}
+        width={92}
+        height={92}
+        style={{
+          width: '92px',
+          height: '92px',
+          objectFit: 'contain',
+          display: 'block',
+          pointerEvents: 'none',
+          userSelect: 'none',
+        }}
+        draggable={false}
       />
     </Link>
   )

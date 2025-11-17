@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import StaggeredMenu from "../../components/StagerredMenu"
 import { useAuthUser } from "./hooks/useAuthUser"
 import { useTickets } from "./hooks/useTickets"
 import TicketForm from "./components/TicketForm"
@@ -324,61 +323,7 @@ export default function ContactPage() {
         </div>
       </div>
 
-      {/* StaggeredMenu Component */}
-      <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 10001, pointerEvents: menuOpen ? "auto" : "none" }}>
-        <StaggeredMenu
-          position="right"
-          colors={['#18191a', '#232324']}
-          className="custom-staggered-menu"
-          items={[
-            { label: "Home", ariaLabel: "Go to homepage", link: "/" },
-            { label: "Shop", ariaLabel: "Browse our shop", link: "/shop" },
-            { label: "Account", ariaLabel: "Access your account", link: "/account" },
-            { label: "Cart", ariaLabel: "View your cart", link: "/cart" }
-          ]}
-          socialItems={[
-            { label: "Instagram", link: "https://www.instagram.com/fruitstandny/" },
-            { label: "Twitter", link: "https://twitter.com" }
-          ]}
-          displaySocials={true}
-          displayItemNumbering={true}
-          logoUrl="/images/newlogo.png"
-          menuButtonColor="#ffffff"
-          openMenuButtonColor="#000000"
-          changeMenuColorOnOpen={true}
-          accentColor="#ff6b6b"
-          onMenuOpen={() => {setMenuOpen(true)}}
-          onMenuClose={() => setMenuOpen(false)}
-        />
-      </div>
-
-      {/* Custom styles for StaggeredMenu visibility */}
-      <style jsx global>{`
-        /* Ensure menu button header is always clickable */
-        .custom-staggered-menu .staggered-menu-header {
-          pointer-events: auto !important;
-          position: relative !important;
-          z-index: 10003 !important;
-        }
-
-        /* Let the StaggeredMenu component handle color changes naturally */
-        .custom-staggered-menu .staggered-menu-button {
-          /* Allow dynamic color changes */
-        }
-
-        .custom-staggered-menu .staggered-menu-button span {
-          /* Allow dynamic color changes */
-        }
-
-        /* Animation delays for background elements */
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `}</style>
+      
     </div>
   )
 }
