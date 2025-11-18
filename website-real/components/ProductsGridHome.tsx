@@ -16,6 +16,11 @@ export interface Product {
 
 // Editable product list for the homepage grid
 export const products: Product[] = [
+  // New Tees (prioritized at top)
+  { id: 101, name: "Gala Tshirt", price: "$22", image: "/images/classicteemale1.jpeg", hoverImage: "/images/classicteecovermodels.jpeg", category: "T-Shirts" },
+  { id: 102, name: "Cameo Tshirt", price: "$22", image: "/images/classicteefemale1.jpeg", hoverImage: "/images/classicteefemale2.jpeg", category: "T-Shirts" },
+  { id: 103, name: "Mutsu Tshirt", price: "$22", image: "/images/classicteemale2.jpeg", hoverImage: "/images/classicteecovermodels.jpeg", category: "T-Shirts" },
+  { id: 104, name: "Fuji Tshirt", price: "$22", image: "/images/classicteemale1.jpeg", hoverImage: "/images/classicteecovermodels.jpeg", category: "T-Shirts" },
   // Hockey Jersey
   { id: 1, name: "Hockey Jersey", price: "$90", image: "/images/hockeyjerseymale1.jpeg", hoverImage: "/images/hockeyjerseymale2.jpeg", category: "Jerseys" },
   // Classic Tee (cover models)
@@ -46,9 +51,10 @@ export const products: Product[] = [
 
 interface ProductsGridProps {
   categoryFilter?: string | null;
+  showBundleBanner?: boolean; // shows the top-of-grid bundle banner
 }
 
-export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {}) {
+export default function ProductsGrid({ categoryFilter, showBundleBanner = true }: ProductsGridProps = {}) {
   const [hovered, setHovered] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(true);
   const [bundleOpen, setBundleOpen] = useState(false);
@@ -147,23 +153,25 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
         }}
       >
       {/* Bundle spotlight banner: ensure it sits below category bar with clear spacing */}
-      <div className="col-span-full w-full mx-auto max-w-md mt-2 mb-2">
-        <button
-          onClick={() => setBundleOpen(true)}
-          className="w-full relative rounded-2xl p-4 text-white font-semibold shadow-lg active:scale-[0.99]"
-          style={{
-            background: 'linear-gradient(90deg, #8B5CF6 0%, #EC4899 50%, #22D3EE 100%)',
-            boxShadow: '0 10px 28px rgba(139,92,246,0.35)'
-          }}
-          aria-label="Open bundle deals"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-lg">🔥 Bundle Deals</span>
-            <span className="text-xs font-medium bg-white/20 px-2 py-1 rounded-full">Save up to {maxDiscount}%</span>
-          </div>
-          <span className="block text-xs mt-1 text-white/90">Tap to see curated combos that pair perfectly</span>
-        </button>
-      </div>
+      {showBundleBanner && (
+        <div className="col-span-full w-full mx-auto max-w-md mt-1.5 mb-1.5">
+          <button
+            onClick={() => setBundleOpen(true)}
+            className="w-full relative rounded-2xl p-3 sm:p-4 text-white font-semibold shadow-lg active:scale-[0.99]"
+            style={{
+              background: 'linear-gradient(90deg, #8B5CF6 0%, #EC4899 50%, #22D3EE 100%)',
+              boxShadow: '0 10px 28px rgba(139,92,246,0.35)'
+            }}
+            aria-label="Open bundle deals"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-base sm:text-lg">🔥 Bundle Deals</span>
+              <span className="text-[11px] sm:text-xs font-medium bg-white/20 px-2 py-1 rounded-full">Save up to {maxDiscount}%</span>
+            </div>
+            <span className="block text-[11px] sm:text-xs mt-1 text-white/90">Tap to see curated combos that pair perfectly</span>
+          </button>
+        </div>
+      )}
 
       {gridProducts.map((product) => {
         const isActive = isMobile ? mobileHover === product.id : hovered === product.id;
@@ -179,6 +187,14 @@ export default function ProductsGrid({ categoryFilter }: ProductsGridProps = {})
               return "/shop/hockey-jersey";
             case "Classic Tee":
               return "/shop/classic-tee";
+            case "Gala Tshirt":
+              return "/shop/gala-tshirt";
+            case "Cameo Tshirt":
+              return "/shop/cameo-tshirt";
+            case "Mutsu Tshirt":
+              return "/shop/mutsu-tshirt";
+            case "Fuji Tshirt":
+              return "/shop/fuji-tshirt";
             case "Tracksuit":
               return "/shop/tracksuit";
             case "White Hat":

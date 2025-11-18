@@ -3,11 +3,13 @@
 import { motion } from "framer-motion"
 import { useState } from "react"
 import ProductsGrid from "../../components/ProductsGridHome"
+import BundleSheet from "../../components/BundleSheet"
 import Link from "next/link"
 
 export default function ShopPage() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
+  const [bundleOpen, setBundleOpen] = useState(false)
 
   return (
   <div className="min-h-screen" style={{ background: '#fff', overflow: menuOpen ? 'hidden' : 'auto' }}>
@@ -80,6 +82,27 @@ export default function ShopPage() {
         </div>
       </div>
 
+      {/* Shop CTA: Pick a bundle or build your own */}
+      <div className="px-4 sm:px-6 lg:px-8 -mt-6 mb-3" style={{ position: 'relative', zIndex: 2 }}>
+        <div className="max-w-4xl mx-auto">
+          <button
+            onClick={() => setBundleOpen(true)}
+            className="w-full relative rounded-2xl p-3 sm:p-4 text-white font-semibold shadow-lg active:scale-[0.99]"
+            style={{
+              background: 'linear-gradient(90deg, #8B5CF6 0%, #EC4899 50%, #22D3EE 100%)',
+              boxShadow: '0 10px 28px rgba(139,92,246,0.35)'
+            }}
+            aria-label="Pick a bundle or build your own"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-base sm:text-lg">Pick a bundle or build your own</span>
+              <span className="text-[11px] sm:text-xs font-medium bg-white/20 px-2 py-1 rounded-full">Save more together</span>
+            </div>
+            <span className="block text-[11px] sm:text-xs mt-1 text-white/90">Curated combos or your perfect mix—tap to start</span>
+          </button>
+        </div>
+      </div>
+
       {/* Products Grid */}
       <motion.div 
         key={activeCategory || 'all'}
@@ -89,7 +112,7 @@ export default function ShopPage() {
         className="pb-16"
         style={{ position: 'relative', zIndex: 1 }}
       >
-        <ProductsGrid categoryFilter={activeCategory} />
+        <ProductsGrid categoryFilter={activeCategory} showBundleBanner={false} />
       </motion.div>
 
       {/* Brand Footer */}
@@ -235,6 +258,8 @@ export default function ShopPage() {
           }
         }
       `}</style>
+      {/* Bundle Sheet */}
+      <BundleSheet open={bundleOpen} onClose={() => setBundleOpen(false)} />
     </div>
   )
 }

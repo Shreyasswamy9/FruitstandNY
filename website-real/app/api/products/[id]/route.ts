@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SupabaseProductService } from '@/lib/services/supabase';
+import { SupabaseProductService } from '@/lib/services/supabase-existing';
 
 // GET /api/products/[id] - Get a specific product
 export async function GET(
@@ -29,33 +29,11 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    // Check admin authentication
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    const { id } = await params;
-    const body = await request.json();
-
-    const product = await SupabaseProductService.updateProduct(id, body);
-
-    return NextResponse.json({
-      success: true,
-      data: product
-    });
-
-  } catch (error) {
-    console.error('Error updating product:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to update product' },
-      { status: 500 }
-    );
-  }
+  // Not implemented for normalized service here. Use an admin flow or direct Supabase admin service.
+  return NextResponse.json(
+    { success: false, error: 'Product update not implemented in this route' },
+    { status: 501 }
+  );
 }
 
 // DELETE /api/products/[id] - Delete a product (admin only)
@@ -63,29 +41,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    // Check admin authentication
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    const { id } = await params;
-    await SupabaseProductService.deleteProduct(id);
-
-    return NextResponse.json({
-      success: true,
-      message: 'Product deleted'
-    });
-
-  } catch (error) {
-    console.error('Error deleting product:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to delete product' },
-      { status: 500 }
-    );
-  }
+  // Not implemented for normalized service here. Use an admin flow or direct Supabase admin service.
+  return NextResponse.json(
+    { success: false, error: 'Product deletion not implemented in this route' },
+    { status: 501 }
+  );
 }

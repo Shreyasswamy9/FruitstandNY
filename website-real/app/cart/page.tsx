@@ -154,9 +154,23 @@ export default function CartPage() {
     setCouponError("");
   };
 
+  const handleRemove = (productId: string) => {
+    const item = items.find(i => i.productId === productId);
+    const label = item ? `${item.name}` : 'this item';
+    if (typeof window === 'undefined' || window.confirm(`Remove ${label} from your cart?`)) {
+      removeFromCart(productId);
+    }
+  };
+
+  const handleClearCart = () => {
+    if (typeof window === 'undefined' || window.confirm('Are you sure you want to clear your entire cart?')) {
+      clearCart();
+    }
+  };
+
   const updateQuantity = (productId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
-      removeFromCart(productId);
+      handleRemove(productId);
       return;
     }
     
@@ -660,7 +674,7 @@ export default function CartPage() {
                             </p>
                             
                             <button
-                              onClick={() => removeFromCart(item.productId)}
+                              onClick={() => handleRemove(item.productId)}
                               className="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors"
                             >
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -677,7 +691,7 @@ export default function CartPage() {
                 {/* Clear Cart Button */}
                 <div className="p-4 sm:p-6 border-t border-gray-200">
                   <button
-                    onClick={clearCart}
+                    onClick={handleClearCart}
                     className="w-full py-3 border border-red-300 text-red-600 font-semibold rounded-xl hover:bg-red-50 transition-colors"
                   >
                     Clear Cart
