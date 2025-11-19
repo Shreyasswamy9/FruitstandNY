@@ -1,15 +1,19 @@
 "use client";
 import Image from "next/image";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
 
-const cameoImages = [
-  "/images/products/cameo-tshirt/cameo-pink/1.jpeg",
-  "/images/products/cameo-tshirt/charcoal/1.jpeg",
-  "/images/products/cameo-tshirt/ivory/1.jpeg",
-];
+// Per-color image map (single images currently available per color)
+const CAMEO_COLOR_IMAGE_MAP: Record<string, string[]> = {
+  'broadway-noir': [
+    '/images/products/cameo-tshirt/broadwaynoir/Firefly 20250923122927.png'
+  ],
+  'sutton-place-snow': [
+    '/images/products/cameo-tshirt/suttonplacesnow/Firefly 20250923122951.png'
+  ]
+};
 
 const PRODUCT = {
   name: "Cameo Tshirt",
@@ -19,17 +23,16 @@ const PRODUCT = {
 
 export default function CameoTshirtPage() {
   const colorOptions = [
-    { name: 'Cameo Pink', color: '#f8b4c0', image: '/images/products/cameo-tshirt/cameo-pink/1.jpeg', bg: '#fff3f5', border: '#f5d6dc' },
-    { name: 'Charcoal', color: '#4a4a4a', image: '/images/products/cameo-tshirt/charcoal/1.jpeg', bg: '#efefef' },
-    { name: 'Ivory', color: '#f8f6f0', image: '/images/products/cameo-tshirt/ivory/1.jpeg', bg: '#f9f8f5', border: '#ddd6c9' },
-    { name: 'Navy', color: '#1f3a5f', image: '/images/products/cameo-tshirt/navy/1.jpeg', bg: '#e9eef6', border: '#c5d1e4' },
+    { name: 'Broadway Noir', slug: 'broadway-noir', color: '#000000', images: CAMEO_COLOR_IMAGE_MAP['broadway-noir'], bg: '#0a0a0a' },
+    { name: 'Sutton Place Snow', slug: 'sutton-place-snow', color: '#ffffff', images: CAMEO_COLOR_IMAGE_MAP['sutton-place-snow'], bg: '#ffffff', border: '#e5e7eb' },
   ];
   const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
-  const [selectedImage, setSelectedImage] = useState(colorOptions[0].image);
+  const [selectedImage, setSelectedImage] = useState(colorOptions[0].images[0]);
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const searchParams = useSearchParams();
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
@@ -37,13 +40,25 @@ export default function CameoTshirtPage() {
       productId: "cameo-tshirt",
       name: PRODUCT.name,
       price: PRODUCT.price,
-      image: cameoImages[0],
+      image: selectedImage,
       quantity: 1,
       size: selectedSize,
     });
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };
+
+  // Preselect color from query param
+  useEffect(() => {
+    const colorSlug = searchParams.get('color');
+    if (colorSlug) {
+      const found = colorOptions.find(c => c.slug === colorSlug);
+      if (found) {
+        setSelectedColor(found);
+        setSelectedImage(found.images[0]);
+      }
+    }
+  }, [searchParams]);
 
   const boughtTogetherItems = [
     { id: 'white-hat', name: 'White Hat', price: 18, image: '/images/beigehatfemale1.jpeg' },
@@ -88,9 +103,9 @@ export default function CameoTshirtPage() {
             <Image src={selectedImage} alt={PRODUCT.name} style={{ objectFit: "contain", background: "#fff" }} fill sizes="(max-width: 768px) 100vw, 500px" priority />
           </div>
           <div className="flex gap-2 justify-center">
-            {cameoImages.map((img) => (
-              <button key={img} onClick={() => setSelectedImage(img)} className={`relative w-16 h-16 rounded border ${selectedImage === img ? "ring-2 ring-black" : ""}`}>
-                <Image src={img} alt={PRODUCT.name} fill style={{ objectFit: "contain", background: "#fff" }} />
+            {selectedColor.images.map((img) => (
+              <button key={img} onClick={() => setSelectedImage(img)} className={`relative w-16 h-16 rounded border ${selectedImage === img ? 'ring-2 ring-black' : ''}`}>
+                <Image src={img} alt={`${PRODUCT.name} - ${selectedColor.name}`} fill style={{ objectFit: 'contain', background: '#fff' }} />
               </button>
             ))}
           </div>
@@ -105,8 +120,27 @@ export default function CameoTshirtPage() {
               <button
                 key={opt.name}
                 aria-label={opt.name}
-                onClick={() => { setSelectedColor(opt); setSelectedImage(opt.image); }}
-                style={{ width: 32, height: 32, borderRadius: '50%', background: opt.color, border: selectedColor.name === opt.name ? '2px solid #232323' : (opt.border || '2px solid #fff'), outline: selectedColor.name === opt.name ? '2px solid #3B82F6' : 'none', boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #3B82F6' : '0 1px 4px 0 rgba(0,0,0,0.07)', display: 'inline-block', cursor: 'pointer', marginRight: 4 }}
+                onClick={() => { 
+                  setSelectedColor(opt); 
+                  setSelectedImage(opt.images[0]); 
+                  window.history.replaceState(null, '', `/shop/cameo-tshirt?color=${opt.slug}`);
+                }}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: opt.color,
+                  border: selectedColor.name === opt.name
+                    ? '2px solid #232323'
+                    : (['#ffffff','#f9fafb','#fafbfc','#f5f5f5'].includes(opt.color.toLowerCase())
+                        ? '2px solid #d1d5db'
+                        : (opt.border || '2px solid #fff')),
+                  outline: 'none',
+                  boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #232323' : '0 1px 4px 0 rgba(0,0,0,0.07)',
+                  display: 'inline-block',
+                  cursor: 'pointer',
+                  marginRight: 4
+                }}
               />
             ))}
           </div>
@@ -133,7 +167,7 @@ export default function CameoTshirtPage() {
       </div>
 
       {/* Frequently Bought Together */}
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#f8f9fa' }} className="py-12 px-4">
+  <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#ffffff' }} className="py-12 px-4">
         <div className="max-w-4xl mx-auto w-full">
           <h2 className="text-3xl font-bold text-center mb-8">Frequently Bought Together</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

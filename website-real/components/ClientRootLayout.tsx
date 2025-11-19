@@ -17,6 +17,7 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
   const [hideLogo, setHideLogo] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const pathname = usePathname()
+  const isShopRoute = pathname?.startsWith('/shop')
 
   // Apply a global class to body for pages to react (e.g., hide category pills)
   useEffect(() => {
@@ -43,6 +44,10 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
       <LogoButton />
       
       {children}
+      {/* Bottom spacer on shop/product pages so CartBar doesn't cover content */}
+      {isShopRoute && (
+        <div aria-hidden className="h-28 md:h-24" />
+      )}
       
       <CartBar />
       

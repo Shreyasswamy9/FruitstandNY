@@ -1,15 +1,17 @@
 "use client";
 import Image from "next/image";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
 
-const fujiImages = [
-  "/images/products/fuji-tshirt/fuji-red/1.jpeg",
-  "/images/products/fuji-tshirt/onyx/1.jpeg",
-  "/images/products/fuji-tshirt/snow/1.jpeg",
-];
+// Fuji color image map (currently single image per color folder)
+const FUJI_COLOR_IMAGE_MAP: Record<string, string[]> = {
+  'fuji-red': ['/images/products/fuji-tshirt/fuji-red/1.jpeg'],
+  'onyx': ['/images/products/fuji-tshirt/onyx/1.jpeg'],
+  'snow': ['/images/products/fuji-tshirt/snow/1.jpeg'],
+  'indigo': ['/images/products/fuji-tshirt/indigo/1.jpeg']
+};
 
 const PRODUCT = {
   name: "Fuji Tshirt",
@@ -19,17 +21,18 @@ const PRODUCT = {
 
 export default function FujiTshirtPage() {
   const colorOptions = [
-    { name: 'Fuji Red', color: '#c62828', image: '/images/products/fuji-tshirt/fuji-red/1.jpeg', bg: '#fdeaea', border: '#f5bcbc' },
-    { name: 'Onyx', color: '#111827', image: '/images/products/fuji-tshirt/onyx/1.jpeg', bg: '#e9ecf1' },
-    { name: 'Snow', color: '#f9fafb', image: '/images/products/fuji-tshirt/snow/1.jpeg', bg: '#fafbfc', border: '#e6e8ea' },
-    { name: 'Indigo', color: '#3f51b5', image: '/images/products/fuji-tshirt/indigo/1.jpeg', bg: '#e8ebfa', border: '#c9d1f7' },
+    { name: 'Fuji Red', slug: 'fuji-red', color: '#c62828', images: FUJI_COLOR_IMAGE_MAP['fuji-red'], bg: '#fdeaea', border: '#f5bcbc' },
+    { name: 'Onyx', slug: 'onyx', color: '#111827', images: FUJI_COLOR_IMAGE_MAP['onyx'], bg: '#e9ecf1' },
+    { name: 'Snow', slug: 'snow', color: '#f9fafb', images: FUJI_COLOR_IMAGE_MAP['snow'], bg: '#fafbfc', border: '#e6e8ea' },
+    { name: 'Indigo', slug: 'indigo', color: '#3f51b5', images: FUJI_COLOR_IMAGE_MAP['indigo'], bg: '#e8ebfa', border: '#c9d1f7' },
   ];
   const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
-  const [selectedImage, setSelectedImage] = useState(colorOptions[0].image);
+  const [selectedImage, setSelectedImage] = useState(colorOptions[0].images[0]);
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const searchParams = useSearchParams();
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
@@ -37,13 +40,25 @@ export default function FujiTshirtPage() {
       productId: "fuji-tshirt",
       name: PRODUCT.name,
       price: PRODUCT.price,
-      image: fujiImages[0],
+      image: selectedImage,
       quantity: 1,
       size: selectedSize,
     });
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };
+
+  // Preselect variant via query param
+  useEffect(() => {
+    const colorSlug = searchParams.get('color');
+    if (colorSlug) {
+      const found = colorOptions.find(c => c.slug === colorSlug);
+      if (found) {
+        setSelectedColor(found);
+        setSelectedImage(found.images[0]);
+      }
+    }
+  }, [searchParams]);
 
   const boughtTogetherItems = [
     { id: 'empire-hat', name: 'Empire Hat', price: 22, image: '/images/empirehatfemale1.jpeg' },
@@ -88,9 +103,9 @@ export default function FujiTshirtPage() {
             <Image src={selectedImage} alt={PRODUCT.name} style={{ objectFit: "contain", background: "#fff" }} fill sizes="(max-width: 768px) 100vw, 500px" priority />
           </div>
           <div className="flex gap-2 justify-center">
-            {fujiImages.map((img) => (
-              <button key={img} onClick={() => setSelectedImage(img)} className={`relative w-16 h-16 rounded border ${selectedImage === img ? "ring-2 ring-black" : ""}`}>
-                <Image src={img} alt={PRODUCT.name} fill style={{ objectFit: "contain", background: "#fff" }} />
+            {selectedColor.images.map((img) => (
+              <button key={img} onClick={() => setSelectedImage(img)} className={`relative w-16 h-16 rounded border ${selectedImage === img ? 'ring-2 ring-black' : ''}`}>
+                <Image src={img} alt={`${PRODUCT.name} - ${selectedColor.name}`} fill style={{ objectFit: 'contain', background: '#fff' }} />
               </button>
             ))}
           </div>
@@ -105,8 +120,27 @@ export default function FujiTshirtPage() {
               <button
                 key={opt.name}
                 aria-label={opt.name}
-                onClick={() => { setSelectedColor(opt); setSelectedImage(opt.image); }}
-                style={{ width: 32, height: 32, borderRadius: '50%', background: opt.color, border: selectedColor.name === opt.name ? '2px solid #232323' : (opt.border || '2px solid #fff'), outline: selectedColor.name === opt.name ? '2px solid #3B82F6' : 'none', boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #3B82F6' : '0 1px 4px 0 rgba(0,0,0,0.07)', display: 'inline-block', cursor: 'pointer', marginRight: 4 }}
+                onClick={() => { 
+                  setSelectedColor(opt); 
+                  setSelectedImage(opt.images[0]); 
+                  window.history.replaceState(null, '', `/shop/fuji-tshirt?color=${opt.slug}`);
+                }}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: opt.color,
+                  border: selectedColor.name === opt.name
+                    ? '2px solid #232323'
+                    : (['#ffffff','#f9fafb','#fafbfc','#f5f5f5'].includes(opt.color.toLowerCase())
+                        ? '2px solid #d1d5db'
+                        : (opt.border || '2px solid #fff')),
+                  outline: 'none',
+                  boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #232323' : '0 1px 4px 0 rgba(0,0,0,0.07)',
+                  display: 'inline-block',
+                  cursor: 'pointer',
+                  marginRight: 4
+                }}
               />
             ))}
           </div>

@@ -87,18 +87,14 @@ export default function ShopPage() {
         <div className="max-w-4xl mx-auto">
           <button
             onClick={() => setBundleOpen(true)}
-            className="w-full relative rounded-2xl p-3 sm:p-4 text-white font-semibold shadow-lg active:scale-[0.99]"
-            style={{
-              background: 'linear-gradient(90deg, #8B5CF6 0%, #EC4899 50%, #22D3EE 100%)',
-              boxShadow: '0 10px 28px rgba(139,92,246,0.35)'
-            }}
+            className="glass-banner w-full relative rounded-2xl p-3 sm:p-4 font-semibold active:scale-[0.99]"
             aria-label="Pick a bundle or build your own"
           >
             <div className="flex items-center justify-between">
               <span className="text-base sm:text-lg">Pick a bundle or build your own</span>
-              <span className="text-[11px] sm:text-xs font-medium bg-white/20 px-2 py-1 rounded-full">Save more together</span>
+              <span className="banner-pill text-[11px] sm:text-xs font-medium px-2 py-1 rounded-full">Save more together</span>
             </div>
-            <span className="block text-[11px] sm:text-xs mt-1 text-white/90">Curated combos or your perfect mix—tap to start</span>
+            <span className="block text-[11px] sm:text-xs mt-1">Curated combos or your perfect mix—tap to start</span>
           </button>
         </div>
       </div>

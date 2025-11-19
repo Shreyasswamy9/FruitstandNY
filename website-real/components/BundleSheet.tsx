@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
@@ -46,6 +46,19 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
     return { tee, color: tee.colors[0], size: undefined }
   }
   const [customItems, setCustomItems] = useState<CustomItem[]>(Array.from({ length: comboSize }, (_, i) => defaultItem(i)))
+  // Refs for guided scrolling
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null)
+  const teeRefs = useRef<(HTMLSelectElement | null)[]>([])
+  const colorRefs = useRef<(HTMLDivElement | null)[]>([])
+  const sizeRefs = useRef<(HTMLSelectElement | null)[]>([])
+  const scrollIntoViewWithin = useCallback((el: HTMLElement | null, offset = 48) => {
+    const container = scrollContainerRef.current
+    if (!el || !container) return
+    const parentRect = container.getBoundingClientRect()
+    const rect = el.getBoundingClientRect()
+    const top = container.scrollTop + (rect.top - parentRect.top) - offset
+    container.scrollTo({ top, behavior: 'smooth' })
+  }, [])
 
   // Derived
   const productMap = useMemo(() => new Map(products.map(p => [p.id, p])), [products])
@@ -92,6 +105,10 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
       else if (next.length > comboSize) next.length = comboSize
       return next
     })
+    // Ensure ref arrays match new size
+    teeRefs.current.length = Number(comboSize)
+    colorRefs.current.length = Number(comboSize)
+    sizeRefs.current.length = Number(comboSize)
   }, [comboSize])
 
   // Actions
@@ -150,7 +167,7 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-lg font-semibold tracking-tight">Bundle & Save</h3>
-                    <p className="text-xs text-gray-500">Save up to {maxDiscount}% with curated picks or build your own</p>
+                    <p className="text-xs">Save up to {maxDiscount}% with curated picks or build your own</p>
                   </div>
                   <button onClick={onClose} aria-label="Close"
                           className="h-9 w-9 inline-flex items-center justify-center rounded-full border border-gray-200 hover:bg-gray-50 active:scale-95">✕</button>
@@ -167,7 +184,7 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
                   <button
                     role="tab" aria-selected={tab==='custom'}
                     onClick={() => setTab('custom')}
-                    className={`px-4 py-1.5 text-sm font-medium rounded-full transition relative ${tab==='custom'?'bg-white shadow-sm':'text-gray-600 hover:text-gray-800'} ${(!tab||tab==='curated') && teaseBuild ? 'ring-2 ring-fuchsia-300 shadow-[0_0_0_4px_rgba(232,121,249,0.25)]' : ''}`}
+                    className={`px-4 py-1.5 text-sm font-medium rounded-full transition relative ${tab==='custom'?'bg-white shadow-sm':'text-gray-600 hover:text-gray-800'} ${(!tab||tab==='curated') && teaseBuild ? 'ring-2 ring-black/40 shadow-[0_0_0_4px_rgba(0,0,0,0.18)]' : ''}`}
                   >
                     <span className="inline-flex items-center gap-1">Build <span aria-hidden>✨</span></span>
                     {! (tab==='custom') && (
@@ -179,7 +196,7 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
                   <div className="mt-2">
                     <button
                       onClick={() => setTab('custom')}
-                      className="inline-flex items-center gap-1.5 text-xs text-fuchsia-700 bg-fuchsia-50 border border-fuchsia-200 px-2.5 py-1 rounded-full hover:bg-fuchsia-100"
+                      className="inline-flex items-center gap-1.5 text-xs bg-black/5 border border-black/10 px-2.5 py-1 rounded-full hover:bg-black/10"
                     >
                       Prefer to mix your own? <span className="font-semibold">Try Build</span> →
                     </button>
@@ -189,9 +206,9 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto" ref={scrollContainerRef}>
               {tab === 'curated' ? (
-                <div className="p-5 space-y-4 pb-28">
+                <div className="p-5 space-y-4 pb-28 md:px-8 max-w-5xl mx-auto w-full">
                   {bundles.map(b => {
                     const items = (b.itemIds.map(id => productMap.get(id)).filter(Boolean) as Product[])
                     const subtotal = items.reduce((acc, p) => acc + parsePrice(p.price), 0)
@@ -199,7 +216,7 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
                     const total = Math.max(0, subtotal - discount)
                     const isSelected = selectedId === b.id
                     return (
-                      <label key={b.id} className={`block rounded-2xl border ${isSelected?'border-fuchsia-400 ring-2 ring-fuchsia-200':'border-gray-200'} hover:border-gray-300 transition shadow-sm`}>
+                      <label key={b.id} className={`block glass-subcard rounded-2xl border ${isSelected?'border-gray-400 ring-2 ring-gray-300':'border-transparent'} transition`}>
                         <input type="radio" name="bundle" value={b.id} className="sr-only"
                                checked={isSelected} onChange={() => setSelectedId(b.id)} />
                         <div className="p-4">
@@ -208,33 +225,33 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
                               <div className="flex items-center gap-2">
                                 <h4 className="font-semibold text-base">{b.title}</h4>
                                 {b.discountPercent ? (
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-green-100 text-green-700 border border-green-200">
+                                  <span className="glass-badge" data-variant="discount" style={{fontSize:'10px', padding:'4px 8px'}}>
                                     Save {b.discountPercent}%
                                   </span>
                                 ) : null}
                               </div>
-                              {b.description && <p className="text-sm text-gray-500 mt-0.5">{b.description}</p>}
+                              {b.description && <p className="text-sm mt-0.5">{b.description}</p>}
                             </div>
-                            {isSelected && <span className="text-xs text-fuchsia-700 bg-fuchsia-50 border border-fuchsia-200 px-2 py-0.5 rounded-full">Selected</span>}
+                            {isSelected && <span className="text-xs glass-badge" style={{padding:'2px 8px'}}>Selected</span>}
                           </div>
                           <div className="mt-3 grid grid-cols-3 gap-3">
                             {items.map(p => (
                               <div key={p.id} className="col-span-1">
-                                <div className="relative w-full aspect-[3/4] overflow-hidden rounded-lg border border-gray-100">
+                                <div className="relative w-full aspect-[3/4] overflow-hidden rounded-lg glass-thumb">
                                   <Image src={p.image} alt={p.name} fill sizes="33vw" className="object-cover" />
                                 </div>
                                 <p className="mt-1 text-[12px] font-medium truncate">{p.name}</p>
-                                <p className="text-[12px] text-gray-500">{p.price}</p>
+                                <p className="text-[12px]">{p.price}</p>
                               </div>
                             ))}
                           </div>
-                          <div className="mt-3 rounded-xl bg-gray-50 border border-gray-100 p-3 text-sm">
+                          <div className="mt-3 rounded-xl glass-thumb p-3 text-sm">
                             <div className="flex items-center justify-between">
-                              <span className="text-gray-600">Subtotal</span>
+                              <span>Subtotal</span>
                               <span className="font-medium">{formatPrice(subtotal)}</span>
                             </div>
                             {b.discountPercent ? (
-                              <div className="flex items-center justify-between mt-1 text-green-700">
+                              <div className="flex items-center justify-between mt-1">
                                 <span>Discount ({b.discountPercent}%)</span>
                                 <span>- {formatPrice(discount)}</span>
                               </div>
@@ -250,53 +267,61 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
                   })}
                 </div>
               ) : (
-                <div className="p-5 pb-28">
+                <div className="p-5 pb-28 md:px-8 max-w-4xl mx-auto w-full">
                   {/* Top highlight */}
-                  <div className="rounded-2xl p-4 border border-fuchsia-200 bg-gradient-to-r from-fuchsia-50 via-pink-50 to-cyan-50">
+                  <div className="glass-banner-darker rounded-2xl p-4 relative overflow-hidden">
+                    <span aria-hidden className="absolute inset-0" style={{background:'radial-gradient(circle at 25% 20%, rgba(255,255,255,0.18), transparent 60%)'}} />
+                    <span aria-hidden className="absolute inset-0" style={{background:'linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.22) 50%, transparent 100%)', mixBlendMode:'screen', animation:'sheetSheen 5s linear infinite', transform:'translateX(-60%)'}} />
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <h4 className="text-base font-semibold">Build your own bundle</h4>
-                        <p className="text-sm text-gray-600 mt-0.5">Mix any tees, choose colors and sizes. One simple price.</p>
+                        <p className="text-sm mt-0.5">Mix any tees, choose colors and sizes. One simple price.</p>
                       </div>
-                      <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 border border-blue-200">{comboSize} tees</span>
+                      <span className="glass-badge" style={{fontSize:'10px', padding:'4px 10px'}}>{comboSize} tees</span>
                     </div>
                     {/* Steps */}
-                    <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-gray-700">
-                      <span className="px-2 py-1 rounded-full bg-white/70 border border-gray-200">1 • Choose pack size</span>
-                      <span className="px-2 py-1 rounded-full bg-white/70 border border-gray-200">2 • Customize each tee</span>
-                      <span className="px-2 py-1 rounded-full bg-white/70 border border-gray-200">3 • Add to cart</span>
+                    <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
+                      <span className="glass-badge" style={{textTransform:'none', fontSize:'10px'}}>1. Choose size</span>
+                      <span className="glass-badge" style={{textTransform:'none', fontSize:'10px'}}>2. Customize tees</span>
+                      <span className="glass-badge" style={{textTransform:'none', fontSize:'10px'}}>3. Add to cart</span>
                     </div>
                     {/* Progress */}
                     <div className="mt-3">
                       <div className="h-2 w-full rounded-full bg-gray-200 overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-fuchsia-500 to-cyan-500" style={{ width: `${Math.round((filledCount/Number(comboSize))*100)}%` }} />
+                        <div className="h-full" style={{ width: `${Math.round((filledCount/Number(comboSize))*100)}%`, background:'linear-gradient(90deg,#ffffff 0%,#d0d0d0 60%,#b0b0b0 100%)' }} />
                       </div>
-                      <p className="mt-1 text-[12px] text-gray-600">{filledCount} of {comboSize} tees configured</p>
+                      <p className="mt-1 text-[12px] opacity-70">{filledCount} of {comboSize} tees configured</p>
                     </div>
                   </div>
 
                   {/* Size options (combo pack selector) */}
                   <div className="mt-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <h5 className="text-sm font-semibold text-gray-800">Choose bundle size</h5>
-                      <span className="text-[11px] text-gray-500">Pick how many tees you want</span>
+                      <h5 className="text-sm font-semibold">Choose bundle size</h5>
+                      <span className="text-[11px]">Pick how many tees you want</span>
                     </div>
-                    <div className="flex flex-wrap gap-3">
+                    <div className="w-full gap-2 flex md:grid md:grid-cols-4">
                       {CUSTOM_BUNDLE_SIZES.map(sz => {
                         const selected = comboSize === sz
                         return (
                           <button
                             key={sz}
-                            onClick={() => setComboSize(sz)}
+                            onClick={() => {
+                              setComboSize(sz)
+                              // Smoothly bring the first tee selector into view
+                              requestAnimationFrame(() => {
+                                scrollIntoViewWithin(teeRefs.current[0] as unknown as HTMLElement, 48)
+                              })
+                            }}
                             aria-pressed={selected}
                             aria-label={`${sz} tee bundle for ${formatPrice(CUSTOM_BUNDLE_PRICES[sz])}`}
-                            className={`group relative rounded-2xl border transition shadow-sm active:scale-[0.97] focus:outline-none focus:ring-2 focus:ring-fuchsia-300 ${selected ? 'bg-black text-white border-black shadow-lg ring-2 ring-black/50' : 'bg-white text-gray-800 border-gray-300 hover:border-black'} flex flex-col items-center justify-center px-4 py-3 min-w-[110px]`}
+                            className={`group relative rounded-xl border transition shadow-sm active:scale-[0.97] focus:outline-none focus:ring-2 focus:ring-black/40 ${selected ? 'bg-black text-white border-black shadow-lg ring-2 ring-black/50' : 'bg-white text-gray-800 border-gray-300 hover:border-black'} flex flex-col items-center justify-center px-3.5 py-2.5 flex-1 basis-0 w-full md:flex-none`}
                           >
-                            <span className={`text-lg font-bold tracking-tight ${selected ? 'text-white' : 'text-gray-900'}`}>{sz}</span>
-                            <span className={`mt-0.5 text-[11px] font-medium uppercase tracking-wide ${selected ? 'text-white/80' : 'text-gray-600'}`}>Tees</span>
-                            <span className={`mt-1 text-xs font-semibold ${selected ? 'text-white' : 'text-gray-800'}`}>{formatPrice(CUSTOM_BUNDLE_PRICES[sz])}</span>
+                            <span className={`text-lg font-bold tracking-tight leading-none ${selected ? 'text-white' : 'text-gray-900'}`}>{sz}</span>
+                            <span className={`mt-0.5 text-[11px] font-medium ${selected ? 'text-white/70' : ''}`}>Tees</span>
+                            <span className={`mt-0.5 text-[12px] font-semibold leading-none ${selected ? 'text-white' : 'text-gray-800'}`}>{formatPrice(CUSTOM_BUNDLE_PRICES[sz])}</span>
                             {selected && (
-                              <span className="absolute -top-2 right-2 text-[10px] bg-fuchsia-600 text-white px-2 py-0.5 rounded-full shadow">Selected</span>
+                              <span className="absolute -top-2 right-2 text-[10px] bg-black text-white px-2 py-0.5 rounded-full shadow">Selected</span>
                             )}
                           </button>
                         )
@@ -307,17 +332,18 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
                   {/* Rows */}
                   <div className="mt-4 space-y-3">
                     {customItems.map((ci, idx) => (
-                      <div key={idx} className="rounded-2xl border border-gray-200 p-3 bg-white">
+                      <div key={idx} className="rounded-2xl glass-subcard p-3">
                         <div className="flex gap-3">
-                          <div className="relative w-16 h-20 rounded-lg overflow-hidden border border-gray-100 shadow-sm">
+                          <div className="relative w-16 h-20 rounded-lg overflow-hidden glass-thumb shadow-sm">
                             <Image src={ci.color.image} alt={`${ci.tee.name} ${ci.color.name}`} fill sizes="64px" className="object-cover" />
                             <span className="absolute top-1 left-1 text-[10px] px-1.5 py-0.5 rounded-full bg-black/70 text-white">#{idx+1}</span>
                           </div>
                           <div className="flex-1 grid grid-cols-3 gap-2 min-w-0">
                             <div className="col-span-3">
-                              <label className="block text-[11px] text-gray-500">Tee</label>
+                              <label className="block text-[11px]">Tee</label>
                               <select
                                 value={ci.tee.slug}
+                                ref={el => { teeRefs.current[idx] = el }}
                                 onChange={e => {
                                   const tee = TEE_VARIANTS.find(t => t.slug === e.target.value as TeeVariant['slug'])!
                                   setCustomItems(prev => prev.map((it, i) => i===idx ? { tee, color: tee.colors[0], size: it.size } : it))
@@ -328,11 +354,13 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
                               </select>
                             </div>
                             <div className="col-span-2">
-                              <label className="block text-[11px] text-gray-500">Color</label>
-                              <div className="flex gap-1.5 flex-wrap mt-1">
+                              <label className="block text-[11px]">Color</label>
+                              <div className="flex gap-1.5 flex-wrap mt-1" ref={el => { colorRefs.current[idx] = el }}>
                                 {ci.tee.colors.map(color => (
                                   <button key={color.name} aria-label={color.name}
-                                          onClick={() => setCustomItems(prev => prev.map((it, i) => i===idx ? { ...it, color } : it))}
+                                          onClick={() => {
+                                            setCustomItems(prev => prev.map((it, i) => i===idx ? { ...it, color } : it))
+                                          }}
                                           className={`w-6 h-6 rounded-full border ${ci.color.name===color.name?'ring-2 ring-blue-500 border-black':'border-gray-300'}`}
                                           style={{ background: color.hex }}
                                           title={color.name}
@@ -341,7 +369,7 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
                               </div>
                               {/* Show selected color name below color options as a pill with swatch */}
                               <div className="mt-2">
-                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-gray-300 bg-white text-gray-900 text-[11px]">
+                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full glass-badge" style={{textTransform:'none', fontSize:'10px'}}>
                                   <span
                                     className="w-2.5 h-2.5 rounded-full border border-black/10"
                                     style={{ background: ci.color?.hex || '#999' }}
@@ -352,10 +380,22 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
                               </div>
                             </div>
                             <div>
-                              <label className="block text-[11px] text-gray-500">Size</label>
+                              <label className="block text-[11px]">Size</label>
                               <select
                                 value={ci.size ?? ''}
-                                onChange={e => setCustomItems(prev => prev.map((it, i) => i===idx ? { ...it, size: (e.target.value as typeof SIZE_OPTIONS[number]) || undefined } : it))}
+                                ref={el => { sizeRefs.current[idx] = el }}
+                                onChange={e => {
+                                  setCustomItems(prev => prev.map((it, i) => i===idx ? { ...it, size: (e.target.value as typeof SIZE_OPTIONS[number]) || undefined } : it))
+                                  // Move to next row's tee selector, or nudge to bottom
+                                  requestAnimationFrame(() => {
+                                    const next = teeRefs.current[idx+1]
+                                    if (next) scrollIntoViewWithin(next as unknown as HTMLElement, 48)
+                                    else {
+                                      const container = scrollContainerRef.current
+                                      if (container) container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' })
+                                    }
+                                  })
+                                }}
                                 className="mt-1 w-full border rounded-md px-2 py-1.5 text-xs"
                               >
                                 <option value="" disabled>Select size</option>
@@ -390,7 +430,7 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
                     onClick={addCustomToCart}
                     disabled={!canAddCustom || adding}
                     className={`flex-1 py-3 rounded-xl text-white font-medium shadow-md ${canAddCustom && !adding ? 'bg-black' : 'bg-gray-400'}`}
-                  >{adding ? 'Adding…' : `Add ${comboSize}-tee bundle — ${formatPrice(CUSTOM_BUNDLE_PRICES[comboSize])}`}</button>
+                  >{adding ? 'Adding…' : `Add ${comboSize} tee bundle – ${formatPrice(CUSTOM_BUNDLE_PRICES[comboSize])}`}</button>
                   <button onClick={onClose} className="px-4 py-3 rounded-xl border border-gray-300 text-gray-700">Close</button>
                 </div>
               )}

@@ -1,15 +1,23 @@
 "use client";
 import Image from "next/image";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
 
-const mutsuImages = [
-  "/images/products/mutsu-tshirt/mutsu-green/1.jpeg",
-  "/images/products/mutsu-tshirt/slate/1.jpeg",
-  "/images/products/mutsu-tshirt/sand/1.jpeg",
-];
+// Per-color image map (multiple images per color)
+const MUTSU_COLOR_IMAGE_MAP: Record<string, string[]> = {
+  'broadway-noir': [
+    '/images/products/mutsu-tshirt/broadwaynoir/Firefly 20251118133823.png',
+    '/images/products/mutsu-tshirt/broadwaynoir/Firefly 20251118133858.png',
+    '/images/products/mutsu-tshirt/broadwaynoir/Firefly 20251118134335.png'
+  ],
+  'sutton-place-snow': [
+    '/images/products/mutsu-tshirt/suttonplacesnow/Firefly 20251118133938.png',
+    '/images/products/mutsu-tshirt/suttonplacesnow/Firefly 20251118134138.png',
+    '/images/products/mutsu-tshirt/suttonplacesnow/Firefly 20251118134406.png'
+  ]
+};
 
 const PRODUCT = {
   name: "Mutsu Tshirt",
@@ -19,17 +27,16 @@ const PRODUCT = {
 
 export default function MutsuTshirtPage() {
   const colorOptions = [
-    { name: 'Mutsu Green', color: '#4caf50', image: '/images/products/mutsu-tshirt/mutsu-green/1.jpeg', bg: '#ecf9ee', border: '#c7e9cc' },
-    { name: 'Slate', color: '#6b7280', image: '/images/products/mutsu-tshirt/slate/1.jpeg', bg: '#eef0f3' },
-    { name: 'Sand', color: '#d6c3a5', image: '/images/products/mutsu-tshirt/sand/1.jpeg', bg: '#f5efe6', border: '#e5d8c6' },
-    { name: 'Sky', color: '#60a5fa', image: '/images/products/mutsu-tshirt/sky/1.jpeg', bg: '#eaf4ff', border: '#cfe6ff' },
+    { name: 'Broadway Noir', slug: 'broadway-noir', color: '#000000', images: MUTSU_COLOR_IMAGE_MAP['broadway-noir'], bg: '#ffffff', border: '#e5e7eb' },
+    { name: 'Sutton Place Snow', slug: 'sutton-place-snow', color: '#ffffff', images: MUTSU_COLOR_IMAGE_MAP['sutton-place-snow'], bg: '#ffffff', border: '#e5e7eb' },
   ];
   const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
-  const [selectedImage, setSelectedImage] = useState(colorOptions[0].image);
+  const [selectedImage, setSelectedImage] = useState(colorOptions[0].images[0]);
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const searchParams = useSearchParams();
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
@@ -37,13 +44,24 @@ export default function MutsuTshirtPage() {
       productId: "mutsu-tshirt",
       name: PRODUCT.name,
       price: PRODUCT.price,
-      image: mutsuImages[0],
+      image: selectedImage,
       quantity: 1,
       size: selectedSize,
     });
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };
+
+  useEffect(() => {
+    const colorSlug = searchParams.get('color');
+    if (colorSlug) {
+      const found = colorOptions.find(c => c.slug === colorSlug);
+      if (found) {
+        setSelectedColor(found);
+        setSelectedImage(found.images[0]);
+      }
+    }
+  }, [searchParams]);
 
   const boughtTogetherItems = [
     { id: 'denim-hat', name: 'Denim Hat', price: 20, image: '/images/denimhat1.jpeg' },
@@ -88,9 +106,9 @@ export default function MutsuTshirtPage() {
             <Image src={selectedImage} alt={PRODUCT.name} style={{ objectFit: "contain", background: "#fff" }} fill sizes="(max-width: 768px) 100vw, 500px" priority />
           </div>
           <div className="flex gap-2 justify-center">
-            {mutsuImages.map((img) => (
-              <button key={img} onClick={() => setSelectedImage(img)} className={`relative w-16 h-16 rounded border ${selectedImage === img ? "ring-2 ring-black" : ""}`}>
-                <Image src={img} alt={PRODUCT.name} fill style={{ objectFit: "contain", background: "#fff" }} />
+            {selectedColor.images.map((img) => (
+              <button key={img} onClick={() => setSelectedImage(img)} className={`relative w-16 h-16 rounded border ${selectedImage === img ? 'ring-2 ring-black' : ''}`}>
+                <Image src={img} alt={`${PRODUCT.name} - ${selectedColor.name}`} fill style={{ objectFit: 'contain', background: '#fff' }} />
               </button>
             ))}
           </div>
@@ -105,8 +123,27 @@ export default function MutsuTshirtPage() {
               <button
                 key={opt.name}
                 aria-label={opt.name}
-                onClick={() => { setSelectedColor(opt); setSelectedImage(opt.image); }}
-                style={{ width: 32, height: 32, borderRadius: '50%', background: opt.color, border: selectedColor.name === opt.name ? '2px solid #232323' : (opt.border || '2px solid #fff'), outline: selectedColor.name === opt.name ? '2px solid #3B82F6' : 'none', boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #3B82F6' : '0 1px 4px 0 rgba(0,0,0,0.07)', display: 'inline-block', cursor: 'pointer', marginRight: 4 }}
+                onClick={() => { 
+                  setSelectedColor(opt); 
+                  setSelectedImage(opt.images[0]); 
+                  window.history.replaceState(null, '', `/shop/mutsu-tshirt?color=${opt.slug}`);
+                }}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: opt.color,
+                  border: selectedColor.name === opt.name
+                    ? '2px solid #232323'
+                    : (['#ffffff','#f9fafb','#fafbfc','#f5f5f5'].includes(opt.color.toLowerCase())
+                        ? '2px solid #d1d5db'
+                        : (opt.border || '2px solid #fff')),
+                  outline: 'none',
+                  boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #232323' : '0 1px 4px 0 rgba(0,0,0,0.07)',
+                  display: 'inline-block',
+                  cursor: 'pointer',
+                  marginRight: 4
+                }}
               />
             ))}
           </div>

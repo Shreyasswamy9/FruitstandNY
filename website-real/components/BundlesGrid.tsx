@@ -46,9 +46,11 @@ export default function BundlesGrid({ bundles = defaultBundles, products = gridP
   return (
     <section className={className} aria-label="Bundle and save">
       <div className="text-center mb-6">
-        <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-pink-100 text-pink-700 border border-pink-200">Save up to {maxDiscount}%</span>
-        <h2 className="mt-3 text-2xl md:text-3xl font-semibold tracking-tight text-[#111]">Bundle & Save</h2>
-        <p className="mt-1 text-sm text-gray-600">Curated combos that pair perfectly</p>
+        <span className="glass-badge" aria-label={`Maximum bundle discount ${maxDiscount}%`}>
+          Save up to {maxDiscount}%
+        </span>
+        <h2 className="mt-3 text-2xl md:text-3xl font-semibold tracking-tight">Bundle & Save</h2>
+        <p className="mt-1 text-sm">Curated combos that pair perfectly</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
@@ -59,15 +61,15 @@ export default function BundlesGrid({ bundles = defaultBundles, products = gridP
           const total = Math.max(0, subtotal - discount)
 
           return (
-            <div key={b.id} className="rounded-2xl border border-gray-200 bg-white shadow-[0_4px_24px_-4px_rgba(0,0,0,0.08),_0_2px_8px_-2px_rgba(0,0,0,0.06)] overflow-hidden">
+            <div key={b.id} className="glass-card rounded-2xl overflow-hidden">
               {/* Header */}
               <div className="flex items-center justify-between p-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-[#111]">{b.title}</h3>
-                  {b.description && <p className="text-sm text-gray-600">{b.description}</p>}
+                  <h3 className="text-lg font-semibold">{b.title}</h3>
+                  {b.description && <p className="text-sm">{b.description}</p>}
                 </div>
                 {b.discountPercent ? (
-                  <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
+                  <span className="glass-badge" data-variant="discount">
                     Save {b.discountPercent}%
                   </span>
                 ) : null}
@@ -78,11 +80,11 @@ export default function BundlesGrid({ bundles = defaultBundles, products = gridP
                 <div className="flex gap-3 overflow-x-auto">
                   {items.map((p) => (
                     <div key={p.id} className="shrink-0 w-28">
-                      <div className="relative w-28 h-36 rounded-lg overflow-hidden border border-gray-100 shadow-sm bg-white">
+                      <div className="relative w-28 h-36 overflow-hidden rounded-lg glass-thumb shadow-sm">
                         <Image src={p.image} alt={p.name} fill sizes="112px" style={{ objectFit: 'cover' }} />
                       </div>
-                      <p className="text-xs mt-1 font-medium truncate text-[#111]">{p.name}</p>
-                      <p className="text-xs text-gray-500">{p.price}</p>
+                      <p className="text-xs mt-1 font-medium truncate">{p.name}</p>
+                      <p className="text-xs">{p.price}</p>
                     </div>
                   ))}
                 </div>
@@ -91,18 +93,18 @@ export default function BundlesGrid({ bundles = defaultBundles, products = gridP
               {/* Price summary */}
               <div className="px-4 pt-2 pb-4">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Subtotal</span>
-                  <span className="font-medium text-[#111]">{formatPrice(subtotal)}</span>
+                  <span>Subtotal</span>
+                  <span className="font-medium">{formatPrice(subtotal)}</span>
                 </div>
                 {b.discountPercent ? (
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-green-600">Discount ({b.discountPercent}%)</span>
-                    <span className="text-green-600">- {formatPrice(discount)}</span>
+                    <span>Discount ({b.discountPercent}%)</span>
+                    <span>- {formatPrice(discount)}</span>
                   </div>
                 ) : null}
                 <div className="flex items-center justify-between text-base font-semibold mt-1">
-                  <span className="text-[#111]">Total</span>
-                  <span className="text-[#111]">{formatPrice(total)}</span>
+                  <span>Total</span>
+                  <span>{formatPrice(total)}</span>
                 </div>
               </div>
 
@@ -117,7 +119,7 @@ export default function BundlesGrid({ bundles = defaultBundles, products = gridP
                 </button>
                 <button
                   onClick={() => setOpenSheet(true)}
-                  className="px-4 py-2.5 rounded-xl border border-gray-300 text-[#111] hover:bg-gray-50"
+                  className="px-4 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-50"
                   aria-label="View bundle details"
                 >
                   Details

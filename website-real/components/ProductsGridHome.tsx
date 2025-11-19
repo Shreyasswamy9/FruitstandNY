@@ -12,23 +12,38 @@ export interface Product {
   image: string;
   hoverImage?: string;
   category?: string;
+  variantColor?: string; // For tee color variants
+  variantSlug?: string; // slugified color for query param preselection
 }
 
 // Editable product list for the homepage grid
 export const products: Product[] = [
   // New Tees (prioritized at top)
-  { id: 101, name: "Gala Tshirt", price: "$22", image: "/images/classicteemale1.jpeg", hoverImage: "/images/classicteecovermodels.jpeg", category: "T-Shirts" },
-  { id: 102, name: "Cameo Tshirt", price: "$22", image: "/images/classicteefemale1.jpeg", hoverImage: "/images/classicteefemale2.jpeg", category: "T-Shirts" },
-  { id: 103, name: "Mutsu Tshirt", price: "$22", image: "/images/classicteemale2.jpeg", hoverImage: "/images/classicteecovermodels.jpeg", category: "T-Shirts" },
-  { id: 104, name: "Fuji Tshirt", price: "$22", image: "/images/classicteemale1.jpeg", hoverImage: "/images/classicteecovermodels.jpeg", category: "T-Shirts" },
+  // Gala Tshirt – each color variant surfaced individually
+  { id: 1011, name: "Gala Tshirt", price: "$22", image: "/images/products/gala-tshirt/broadwaynoir/Firefly 20250924162431.png", hoverImage: "/images/products/gala-tshirt/broadwaynoir/Firefly 20250922123545.png", category: "T-Shirts", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
+  { id: 1012, name: "Gala Tshirt", price: "$22", image: "/images/products/gala-tshirt/suttonplacesnow/SHIRTFINALIMAGES-63.jpg", hoverImage: "/images/products/gala-tshirt/suttonplacesnow/Firefly 20250924162628.png", category: "T-Shirts", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
+  { id: 1013, name: "Gala Tshirt", price: "$22", image: "/images/products/gala-tshirt/Grasshopper/7.jpg", hoverImage: "/images/products/gala-tshirt/Grasshopper/GALATEES-23.jpg", category: "T-Shirts", variantColor: "Grasshopper", variantSlug: "grasshopper" },
+  { id: 1014, name: "Gala Tshirt", price: "$22", image: "/images/products/gala-tshirt/frostedlemonade/GALATEES-47.jpg", hoverImage: "/images/products/gala-tshirt/frostedlemonade/GALATEES-49.jpg", category: "T-Shirts", variantColor: "Frosted Lemonade", variantSlug: "frosted-lemonade" },
+  { id: 1015, name: "Gala Tshirt", price: "$22", image: "/images/products/gala-tshirt/italianice/3.jpg", hoverImage: "/images/products/gala-tshirt/italianice/GALATEES-23.jpg", category: "T-Shirts", variantColor: "Italian Ice", variantSlug: "italian-ice" },
+  // Cameo variants
+  { id: 1021, name: "Cameo Tshirt", price: "$22", image: "/images/products/cameo-tshirt/broadwaynoir/Firefly 20250923122927.png", hoverImage: "/images/products/cameo-tshirt/broadwaynoir/Firefly 20250923122927.png", category: "T-Shirts", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
+  { id: 1022, name: "Cameo Tshirt", price: "$22", image: "/images/products/cameo-tshirt/suttonplacesnow/Firefly 20250923122951.png", hoverImage: "/images/products/cameo-tshirt/suttonplacesnow/Firefly 20250923122951.png", category: "T-Shirts", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
+  // Mutsu variants
+  { id: 1031, name: "Mutsu Tshirt", price: "$22", image: "/images/products/mutsu-tshirt/broadwaynoir/Firefly 20251118133858.png", hoverImage: "/images/products/mutsu-tshirt/broadwaynoir/Firefly 20251118134335.png", category: "T-Shirts", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
+  { id: 1032, name: "Mutsu Tshirt", price: "$22", image: "/images/products/mutsu-tshirt/suttonplacesnow/Firefly 20251118133938.png", hoverImage: "/images/products/mutsu-tshirt/suttonplacesnow/Firefly 20251118134406.png", category: "T-Shirts", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
+  // Fuji variants
+  { id: 1041, name: "Fuji Tshirt", price: "$22", image: "/images/products/fuji-tshirt/fuji-red/1.jpeg", hoverImage: "/images/products/fuji-tshirt/fuji-red/1.jpeg", category: "T-Shirts", variantColor: "Fuji Red", variantSlug: "fuji-red" },
+  { id: 1042, name: "Fuji Tshirt", price: "$22", image: "/images/products/fuji-tshirt/onyx/1.jpeg", hoverImage: "/images/products/fuji-tshirt/onyx/1.jpeg", category: "T-Shirts", variantColor: "Onyx", variantSlug: "onyx" },
+  { id: 1043, name: "Fuji Tshirt", price: "$22", image: "/images/products/fuji-tshirt/snow/1.jpeg", hoverImage: "/images/products/fuji-tshirt/snow/1.jpeg", category: "T-Shirts", variantColor: "Snow", variantSlug: "snow" },
+  { id: 1044, name: "Fuji Tshirt", price: "$22", image: "/images/products/fuji-tshirt/indigo/1.jpeg", hoverImage: "/images/products/fuji-tshirt/indigo/1.jpeg", category: "T-Shirts", variantColor: "Indigo", variantSlug: "indigo" },
   // Hockey Jersey
   { id: 1, name: "Hockey Jersey", price: "$90", image: "/images/hockeyjerseymale1.jpeg", hoverImage: "/images/hockeyjerseymale2.jpeg", category: "Jerseys" },
   // Classic Tee (cover models)
-  { id: 2, name: "Classic Tee", price: "$55", image: "/images/classicteemale1.jpeg", hoverImage: "/images/classicteecovermodels.jpeg", category: "T-Shirts" },
+  { id: 2, name: "Classic Tee", price: "$55", image: "/images/tshirt plain.jpeg", hoverImage: "/images/tshirt back.jpeg", category: "T-Shirts" },
   // Classic Tee (female)
-  { id: 3, name: "Classic Tee", price: "$55", image: "/images/classicteefemale1.jpeg", hoverImage: "/images/classicteefemale2.jpeg", category: "T-Shirts" },
+  { id: 3, name: "Classic Tee", price: "$55", image: "/images/tshirt plain.jpeg", hoverImage: "/images/tshirt back.jpeg", category: "T-Shirts" },
   // Classic Tee (male)
-  { id: 4, name: "Classic Tee", price: "$55", image: "/images/classicteemale2.jpeg", hoverImage: "/images/classicteecovermodels.jpeg", category: "T-Shirts" },
+  { id: 4, name: "Classic Tee", price: "$55", image: "/images/tshirt plain.jpeg", hoverImage: "/images/tshirt back.jpeg", category: "T-Shirts" },
   // Tracksuit (B&W)
   { id: 5, name: "Tracksuit", price: "$120", image: "/images/B&Wtracksuitmale1.jpeg", hoverImage: "/images/tracksuitscovermodels.jpeg", category: "Tracksuits" },
   // Tracksuit (Maroon)
@@ -44,7 +59,7 @@ export const products: Product[] = [
   // Empire Hat (NEW)
   { id: 11, name: "Empire Hat", price: "$42", image: "/images/empirehatfemale.jpg", hoverImage: "/images/empirehatsolo.jpg", category: "Hats" },
   // Product Page Tester (for skeleton testing)
-  { id: 99, name: "Product Page Tester", price: "$99", image: "/images/classicteemale1.jpeg", hoverImage: "/images/denimhatfemale1.jpeg", category: "T-Shirts" },
+  { id: 99, name: "Product Page Tester", price: "$99", image: "/images/tshirt plain.jpeg", hoverImage: "/images/tshirt back.jpeg", category: "T-Shirts" },
   // Jacket (placeholder - can be updated with actual jacket images)
   { id: 12, name: "Premium Jacket", price: "$150", image: "/images/classicteemale1.jpeg", hoverImage: "/images/classicteecovermodels.jpeg", category: "Jackets" },
 ];
@@ -60,7 +75,7 @@ export default function ProductsGrid({ categoryFilter, showBundleBanner = true }
   const [bundleOpen, setBundleOpen] = useState(false);
   const [teased, setTeased] = useState(false);
   const maxDiscount = Math.max(0, ...bundles.map(b => b.discountPercent || 0));
-  const CARD_RADIUS = 16; // keep card/UI rounding consistent
+  const CARD_RADIUS = 0; // squared edges for grid cards
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
@@ -91,14 +106,40 @@ export default function ProductsGrid({ categoryFilter, showBundleBanner = true }
     }
   }, [isMobile]);
   
-  // Filter products based on category
-  const gridProducts = categoryFilter 
-    ? products.filter(product => product.category === categoryFilter)
+  // Filter products based on category then collapse variants so only one card per product name
+  const filteredProducts = categoryFilter 
+    ? products.filter(p => p.category === categoryFilter)
     : products;
+  // For each product name, pick a representative variant (random but stable within session)
+  const variantGroups = filteredProducts.reduce((acc, p) => {
+    (acc[p.name] ||= []).push(p);
+    return acc;
+  }, {} as Record<string, Product[]>);
+  const displayProducts: Product[] = Object.entries(variantGroups).map(([name, group]) => {
+    if (group.length === 1) return group[0];
+    // Stable selection using sessionStorage per name
+    if (typeof window !== 'undefined') {
+      const key = `rep_variant_${name}`;
+      const storedId = sessionStorage.getItem(key);
+      const found = storedId ? group.find(g => String(g.id) === storedId) : null;
+      if (found) return found;
+      const chosen = group[Math.floor(Math.random() * group.length)];
+      sessionStorage.setItem(key, String(chosen.id));
+      return chosen;
+    }
+    // Fallback (SSR won't happen because component is client-only, but guard anyway)
+    return group[0];
+  });
   // Store touch state for each product card
   const touchState = useRef<{ [key: number]: { start: number; moved: boolean } }>({});
   // Track which product is showing hover image on mobile
   const [mobileHover, setMobileHover] = useState<number | null>(null);
+  const formatPrice = (p: string) => {
+    const n = Number(String(p).replace(/[^0-9.]/g, ''))
+    return isFinite(n)
+      ? `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      : String(p)
+  }
   return (
     <>
       {/* Fixed video background for all devices */}
@@ -138,7 +179,7 @@ export default function ProductsGrid({ categoryFilter, showBundleBanner = true }
           position: 'relative',
           zIndex: 1,
           display: 'grid',
-          gap: isMobile ? 18 : 32,
+          gap: isMobile ? 22 : 32,
           width: isMobile ? '100%' : 'auto',
           maxWidth: '100%',
           margin: '0 auto',
@@ -157,11 +198,7 @@ export default function ProductsGrid({ categoryFilter, showBundleBanner = true }
         <div className="col-span-full w-full mx-auto max-w-md mt-1.5 mb-1.5">
           <button
             onClick={() => setBundleOpen(true)}
-            className="w-full relative rounded-2xl p-3 sm:p-4 text-white font-semibold shadow-lg active:scale-[0.99]"
-            style={{
-              background: 'linear-gradient(90deg, #8B5CF6 0%, #EC4899 50%, #22D3EE 100%)',
-              boxShadow: '0 10px 28px rgba(139,92,246,0.35)'
-            }}
+            className="bundle-banner w-full relative rounded-2xl p-3 sm:p-4 font-semibold active:scale-[0.99]"
             aria-label="Open bundle deals"
           >
             <div className="flex items-center justify-between">
@@ -173,39 +210,29 @@ export default function ProductsGrid({ categoryFilter, showBundleBanner = true }
         </div>
       )}
 
-      {gridProducts.map((product) => {
+      {displayProducts.map((product) => {
         const isActive = isMobile ? mobileHover === product.id : hovered === product.id;
-        const isBundled = bundles.some(b => b.itemIds.includes(product.id));
+        // Determine bundle availability: if any variant (sharing name) participates in a bundle, mark as bundled
+        const bundledVariantIds = products.filter(p => p.name === product.name).map(p => p.id);
+        const isBundled = bundles.some(b => b.itemIds.some(id => bundledVariantIds.includes(id)));
         // Custom link for Empire Hat and Denim Hat
         const getProductLink = () => {
-          switch (product.name) {
-            case "Empire Hat":
-              return "/shop/empire-hat";
-            case "Denim Hat":
-              return "/shop/denim-hat";
-            case "Hockey Jersey":
-              return "/shop/hockey-jersey";
-            case "Classic Tee":
-              return "/shop/classic-tee";
-            case "Gala Tshirt":
-              return "/shop/gala-tshirt";
-            case "Cameo Tshirt":
-              return "/shop/cameo-tshirt";
-            case "Mutsu Tshirt":
-              return "/shop/mutsu-tshirt";
-            case "Fuji Tshirt":
-              return "/shop/fuji-tshirt";
-            case "Tracksuit":
-              return "/shop/tracksuit";
-            case "White Hat":
-              return "/shop/white-hat";
-            case "Beige Hat":
-              return "/shop/beige-hat";
-            case "Product Page Tester":
-              return "/shop/productpagetester";
-            default:
-              return `/products/${product.id}`;
-          }
+          const basePathMap: Record<string, string> = {
+            'Empire Hat': '/shop/empire-hat',
+            'Denim Hat': '/shop/denim-hat',
+            'Hockey Jersey': '/shop/hockey-jersey',
+            'Classic Tee': '/shop/classic-tee',
+            'Gala Tshirt': '/shop/gala-tshirt',
+            'Cameo Tshirt': '/shop/cameo-tshirt',
+            'Mutsu Tshirt': '/shop/mutsu-tshirt',
+            'Fuji Tshirt': '/shop/fuji-tshirt',
+            'Tracksuit': '/shop/tracksuit',
+            'White Hat': '/shop/white-hat',
+            'Beige Hat': '/shop/beige-hat',
+            'Product Page Tester': '/shop/productpagetester'
+          };
+          const base = basePathMap[product.name] || `/products/${product.id}`;
+          return product.variantSlug ? `${base}?color=${encodeURIComponent(product.variantSlug)}` : base;
         };
         return (
           <div
@@ -213,11 +240,7 @@ export default function ProductsGrid({ categoryFilter, showBundleBanner = true }
             style={{
               background: 'transparent',
               borderRadius: CARD_RADIUS,
-              boxShadow: isMobile 
-                ? (isBundled 
-                    ? '0 0 0 2px rgba(139,92,246,0.6), 0 8px 24px rgba(139,92,246,0.25)'
-                    : '0 4px 24px 0 rgba(0,0,0,0.10)')
-                : (isBundled ? '0 0 0 2px rgba(139,92,246,0.5)' : 'none'),
+              boxShadow: 'none',
               overflow: 'hidden',
               cursor: 'pointer',
               transition: 'transform 0.2s',
@@ -238,7 +261,7 @@ export default function ProductsGrid({ categoryFilter, showBundleBanner = true }
               zIndex: isActive ? 10 : 1,
               justifyContent: isMobile ? 'center' : 'stretch',
               pointerEvents: 'auto',
-              border: '1px solid rgba(0,0,0,0.06)'
+                border: 'none'
             }}
             onMouseEnter={() => { 
               if (!isMobile) setHovered(product.id); 
@@ -285,119 +308,78 @@ export default function ProductsGrid({ categoryFilter, showBundleBanner = true }
             role="button"
             tabIndex={0}
           >
-            {/* Bundle badge (show when this product participates in at least one bundle) */}
-            {isBundled && (
-              <button
-                onClick={(e) => { e.stopPropagation(); e.preventDefault(); setBundleOpen(true) }}
-                className="absolute top-2 left-2 z-[2] px-2.5 py-1 rounded-full text-[11px] font-semibold text-white backdrop-blur shadow-md active:scale-95"
-                aria-label="Bundle and save"
-                style={{
-                  background: 'linear-gradient(90deg, rgba(139,92,246,0.95) 0%, rgba(236,72,153,0.95) 50%, rgba(34,211,238,0.95) 100%)',
-                  boxShadow: '0 6px 16px rgba(139,92,246,0.35)'
-                }}
-              >
-                ✨ Bundle & Save
-              </button>
-            )}
+            {/* Availability badge: show bundle options presence instead of color */}
+            <button
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); if (isBundled) setBundleOpen(true) }}
+              className="bundle-badge absolute top-2 left-2 z-[2] px-2.5 py-1 rounded-full text-[11px] font-semibold backdrop-blur shadow-md active:scale-95"
+              aria-label={isBundled ? 'Bundle options available' : 'No bundle options'}
+              disabled={!isBundled}
+            >
+              {isBundled ? 'Bundle options' : 'No bundle options'}
+            </button>
             <div style={{
-              pointerEvents: 'none',
-              position: 'relative',
-              background: 'transparent',
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
               width: '100%',
-              height: 'fit-content',
-              margin: 0,
-              padding: 0,
-              borderRadius: CARD_RADIUS,
-              boxShadow: '0 4px 18px rgba(0,0,0,0.08)',
+              aspectRatio: '4 / 5',
+              position: 'relative',
+              overflow: 'hidden',
+              borderRadius: 0,
             }}>
               <Image
                 src={product.image}
                 alt={product.name}
-                width={320}
-                height={420}
+                fill
                 style={{
                   objectFit: 'cover',
-                  display: isActive ? 'none' : 'block',
-                  borderRadius: 0,
-                  background: 'transparent',
-                  transition: 'opacity 0.5s cubic-bezier(.4,0,.2,1)',
+                  transition: 'opacity .4s ease',
                   opacity: isActive ? 0 : 1,
-                  zIndex: 1,
-                  width: '100%',
-                  height: 'auto',
                 }}
                 priority
               />
               {product.hoverImage && (
                 <Image
                   src={product.hoverImage}
-                  alt={product.name + ' alt'}
-                  width={320}
-                  height={420}
+                  alt={product.name}
+                  fill
                   style={{
                     objectFit: 'cover',
-                    display: isActive ? 'block' : 'none',
-                    borderRadius: 0,
-                    background: 'transparent',
-                    transition: 'opacity 0.5s cubic-bezier(.4,0,.2,1)',
+                    transition: 'opacity .4s ease',
                     opacity: isActive ? 1 : 0,
-                    zIndex: 1,
-                    width: '100%',
-                    height: 'auto',
+                    position: 'absolute',
+                    inset: 0,
                   }}
                   priority
                 />
               )}
-              {/* Overlay name and price at the bottom of the grid cell */}
+              </div>
+              {/* Name and price below the image with premium spacing */}
               <div style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: 'rgba(255,255,255,0.97)',
-                padding: isMobile ? '16px 20px 14px 20px' : '16px 24px 14px 24px',
-                borderBottomLeftRadius: CARD_RADIUS,
-                borderBottomRightRadius: CARD_RADIUS,
-                boxSizing: 'border-box',
-                zIndex: 2,
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 18,
                 width: '100%',
-                minWidth: 0,
-                maxWidth: '100%',
-                boxShadow: '0 -2px 12px rgba(0,0,0,0.06)',
-                borderTop: '1px solid #eee',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                justifyContent: 'flex-start',
+                gap: 6,
+                padding: 0,
+                marginTop: isMobile ? 10 : 12,
               }}>
                 <h3 style={{
-                  fontSize: isMobile ? '1.18rem' : '1.22rem',
+                  fontSize: isMobile ? '1.02rem' : '1.12rem',
                   fontWeight: 600,
-                  color: '#181818',
+                  color: '#0f172a',
                   margin: 0,
-                  lineHeight: 1.13,
-                  letterSpacing: '0.01em',
+                  lineHeight: 1.25,
+                  letterSpacing: '0.005em',
                   fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
-                  textTransform: 'none',
-                  textShadow: '0 1px 0 #fff',
                 }}>{product.name}</h3>
                 <p style={{
-                  color: '#444',
+                  color: '#111827',
                   fontWeight: 500,
-                  fontSize: isMobile ? '0.85rem' : '1.13rem',
+                  fontSize: isMobile ? '0.92rem' : '1.0rem',
                   margin: 0,
-                  lineHeight: 1.13,
+                  lineHeight: 1.2,
                   letterSpacing: '0.01em',
                   fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
-                  textShadow: '0 1px 0 #fff',
-                }}>{product.price}</p>
-              </div>
+                }}>{formatPrice(product.price)}</p>
             </div>
           </div>
         );
@@ -406,13 +388,10 @@ export default function ProductsGrid({ categoryFilter, showBundleBanner = true }
       {isMobile && !bundleOpen && (
         <button
           onClick={() => { setBundleOpen(true); sessionStorage.setItem('bundleTeaserDismissed', '1'); setTeased(false); }}
-          className={`fixed bottom-[calc(env(safe-area-inset-bottom)+16px)] left-1/2 -translate-x-1/2 z-[10005] px-5 py-3 rounded-full text-white font-semibold shadow-lg active:scale-95 transition-transform ${
+          className={`bundle-banner fixed bottom-[calc(env(safe-area-inset-bottom)+16px)] left-1/2 -translate-x-1/2 z-[10005] px-5 py-3 rounded-full font-semibold shadow-lg active:scale-95 transition-transform ${
             teased ? 'animate-[pulseGlow_1.8s_ease-in-out_infinite]' : ''
           }`}
-          style={{
-            background: 'linear-gradient(90deg, #8B5CF6 0%, #EC4899 50%, #22D3EE 100%)',
-            boxShadow: '0 8px 24px rgba(139,92,246,0.35)',
-          }}
+          style={{ boxShadow: '0 8px 24px rgba(139,92,246,0.35)' }}
           aria-label="Open bundle deals"
         >
           ✨ Bundle & Save
