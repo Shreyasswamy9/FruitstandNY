@@ -66,7 +66,7 @@ export default function ProductsGrid() {
           <div
             key={product.id}
             style={{
-              background: '#fff',
+              background: '#fbf6f0',
               borderRadius: 0,
               boxShadow: 'none',
               overflow: 'hidden',

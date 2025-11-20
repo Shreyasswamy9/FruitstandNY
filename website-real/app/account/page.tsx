@@ -32,7 +32,6 @@ interface Ticket {
 }
 
 export default function AccountPage() {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -301,7 +300,7 @@ export default function AccountPage() {
   // Show loading only while Clerk is initializing
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-white text-gray-900">
+  <div className="min-h-screen bg-[#fbf6f0] text-gray-900">
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="w-16 h-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-4"></div>
@@ -317,7 +316,7 @@ export default function AccountPage() {
   // Show sign-in prompt if user is not authenticated
   if (!isSignedIn) {
     return (
-      <div className="min-h-screen bg-white text-gray-900">
+  <div className="min-h-screen bg-[#fbf6f0] text-gray-900">
         {/* Subtle Background Pattern */}
         <div className="fixed inset-0 opacity-10">
           <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50"></div>
@@ -365,7 +364,7 @@ export default function AccountPage() {
   // Show loading while fetching orders for authenticated users
   if (loading) {
     return (
-      <div className="min-h-screen bg-white text-gray-900">
+  <div className="min-h-screen bg-[#fbf6f0] text-gray-900">
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="w-16 h-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-4"></div>
@@ -379,7 +378,7 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden">
+  <div className="min-h-screen bg-[#fbf6f0] text-gray-900 overflow-x-hidden">
       {/* Top scroll progress bar */}
       <div className="fixed top-0 left-0 h-1 bg-gray-900 z-[60] transition-[width] duration-150" style={{ width: `${scrollProgress}%` }} />
       {/* Subtle Background Pattern */}

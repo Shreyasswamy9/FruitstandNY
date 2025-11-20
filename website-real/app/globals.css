@@ -6,8 +6,31 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Avenir LT 55';
+  src: url('/fonts/Avenir LT 55 Roman Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 html, body, * {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+  font-family: 'Avenir LT 55', 'Fruitstand Light', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+}
+html, body {
+  background-color: #fbf6f0;
+}
+
+/* Normalize rounded utilities to a uniform 7px curvature */
+.rounded-full,
+.rounded-3xl,
+.rounded-2xl,
+.rounded-xl,
+.rounded-lg,
+.rounded-md,
+.rounded-sm,
+.rounded {
+  border-radius: 7px !important;
 }
 @keyframes arrowJump {
   0%, 100% { transform: translateY(0); }
@@ -64,14 +87,18 @@ html, body, * {
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: 7px;
+  --radius-md: 7px;
+  --radius-lg: 7px;
+  --radius-xl: 7px;
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 7px;
+  --radius-sm: 7px;
+  --radius-md: 7px;
+  --radius-lg: 7px;
+  --radius-xl: 7px;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -156,7 +183,7 @@ html, body, * {
   color: var(--bundle-text);
   overflow: hidden;
   border: 1px solid rgba(0,0,0,0.08);
-  border-radius: var(--radius-lg);
+  border-radius: 7px;
 }
 .bundle-banner::after { content: none; }
 @keyframes bannerSheen {
@@ -169,6 +196,7 @@ html, body, * {
   color: #fff;
   position: relative;
   overflow: hidden;
+  border-radius: 7px;
 }
 .bundle-badge::after {
   content: "";
@@ -187,6 +215,7 @@ html, body, * {
   box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   transition: box-shadow .25s ease;
   color: var(--bundle-text);
+  border-radius: 7px;
 }
 .glass-card::before { content: none; }
 .glass-card:hover {
@@ -202,7 +231,7 @@ html, body, * {
   font-size: 0.65rem;
   letter-spacing: .2px;
   font-weight: 600;
-  border-radius: 999px;
+  border-radius: 7px;
   position: relative;
   background: #f5f5f5;
   border: 1px solid rgba(0,0,0,0.08);
@@ -219,14 +248,14 @@ html, body, * {
   border-color: rgba(16,185,129,0.25);
 }
 .dark .glass-card { background: #1f1f1f; border-color: rgba(255,255,255,0.08); }
-.dark .glass-badge { background: #2a2a2a; color: var(--bundle-text); border-color: rgba(255,255,255,0.18); }
+.dark .glass-badge { background: #2a2a2a; color: var(--bundle-text); border-color: rgba(255,255,255,0.18); border-radius: 7px; }
 .dark .glass-badge[data-variant="discount"] { color: #a7f3d0; background: #065f46; border-color: rgba(16,185,129,0.35); }
 
 @supports not ((backdrop-filter: blur(2px))) {
-  .glass-card { background: #ffffff; }
+  .glass-card { background: #ffffff; border-radius: 7px; }
   .dark .glass-card { background: #1f1f1f; }
-  .glass-badge { background: #ffffff; }
-  .dark .glass-badge { background: #2a2a2a; }
+  .glass-badge { background: #ffffff; border-radius: 7px; }
+  .dark .glass-badge { background: #2a2a2a; border-radius: 7px; }
 }
 
 /* Shop page banner (softer grey glass variant) */
@@ -239,11 +268,12 @@ html, body, * {
   box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   overflow: hidden;
   transition: box-shadow .25s ease;
+  border-radius: 7px;
 }
 .glass-banner::before { content: none; }
 .glass-banner:hover { box-shadow: 0 6px 18px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06); }
 .glass-banner:active { box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04); }
-.glass-banner .banner-pill { background: #ffffff; border: 1px solid rgba(0,0,0,0.08); color: var(--bundle-text); box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+.glass-banner .banner-pill { background: #ffffff; border: 1px solid rgba(0,0,0,0.08); color: var(--bundle-text); box-shadow: 0 1px 2px rgba(0,0,0,0.06); border-radius: 7px; }
 .glass-banner-darker {
   position: relative;
   display: block;
@@ -253,14 +283,15 @@ html, body, * {
   box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   overflow: hidden;
   transition: box-shadow .25s ease;
+  border-radius: 7px;
 }
 .glass-banner-darker::before { content: none; }
 .glass-banner-darker:hover { box-shadow: 0 6px 18px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06); }
 .glass-banner-darker:active { box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04); }
 /* Item thumbnails & subcards */
-.glass-thumb { background: #fafafa; border: 1px solid rgba(0,0,0,0.06); color: var(--bundle-text); }
+.glass-thumb { background: #fafafa; border: 1px solid rgba(0,0,0,0.06); color: var(--bundle-text); border-radius: 7px; }
 .dark .glass-thumb { background: #2a2a2a; border-color: rgba(255,255,255,0.08); }
-.glass-subcard { background: #ffffff; border: 1px solid rgba(0,0,0,0.07); box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04); color: var(--bundle-text); }
+.glass-subcard { background: #ffffff; border: 1px solid rgba(0,0,0,0.07); box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04); color: var(--bundle-text); border-radius: 7px; }
 .dark .glass-subcard { background: #1f1f1f; border-color: rgba(255,255,255,0.1); }
 @supports not ((backdrop-filter: blur(2px))) {
   .glass-thumb { background:#ffffff; }
@@ -269,12 +300,12 @@ html, body, * {
   .dark .glass-subcard { background:#2a2a2a; }
 }
 .dark .glass-banner { background: #2a2a2a; border-color: rgba(255,255,255,0.08); color: var(--bundle-text); }
-.dark .glass-banner .banner-pill { background: #1f1f1f; color: var(--bundle-text); border-color: rgba(255,255,255,0.12); }
+.dark .glass-banner .banner-pill { background: #1f1f1f; color: var(--bundle-text); border-color: rgba(255,255,255,0.12); border-radius: 7px; }
 @supports not ((backdrop-filter: blur(2px))) {
-  .glass-banner { background: #f5f5f5; }
-  .dark .glass-banner { background: #2a2a2a; }
-  .glass-banner .banner-pill { background: #ffffff; }
-  .dark .glass-banner .banner-pill { background: #3a3a3a; }
+  .glass-banner { background: #f5f5f5; border-radius: 7px; }
+  .dark .glass-banner { background: #2a2a2a; border-radius: 7px; }
+  .glass-banner .banner-pill { background: #ffffff; border-radius: 7px; }
+  .dark .glass-banner .banner-pill { background: #3a3a3a; border-radius: 7px; }
 }
 
 @layer base {

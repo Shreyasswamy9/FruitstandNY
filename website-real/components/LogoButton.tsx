@@ -7,6 +7,7 @@ import Link from "next/link"
 export default function LogoButton() {
   const { hideLogo } = useContext(LogoVisibilityContext)
   if (hideLogo) return null
+  const logoSize = 120
   
   // On click, clear introPlayed so rotator plays again
   const handleLogoClick = () => {
@@ -23,14 +24,14 @@ export default function LogoButton() {
       onClick={handleLogoClick}
       style={{
         position: 'fixed',
-        top: '14px',
-        left: '16px',
+  top: '4px',
+        left: '9px',
         zIndex: 10010,
         display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '92px',
-        height: '92px',
+        alignItems: 'flex-start',
+        justifyContent: 'flex-start',
+        width: `${logoSize}px`,
+        height: `${logoSize}px`,
         cursor: 'pointer',
         WebkitTapHighlightColor: 'transparent',
         touchAction: 'manipulation',
@@ -38,6 +39,7 @@ export default function LogoButton() {
         borderRadius: '0',
         transition: 'transform 0.25s ease',
         background: 'transparent',
+        transformOrigin: 'top left',
       }}
       onMouseEnter={e => {
         e.currentTarget.style.transform = 'scale(1.04)';
@@ -57,11 +59,12 @@ export default function LogoButton() {
       <img
         src="/images/newlogo.png"
         alt="Fruitstand Logo"
-        width={92}
-        height={92}
+        width={logoSize}
+        height={logoSize}
         style={{
-          width: '92px',
-          height: '92px',
+          width: '100%',
+          height: '100%',
+          transformOrigin: 'top left',
           objectFit: 'contain',
           display: 'block',
           pointerEvents: 'none',

@@ -8,49 +8,65 @@ import SizeGuide from "@/components/SizeGuide";
 // Color-specific image sets (kept explicit for clarity and to avoid client fs access)
 const COLOR_IMAGE_MAP: Record<string, string[]> = {
   'broadway-noir': [
-    '/images/products/gala-tshirt/broadwaynoir/Firefly 20250924162431.png',
-    '/images/products/gala-tshirt/broadwaynoir/Firefly 20250922123545.png'
+    '/images/products/gala-tshirt/broadwaynoir/GN4.png',
+    '/images/products/gala-tshirt/broadwaynoir/GN5.png'
   ],
   'sutton-place-snow': [
-    '/images/products/gala-tshirt/suttonplacesnow/SHIRTFINALIMAGES-63.jpg',
-    '/images/products/gala-tshirt/suttonplacesnow/Firefly 20250924162628.png'
+    '/images/products/gala-tshirt/suttonplacesnow/GN6.png',
+    '/images/products/gala-tshirt/suttonplacesnow/GN11.png'
   ],
   'grasshopper': [
-    '/images/products/gala-tshirt/Grasshopper/7.jpg',
-    '/images/products/gala-tshirt/Grasshopper/GALATEES-23.jpg'
+    '/images/products/gala-tshirt/Grasshopper/GN3.png',
+    '/images/products/gala-tshirt/Grasshopper/GN8.png'
   ],
   'frosted-lemonade': [
-    '/images/products/gala-tshirt/frostedlemonade/GALATEES-47.jpg',
-    '/images/products/gala-tshirt/frostedlemonade/GALATEES-49.jpg'
+    '/images/products/gala-tshirt/frostedlemonade/GN9.png',
+    '/images/products/gala-tshirt/frostedlemonade/GN10.png'
+  ],
+  'ruby-red': [
+    '/images/products/gala-tshirt/ruby red/GN.png',
+    '/images/products/gala-tshirt/ruby red/GN7.png'
   ],
   'italian-ice': [
-    '/images/products/gala-tshirt/italianice/3.jpg',
-    '/images/products/gala-tshirt/italianice/GALATEES-23.jpg'
+    '/images/products/gala-tshirt/italianice/GN1.png',
+    '/images/products/gala-tshirt/italianice/GN2.png'
   ]
 };
 
 const PRODUCT = {
-  name: "Gala Tshirt",
-  price: 22,
-  description: "Premium cotton tee inspired by fresh seasonal shades: Broadway Noir, Sutton Place Snow, Grasshopper, Frosted Lemonade, and Italian Ice.",
+  name: "Gala Tee",
+  price: 40,
+  description: "Premium cotton tee inspired by fresh seasonal shades: Broadway Noir, Sutton Place Snow, Grasshopper, Frosted Lemonade, Ruby Red, and Italian Ice.",
 };
 
+type GalaColorOption = {
+  name: string;
+  slug: string;
+  color: string;
+  images: string[];
+  bg: string;
+  border?: string;
+};
+
+const GALA_COLOR_OPTIONS: GalaColorOption[] = [
+  { name: 'Broadway Noir', slug: 'broadway-noir', color: '#000000', images: ['/images/products/gala-tshirt/broadwaynoir/GN4.png','/images/products/gala-tshirt/broadwaynoir/GN5.png'], bg: '#111111' },
+  { name: 'Sutton Place Snow', slug: 'sutton-place-snow', color: '#ffffff', images: ['/images/products/gala-tshirt/suttonplacesnow/GN6.png','/images/products/gala-tshirt/suttonplacesnow/GN11.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Grasshopper', slug: 'grasshopper', color: '#85c96e', images: ['/images/products/gala-tshirt/Grasshopper/GN3.png','/images/products/gala-tshirt/Grasshopper/GN8.png'], bg: '#eef9ec', border: '#cde8c9' },
+  { name: 'Frosted Lemonade', slug: 'frosted-lemonade', color: '#fff7a8', images: ['/images/products/gala-tshirt/frostedlemonade/GN9.png','/images/products/gala-tshirt/frostedlemonade/GN10.png'], bg: '#fffce0', border: '#f9eebe' },
+  { name: 'Ruby Red', slug: 'ruby-red', color: '#fd8987', images: ['/images/products/gala-tshirt/ruby red/GN.png','/images/products/gala-tshirt/ruby red/GN7.png'], bg: '#fdecef', border: '#f8cbd2' },
+  { name: 'Italian Ice', slug: 'italian-ice', color: '#c7eaff', images: ['/images/products/gala-tshirt/italianice/GN1.png','/images/products/gala-tshirt/italianice/GN2.png'], bg: '#eaf7ff', border: '#cfe9f9' },
+];
+
+const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL"] as const;
+ 
 export default function GalaTshirtPage() {
-  const colorOptions = [
-    { name: 'Broadway Noir', slug: 'broadway-noir', color: '#000000', images: ['/images/products/gala-tshirt/broadwaynoir/Firefly 20250924162431.png','/images/products/gala-tshirt/broadwaynoir/Firefly 20250922123545.png'], bg: '#111111' },
-    { name: 'Sutton Place Snow', slug: 'sutton-place-snow', color: '#ffffff', images: ['/images/products/gala-tshirt/suttonplacesnow/SHIRTFINALIMAGES-63.jpg','/images/products/gala-tshirt/suttonplacesnow/Firefly 20250924162628.png'], bg: '#f5f5f5', border: '#d4d4d4' },
-    { name: 'Grasshopper', slug: 'grasshopper', color: '#85c96e', images: ['/images/products/gala-tshirt/Grasshopper/7.jpg','/images/products/gala-tshirt/Grasshopper/GALATEES-23.jpg'], bg: '#eef9ec', border: '#cde8c9' },
-    { name: 'Frosted Lemonade', slug: 'frosted-lemonade', color: '#fff7a8', images: ['/images/products/gala-tshirt/frostedlemonade/GALATEES-47.jpg','/images/products/gala-tshirt/frostedlemonade/GALATEES-49.jpg'], bg: '#fffce0', border: '#f9eebe' },
-    { name: 'Italian Ice', slug: 'italian-ice', color: '#c7eaff', images: ['/images/products/gala-tshirt/italianice/3.jpg','/images/products/gala-tshirt/italianice/GALATEES-23.jpg'], bg: '#eaf7ff', border: '#cfe9f9' },
-  ];
-  const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
-  const [selectedImage, setSelectedImage] = useState(colorOptions[0].images[0]);
+  const [selectedColor, setSelectedColor] = useState<GalaColorOption>(GALA_COLOR_OPTIONS[0]);
+  const [selectedImage, setSelectedImage] = useState(GALA_COLOR_OPTIONS[0].images[0]);
   const searchParams = useSearchParams();
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL"];
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
@@ -70,7 +86,7 @@ export default function GalaTshirtPage() {
   useEffect(() => {
     const colorSlug = searchParams.get('color');
     if (colorSlug) {
-      const found = colorOptions.find(c => c.slug === colorSlug);
+      const found = GALA_COLOR_OPTIONS.find(c => c.slug === colorSlug);
       if (found) {
         setSelectedColor(found);
         setSelectedImage(found.images[0]);
@@ -79,9 +95,9 @@ export default function GalaTshirtPage() {
   }, [searchParams]);
 
   const boughtTogetherItems = [
-    { id: 'classic-tee', name: 'Hockey Jersey', price: 25, image: '/images/hockeyjerseymale1.jpeg' },
+    { id: 'hockey-jersey', name: 'Broadway Blueberry Jersey', price: 90, image: '/images/products/hockey Jersey/JN.png' },
     { id: 'white-hat', name: 'White Hat', price: 18, image: '/images/beigehatfemale1.jpeg' },
-    { id: 'tracksuit', name: 'Tracksuit', price: 45, image: '/images/B&Wtracksuitmale1.jpeg' },
+    { id: 'tracksuit', name: 'Retro Track Suit', price: 45, image: '/images/B&Wtracksuitmale1.jpeg' },
   ];
 
   const handleAddBoughtTogetherItem = (item: { id: string; name: string; price: number; image: string }) => {
@@ -114,29 +130,38 @@ export default function GalaTshirtPage() {
         ← Go Back
       </span>
 
-      <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingBottom: taskbarHeight, minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
+  <div className="flex flex-col md:flex-row items-start gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingBottom: taskbarHeight, minHeight: '100vh', paddingTop: 120 }}>
         {/* Images */}
-        <div className="flex flex-col gap-4 md:w-1/2">
-          <div className="w-full rounded-lg overflow-hidden bg-white flex items-center justify-center" style={{ height: 600, minHeight: 600, position: 'relative' }}>
-            <Image src={selectedImage} alt={PRODUCT.name} style={{ objectFit: "contain", background: "#fff" }} fill sizes="(max-width: 768px) 100vw, 500px" priority />
+        <div className="flex w-full md:w-1/2 flex-col items-center gap-4 shrink-0">
+          <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-[#fbf6f0] shadow-sm shrink-0">
+            <Image
+              src={selectedImage}
+              alt={PRODUCT.name}
+              fill
+              className="object-contain bg-[#fbf6f0]"
+            />
           </div>
           <div className="flex gap-2 justify-center">
             {COLOR_IMAGE_MAP[selectedColor.slug].map((img) => (
-              <button key={img} onClick={() => setSelectedImage(img)} className={`relative w-16 h-16 rounded border ${selectedImage === img ? 'ring-2 ring-black' : ''}`}>
-                <Image src={img} alt={`${PRODUCT.name} - ${selectedColor.name}`} fill style={{ objectFit: 'contain', background: '#fff' }} />
+              <button
+                key={img}
+                onClick={() => setSelectedImage(img)}
+                className={`relative w-16 h-16 rounded overflow-hidden border border-gray-200 bg-[#fbf6f0] ${selectedImage === img ? 'ring-2 ring-black' : ''}`}
+              >
+                <Image src={img} alt="" fill className="object-contain bg-[#fbf6f0]" />
               </button>
             ))}
           </div>
         </div>
 
         {/* Product Info */}
-        <div className="md:w-1/2 flex flex-col justify-center">
+        <div className="md:w-1/2 flex flex-col justify-start">
           <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
           {/* Color Picker */}
           <div className="mb-6">
             <p className="text-sm font-medium text-gray-700 mb-2">Color: <span className="font-semibold text-gray-900">{selectedColor.name}</span></p>
             <div className="flex gap-3 px-1" style={{ overflowX: 'auto', paddingTop: 6, paddingBottom: 6, minHeight: 56 }}>
-              {colorOptions.map((opt) => (
+              {GALA_COLOR_OPTIONS.map((opt) => (
                 <button
                   key={opt.name}
                   aria-label={opt.name}
@@ -185,7 +210,7 @@ export default function GalaTshirtPage() {
             <p className="text-sm font-medium text-gray-700 mb-3">Size:</p>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div className="flex gap-2 flex-wrap">
-                {["XS","S","M","L","XL","XXL"].map((size) => (
+                {SIZE_OPTIONS.map((size) => (
                   <button key={size} className={`px-4 py-2 rounded-lg font-semibold border-2 transition-all ${selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'}`} style={{ minWidth: 48, fontSize: 14 }} onClick={() => setSelectedSize(size)} type="button">{size}</button>
                 ))}
               </div>
@@ -202,7 +227,7 @@ export default function GalaTshirtPage() {
       </div>
 
       {/* Frequently Bought Together */}
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#f8f9fa' }} className="py-12 px-4">
+  <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
         <div className="max-w-4xl mx-auto w-full">
           <h2 className="text-3xl font-bold text-center mb-8">Frequently Bought Together</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -224,7 +249,7 @@ export default function GalaTshirtPage() {
       </div>
 
       {/* Reviews */}
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#ffffff' }} className="py-12 px-4">
+  <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
         <div className="max-w-4xl mx-auto w-full">
           <h2 className="text-3xl font-bold text-center mb-8">Customer Reviews</h2>
           <div className="space-y-6">

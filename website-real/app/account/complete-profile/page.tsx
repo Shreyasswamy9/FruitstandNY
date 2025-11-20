@@ -29,7 +29,6 @@ interface ProfileData {
 }
 
 function CompleteProfileContent() {
-  const [menuOpen, setMenuOpen] = useState(false)
   const [formData, setFormData] = useState<ProfileData>({
     firstName: "",
     lastName: "",
@@ -182,7 +181,7 @@ function CompleteProfileContent() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#fff' }}>
+    <div className="min-h-screen" style={{ background: '#fbf6f0' }}>
       <div className="max-w-2xl mx-auto px-4 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

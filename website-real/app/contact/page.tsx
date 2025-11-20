@@ -11,7 +11,6 @@ import type { UploadResult } from "@/lib/storage"
 
 export default function ContactPage() {
   const router = useRouter()
-  const [menuOpen, setMenuOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'submit' | 'track'>('submit')
   const [submitMessage, setSubmitMessage] = useState('')
   const [trackingEmail, setTrackingEmail] = useState('')
@@ -96,7 +95,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden">
+    <div className="min-h-screen bg-[#fbf6f0] text-gray-900 overflow-x-hidden">
       {/* Animated Background */}
       <div className="fixed inset-0 opacity-10">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-teal-50"></div>

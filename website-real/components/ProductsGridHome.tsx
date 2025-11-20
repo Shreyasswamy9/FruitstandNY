@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
-import { bundles } from '@/lib/bundles'
+import { useState, useRef, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import BundleSheet from './BundleSheet'
 
 export interface Product {
@@ -18,36 +18,35 @@ export interface Product {
 
 // Editable product list for the homepage grid
 export const products: Product[] = [
-  // New Tees (prioritized at top)
-  // Gala Tshirt – each color variant surfaced individually
-  { id: 1011, name: "Gala Tshirt", price: "$22", image: "/images/products/gala-tshirt/broadwaynoir/Firefly 20250924162431.png", hoverImage: "/images/products/gala-tshirt/broadwaynoir/Firefly 20250922123545.png", category: "T-Shirts", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
-  { id: 1012, name: "Gala Tshirt", price: "$22", image: "/images/products/gala-tshirt/suttonplacesnow/SHIRTFINALIMAGES-63.jpg", hoverImage: "/images/products/gala-tshirt/suttonplacesnow/Firefly 20250924162628.png", category: "T-Shirts", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
-  { id: 1013, name: "Gala Tshirt", price: "$22", image: "/images/products/gala-tshirt/Grasshopper/7.jpg", hoverImage: "/images/products/gala-tshirt/Grasshopper/GALATEES-23.jpg", category: "T-Shirts", variantColor: "Grasshopper", variantSlug: "grasshopper" },
-  { id: 1014, name: "Gala Tshirt", price: "$22", image: "/images/products/gala-tshirt/frostedlemonade/GALATEES-47.jpg", hoverImage: "/images/products/gala-tshirt/frostedlemonade/GALATEES-49.jpg", category: "T-Shirts", variantColor: "Frosted Lemonade", variantSlug: "frosted-lemonade" },
-  { id: 1015, name: "Gala Tshirt", price: "$22", image: "/images/products/gala-tshirt/italianice/3.jpg", hoverImage: "/images/products/gala-tshirt/italianice/GALATEES-23.jpg", category: "T-Shirts", variantColor: "Italian Ice", variantSlug: "italian-ice" },
+  // Retro Track Suit Collection (spotlight first)
+  { id: 2001, name: "Retro Track Suit", price: "$120", image: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png", hoverImage: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TS7.png", category: "Tracksuits", variantColor: "Elmhurst Taro Custard", variantSlug: "elmhurst-taro-custard" },
+  { id: 2002, name: "Retro Track Suit", price: "$120", image: "/images/products/tracksuits/Greenpoint Patina Crew/GB.png", hoverImage: "/images/products/tracksuits/Greenpoint Patina Crew/TS2.png", category: "Tracksuits", variantColor: "Greenpoint Patina Crew", variantSlug: "greenpoint-patina-crew" },
+  { id: 2003, name: "Retro Track Suit", price: "$120", image: "/images/products/tracksuits/NOHO NAPOLETANOS/TB.png", hoverImage: "/images/products/tracksuits/NOHO NAPOLETANOS/TS3.png", category: "Tracksuits", variantColor: "Noho Napoletanos", variantSlug: "noho-napoletanos" },
+  { id: 2004, name: "Retro Track Suit", price: "$120", image: "/images/products/tracksuits/THE FACTORY FLOOR/BG.png", hoverImage: "/images/products/tracksuits/THE FACTORY FLOOR/TS4.png", category: "Tracksuits", variantColor: "The Factory Floor", variantSlug: "the-factory-floor" },
+  { id: 2005, name: "Retro Track Suit", price: "$120", image: "/images/products/tracksuits/VICE CITY RUNNERS/PB.png", hoverImage: "/images/products/tracksuits/VICE CITY RUNNERS/TS5.png", category: "Tracksuits", variantColor: "Vice City Runners", variantSlug: "vice-city-runners" },
+  { id: 2006, name: "Retro Track Suit", price: "$120", image: "/images/products/tracksuits/Victory Liberty Club/RB.png", hoverImage: "/images/products/tracksuits/Victory Liberty Club/TS6.png", category: "Tracksuits", variantColor: "Victory Liberty Club", variantSlug: "victory-liberty-club" },
+  { id: 2007, name: "Retro Track Suit", price: "$120", image: "/images/products/tracksuits/YORKVILLE BLACK AND WHITE COOKIES/BW.png", hoverImage: "/images/products/tracksuits/YORKVILLE BLACK AND WHITE COOKIES/TS1.png", category: "Tracksuits", variantColor: "Yorkville Black and White Cookies", variantSlug: "yorkville-black-and-white-cookies" },
+  // Broadway Blueberry Jersey (merch slot before tees)
+  { id: 1, name: "Broadway Blueberry Jersey", price: "$90", image: "/images/products/hockey Jersey/JN.png", hoverImage: "/images/products/hockey Jersey/JN1.png", category: "Jerseys", variantColor: "Black Ice", variantSlug: "hockey-jersey" },
+  // New Tee lineup
+  // Gala Tee – each color variant surfaced individually
+  { id: 1011, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/broadwaynoir/GN4.png", hoverImage: "/images/products/gala-tshirt/broadwaynoir/GN5.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
+  { id: 1012, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/suttonplacesnow/GN6.png", hoverImage: "/images/products/gala-tshirt/suttonplacesnow/GN11.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
+  { id: 1013, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/Grasshopper/GN3.png", hoverImage: "/images/products/gala-tshirt/Grasshopper/GN8.png", category: "Tops", variantColor: "Grasshopper", variantSlug: "grasshopper" },
+  { id: 1014, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/frostedlemonade/GN9.png", hoverImage: "/images/products/gala-tshirt/frostedlemonade/GN10.png", category: "Tops", variantColor: "Frosted Lemonade", variantSlug: "frosted-lemonade" },
+  { id: 1015, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/italianice/GN1.png", hoverImage: "/images/products/gala-tshirt/italianice/GN2.png", category: "Tops", variantColor: "Italian Ice", variantSlug: "italian-ice" },
+  { id: 1016, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/ruby red/GN.png", hoverImage: "/images/products/gala-tshirt/ruby red/GN7.png", category: "Tops", variantColor: "Ruby Red", variantSlug: "ruby-red" },
   // Cameo variants
-  { id: 1021, name: "Cameo Tshirt", price: "$22", image: "/images/products/cameo-tshirt/broadwaynoir/Firefly 20250923122927.png", hoverImage: "/images/products/cameo-tshirt/broadwaynoir/Firefly 20250923122927.png", category: "T-Shirts", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
-  { id: 1022, name: "Cameo Tshirt", price: "$22", image: "/images/products/cameo-tshirt/suttonplacesnow/Firefly 20250923122951.png", hoverImage: "/images/products/cameo-tshirt/suttonplacesnow/Firefly 20250923122951.png", category: "T-Shirts", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
+  { id: 1021, name: "Cameo Tee", price: "$40", image: "/images/products/cameo-tshirt/broadwaynoir/MN.png", hoverImage: "/images/products/cameo-tshirt/broadwaynoir/MN3.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
+  { id: 1022, name: "Cameo Tee", price: "$40", image: "/images/products/cameo-tshirt/suttonplacesnow/MN1.png", hoverImage: "/images/products/cameo-tshirt/suttonplacesnow/MN2.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
   // Mutsu variants
-  { id: 1031, name: "Mutsu Tshirt", price: "$22", image: "/images/products/mutsu-tshirt/broadwaynoir/Firefly 20251118133858.png", hoverImage: "/images/products/mutsu-tshirt/broadwaynoir/Firefly 20251118134335.png", category: "T-Shirts", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
-  { id: 1032, name: "Mutsu Tshirt", price: "$22", image: "/images/products/mutsu-tshirt/suttonplacesnow/Firefly 20251118133938.png", hoverImage: "/images/products/mutsu-tshirt/suttonplacesnow/Firefly 20251118134406.png", category: "T-Shirts", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
-  // Fuji variants
-  { id: 1041, name: "Fuji Tshirt", price: "$22", image: "/images/products/fuji-tshirt/fuji-red/1.jpeg", hoverImage: "/images/products/fuji-tshirt/fuji-red/1.jpeg", category: "T-Shirts", variantColor: "Fuji Red", variantSlug: "fuji-red" },
-  { id: 1042, name: "Fuji Tshirt", price: "$22", image: "/images/products/fuji-tshirt/onyx/1.jpeg", hoverImage: "/images/products/fuji-tshirt/onyx/1.jpeg", category: "T-Shirts", variantColor: "Onyx", variantSlug: "onyx" },
-  { id: 1043, name: "Fuji Tshirt", price: "$22", image: "/images/products/fuji-tshirt/snow/1.jpeg", hoverImage: "/images/products/fuji-tshirt/snow/1.jpeg", category: "T-Shirts", variantColor: "Snow", variantSlug: "snow" },
-  { id: 1044, name: "Fuji Tshirt", price: "$22", image: "/images/products/fuji-tshirt/indigo/1.jpeg", hoverImage: "/images/products/fuji-tshirt/indigo/1.jpeg", category: "T-Shirts", variantColor: "Indigo", variantSlug: "indigo" },
-  // Hockey Jersey
-  { id: 1, name: "Hockey Jersey", price: "$90", image: "/images/hockeyjerseymale1.jpeg", hoverImage: "/images/hockeyjerseymale2.jpeg", category: "Jerseys" },
-  // Classic Tee (cover models)
-  { id: 2, name: "Classic Tee", price: "$55", image: "/images/tshirt plain.jpeg", hoverImage: "/images/tshirt back.jpeg", category: "T-Shirts" },
-  // Classic Tee (female)
-  { id: 3, name: "Classic Tee", price: "$55", image: "/images/tshirt plain.jpeg", hoverImage: "/images/tshirt back.jpeg", category: "T-Shirts" },
-  // Classic Tee (male)
-  { id: 4, name: "Classic Tee", price: "$55", image: "/images/tshirt plain.jpeg", hoverImage: "/images/tshirt back.jpeg", category: "T-Shirts" },
-  // Tracksuit (B&W)
-  { id: 5, name: "Tracksuit", price: "$120", image: "/images/B&Wtracksuitmale1.jpeg", hoverImage: "/images/tracksuitscovermodels.jpeg", category: "Tracksuits" },
-  // Tracksuit (Maroon)
-  { id: 6, name: "Tracksuit", price: "$120", image: "/images/maroontracksuitmale1.jpeg", hoverImage: "/images/tracksuitscovermodels.jpeg", category: "Tracksuits" },
+  { id: 1031, name: "Mutsu Tee", price: "$45", image: "/images/products/mutsu-tshirt/broadwaynoir/N1.png", hoverImage: "/images/products/mutsu-tshirt/broadwaynoir/N2.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
+  { id: 1032, name: "Mutsu Tee", price: "$45", image: "/images/products/mutsu-tshirt/suttonplacesnow/N3.png", hoverImage: "/images/products/mutsu-tshirt/suttonplacesnow/N4.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
+  // Fuji Long Sleeve variants (updated colors & images)
+  { id: 1041, name: "Fuji Long Sleeve", price: "$80", image: "/images/products/fuji-tshirt/Arboretum/F2.png", hoverImage: "/images/products/fuji-tshirt/Arboretum/F11.png", category: "Tops", variantColor: "Arboretum", variantSlug: "arboretum" },
+  { id: 1042, name: "Fuji Long Sleeve", price: "$80", image: "/images/products/fuji-tshirt/Hudson blue/F1.png", hoverImage: "/images/products/fuji-tshirt/Hudson blue/F9.png", category: "Tops", variantColor: "Hudson Blue", variantSlug: "hudson-blue" },
+  { id: 1043, name: "Fuji Long Sleeve", price: "$80", image: "/images/products/fuji-tshirt/Redbird/F4.png", hoverImage: "/images/products/fuji-tshirt/Redbird/F5.png", category: "Tops", variantColor: "Redbird", variantSlug: "redbird" },
+  { id: 1044, name: "Fuji Long Sleeve", price: "$80", image: "/images/products/fuji-tshirt/Broadwaynoir/F3.png", hoverImage: "/images/products/fuji-tshirt/Broadwaynoir/F7.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
   // Denim Hat (male)
   { id: 7, name: "Denim Hat", price: "$40", image: "/images/denimhatmale1.jpeg", hoverImage: "/images/denimhatmale2.jpeg", category: "Hats" },
   // Denim Hat (female)
@@ -56,26 +55,23 @@ export const products: Product[] = [
   { id: 9, name: "White Hat", price: "$40", image: "/images/whitehatmale1.jpeg", hoverImage: "/images/whitehatsolo.jpeg", category: "Hats" },
   // Beige Hat (female)
   { id: 10, name: "Beige Hat", price: "$40", image: "/images/beigehatfemale1.jpeg", hoverImage: "/images/beigehatsolo.jpeg", category: "Hats" },
-  // Empire Hat (NEW)
-  { id: 11, name: "Empire Hat", price: "$42", image: "/images/empirehatfemale.jpg", hoverImage: "/images/empirehatsolo.jpg", category: "Hats" },
-  // Product Page Tester (for skeleton testing)
-  { id: 99, name: "Product Page Tester", price: "$99", image: "/images/tshirt plain.jpeg", hoverImage: "/images/tshirt back.jpeg", category: "T-Shirts" },
-  // Jacket (placeholder - can be updated with actual jacket images)
-  { id: 12, name: "Premium Jacket", price: "$150", image: "/images/classicteemale1.jpeg", hoverImage: "/images/classicteecovermodels.jpeg", category: "Jackets" },
+  // Empire Cordury hat (NEW)
+  { id: 11, name: "Empire Cordury hat", price: "$42", image: "/images/empirehatfemale.jpg", hoverImage: "/images/empirehatsolo.jpg", category: "Hats" },
 ];
 
 interface ProductsGridProps {
   categoryFilter?: string | null;
-  showBundleBanner?: boolean; // shows the top-of-grid bundle banner
+  showBackgroundVideo?: boolean; // render the fixed background video (home only)
 }
 
-export default function ProductsGrid({ categoryFilter, showBundleBanner = true }: ProductsGridProps = {}) {
+export default function ProductsGrid({ categoryFilter, showBackgroundVideo = true }: ProductsGridProps = {}) {
+  const router = useRouter();
   const [hovered, setHovered] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(true);
   const [bundleOpen, setBundleOpen] = useState(false);
-  const [teased, setTeased] = useState(false);
-  const maxDiscount = Math.max(0, ...bundles.map(b => b.discountPercent || 0));
-  const CARD_RADIUS = 0; // squared edges for grid cards
+  // Track swatch selection per product name (id of the chosen variant)
+  const [selectedVariantByName, setSelectedVariantByName] = useState<Record<string, number>>({});
+  const CARD_RADIUS = 7; // subtle curvature for grid cards
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
@@ -83,15 +79,6 @@ export default function ProductsGrid({ categoryFilter, showBundleBanner = true }
 
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const dismissed = sessionStorage.getItem('bundleTeaserDismissed');
-    if (!dismissed) {
-      // Show teaser pulse soon after load for mobile
-      const t = setTimeout(() => setTeased(true), 900);
-      return () => clearTimeout(t);
-    }
   }, []);
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -107,29 +94,55 @@ export default function ProductsGrid({ categoryFilter, showBundleBanner = true }
   }, [isMobile]);
   
   // Filter products based on category then collapse variants so only one card per product name
-  const filteredProducts = categoryFilter 
-    ? products.filter(p => p.category === categoryFilter)
-    : products;
-  // For each product name, pick a representative variant (random but stable within session)
-  const variantGroups = filteredProducts.reduce((acc, p) => {
-    (acc[p.name] ||= []).push(p);
-    return acc;
-  }, {} as Record<string, Product[]>);
-  const displayProducts: Product[] = Object.entries(variantGroups).map(([name, group]) => {
-    if (group.length === 1) return group[0];
-    // Stable selection using sessionStorage per name
-    if (typeof window !== 'undefined') {
+  const filteredProducts = useMemo(() => (
+    categoryFilter
+      ? products.filter(p => {
+        if (!p.category) return false;
+        if (categoryFilter === 'Tops') {
+          return ['Tops', 'T-Shirts'].includes(p.category);
+        }
+        return p.category === categoryFilter;
+      })
+      : products
+  ), [categoryFilter]);
+  // For each product name, bucket all variants together for representative selection
+  const variantGroups = useMemo(() => (
+    filteredProducts.reduce((acc, p) => {
+      (acc[p.name] ||= []).push(p);
+      return acc;
+    }, {} as Record<string, Product[]>)
+  ), [filteredProducts]);
+  // Randomized representative variant per product name to avoid uniform default colors
+  const [representativeByName, setRepresentativeByName] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const nextMap: Record<string, number> = {};
+    Object.entries(variantGroups).forEach(([name, group]) => {
+      if (!group.length) return;
+      if (group.length === 1) {
+        nextMap[name] = group[0].id;
+        sessionStorage.setItem(`rep_variant_${name}`, String(group[0].id));
+        return;
+      }
       const key = `rep_variant_${name}`;
       const storedId = sessionStorage.getItem(key);
-      const found = storedId ? group.find(g => String(g.id) === storedId) : null;
-      if (found) return found;
-      const chosen = group[Math.floor(Math.random() * group.length)];
+      const storedVariant = storedId ? group.find(g => String(g.id) === storedId) : undefined;
+      const chosen = storedVariant || group[Math.floor(Math.random() * group.length)];
+      nextMap[name] = chosen.id;
       sessionStorage.setItem(key, String(chosen.id));
-      return chosen;
-    }
-    // Fallback (SSR won't happen because component is client-only, but guard anyway)
-    return group[0];
-  });
+    });
+    setRepresentativeByName(nextMap);
+  }, [variantGroups]);
+
+  const displayProducts: Product[] = useMemo(() => (
+    Object.entries(variantGroups).map(([name, group]) => {
+      if (!group.length) return group[0];
+      if (group.length === 1) return group[0];
+      const repId = representativeByName[name];
+      return group.find(item => item.id === repId) || group[0];
+    })
+  ), [variantGroups, representativeByName]);
   // Store touch state for each product card
   const touchState = useRef<{ [key: number]: { start: number; moved: boolean } }>({});
   // Track which product is showing hover image on mobile
@@ -140,36 +153,67 @@ export default function ProductsGrid({ categoryFilter, showBundleBanner = true }
       ? `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
       : String(p)
   }
+
+  // Map variant color names to hex for swatch display
+  const COLOR_HEX: Record<string, string> = {
+    // Gala
+    'Broadway Noir': '#000000',
+    'Sutton Place Snow': '#ffffff',
+    'Grasshopper': '#85c96e',
+    'Frosted Lemonade': '#fff7a8',
+  'Ruby Red': '#fd8987',
+    'Italian Ice': '#c7eaff',
+    // Cameo/Mutsu safety
+    'Broadway Noir ': '#000000',
+    'Broadway noir': '#000000',
+  // Fuji Long Sleeve palette
+    'Arboretum': '#0f5132',
+    'Hudson Blue': '#243b5a',
+    'Redbird': '#c21010',
+  // Retro Track Suit palette (updated)
+    'Elmhurst Taro Custard': '#8271c2',
+    'Greenpoint Patina Crew': '#58543a',
+    'Noho Napoletanos': '#ab8c65',
+    'The Factory Floor': '#1e2744',
+    'Vice City Runners': '#fddde9',
+    'Victory Liberty Club': '#7a273b',
+    'Yorkville Black and White Cookies': '#000000',
+  // Broadway Blueberry Jersey
+    'Black Ice': '#101010',
+  };
   return (
     <>
-      {/* Fixed video background for all devices */}
-      <div style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 0,
-        width: '100vw',
-        height: '100vh',
-        overflow: 'hidden',
-        pointerEvents: 'none',
-      }}>
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          style={{
-            width: '100vw',
-            height: '100vh',
-            objectFit: 'cover',
-            objectPosition: isMobile ? 'center center' : 'right center',
-            pointerEvents: 'none',
-          }}
-          src="/Videos/homevideo.mp4"
-        />
-      </div>
+      {/* Optional fixed background video (default true for home) */}
+      {showBackgroundVideo && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 0,
+          width: '100vw',
+          height: '100vh',
+          overflow: 'hidden',
+          pointerEvents: 'none',
+        }}>
+          <video
+            className="home-grid-video"
+            autoPlay
+            loop
+            muted
+            playsInline
+            style={{
+              width: '100vw',
+              height: '100vh',
+              objectFit: 'cover',
+              objectPosition: isMobile ? 'center center' : 'right center',
+              pointerEvents: 'none',
+            }}
+            src="/Videos/homevideo.mp4"
+          />
+        </div>
+      )}
       <style>{`
         @media (max-width: 600px) {
-          video {
+          .home-grid-video {
             object-position: center center !important;
           }
         }
@@ -179,12 +223,12 @@ export default function ProductsGrid({ categoryFilter, showBundleBanner = true }
           position: 'relative',
           zIndex: 1,
           display: 'grid',
-          gap: isMobile ? 22 : 32,
-          width: isMobile ? '100%' : 'auto',
-          maxWidth: '100%',
+          gap: isMobile ? 22 : 28,
+          width: '100%',
+          maxWidth: isMobile ? '100%' : '1200px',
           margin: '0 auto',
-          padding: isMobile ? '12px 16px' : 0,
-          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, auto)',
+          padding: isMobile ? '12px 16px' : '0 20px',
+          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, minmax(0, 1fr))',
           gridAutoRows: 'auto',
           gridAutoFlow: 'row dense',
           overflowX: 'auto',
@@ -193,46 +237,29 @@ export default function ProductsGrid({ categoryFilter, showBundleBanner = true }
           justifyContent : 'center',
         }}
       >
-      {/* Bundle spotlight banner: ensure it sits below category bar with clear spacing */}
-      {showBundleBanner && (
-        <div className="col-span-full w-full mx-auto max-w-md mt-1.5 mb-1.5">
-          <button
-            onClick={() => setBundleOpen(true)}
-            className="bundle-banner w-full relative rounded-2xl p-3 sm:p-4 font-semibold active:scale-[0.99]"
-            aria-label="Open bundle deals"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-base sm:text-lg">🔥 Bundle Deals</span>
-              <span className="text-[11px] sm:text-xs font-medium bg-white/20 px-2 py-1 rounded-full">Save up to {maxDiscount}%</span>
-            </div>
-            <span className="block text-[11px] sm:text-xs mt-1 text-white/90">Tap to see curated combos that pair perfectly</span>
-          </button>
-        </div>
-      )}
-
-      {displayProducts.map((product) => {
-        const isActive = isMobile ? mobileHover === product.id : hovered === product.id;
-        // Determine bundle availability: if any variant (sharing name) participates in a bundle, mark as bundled
-        const bundledVariantIds = products.filter(p => p.name === product.name).map(p => p.id);
-        const isBundled = bundles.some(b => b.itemIds.some(id => bundledVariantIds.includes(id)));
-        // Custom link for Empire Hat and Denim Hat
+      {displayProducts.map((product, idx) => {
+    const isActive = isMobile ? mobileHover === product.id : hovered === product.id;
+        // All variants for this product name (for swatches)
+        const variants = variantGroups[product.name] || [product];
+        const chosenId = selectedVariantByName[product.name];
+        const activeVariant = chosenId ? (variants.find(v => v.id === chosenId) || product) : product;
+        // Custom link mapping for named PDPs
         const getProductLink = () => {
           const basePathMap: Record<string, string> = {
-            'Empire Hat': '/shop/empire-hat',
+            'Empire Cordury hat': '/shop/empire-hat',
             'Denim Hat': '/shop/denim-hat',
-            'Hockey Jersey': '/shop/hockey-jersey',
-            'Classic Tee': '/shop/classic-tee',
-            'Gala Tshirt': '/shop/gala-tshirt',
-            'Cameo Tshirt': '/shop/cameo-tshirt',
-            'Mutsu Tshirt': '/shop/mutsu-tshirt',
-            'Fuji Tshirt': '/shop/fuji-tshirt',
-            'Tracksuit': '/shop/tracksuit',
+            'Broadway Blueberry Jersey': '/shop/hockey-jersey',
+            'Gala Tee': '/shop/gala-tshirt',
+            'Cameo Tee': '/shop/cameo-tshirt',
+            'Mutsu Tee': '/shop/mutsu-tshirt',
+            'Fuji Long Sleeve': '/shop/fuji-tshirt', // keeping existing route; can change to /shop/fuji-full-sleeve later
+            'Retro Track Suit': '/shop/tracksuit',
             'White Hat': '/shop/white-hat',
             'Beige Hat': '/shop/beige-hat',
-            'Product Page Tester': '/shop/productpagetester'
           };
           const base = basePathMap[product.name] || `/products/${product.id}`;
-          return product.variantSlug ? `${base}?color=${encodeURIComponent(product.variantSlug)}` : base;
+          const slug = activeVariant.variantSlug;
+          return slug ? `${base}?color=${encodeURIComponent(slug)}` : base;
         };
         return (
           <div
@@ -251,7 +278,7 @@ export default function ProductsGrid({ categoryFilter, showBundleBanner = true }
               color: 'inherit',
               minHeight: isMobile ? 'auto' : 0,
               height: 'auto',
-              width: isMobile ? '100%' : '320px',
+              width: '100%',
               maxWidth: '100%',
               margin: 0,
               marginBottom: 0,
@@ -287,7 +314,7 @@ export default function ProductsGrid({ categoryFilter, showBundleBanner = true }
                 const state = touchState.current[product.id];
                 const touchTime = state ? Date.now() - state.start : 0;
                 if (state && !state.moved && touchTime < 250) {
-                  window.location.href = getProductLink();
+                  router.push(getProductLink());
                 } else {
                   setMobileHover(null);
                 }
@@ -302,30 +329,21 @@ export default function ProductsGrid({ categoryFilter, showBundleBanner = true }
             }}
             onClick={() => {
               if (!isMobile) {
-                window.location.href = getProductLink();
+                router.push(getProductLink());
               }
             }}
             role="button"
             tabIndex={0}
           >
-            {/* Availability badge: show bundle options presence instead of color */}
-            <button
-              onClick={(e) => { e.stopPropagation(); e.preventDefault(); if (isBundled) setBundleOpen(true) }}
-              className="bundle-badge absolute top-2 left-2 z-[2] px-2.5 py-1 rounded-full text-[11px] font-semibold backdrop-blur shadow-md active:scale-95"
-              aria-label={isBundled ? 'Bundle options available' : 'No bundle options'}
-              disabled={!isBundled}
-            >
-              {isBundled ? 'Bundle options' : 'No bundle options'}
-            </button>
             <div style={{
               width: '100%',
-              aspectRatio: '4 / 5',
+              aspectRatio: '1 / 1',
               position: 'relative',
               overflow: 'hidden',
-              borderRadius: 0,
+              borderRadius: CARD_RADIUS,
             }}>
               <Image
-                src={product.image}
+                src={activeVariant.image}
                 alt={product.name}
                 fill
                 style={{
@@ -333,11 +351,11 @@ export default function ProductsGrid({ categoryFilter, showBundleBanner = true }
                   transition: 'opacity .4s ease',
                   opacity: isActive ? 0 : 1,
                 }}
-                priority
+                priority={idx < 6}
               />
-              {product.hoverImage && (
+              {activeVariant.hoverImage && (
                 <Image
-                  src={product.hoverImage}
+                  src={activeVariant.hoverImage}
                   alt={product.name}
                   fill
                   style={{
@@ -347,7 +365,7 @@ export default function ProductsGrid({ categoryFilter, showBundleBanner = true }
                     position: 'absolute',
                     inset: 0,
                   }}
-                  priority
+                  priority={idx < 6}
                 />
               )}
               </div>
@@ -362,49 +380,71 @@ export default function ProductsGrid({ categoryFilter, showBundleBanner = true }
                 padding: 0,
                 marginTop: isMobile ? 10 : 12,
               }}>
-                <h3 style={{
-                  fontSize: isMobile ? '1.02rem' : '1.12rem',
-                  fontWeight: 600,
-                  color: '#0f172a',
-                  margin: 0,
-                  lineHeight: 1.25,
-                  letterSpacing: '0.005em',
-                  fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
-                }}>{product.name}</h3>
-                <p style={{
-                  color: '#111827',
-                  fontWeight: 500,
-                  fontSize: isMobile ? '0.92rem' : '1.0rem',
-                  margin: 0,
-                  lineHeight: 1.2,
-                  letterSpacing: '0.01em',
-                  fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
-                }}>{formatPrice(product.price)}</p>
+                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                    <h3 style={{
+                      fontSize: isMobile ? '1.02rem' : '1.12rem',
+                      fontWeight: 600,
+                      color: '#0f172a',
+                      margin: 0,
+                      lineHeight: 1.25,
+                      letterSpacing: '0.005em',
+                      fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}>{product.name}</h3>
+                    {/* Color swatches for products with color variants */}
+                    {variants.length > 1 && variants.some(v => !!v.variantColor) && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} aria-label={`Available colors for ${product.name}`}>
+                        {variants.map((v) => (
+                          v.variantColor ? (
+                            <button
+                              key={v.id}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setSelectedVariantByName(prev => ({ ...prev, [product.name]: v.id }));
+                                if (typeof window !== 'undefined') {
+                                  try { sessionStorage.setItem(`rep_variant_${product.name}`, String(v.id)); } catch {}
+                                }
+                              }}
+                              onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                              onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                              title={v.variantColor}
+                              aria-label={v.variantColor}
+                              style={{
+                                width: isMobile ? 20 : 22,
+                                height: isMobile ? 20 : 22,
+                                borderRadius: '999px',
+                                background: COLOR_HEX[v.variantColor] || '#e5e7eb',
+                                border: (COLOR_HEX[v.variantColor] || '').toLowerCase() === '#ffffff' ? '1px solid #d1d5db' : '1px solid rgba(0,0,0,0.1)',
+                                boxShadow: selectedVariantByName[product.name] === v.id ? '0 0 0 2px #111' : '0 2px 4px rgba(0,0,0,0.12)',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: 0,
+                                cursor: 'pointer'
+                              }}
+                            />
+                          ) : null
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <p style={{
+                    color: '#111827',
+                    fontWeight: 500,
+                    fontSize: isMobile ? '0.92rem' : '1.0rem',
+                    margin: 0,
+                    lineHeight: 1.2,
+                    letterSpacing: '0.01em',
+                    fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
+                  }}>{formatPrice(product.price)}</p>
+                </div>
             </div>
           </div>
         );
       })}
-      {/* Floating Bundle CTA for mobile */}
-      {isMobile && !bundleOpen && (
-        <button
-          onClick={() => { setBundleOpen(true); sessionStorage.setItem('bundleTeaserDismissed', '1'); setTeased(false); }}
-          className={`bundle-banner fixed bottom-[calc(env(safe-area-inset-bottom)+16px)] left-1/2 -translate-x-1/2 z-[10005] px-5 py-3 rounded-full font-semibold shadow-lg active:scale-95 transition-transform ${
-            teased ? 'animate-[pulseGlow_1.8s_ease-in-out_infinite]' : ''
-          }`}
-          style={{ boxShadow: '0 8px 24px rgba(139,92,246,0.35)' }}
-          aria-label="Open bundle deals"
-        >
-          ✨ Bundle & Save
-        </button>
-      )}
-      {/* Local keyframes for glowing pulse */}
-      <style>{`
-        @keyframes pulseGlow {
-          0% { filter: drop-shadow(0 0 0 rgba(236,72,153,0.0)); transform: translateX(-50%) scale(1); }
-          50% { filter: drop-shadow(0 0 16px rgba(236,72,153,0.45)); transform: translateX(-50%) scale(1.03); }
-          100% { filter: drop-shadow(0 0 0 rgba(236,72,153,0.0)); transform: translateX(-50%) scale(1); }
-        }
-      `}</style>
       {/* Mobile bundle sheet */}
       <BundleSheet open={bundleOpen} onClose={() => setBundleOpen(false)} />
     </div>

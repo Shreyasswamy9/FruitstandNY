@@ -1,37 +1,50 @@
 "use client";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SizeGuide from "@/components/SizeGuide";
-import { useRouter } from "next/navigation";
-import { useCart } from "../../../components/CartContext";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCart } from "@/components/CartContext";
 
-const hockeyJerseyImages = [
-  "/images/hockeyjerseymale1.jpeg",
-  "/images/hockeyherseymale2.jpeg",
-  "/images/hockeymale3.jpeg",
-  "/images/hocketjerseymale4.jpeg"
+const HOCKEY_JERSEY_IMAGE_SET = [
+  "/images/products/hockey Jersey/JN.png",
+  "/images/products/hockey Jersey/JN1.png",
+  "/images/products/hockey Jersey/JN2.png",
+  "/images/products/hockey Jersey/JN3.png",
+  "/images/products/hockey Jersey/JN4.png",
 ];
 
+const HOCKEY_JERSEY_VARIANTS = [
+  { name: 'Black Ice', slug: 'hockey-jersey', color: '#101010', images: HOCKEY_JERSEY_IMAGE_SET, bg: '#f2f1f0', border: '2px solid #d9d6d3' },
+] as const;
+
+type HockeyJerseyVariant = typeof HOCKEY_JERSEY_VARIANTS[number];
+
 const PRODUCT = {
-  name: "Hockey Jersey",
+  name: "Broadway Blueberry Jersey",
   price: 90,
-  description: "Premium hockey jersey with authentic details. Comfortable, stylish, and perfect for fans.",
+  description: "Team-weight knit with retro striping, finished with a brushed interior that stays soft game after game.",
 };
 
 export default function HockeyJerseyPage() {
-  const colorOptions = [
-    { name: 'Blue', color: '#232323', image: '/images/hockeyjerseymale1.jpeg', bg: '#232323' },
-    { name: 'Black', color: '#c0392b', image: '/images/hockeyjerseymale2.jpeg', bg: '#fbeaea' },
-    { name: 'White', color: '#2980b9', image: '/images/hockeyjerseymale3.jpeg', bg: '#eaf3fb'},
-    { name: 'Red', color: '#fff', image: '/images/hockeyjerseymale4.jpeg', bg: '#f8f8f8', border: '#bbb' },
-  ];
-  const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
-  const [selectedImage, setSelectedImage] = useState(colorOptions[0].image);
+  const colorOptions = HOCKEY_JERSEY_VARIANTS;
+  const [selectedColor, setSelectedColor] = useState<HockeyJerseyVariant>(colorOptions[0]);
+  const [selectedImage, setSelectedImage] = useState(colorOptions[0].images[0]);
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL"];
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const colorSlug = searchParams.get('color');
+    if (!colorSlug) return;
+    const found = colorOptions.find(option => option.slug === colorSlug);
+    if (found) {
+      setSelectedColor(found);
+      setSelectedImage(found.images[0]);
+    }
+  }, [searchParams, colorOptions]);
 
   // Show popup and keep it visible
   const handleAddToCart = () => {
@@ -40,7 +53,7 @@ export default function HockeyJerseyPage() {
       productId: "hockey-jersey",
       name: PRODUCT.name,
       price: PRODUCT.price,
-      image: hockeyJerseyImages[0],
+      image: selectedImage,
       quantity: 1,
       size: selectedSize,
     });
@@ -83,9 +96,9 @@ export default function HockeyJerseyPage() {
 
   // Sample data for "bought together" items
   const boughtTogetherItems = [
-    { id: 'classic-tee', name: 'Classic Tee', price: 25, image: '/images/classicteemale1.jpeg' },
-    { id: 'white-hat', name: 'White Hat', price: 18, image: '/images/beigehatfemale1.jpeg' },
-    { id: 'tracksuit', name: 'Tracksuit', price: 45, image: '/images/B&Wtracksuitmale1.jpeg' },
+    { id: 'gala-tshirt', name: 'Gala Tee', price: 40, image: '/images/products/gala-tshirt/broadwaynoir/GN4.png' },
+    { id: 'denim-hat', name: 'Denim Hat', price: 40, image: '/images/denimhatmale1.jpeg' },
+    { id: 'tracksuit', name: 'Retro Track Suit', price: 120, image: '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png' },
   ];
 
   // Sample customer reviews
@@ -94,21 +107,21 @@ export default function HockeyJerseyPage() {
       id: 1,
       name: 'Sarah M.',
       rating: 5,
-      review: 'Perfect fit and great quality! The denim material feels premium and the hat looks exactly like the photos.',
+      review: 'Weighty but breathable with that old-school striping. Feels like an authentic sweater straight from the bench.',
       date: '2 weeks ago'
     },
     {
       id: 2,
       name: 'Mike R.',
       rating: 4,
-      review: 'Really comfortable and stylish. Goes well with any outfit. Shipping was fast too!',
+      review: 'Fit is slightly oversized in the best way. Embroidered crest looks premium and holds up after washes.',
       date: '1 month ago'
     },
     {
       id: 3,
       name: 'Emma K.',
       rating: 5,
-      review: 'Love this hat! The blue color is beautiful and it fits perfectly. Definitely recommending to friends.',
+      review: 'Bought for game nights and now I wear it daily. The brushed inside is ridiculously soft.',
       date: '3 weeks ago'
     },
   ];
@@ -120,11 +133,9 @@ export default function HockeyJerseyPage() {
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.log('Go back button clicked');
           try {
             router.back();
-          } catch (err) {
-            console.log('Router.back failed, using window.history.back', err);
+          } catch {
             window.history.back();
           }
         }}
@@ -166,39 +177,39 @@ export default function HockeyJerseyPage() {
       {/* Section 1: Product Details */}
       <div
         className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
-        style={{ 
+        style={{
           paddingBottom: taskbarHeight,
           minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center'
+          paddingTop: 120
         }}
       >
-      {/* Images */}
-      <div className="flex flex-col gap-4 md:w-1/2">
-               <div className="w-full rounded-lg overflow-hidden bg-white flex items-center justify-center" style={{ height: 600, minHeight: 600, position: 'relative' }}>
-          <Image
-            src={selectedImage}
-            alt={PRODUCT.name}
-            style={{ objectFit: "contain", background: "#fff" }}
-            fill
-            sizes="(max-width: 768px) 100vw, 500px"
-            priority
-          />
+        {/* Images */}
+        <div className="flex w-full md:w-1/2 flex-col items-center gap-4">
+          <div className="relative w-full max-w-sm md:max-w-full aspect-square rounded-xl overflow-hidden shadow-sm" style={{ background: selectedColor.bg }}>
+            <Image
+              src={selectedImage}
+              alt={PRODUCT.name}
+              style={{ objectFit: "contain", background: selectedColor.bg }}
+              fill
+              sizes="(max-width: 768px) 90vw, 420px"
+              priority
+            />
+          </div>
+          <div className="flex gap-2 justify-center">
+            {selectedColor.images.map((img) => (
+              <button
+                key={img}
+                onClick={() => setSelectedImage(img)}
+                className={`relative w-16 h-16 rounded border ${selectedImage === img ? "ring-2 ring-black" : ""}`}
+                style={{ background: selectedColor.bg }}
+              >
+                <Image src={img} alt={`${PRODUCT.name} angle`} fill style={{ objectFit: "contain", background: selectedColor.bg }} />
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex gap-2 justify-center">
-          {hockeyJerseyImages.map((img) => (
-            <button
-              key={img}
-              onClick={() => setSelectedImage(img)}
-              className={`relative w-16 h-16 rounded border ${selectedImage === img ? "ring-2 ring-black" : ""}`}
-            >
-              <Image src={img} alt="Hockey Jersey" fill style={{ objectFit: "contain", background: "#fff" }} />
-            </button>
-          ))}
-        </div>
-      </div>
-  {/* Product Info */}
-  <div className="md:w-1/2 flex flex-col justify-center">
+        {/* Product Info */}
+        <div className="md:w-1/2 flex flex-col justify-start">
   <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
         {/* Color Picker */}
   <div className="flex gap-3 mb-4 px-1" style={{ overflowX: 'auto', marginBottom: 24, paddingTop: 8, paddingBottom: 8, minHeight: 48 }}>
@@ -208,7 +219,8 @@ export default function HockeyJerseyPage() {
               aria-label={opt.name}
               onClick={() => {
                 setSelectedColor(opt);
-                setSelectedImage(opt.image);
+                setSelectedImage(opt.images[0]);
+                window.history.replaceState(null, '', `/shop/hockey-jersey?color=${opt.slug}`);
               }}
               style={{
                 width: 32,
@@ -216,8 +228,7 @@ export default function HockeyJerseyPage() {
                 borderRadius: '50%',
                 background: opt.color,
                 border: selectedColor.name === opt.name ? '2px solid #232323' : (opt.border || '2px solid #fff'),
-                outline: selectedColor.name === opt.name ? '2px solid #3B82F6' : 'none',
-                boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #3B82F6' : '0 1px 4px 0 rgba(0,0,0,0.07)',
+                boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #232323' : '0 1px 4px 0 rgba(0,0,0,0.07)',
                 display: 'inline-block',
                 cursor: 'pointer',
                 marginRight: 4,
@@ -268,7 +279,7 @@ export default function HockeyJerseyPage() {
           minHeight: '100vh',
           display: 'flex',
           alignItems: 'center',
-          background: '#f8f9fa'
+          background: '#fbf6f0'
         }}
         className="py-12 px-4"
       >
@@ -314,7 +325,7 @@ export default function HockeyJerseyPage() {
           minHeight: '100vh',
           display: 'flex',
           alignItems: 'center',
-          background: '#ffffff'
+          background: '#fbf6f0'
         }}
         className="py-12 px-4"
       >

@@ -7,12 +7,11 @@ import BundleSheet from "../../components/BundleSheet"
 import Link from "next/link"
 
 export default function ShopPage() {
-  const [menuOpen, setMenuOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [bundleOpen, setBundleOpen] = useState(false)
 
   return (
-  <div className="min-h-screen" style={{ background: '#fff', overflow: menuOpen ? 'hidden' : 'auto' }}>
+  <div className="min-h-screen" style={{ background: '#fbf6f0' }}>
 
       {/* Category Navigation */}
       <div 
@@ -31,10 +30,10 @@ export default function ShopPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="flex flex-wrap justify-center gap-3 sm:gap-4"
-            style={{ pointerEvents: 'auto' }}
+            className="flex justify-center gap-1 sm:gap-2 lg:gap-3 flex-nowrap"
+            style={{ pointerEvents: 'auto', flexWrap: 'nowrap' }}
           >
-            {['T-Shirts', 'Jackets', 'Tracksuits', 'Jerseys', 'Hats'].map((category, index) => {
+            {['Tops', 'Tracksuits', 'Jerseys', 'Hats','Extras'].map((category, index) => {
               const isActive = activeCategory === category;
               return (
                 <motion.button
@@ -52,7 +51,7 @@ export default function ShopPage() {
                     y: 0,
                     transition: { duration: 0.1 }
                   }}
-                  className={`category-pill px-6 py-3 border-2 rounded-full font-medium transition-all duration-300 ease-out ${
+                  className={`category-pill px-3 py-2 sm:px-4 sm:py-2.5 lg:px-5 border-2 rounded-full font-medium text-xs sm:text-sm lg:text-base transition-all duration-300 ease-out ${
                     isActive 
                       ? 'bg-black text-white border-black shadow-lg' 
                       : 'bg-white text-gray-700 border-gray-200 hover:bg-black hover:text-white hover:border-black'
@@ -94,7 +93,7 @@ export default function ShopPage() {
               <span className="text-base sm:text-lg">Pick a bundle or build your own</span>
               <span className="banner-pill text-[11px] sm:text-xs font-medium px-2 py-1 rounded-full">Save more together</span>
             </div>
-            <span className="block text-[11px] sm:text-xs mt-1">Curated combos or your perfect mix—tap to start</span>
+            <span className="block text-[11px] sm:text-xs mt-1">Curated combos or your perfect mix - tap to start</span>
           </button>
         </div>
       </div>
@@ -108,7 +107,7 @@ export default function ShopPage() {
         className="pb-16"
         style={{ position: 'relative', zIndex: 1 }}
       >
-        <ProductsGrid categoryFilter={activeCategory} showBundleBanner={false} />
+  <ProductsGrid categoryFilter={activeCategory} showBackgroundVideo={false} />
       </motion.div>
 
       {/* Brand Footer */}
@@ -140,17 +139,17 @@ export default function ShopPage() {
 
             {/* Social Media */}
             <div className="flex justify-center gap-6 mb-8">
-              <a href="https://www.instagram.com/fruitstandny/" className="text-gray-400 hover:text-gray-600 transition-colors">
+              <a href="https://www.instagram.com/fruitstandny?igsh=MWNqcmFwdGRvaWQzOQ==" className="text-gray-400 hover:text-gray-600 transition-colors">
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.618 5.367 11.986 11.988 11.986s11.987-5.368 11.987-11.986C24.004 5.367 18.635.001 12.017.001zM8.449 16.988c-1.297 0-2.348-1.051-2.348-2.348s1.051-2.348 2.348-2.348 2.348 1.051 2.348 2.348-1.051 2.348-2.348 2.348zm7.718 0c-1.297 0-2.348-1.051-2.348-2.348s1.051-2.348 2.348-2.348 2.348 1.051 2.348 2.348-1.051 2.348-2.348 2.348z"/>
                 </svg>
               </a>
-              <a href="https://twitter.com" className="text-gray-400 hover:text-gray-600 transition-colors">
+              <a href="https://x.com/FruitStandNY" className="text-gray-400 hover:text-gray-600 transition-colors">
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
                 </svg>
               </a>
-              <a href="https://facebook.com" className="text-gray-400 hover:text-gray-600 transition-colors">
+              <a href="https://www.facebook.com/FRUITSTANDNY" className="text-gray-400 hover:text-gray-600 transition-colors">
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                 </svg>
@@ -186,6 +185,10 @@ export default function ShopPage() {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           pointer-events: auto;
           z-index: 10;
+          flex: 1 1 0;
+          max-width: 140px;
+          white-space: nowrap;
+          text-align: center;
         }
         
         .category-pill:hover {
@@ -241,16 +244,16 @@ export default function ShopPage() {
         
         @media (max-width: 768px) {
           .category-pill {
-            padding: 8px 16px;
-            font-size: 14px;
+            padding: 6px 12px;
+            font-size: 12px;
           }
         }
         
         @media (max-width: 480px) {
           .category-pill {
-            padding: 6px 12px;
-            font-size: 13px;
-            min-width: fit-content;
+            padding: 5px 9px;
+            font-size: 11px;
+            min-width: 0;
           }
         }
       `}</style>

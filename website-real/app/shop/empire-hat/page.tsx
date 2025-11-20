@@ -1,7 +1,6 @@
 "use client";
 import Image from "next/image";
 import React, { useState } from "react";
-import SizeGuide from "@/components/SizeGuide";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 
@@ -12,35 +11,23 @@ const empireHatImages = [
 ];
 
 const PRODUCT = {
-  name: "Empire Hat",
+  name: "Empire Corduroy hat",
   price: 42,
   description: "Classic denim hat with a modern fit. Durable, stylish, and perfect for any season.",
 };
 
 export default function EmpireHatPage() {
-  const colorOptions = [
-    { name: 'Female',color: '#e5d1b8',image:'/images/empirehatfemale.jpg',bg: '#f7f3ed',border: '#fff' },
-    { name: 'Solo',color: '#fff',image: '/images/empirehatsolo.jpg',bg: '#f8f8f8',border: '#bbb'},
-    { name: 'Male',color: '#232323',image: '/images/empirehatmale.jpg',bg: '#232323',border: '#fff'},
-  ];
-  const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
-  const [selectedImage, setSelectedImage] = useState(colorOptions[0].image);
+  const [selectedImage, setSelectedImage] = useState(empireHatImages[0]);
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL"];
-
-  // Show popup and keep it visible
   const handleAddToCart = () => {
-    if (!selectedSize) return;
     addToCart({
       productId: "empire-hat",
       name: PRODUCT.name,
       price: PRODUCT.price,
-      image: empireHatImages[0],
+      image: selectedImage,
       quantity: 1,
-      size: selectedSize,
     });
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
@@ -81,9 +68,9 @@ export default function EmpireHatPage() {
 
   // Sample data for "bought together" items
   const boughtTogetherItems = [
-    { id: 'classic-tee', name: 'Classic Tee', price: 25, image: '/images/classicteemale1.jpeg' },
-    { id: 'white-hat', name: 'White Hat', price: 18, image: '/images/beigehatfemale1.jpeg' },
-    { id: 'tracksuit', name: 'Tracksuit', price: 45, image: '/images/B&Wtracksuitmale1.jpeg' },
+    { id: 'gala-tshirt', name: 'Gala Tee', price: 40, image: '/images/products/gala-tshirt/broadwaynoir/GN4.png' },
+    { id: 'tracksuit', name: 'Retro Track Suit', price: 120, image: '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png' },
+    { id: 'hockey-jersey', name: 'Broadway Blueberry Jersey', price: 90, image: '/images/products/hockey Jersey/JN.png' },
   ];
 
   // Sample customer reviews
@@ -164,97 +151,48 @@ export default function EmpireHatPage() {
       {/* Section 1: Product Details */}
       <div
         className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
-        style={{ 
+        style={{
           paddingBottom: taskbarHeight,
           minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center'
+          paddingTop: 120
         }}
       >
-      {/* Images */}
-      <div className="flex flex-col gap-4 md:w-1/2">
-               <div className="w-full rounded-lg overflow-hidden bg-white flex items-center justify-center" style={{ height: 600, minHeight: 600, position: 'relative' }}>
-          <Image
-            src={selectedImage}
-            alt={PRODUCT.name}
-            style={{ objectFit: "contain", background: "#fff" }}
-            fill
-            sizes="(max-width: 768px) 100vw, 500px"
-            priority
-          />
-        </div>
-        <div className="flex gap-2 justify-center">
+        {/* Images */}
+        <div className="flex w-full md:w-1/2 flex-col items-center gap-4">
+          <div className="relative w-full max-w-sm md:max-w-full aspect-square rounded-xl overflow-hidden bg-white shadow-sm">
+            <Image
+              src={selectedImage}
+              alt={PRODUCT.name}
+              fill
+              sizes="(max-width: 768px) 90vw, 420px"
+              style={{ objectFit: "contain", background: "#fff" }}
+              priority
+            />
+          </div>
+          <div className="flex gap-2 justify-center">
           {empireHatImages.map((img) => (
             <button
               key={img}
               onClick={() => setSelectedImage(img)}
               className={`relative w-16 h-16 rounded border ${selectedImage === img ? "ring-2 ring-black" : ""}`}
             >
-              <Image src={img} alt="Empire Hat" fill style={{ objectFit: "contain", background: "#fff" }} />
+              <Image src={img} alt="Empire Cordury hat" fill style={{ objectFit: "contain", background: "#fff" }} />
             </button>
           ))}
-        </div>
-      </div>
-  {/* Product Info */}
-  <div className="md:w-1/2 flex flex-col justify-center">
-  <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
-        {/* Color Picker */}
-  <div className="flex gap-3 mb-4 px-1" style={{ overflowX: 'auto', marginBottom: 24, paddingTop: 8, paddingBottom: 8, minHeight: 48 }}>
-          {colorOptions.map((opt) => (
-            <button
-              key={opt.name}
-              aria-label={opt.name}
-              onClick={() => {
-                setSelectedColor(opt);
-                setSelectedImage(opt.image);
-              }}
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: '50%',
-                background: opt.color,
-                border: selectedColor.name === opt.name ? '2px solid #232323' : (opt.border || '2px solid #fff'),
-                outline: selectedColor.name === opt.name ? '2px solid #3B82F6' : 'none',
-                boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #3B82F6' : '0 1px 4px 0 rgba(0,0,0,0.07)',
-                display: 'inline-block',
-                cursor: 'pointer',
-                marginRight: 4,
-              }}
-            />
-          ))}
-        </div>
-        {/* Size Selection + Size Guide */}
-        <div style={{ marginBottom: 18 }}>
-          <p className="text-sm font-medium text-gray-700 mb-3">Size:</p>
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex gap-2 flex-wrap">
-              {sizeOptions.map((size) => (
-                <button
-                  key={size}
-                  className={`px-4 py-2 rounded-lg font-semibold border-2 transition-all ${
-                    selectedSize === size
-                      ? 'border-black bg-black text-white'
-                      : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'
-                  }`}
-                  style={{ minWidth: 48, fontSize: 14 }}
-                  onClick={() => setSelectedSize(size)}
-                  type="button"
-                >
-                  {size}
-                </button>
-              ))}
-            </div>
-            <SizeGuide productSlug="empire-hat" className="mt-2" />
           </div>
         </div>
+        {/* Product Info */}
+        <div className="md:w-1/2 flex flex-col justify-start">
+  <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
+        <p className="text-sm text-gray-600 mb-6">Vintage corduroy finish is the single style offered.</p>
+        <p className="text-sm text-gray-600 mb-6">Adjustable strap ensures an easy, one-size fit.</p>
         <p className="text-lg text-gray-700 mb-4">{PRODUCT.description}</p>
         <div className="text-2xl font-semibold mb-6">${PRODUCT.price}</div>
         <button
-          className={`bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2 ${!selectedSize ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2"
           onClick={handleAddToCart}
-          disabled={!selectedSize}
         >
-          {!selectedSize ? 'Pick a size to add to cart' : 'Add to Cart'}
+          Add to Cart
         </button>
         {/* Buy Now button removed as requested */}
       </div>
@@ -266,7 +204,7 @@ export default function EmpireHatPage() {
           minHeight: '100vh',
           display: 'flex',
           alignItems: 'center',
-          background: '#f8f9fa'
+          background: '#fbf6f0'
         }}
         className="py-12 px-4"
       >
@@ -312,7 +250,7 @@ export default function EmpireHatPage() {
           minHeight: '100vh',
           display: 'flex',
           alignItems: 'center',
-          background: '#ffffff'
+          background: '#fbf6f0'
         }}
         className="py-12 px-4"
       >

@@ -40,12 +40,15 @@ export async function POST(request: NextRequest) {
       for (const user of users) {
         totalProcessed++
         try {
-          const metadata: Record<string, any> = { ...(user.user_metadata || {}) }
+          const metadata: Record<string, unknown> & { address?: Record<string, unknown> } = {
+            ...(user.user_metadata || {}),
+          }
 
           // Only normalize when address exists and is an object
           const addr = metadata.address
-          if (addr && typeof addr === 'object') {
-            if (typeof addr.street2 !== 'string') {
+          if (isRecord(addr)) {
+            const hasStringStreet2 = typeof addr['street2'] === 'string'
+            if (!hasStringStreet2) {
               metadata.address = { ...addr, street2: '' }
 
               const { error: updErr } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
@@ -64,9 +67,9 @@ export async function POST(request: NextRequest) {
             // No address to normalize
             skipped++
           }
-        } catch (e: any) {
+        } catch (error: unknown) {
           errors++
-          errorUsers.push({ id: user.id, reason: e?.message || 'unknown error' })
+          errorUsers.push({ id: user.id, reason: getErrorMessage(error) })
         }
       }
 
@@ -75,7 +78,18 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true, totalProcessed, updated, skipped, errors, errorUsers })
-  } catch (e: any) {
-    return NextResponse.json({ success: false, error: e?.message || 'unexpected error' }, { status: 500 })
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: getErrorMessage(error) || 'unexpected error' }, { status: 500 })
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message
+  }
+  return 'unknown error'
 }

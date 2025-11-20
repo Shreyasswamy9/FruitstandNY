@@ -26,7 +26,7 @@ const appearance = {
 
 export default function SupabaseAuth() {
   return (
-    <div className="min-h-screen bg-white text-gray-900 overflow-hidden relative">
+  <div className="min-h-screen bg-[#fbf6f0] text-gray-900 overflow-hidden relative">
       {/* Subtle light decorative background */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-white" />

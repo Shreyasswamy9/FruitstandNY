@@ -53,7 +53,7 @@ export function SignupModal({ isOpen, onClose }: SupabaseAuthModalProps) {
     >
       <div
         style={{
-          backgroundColor: 'white',
+          backgroundColor: '#fbf6f0',
           borderRadius: '16px',
           padding: '32px',
           maxWidth: '420px',
@@ -104,9 +104,9 @@ export function SignupModal({ isOpen, onClose }: SupabaseAuthModalProps) {
                   brand: '#111',
                   brandAccent: '#333',
                   brandButtonText: 'white',
-                  defaultButtonBackground: '#f8f9fa',
+                  defaultButtonBackground: '#fbf6f0',
                   defaultButtonBackgroundHover: '#e9ecef',
-                  inputBackground: '#f8f9fa',
+                  inputBackground: '#fbf6f0',
                   inputBorder: '#e0e0e0',
                   inputBorderHover: '#111',
                   inputBorderFocus: '#111',

@@ -237,7 +237,7 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
                           <div className="mt-3 grid grid-cols-3 gap-3">
                             {items.map(p => (
                               <div key={p.id} className="col-span-1">
-                                <div className="relative w-full aspect-[3/4] overflow-hidden rounded-lg glass-thumb">
+                                <div className="relative w-full aspect-square overflow-hidden rounded-lg glass-thumb">
                                   <Image src={p.image} alt={p.name} fill sizes="33vw" className="object-cover" />
                                 </div>
                                 <p className="mt-1 text-[12px] font-medium truncate">{p.name}</p>

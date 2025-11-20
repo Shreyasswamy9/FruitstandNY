@@ -5,26 +5,43 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
 
-// Fuji color image map (currently single image per color folder)
+// Fuji Long Sleeve color image map (multiple images per color for gallery)
+// Slugs: arboretum, hudson-blue, redbird, broadway-noir
 const FUJI_COLOR_IMAGE_MAP: Record<string, string[]> = {
-  'fuji-red': ['/images/products/fuji-tshirt/fuji-red/1.jpeg'],
-  'onyx': ['/images/products/fuji-tshirt/onyx/1.jpeg'],
-  'snow': ['/images/products/fuji-tshirt/snow/1.jpeg'],
-  'indigo': ['/images/products/fuji-tshirt/indigo/1.jpeg']
+  'arboretum': [
+    '/images/products/fuji-tshirt/Arboretum/F2.png',
+    '/images/products/fuji-tshirt/Arboretum/F11.png',
+    '/images/products/fuji-tshirt/Arboretum/F12.png'
+  ],
+  'hudson-blue': [
+    '/images/products/fuji-tshirt/Hudson blue/F1.png',
+    '/images/products/fuji-tshirt/Hudson blue/F9.png',
+    '/images/products/fuji-tshirt/Hudson blue/F10.png'
+  ],
+  'redbird': [
+    '/images/products/fuji-tshirt/Redbird/F4.png',
+    '/images/products/fuji-tshirt/Redbird/F5.png',
+    '/images/products/fuji-tshirt/Redbird/F6.png'
+  ],
+  'broadway-noir': [
+    '/images/products/fuji-tshirt/Broadwaynoir/F3.png',
+    '/images/products/fuji-tshirt/Broadwaynoir/F7.png',
+    '/images/products/fuji-tshirt/Broadwaynoir/F8.png'
+  ]
 };
 
 const PRODUCT = {
-  name: "Fuji Tshirt",
-  price: 22,
-  description: "Classic tee with Fuji-inspired colors. Premium cotton, tailored fit, everyday essential.",
+  name: "Fuji Long Sleeve",
+  price: 80,
+  description: "Fuji Long Sleeve is a premium cotton piece in rich seasonal tones: Arboretum (deep green), Hudson Blue (light navy blue), Redbird (red), and Broadway Noir (black). Built for layering and standalone wear.",
 };
 
 export default function FujiTshirtPage() {
   const colorOptions = [
-    { name: 'Fuji Red', slug: 'fuji-red', color: '#c62828', images: FUJI_COLOR_IMAGE_MAP['fuji-red'], bg: '#fdeaea', border: '#f5bcbc' },
-    { name: 'Onyx', slug: 'onyx', color: '#111827', images: FUJI_COLOR_IMAGE_MAP['onyx'], bg: '#e9ecf1' },
-    { name: 'Snow', slug: 'snow', color: '#f9fafb', images: FUJI_COLOR_IMAGE_MAP['snow'], bg: '#fafbfc', border: '#e6e8ea' },
-    { name: 'Indigo', slug: 'indigo', color: '#3f51b5', images: FUJI_COLOR_IMAGE_MAP['indigo'], bg: '#e8ebfa', border: '#c9d1f7' },
+    { name: 'Arboretum', slug: 'arboretum', color: '#0f5132', images: FUJI_COLOR_IMAGE_MAP['arboretum'], bg: '#e6f3ec', border: '#b6d9c6' },
+    { name: 'Hudson Blue', slug: 'hudson-blue', color: '#243b5a', images: FUJI_COLOR_IMAGE_MAP['hudson-blue'], bg: '#e5edf6', border: '#c2d2e6' },
+    { name: 'Redbird', slug: 'redbird', color: '#c21010', images: FUJI_COLOR_IMAGE_MAP['redbird'], bg: '#fceaea', border: '#f4bcbc' },
+    { name: 'Broadway Noir', slug: 'broadway-noir', color: '#000000', images: FUJI_COLOR_IMAGE_MAP['broadway-noir'], bg: '#ededed', border: '#d4d4d4' },
   ];
   const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
   const [selectedImage, setSelectedImage] = useState(colorOptions[0].images[0]);
@@ -37,7 +54,7 @@ export default function FujiTshirtPage() {
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
-      productId: "fuji-tshirt",
+      productId: "fuji-full-sleeve",
       name: PRODUCT.name,
       price: PRODUCT.price,
       image: selectedImage,
@@ -48,7 +65,7 @@ export default function FujiTshirtPage() {
     setTimeout(() => setShowPopup(false), 1500);
   };
 
-  // Preselect variant via query param
+  // Preselect variant via query param (?color=slug)
   useEffect(() => {
     const colorSlug = searchParams.get('color');
     if (colorSlug) {
@@ -61,9 +78,9 @@ export default function FujiTshirtPage() {
   }, [searchParams]);
 
   const boughtTogetherItems = [
-    { id: 'empire-hat', name: 'Empire Hat', price: 22, image: '/images/empirehatfemale1.jpeg' },
+    { id: 'empire-hat', name: 'Empire Cordury hat', price: 22, image: '/images/empirehatfemale1.jpeg' },
     { id: 'white-hat', name: 'White Hat', price: 18, image: '/images/beigehatfemale1.jpeg' },
-    { id: 'hockey-jersey', name: 'Hockey Jersey', price: 25, image: '/images/hockeyjerseymale1.jpeg' },
+    { id: 'hockey-jersey', name: 'Broadway Blueberry Jersey', price: 90, image: '/images/products/hockey Jersey/JN.png' },
   ];
 
   const handleAddBoughtTogetherItem = (item: { id: string; name: string; price: number; image: string }) => {
@@ -81,8 +98,9 @@ export default function FujiTshirtPage() {
   const taskbarHeight = items.length > 0 && !showPopup ? 64 : 0;
 
   const customerReviews = [
-    { id: 1, name: 'Taylor S.', rating: 5, review: 'A staple tee with superb color.', date: '2 weeks ago' },
-    { id: 2, name: 'Morgan L.', rating: 4, review: 'Comfortable and fits nicely.', date: '1 month ago' },
+    { id: 1, name: 'Jordan P.', rating: 5, review: 'Sleeve length and weight are perfect for layering.', date: '2 weeks ago' },
+    { id: 2, name: 'Ari L.', rating: 5, review: 'Arboretum color is insanely rich. Fabric holds shape.', date: '1 month ago' },
+    { id: 3, name: 'Chris D.', rating: 4, review: 'Hudson Blue is versatile. Would love a heavier winter version.', date: '1 month ago' },
   ];
 
   return (
@@ -96,11 +114,11 @@ export default function FujiTshirtPage() {
         ← Go Back
       </span>
 
-      <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingBottom: taskbarHeight, minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
+  <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingBottom: taskbarHeight, minHeight: '100vh', paddingTop: 120 }}>
         {/* Images */}
-        <div className="flex flex-col gap-4 md:w-1/2">
-          <div className="w-full rounded-lg overflow-hidden bg-white flex items-center justify-center" style={{ height: 600, minHeight: 600, position: 'relative' }}>
-            <Image src={selectedImage} alt={PRODUCT.name} style={{ objectFit: "contain", background: "#fff" }} fill sizes="(max-width: 768px) 100vw, 500px" priority />
+        <div className="flex w-full md:w-1/2 flex-col items-center gap-4">
+          <div className="relative w-full max-w-sm md:max-w-full aspect-square rounded-xl overflow-hidden bg-white shadow-sm">
+            <Image src={selectedImage} alt={PRODUCT.name} style={{ objectFit: "contain", background: "#fff" }} fill sizes="(max-width: 768px) 90vw, 420px" priority />
           </div>
           <div className="flex gap-2 justify-center">
             {selectedColor.images.map((img) => (
@@ -112,8 +130,8 @@ export default function FujiTshirtPage() {
         </div>
 
         {/* Product Info */}
-        <div className="md:w-1/2 flex flex-col justify-center">
-          <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
+        <div className="md:w-1/2 flex flex-col justify-start">
+          <h1 className="text-3xl font-bold mb-2">{PRODUCT.name} <span className="text-base font-medium text-gray-500">/ {selectedColor.name}</span></h1>
           {/* Color Picker */}
           <div className="flex gap-3 mb-4 px-1" style={{ overflowX: 'auto', marginBottom: 24, paddingTop: 8, paddingBottom: 8, minHeight: 48 }}>
             {colorOptions.map((opt) => (
@@ -141,6 +159,7 @@ export default function FujiTshirtPage() {
                   cursor: 'pointer',
                   marginRight: 4
                 }}
+                data-active={selectedColor.name === opt.name || undefined}
               />
             ))}
           </div>
@@ -159,7 +178,7 @@ export default function FujiTshirtPage() {
           </div>
 
           <p className="text-lg text-gray-700 mb-4">{PRODUCT.description}</p>
-          <div className="text-2xl font-semibold mb-6">${PRODUCT.price}</div>
+          <div className="text-2xl font-semibold mb-6">${PRODUCT.price}.00</div>
           <button className={`bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2 ${!selectedSize ? 'opacity-50 cursor-not-allowed' : ''}`} onClick={handleAddToCart} disabled={!selectedSize}>
             {!selectedSize ? 'Pick a size to add to cart' : 'Add to Cart'}
           </button>
@@ -167,7 +186,7 @@ export default function FujiTshirtPage() {
       </div>
 
       {/* Frequently Bought Together */}
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#f8f9fa' }} className="py-12 px-4">
+  <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
         <div className="max-w-4xl mx-auto w-full">
           <h2 className="text-3xl font-bold text-center mb-8">Frequently Bought Together</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -189,7 +208,7 @@ export default function FujiTshirtPage() {
       </div>
 
       {/* Reviews */}
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#ffffff' }} className="py-12 px-4">
+  <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
         <div className="max-w-4xl mx-auto w-full">
           <h2 className="text-3xl font-bold text-center mb-8">Customer Reviews</h2>
           <div className="space-y-6">

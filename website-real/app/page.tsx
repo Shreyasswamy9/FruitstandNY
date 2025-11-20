@@ -677,7 +677,7 @@ export default function Home() {
             width: "100%",
             margin: 0,
             padding: 0,
-            background: "#fff",
+            background: "#fbf6f0",
           }}
         >
           <div
@@ -715,7 +715,7 @@ export default function Home() {
                   position: "relative",
                   borderRadius: "clamp(16px, 3vw, 24px)",
                   overflow: "hidden",
-                  background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
+                  background: "linear-gradient(135deg, #fbf6f0 0%, #f1ede5 100%)",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "flex-end",
@@ -733,7 +733,7 @@ export default function Home() {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    backgroundImage: "url('/images/classicteecovermodels.jpeg')",
+                    backgroundImage: "url('/images/hockeyjerseymale1.jpeg')",
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     opacity: 0.9,
@@ -804,7 +804,7 @@ export default function Home() {
                   }}
                   onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.02)"}
                   onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
-                  onClick={() => window.location.href = "/shop/hockey-jersey"}
+                  onClick={() => window.location.href = "/shop/gala-tshirt"}
                   >
                     <div style={{
                       position: "absolute",
@@ -812,7 +812,7 @@ export default function Home() {
                       right: 0,
                       width: "40%",
                       height: "100%",
-                      backgroundImage: "url('/images/hockeyjerseymale1.jpeg')",
+                      backgroundImage: "url('/images/products/gala-tshirt/broadwaynoir/GN4.png')",
                       backgroundSize: "cover",
                       backgroundPosition: "center",
                       opacity: 0.8,
@@ -836,14 +836,14 @@ export default function Home() {
                         opacity: 0.9,
                         marginBottom: "20px",
                       }}>
-                        Hockey Jersey
+                        Gala Tee
                       </p>
                       <span style={{
                         fontSize: "1.1rem",
                         fontWeight: 600,
                         color: "#ff6b6b",
                       }}>
-                        $90
+                        $40
                       </span>
                     </div>
                   </div>
@@ -860,7 +860,7 @@ export default function Home() {
                   }}
                   onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.02)"}
                   onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
-                  onClick={() => window.location.href = "/shop/empire-hat"}
+                  onClick={() => window.location.href = "/shop/tracksuit"}
                   >
                     <div style={{
                       position: "absolute",
@@ -868,7 +868,7 @@ export default function Home() {
                       right: 0,
                       width: "45%",
                       height: "100%",
-                      backgroundImage: "url('/images/empirehatsolo.jpg')",
+                      backgroundImage: "url('/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png')",
                       backgroundSize: "cover",
                       backgroundPosition: "center",
                       opacity: 0.9,
@@ -892,13 +892,13 @@ export default function Home() {
                         opacity: 0.95,
                         marginBottom: "16px",
                       }}>
-                        Empire Hat
+                        Retro Track Suit
                       </p>
                       <span style={{
                         fontSize: "1.1rem",
                         fontWeight: 600,
                       }}>
-                        $42
+                        $120
                       </span>
                     </div>
                   </div>
@@ -949,8 +949,8 @@ export default function Home() {
                 >
                   {/* Product Cards */}
                   {[
-                    { name: "Classic Tee", price: "$55", image: "/images/classicteemale1.jpeg", hoverImage: "/images/classicteefemale1.jpeg", link: "/shop/classic-tee" },
-                    { name: "Tracksuit", price: "$120", image: "/images/B&Wtracksuitmale1.jpeg", hoverImage: "/images/maroontracksuitmale1.jpeg", link: "/shop/tracksuit" },
+                    { name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/broadwaynoir/GN4.png", hoverImage: "/images/products/gala-tshirt/broadwaynoir/GN5.png", link: "/shop/gala-tshirt" },
+                    { name: "Retro Track Suit", price: "$120", image: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png", hoverImage: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TS7.png", link: "/shop/tracksuit" },
                     { name: "Denim Hat", price: "$40", image: "/images/denimhatmale1.jpeg", hoverImage: "/images/denimhatfemale1.jpeg", link: "/shop/denim-hat" },
                     { name: "White Hat", price: "$40", image: "/images/whitehatmale1.jpeg", hoverImage: "/images/whitehatsolo.jpeg", link: "/shop/white-hat" },
                   ].map((product, index) => (
@@ -1039,7 +1039,7 @@ export default function Home() {
                 marginBottom: "clamp(48px, 8vw, 80px)",
                 padding: "clamp(24px, 6vw, 48px)",
                 borderRadius: "clamp(16px, 3vw, 24px)",
-                background: "linear-gradient(135deg, #f8f9fa 0%, #fff 100%)",
+                background: "linear-gradient(135deg, #fbf6f0 0%, #fdf5ec 100%)",
               }}
               >
                 <div>

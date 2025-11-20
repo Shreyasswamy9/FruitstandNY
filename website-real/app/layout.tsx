@@ -52,7 +52,7 @@ export default function RootLayout({
         </Script>
       </head>
       <body 
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#fbf6f0]`}
         suppressHydrationWarning
       >
         <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N8M6F5WK"

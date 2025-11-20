@@ -8,45 +8,24 @@ export type Bundle = {
 
 export const bundles: Bundle[] = [
   {
-    id: 'tee-hat-classic-denim',
-    title: 'Classic Tee + Denim Hat',
-    itemIds: [2, 7],
-    description: 'Pair the Classic Tee with the Denim Hat',
-    discountPercent: 10,
-  },
-  {
     id: 'tracksuit-empire-hat',
-    title: 'Tracksuit + Empire Hat',
-    itemIds: [5, 11],
-    description: 'Tracksuit set and the Empire Hat',
-    discountPercent: 12,
-  },
-  {
-    id: 'tee-empire',
-    title: 'Classic Tee + Empire Hat',
-    itemIds: [2, 11],
-    description: 'Clean tee with the bold Empire Hat',
+    title: 'Retro Track Suit + Empire Cordury hat',
+    itemIds: [2001, 11],
+    description: 'Retro Track Suit set and the Empire Cordury hat',
     discountPercent: 12,
   },
   {
     id: 'jersey-white-hat',
-    title: 'Hockey Jersey + White Hat',
+    title: 'Broadway Blueberry Jersey + White Hat',
     itemIds: [1, 9],
-    description: 'Statement jersey paired with the minimalist White Hat',
+    description: 'Statement Broadway Blueberry Jersey paired with the minimalist White Hat',
     discountPercent: 15,
   },
   {
     id: 'tracksuit-beige-hat',
-    title: 'Tracksuit + Beige Hat',
-    itemIds: [5, 10],
-    description: 'Tracksuit comfort with warm beige tones',
+    title: 'Retro Track Suit + Beige Hat',
+    itemIds: [2001, 10],
+    description: 'Retro Track Suit comfort with warm beige tones',
     discountPercent: 12,
-  },
-  {
-    id: 'jacket-empire',
-    title: 'Premium Jacket + Empire Hat',
-    itemIds: [12, 11],
-    description: 'Elevated outerwear with an iconic cap',
-    discountPercent: 14,
   },
 ];

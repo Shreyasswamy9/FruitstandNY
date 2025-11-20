@@ -5,19 +5,23 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
 
-// Per-color image map (single images currently available per color)
+// Per-color image map for gallery display
 const CAMEO_COLOR_IMAGE_MAP: Record<string, string[]> = {
   'broadway-noir': [
-    '/images/products/cameo-tshirt/broadwaynoir/Firefly 20250923122927.png'
+    '/images/products/cameo-tshirt/broadwaynoir/MN.png',
+    '/images/products/cameo-tshirt/broadwaynoir/MN3.png',
+    '/images/products/cameo-tshirt/broadwaynoir/MN4.png'
   ],
   'sutton-place-snow': [
-    '/images/products/cameo-tshirt/suttonplacesnow/Firefly 20250923122951.png'
+    '/images/products/cameo-tshirt/suttonplacesnow/MN1.png',
+    '/images/products/cameo-tshirt/suttonplacesnow/MN2.png',
+    '/images/products/cameo-tshirt/suttonplacesnow/MN5.png'
   ]
 };
 
 const PRODUCT = {
-  name: "Cameo Tshirt",
-  price: 22,
+  name: "Cameo Tee",
+  price: 40,
   description: "Soft-touch tee in Cameo tones. Clean lines, durable knit, and all-day comfort.",
 };
 
@@ -62,7 +66,7 @@ export default function CameoTshirtPage() {
 
   const boughtTogetherItems = [
     { id: 'white-hat', name: 'White Hat', price: 18, image: '/images/beigehatfemale1.jpeg' },
-    { id: 'tracksuit', name: 'Tracksuit', price: 45, image: '/images/B&Wtracksuitmale1.jpeg' },
+    { id: 'tracksuit', name: 'Retro Track Suit', price: 45, image: '/images/B&Wtracksuitmale1.jpeg' },
     { id: 'denim-hat', name: 'Denim Hat', price: 20, image: '/images/denimhat1.jpeg' },
   ];
 
@@ -96,11 +100,11 @@ export default function CameoTshirtPage() {
         ← Go Back
       </span>
 
-      <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingBottom: taskbarHeight, minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
+  <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingBottom: taskbarHeight, minHeight: '100vh', paddingTop: 120 }}>
         {/* Images */}
-        <div className="flex flex-col gap-4 md:w-1/2">
-          <div className="w-full rounded-lg overflow-hidden bg-white flex items-center justify-center" style={{ height: 600, minHeight: 600, position: 'relative' }}>
-            <Image src={selectedImage} alt={PRODUCT.name} style={{ objectFit: "contain", background: "#fff" }} fill sizes="(max-width: 768px) 100vw, 500px" priority />
+        <div className="flex w-full md:w-1/2 flex-col items-center gap-4">
+          <div className="relative w-full max-w-sm md:max-w-full aspect-square rounded-xl overflow-hidden bg-white shadow-sm">
+            <Image src={selectedImage} alt={PRODUCT.name} style={{ objectFit: "contain", background: "#fff" }} fill sizes="(max-width: 768px) 90vw, 420px" priority />
           </div>
           <div className="flex gap-2 justify-center">
             {selectedColor.images.map((img) => (
@@ -112,7 +116,7 @@ export default function CameoTshirtPage() {
         </div>
 
         {/* Product Info */}
-        <div className="md:w-1/2 flex flex-col justify-center">
+        <div className="md:w-1/2 flex flex-col justify-start">
           <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
           {/* Color Picker */}
           <div className="flex gap-3 mb-4 px-1" style={{ overflowX: 'auto', marginBottom: 24, paddingTop: 8, paddingBottom: 8, minHeight: 48 }}>
@@ -167,7 +171,7 @@ export default function CameoTshirtPage() {
       </div>
 
       {/* Frequently Bought Together */}
-  <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#ffffff' }} className="py-12 px-4">
+  <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
         <div className="max-w-4xl mx-auto w-full">
           <h2 className="text-3xl font-bold text-center mb-8">Frequently Bought Together</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -189,7 +193,7 @@ export default function CameoTshirtPage() {
       </div>
 
       {/* Reviews */}
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#ffffff' }} className="py-12 px-4">
+  <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
         <div className="max-w-4xl mx-auto w-full">
           <h2 className="text-3xl font-bold text-center mb-8">Customer Reviews</h2>
           <div className="space-y-6">

@@ -1,44 +1,88 @@
 "use client";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SizeGuide from "@/components/SizeGuide";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 
-const tracksuitImages = [
-  "/images/B&Wtracksuitmale1.jpeg",
-  "/images/maroontracksuitmale1.jpeg",
-  "/images/tracksuitscovermodels.jpeg"
-];
+const TRACKSUIT_IMAGE_MAP: Record<string, string[]> = {
+  'elmhurst-taro-custard': [
+    '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png',
+    '/images/products/tracksuits/ELMHURST TARO CUSTARD/TS7.png',
+  ],
+  'greenpoint-patina-crew': [
+    '/images/products/tracksuits/Greenpoint Patina Crew/GB.png',
+    '/images/products/tracksuits/Greenpoint Patina Crew/TS2.png',
+  ],
+  'noho-napoletanos': [
+    '/images/products/tracksuits/NOHO NAPOLETANOS/TB.png',
+    '/images/products/tracksuits/NOHO NAPOLETANOS/TS3.png',
+  ],
+  'the-factory-floor': [
+    '/images/products/tracksuits/THE FACTORY FLOOR/BG.png',
+    '/images/products/tracksuits/THE FACTORY FLOOR/TS4.png',
+  ],
+  'vice-city-runners': [
+    '/images/products/tracksuits/VICE CITY RUNNERS/PB.png',
+    '/images/products/tracksuits/VICE CITY RUNNERS/TS5.png',
+  ],
+  'victory-liberty-club': [
+    '/images/products/tracksuits/Victory Liberty Club/RB.png',
+    '/images/products/tracksuits/Victory Liberty Club/TS6.png',
+  ],
+  'yorkville-black-and-white-cookies': [
+    '/images/products/tracksuits/YORKVILLE BLACK AND WHITE COOKIES/BW.png',
+    '/images/products/tracksuits/YORKVILLE BLACK AND WHITE COOKIES/TS1.png',
+  ],
+};
+
+const TRACKSUIT_VARIANTS = [
+  { name: 'Elmhurst Taro Custard', slug: 'elmhurst-taro-custard', color: '#8271c2', images: TRACKSUIT_IMAGE_MAP['elmhurst-taro-custard'], bg: '#eee9ff', border: '2px solid #d1c8f3' },
+  { name: 'Greenpoint Patina Crew', slug: 'greenpoint-patina-crew', color: '#58543a', images: TRACKSUIT_IMAGE_MAP['greenpoint-patina-crew'], bg: '#f1f0e6', border: '2px solid #d2cfba' },
+  { name: 'Noho Napoletanos', slug: 'noho-napoletanos', color: '#ab8c65', images: TRACKSUIT_IMAGE_MAP['noho-napoletanos'], bg: '#f4ecdf', border: '2px solid #e1d2b8' },
+  { name: 'The Factory Floor', slug: 'the-factory-floor', color: '#1e2744', images: TRACKSUIT_IMAGE_MAP['the-factory-floor'], bg: '#e6e9f4', border: '2px solid #c2c8da' },
+  { name: 'Vice City Runners', slug: 'vice-city-runners', color: '#fddde9', images: TRACKSUIT_IMAGE_MAP['vice-city-runners'], bg: '#fff0f6', border: '2px solid #f7c2d8' },
+  { name: 'Victory Liberty Club', slug: 'victory-liberty-club', color: '#7a273b', images: TRACKSUIT_IMAGE_MAP['victory-liberty-club'], bg: '#f4dde4', border: '2px solid #e6b8c7' },
+  { name: 'Yorkville Black and White Cookies', slug: 'yorkville-black-and-white-cookies', color: '#000000', images: TRACKSUIT_IMAGE_MAP['yorkville-black-and-white-cookies'], bg: '#f5f5f5', border: '2px solid #d4d4d4' },
+] as const;
+
+type TracksuitVariant = typeof TRACKSUIT_VARIANTS[number];
 
 const PRODUCT = {
-  name: "Tracksuit",
+  name: "Retro Track Suit",
   price: 120,
-  description: "Modern tracksuit, comfortable and stylish for any occasion.",
+  description: "Signature Retro Track Suit set cut in heavyweight brushed fleece with directional palettes from Elmhurst Taro Custard to Yorkville Black & White Cookies.",
 };
 
 export default function TracksuitPage() {
-  const colorOptions = [
-    { name: 'Black', color: '#232323', image: '/images/B&Wtracksuitmale1.jpeg', bg: '#232323', border: '2px solid #fff' },
-    { name: 'Maroon', color: '#800000', image: '/images/maroontracksuitmale1.jpeg', bg: '#fbeaea', border: '2px solid #fff' },
-    { name: 'Cover', color: '#b2bec3', image: '/images/tracksuitscovermodels.jpeg', bg: '#eaeaea', border: '2px solid #fff' },
-  ];
-  const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
-  const [selectedImage, setSelectedImage] = useState(colorOptions[0].image);
+  const colorOptions = TRACKSUIT_VARIANTS;
+  const [selectedColor, setSelectedColor] = useState<TracksuitVariant>(colorOptions[0]);
+  const [selectedImage, setSelectedImage] = useState(colorOptions[0].images[0]);
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL"];
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const colorSlug = searchParams.get('color');
+    if (!colorSlug) return;
+    const found = colorOptions.find(option => option.slug === colorSlug);
+    if (found) {
+      setSelectedColor(found);
+      setSelectedImage(found.images[0]);
+    }
+  }, [searchParams]);
 
   // Show popup and keep it visible
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
-      productId: "denim-hat",
+      productId: "tracksuit",
       name: PRODUCT.name,
       price: PRODUCT.price,
-      image: tracksuitImages[0],
+      image: selectedImage,
       quantity: 1,
       size: selectedSize,
     });
@@ -51,9 +95,9 @@ export default function TracksuitPage() {
 
   // Sample data for "bought together" items
   const boughtTogetherItems = [
-    { id: 'classic-tee', name: 'Classic Tee', price: 25, image: '/images/classicteemale1.jpeg' },
-    { id: 'white-hat', name: 'White Hat', price: 18, image: '/images/beigehatfemale1.jpeg' },
-    { id: 'tracksuit', name: 'Tracksuit', price: 45, image: '/images/B&Wtracksuitmale1.jpeg' },
+    { id: 'gala-tshirt', name: 'Gala Tee', price: 40, image: '/images/products/gala-tshirt/broadwaynoir/GN4.png' },
+    { id: 'white-hat', name: 'White Hat', price: 40, image: '/images/whitehatmale1.jpeg' },
+    { id: 'empire-hat', name: 'Empire Cordury hat', price: 42, image: '/images/empirehatfemale.jpg' },
   ];
 
   // Sample customer reviews
@@ -62,21 +106,21 @@ export default function TracksuitPage() {
       id: 1,
       name: 'Sarah M.',
       rating: 5,
-      review: 'Perfect fit and great quality! The denim material feels premium and the hat looks exactly like the photos.',
+      review: 'The Elmhurst set is buttery soft and drapes perfectly for travel days. Color looks even richer in person.',
       date: '2 weeks ago'
     },
     {
       id: 2,
       name: 'Mike R.',
       rating: 4,
-      review: 'Really comfortable and stylish. Goes well with any outfit. Shipping was fast too!',
+      review: 'Greenpoint Patina has been my go-to warmup kit. Breathes well and the zipper pockets are clutch.',
       date: '1 month ago'
     },
     {
       id: 3,
       name: 'Emma K.',
       rating: 5,
-      review: 'Love this hat! The blue color is beautiful and it fits perfectly. Definitely recommending to friends.',
+      review: 'Vice City Runners is a statement set. Super comfy and the color blocking turns heads every time.',
       date: '3 weeks ago'
     },
   ];
@@ -134,40 +178,40 @@ export default function TracksuitPage() {
       {/* Section 1: Product Details */}
       <div
         className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
-        style={{ 
+        style={{
           paddingBottom: taskbarHeight,
           minHeight: '100vh',
-          scrollSnapAlign: 'start',
-          display: 'flex',
-          alignItems: 'center'
+          paddingTop: 120,
+          scrollSnapAlign: 'start'
         }}
       >
-      {/* Images */}
-      <div className="flex flex-col gap-4 md:w-1/2">
-               <div className="w-full rounded-lg overflow-hidden bg-white flex items-center justify-center" style={{ height: 600, minHeight: 600, position: 'relative' }}>
-          <Image
-            src={selectedImage}
-            alt={PRODUCT.name}
-            style={{ objectFit: "contain", background: "#fff" }}
-            fill
-            sizes="(max-width: 768px) 100vw, 500px"
-            priority
-          />
+        {/* Images */}
+        <div className="flex w-full md:w-1/2 flex-col items-center gap-4">
+          <div className="relative w-full max-w-sm md:max-w-full aspect-square rounded-xl overflow-hidden shadow-sm" style={{ background: selectedColor.bg }}>
+            <Image
+              src={selectedImage}
+              alt={PRODUCT.name}
+              style={{ objectFit: "contain", background: selectedColor.bg }}
+              fill
+              sizes="(max-width: 768px) 90vw, 420px"
+              priority
+            />
+          </div>
+          <div className="flex gap-2 justify-center">
+            {selectedColor.images.map((img) => (
+              <button
+                key={img}
+                onClick={() => setSelectedImage(img)}
+                className={`relative w-16 h-16 rounded border ${selectedImage === img ? "ring-2 ring-black" : ""}`}
+                style={{ background: selectedColor.bg }}
+              >
+                <Image src={img} alt={`${PRODUCT.name} - ${selectedColor.name}`} fill style={{ objectFit: "contain", background: selectedColor.bg }} />
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex gap-2 justify-center">
-          {tracksuitImages.map((img) => (
-            <button
-              key={img}
-              onClick={() => setSelectedImage(img)}
-              className={`relative w-16 h-16 rounded border ${selectedImage === img ? "ring-2 ring-black" : ""}`}
-            >
-              <Image src={img} alt="Denim Hat" fill style={{ objectFit: "contain", background: "#fff" }} />
-            </button>
-          ))}
-        </div>
-      </div>
-  {/* Product Info */}
-  <div className="md:w-1/2 flex flex-col justify-center">
+        {/* Product Info */}
+        <div className="md:w-1/2 flex flex-col justify-start">
   <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
         {/* Color Picker */}
   <div className="flex gap-3 mb-4 px-1" style={{ overflowX: 'auto', marginBottom: 24, paddingTop: 8, paddingBottom: 8, minHeight: 48 }}>
@@ -177,7 +221,8 @@ export default function TracksuitPage() {
               aria-label={opt.name}
               onClick={() => {
                 setSelectedColor(opt);
-                setSelectedImage(opt.image);
+                setSelectedImage(opt.images[0]);
+                window.history.replaceState(null, '', `/shop/tracksuit?color=${opt.slug}`);
               }}
               style={{
                 width: 32,
@@ -238,7 +283,7 @@ export default function TracksuitPage() {
           scrollSnapAlign: 'start',
           display: 'flex',
           alignItems: 'center',
-          background: '#f8f9fa'
+          background: '#fbf6f0'
         }}
         className="py-12 px-4"
       >
@@ -279,7 +324,7 @@ export default function TracksuitPage() {
           scrollSnapAlign: 'start',
           display: 'flex',
           alignItems: 'center',
-          background: '#ffffff'
+          background: '#fbf6f0'
         }}
         className="py-12 px-4"
       >

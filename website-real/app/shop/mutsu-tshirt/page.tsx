@@ -8,20 +8,20 @@ import SizeGuide from "@/components/SizeGuide";
 // Per-color image map (multiple images per color)
 const MUTSU_COLOR_IMAGE_MAP: Record<string, string[]> = {
   'broadway-noir': [
-    '/images/products/mutsu-tshirt/broadwaynoir/Firefly 20251118133823.png',
-    '/images/products/mutsu-tshirt/broadwaynoir/Firefly 20251118133858.png',
-    '/images/products/mutsu-tshirt/broadwaynoir/Firefly 20251118134335.png'
+    '/images/products/mutsu-tshirt/broadwaynoir/N1.png',
+    '/images/products/mutsu-tshirt/broadwaynoir/N2.png',
+    '/images/products/mutsu-tshirt/broadwaynoir/N5.png'
   ],
   'sutton-place-snow': [
-    '/images/products/mutsu-tshirt/suttonplacesnow/Firefly 20251118133938.png',
-    '/images/products/mutsu-tshirt/suttonplacesnow/Firefly 20251118134138.png',
-    '/images/products/mutsu-tshirt/suttonplacesnow/Firefly 20251118134406.png'
+    '/images/products/mutsu-tshirt/suttonplacesnow/N3.png',
+    '/images/products/mutsu-tshirt/suttonplacesnow/N4.png',
+    '/images/products/mutsu-tshirt/suttonplacesnow/N6.png'
   ]
 };
 
 const PRODUCT = {
-  name: "Mutsu Tshirt",
-  price: 22,
+  name: "Mutsu Tee",
+  price: 45,
   description: "Everyday tee with Mutsu-inspired tones. Smooth knit, breathable, and easy to style.",
 };
 
@@ -65,8 +65,8 @@ export default function MutsuTshirtPage() {
 
   const boughtTogetherItems = [
     { id: 'denim-hat', name: 'Denim Hat', price: 20, image: '/images/denimhat1.jpeg' },
-    { id: 'tracksuit', name: 'Tracksuit', price: 45, image: '/images/B&Wtracksuitmale1.jpeg' },
-    { id: 'empire-hat', name: 'Empire Hat', price: 22, image: '/images/empirehatfemale1.jpeg' },
+    { id: 'tracksuit', name: 'Retro Track Suit', price: 45, image: '/images/B&Wtracksuitmale1.jpeg' },
+    { id: 'empire-hat', name: 'Empire Cordury hat', price: 22, image: '/images/empirehatfemale1.jpeg' },
   ];
 
   const handleAddBoughtTogetherItem = (item: { id: string; name: string; price: number; image: string }) => {
@@ -99,11 +99,11 @@ export default function MutsuTshirtPage() {
         ← Go Back
       </span>
 
-      <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingBottom: taskbarHeight, minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
+  <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingBottom: taskbarHeight, minHeight: '100vh', paddingTop: 120 }}>
         {/* Images */}
-        <div className="flex flex-col gap-4 md:w-1/2">
-          <div className="w-full rounded-lg overflow-hidden bg-white flex items-center justify-center" style={{ height: 600, minHeight: 600, position: 'relative' }}>
-            <Image src={selectedImage} alt={PRODUCT.name} style={{ objectFit: "contain", background: "#fff" }} fill sizes="(max-width: 768px) 100vw, 500px" priority />
+        <div className="flex w-full md:w-1/2 flex-col items-center gap-4">
+          <div className="relative w-full max-w-sm md:max-w-full aspect-square rounded-xl overflow-hidden bg-white shadow-sm">
+            <Image src={selectedImage} alt={PRODUCT.name} style={{ objectFit: "contain", background: "#fff" }} fill sizes="(max-width: 768px) 90vw, 420px" priority />
           </div>
           <div className="flex gap-2 justify-center">
             {selectedColor.images.map((img) => (
@@ -115,7 +115,7 @@ export default function MutsuTshirtPage() {
         </div>
 
         {/* Product Info */}
-        <div className="md:w-1/2 flex flex-col justify-center">
+        <div className="md:w-1/2 flex flex-col justify-start">
           <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
           {/* Color Picker */}
           <div className="flex gap-3 mb-4 px-1" style={{ overflowX: 'auto', marginBottom: 24, paddingTop: 8, paddingBottom: 8, minHeight: 48 }}>
@@ -170,7 +170,7 @@ export default function MutsuTshirtPage() {
       </div>
 
       {/* Frequently Bought Together */}
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#f8f9fa' }} className="py-12 px-4">
+  <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
         <div className="max-w-4xl mx-auto w-full">
           <h2 className="text-3xl font-bold text-center mb-8">Frequently Bought Together</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -192,7 +192,7 @@ export default function MutsuTshirtPage() {
       </div>
 
       {/* Reviews */}
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#ffffff' }} className="py-12 px-4">
+  <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
         <div className="max-w-4xl mx-auto w-full">
           <h2 className="text-3xl font-bold text-center mb-8">Customer Reviews</h2>
           <div className="space-y-6">
