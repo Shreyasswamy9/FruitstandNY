@@ -3,7 +3,7 @@ import Image from "next/image";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
-import FrequentlyBoughtTogether, { FBTProduct } from "@/components/FrequentlyBoughtTogether";
+import FrequentlyBoughtTogether, { FBTProduct, getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import CustomerReviews from "@/components/CustomerReviews";
 
 const greenHatImages = [
@@ -39,12 +39,8 @@ export default function ForestHillsHatPage() {
   // Height of the taskbar (matches py-3 + px-2, but add extra for safety)
   const taskbarHeight = items.length > 0 && !showPopup ? 64 : 0;
 
-  // FBT data
-  const boughtTogetherItems: FBTProduct[] = [
-    { id: 'gala-tshirt', name: 'Gala Tee', price: 40, image: '/images/products/gala-tshirt/broadwaynoir/GN4.png' },
-    { id: 'tracksuit', name: 'Retro Track Suit', price: 120, image: '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png' },
-    { id: 'hockey-jersey', name: 'Broadway Blueberry Jersey', price: 90, image: '/images/products/hockey Jersey/JN.png' },
-  ];
+  // FBT data (centralized)
+  const boughtTogetherItems: FBTProduct[] = getFBTForPage('forest-hills-hat');
   // (reviews are loaded dynamically via CustomerReviews)
   return (
     <div>

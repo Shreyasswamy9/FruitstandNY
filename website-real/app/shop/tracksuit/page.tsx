@@ -3,6 +3,7 @@ import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import SizeGuide from "@/components/SizeGuide";
 import CustomerReviews from "@/components/CustomerReviews";
+import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 
@@ -103,11 +104,7 @@ export default function TracksuitPage() {
   const taskbarHeight = items.length > 0 && !showPopup ? 64 : 0;
 
   // Sample data for "bought together" items
-  const boughtTogetherItems = [
-    { id: 'gala-tshirt', name: 'Gala Tee', price: 40, image: '/images/products/gala-tshirt/broadwaynoir/GN4.png' },
-    { id: 'white-hat', name: 'White Hat', price: 40, image: '/images/whitehatmale1.jpeg' },
-    { id: 'empire-hat', name: 'Empire Cordury hat', price: 42, image: '/images/empirehatfemale.jpg' },
-  ];
+  const boughtTogetherItems = getFBTForPage('tracksuit');
 
   // Customer reviews are loaded via the centralized CustomerReviews component (Supabase-backed)
 
@@ -270,45 +267,11 @@ export default function TracksuitPage() {
       </div>
       </div>
 
-      {/* Section 2: Items Bought Together */}
-      <div
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          background: '#fbf6f0'
-        }}
-        className="py-12 px-4"
-      >
-        <div className="max-w-4xl mx-auto w-full">
-          <h2 className="text-3xl font-bold text-center mb-8">Frequently Bought Together</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {boughtTogetherItems.map((item) => (
-              <div key={item.id} className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
-                <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden">
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    fill
-                    style={{ objectFit: "cover" }}
-                    sizes="(max-width: 768px) 100vw, 300px"
-                  />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{item.name}</h3>
-                <p className="text-lg font-bold text-gray-800 mb-4">${item.price}</p>
-                <button className="w-full bg-black text-white py-2 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors">
-                  Add to Cart
-                </button>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-              Add All to Cart - Save 15%
-            </button>
-          </div>
-        </div>
-      </div>
+      <FrequentlyBoughtTogether
+        products={boughtTogetherItems}
+        onAddToCart={(item) => { addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: 'M' }); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
+        onAddAllToCart={() => { boughtTogetherItems.forEach(item => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, image: item.image, quantity: 1, size: 'M' })); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
+      />
 
       {/* Section 3: Customer Reviews */}
       <div

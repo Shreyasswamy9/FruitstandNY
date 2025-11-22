@@ -3,6 +3,7 @@ import Image from "next/image";
 import React, { useState } from "react";
 import SizeGuide from "@/components/SizeGuide";
 import CustomerReviews from "@/components/CustomerReviews";
+import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 
@@ -46,10 +47,7 @@ export default function WasabiTeePage() {
     setTimeout(() => setShowPopup(false), 1500);
   };
 
-  const boughtTogetherItems = [
-    { id: 'porcelain-hat', name: 'Porcelain Hat', price: 40, image: '/images/products/Porcelain Hat/FS2.png' },
-    { id: 'tracksuit', name: 'Retro Track Suit', price: 120, image: '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png' },
-  ];
+  const boughtTogetherItems = getFBTForPage('wasabi-tee');
 
   const taskbarHeight = items.length > 0 && !showPopup ? 64 : 0;
 
@@ -100,24 +98,11 @@ export default function WasabiTeePage() {
         </div>
       </div>
 
-      {/* Frequently Bought Together */}
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
-        <div className="max-w-4xl mx-auto w-full">
-          <h2 className="text-3xl font-bold text-center mb-8">Frequently Bought Together</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {boughtTogetherItems.map((item) => (
-              <div key={item.id} className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
-                <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden">
-                  <Image src={item.image} alt={item.name} fill style={{ objectFit: "cover" }} sizes="(max-width: 768px) 100vw, 300px" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{item.name}</h3>
-                <p className="text-lg font-bold text-gray-800 mb-4">${item.price}</p>
-                <button className="w-full bg-black text-white py-2 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors">Add to Cart</button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <FrequentlyBoughtTogether
+        products={boughtTogetherItems}
+        onAddToCart={(item) => { addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: PRODUCT.sizes[2] }); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
+        onAddAllToCart={() => { boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, image: item.image, quantity: 1, size: PRODUCT.sizes[2] })); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
+      />
 
       {/* Reviews */}
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
