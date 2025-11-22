@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SupabaseOrderService } from '@/lib/services/supabase';
+import { createClient } from '@supabase/supabase-js';
 import { supabase as supabaseClient } from '@/app/supabase-client';
+
+// Create a service-role client for admin operations (creating orders)
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,69 +23,65 @@ export async function POST(req: NextRequest) {
       }
     } = body;
 
-    // Calculate analytics data from guest information
-    const analyticsData = {
-      customerType: 'guest',
-      email,
-      name: `${firstName} ${lastName}`,
-      phone,
-      location: {
-        city: address.city,
-        state: address.state,
-        zipCode: address.zipCode,
-        country: address.country
-      },
-      marketing: {
-        emailOptIn: marketing.emailUpdates,
-        analyticsOptIn: marketing.analytics
-      },
-      order: {
-        items: orderData.items,
-        subtotal: orderData.subtotal,
-        shipping: orderData.shipping,
-        tax: orderData.tax,
-        total: orderData.total,
-        timestamp: new Date().toISOString()
-      },
-      demographics: {
-        // You can add demographic analysis based on location, etc.
-        region: getRegionFromState(address.state),
-        zipType: getZipType(address.zipCode)
-      }
-    };
+    const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
     // Persist order to Supabase (orders + order_items)
     try {
-      const orderPayload = {
-        email,
-        shipping_address: {
-          street: address.street || '',
-          city: address.city || '',
-          state: address.state || '',
-          zipCode: address.zipCode || '',
-          country: address.country || 'US'
-        },
-        payment_method: 'stripe',
-        payment_status: 'pending',
-        order_status: 'pending',
-        subtotal: orderData.subtotal || 0,
-        shipping_cost: orderData.shipping || 0,
-        tax: orderData.tax || 0,
-        total_amount: orderData.total || 0,
-        currency: orderData.currency || 'USD',
-        items: (orderData.items || []).map((it: any) => ({
-          product_id: it.id || it.productId || null,
-          name: it.name || it.title || '',
-          quantity: it.quantity || 1,
-          size: it.size || it.selectedSize || null,
-          color: it.color || null,
-          price: it.price || it.unitPrice || 0,
-          image: (it.image || (it.product?.images && it.product.images[0]) || null)
-        }))
-      };
+      // 1. Create Order
+      const { data: order, error: orderError } = await supabaseAdmin
+        .from('orders')
+        .insert({
+          user_id: null, // Guest has no user_id
+          order_number: orderNumber,
+          status: 'pending',
+          payment_status: 'pending',
+          total_amount: orderData.total || 0,
+          subtotal: orderData.subtotal || 0,
+          tax_amount: orderData.tax || 0,
+          shipping_amount: orderData.shipping || 0,
+          discount_amount: 0,
+          shipping_name: `${firstName} ${lastName}`,
+          shipping_email: email,
+          shipping_phone: phone || '',
+          shipping_address_line1: address.street || '',
+          shipping_address_line2: address.street2 || '',
+          shipping_city: address.city || '',
+          shipping_state: address.state || '',
+          shipping_postal_code: address.zipCode || '',
+          shipping_country: address.country || 'US',
+        })
+        .select()
+        .single();
 
-  // createOrder expects a typed object; cast to any to avoid narrow literal type issues
-  const created = await SupabaseOrderService.createOrder(orderPayload as any);
+      if (orderError) {
+        console.error('Failed to create guest order:', orderError);
+        throw orderError;
+      }
+
+      // 2. Create Order Items
+      const orderItems = (orderData.items || []).map((it: any) => ({
+        order_id: order.id,
+        product_id: it.id || it.productId || null,
+        variant_id: null, // We don't have variant_id lookup here yet, could be added if critical
+        product_name: it.name || it.title || '',
+        product_image_url: (it.image || (it.product?.images && it.product.images[0]) || null),
+        variant_details: {
+          size: it.size || it.selectedSize || null,
+          color: it.color || null
+        },
+        quantity: it.quantity || 1,
+        unit_price: it.price || it.unitPrice || 0,
+        total_price: (it.price || it.unitPrice || 0) * (it.quantity || 1)
+      }));
+
+      const { error: itemsError } = await supabaseAdmin
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) {
+        console.error('Failed to create guest order items:', itemsError);
+        // Non-fatal for now, but ideally we'd rollback
+      }
 
       // Record marketing preference if opted in
       if (marketing && marketing.emailUpdates) {
@@ -92,19 +94,18 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      console.log('Guest checkout persisted to Supabase, order id:', created.id);
+      console.log('Guest checkout persisted to Supabase, order id:', order.id);
 
       return NextResponse.json({
         success: true,
         message: 'Guest checkout data processed and saved to Supabase',
-        order: { id: created.id, order_number: created.order_number, total: created.total_amount }
+        order: { id: order.id, order_number: order.order_number, total: order.total_amount }
       });
 
-    } catch (dbError) {
+    } catch (dbError: any) {
       console.error('Failed to persist guest order to Supabase:', dbError);
-      // Fall back to returning success but indicate persistence failure
       return NextResponse.json(
-        { error: 'Failed to persist guest order to Supabase' },
+        { error: 'Failed to persist guest order to Supabase', details: dbError.message },
         { status: 500 }
       );
     }
@@ -124,39 +125,39 @@ function getRegionFromState(state: string): string {
     'ME': 'Northeast', 'NH': 'Northeast', 'VT': 'Northeast', 'MA': 'Northeast',
     'RI': 'Northeast', 'CT': 'Northeast', 'NY': 'Northeast', 'NJ': 'Northeast',
     'PA': 'Northeast',
-    
+
     // Southeast
     'DE': 'Southeast', 'MD': 'Southeast', 'DC': 'Southeast', 'VA': 'Southeast',
     'WV': 'Southeast', 'KY': 'Southeast', 'TN': 'Southeast', 'NC': 'Southeast',
     'SC': 'Southeast', 'GA': 'Southeast', 'FL': 'Southeast', 'AL': 'Southeast',
     'MS': 'Southeast', 'AR': 'Southeast', 'LA': 'Southeast',
-    
+
     // Midwest
     'OH': 'Midwest', 'MI': 'Midwest', 'IN': 'Midwest', 'WI': 'Midwest',
     'IL': 'Midwest', 'MN': 'Midwest', 'IA': 'Midwest', 'MO': 'Midwest',
     'ND': 'Midwest', 'SD': 'Midwest', 'NE': 'Midwest', 'KS': 'Midwest',
-    
+
     // Southwest
     'TX': 'Southwest', 'OK': 'Southwest', 'NM': 'Southwest', 'AZ': 'Southwest',
-    
+
     // West
     'CO': 'West', 'WY': 'West', 'MT': 'West', 'ID': 'West', 'UT': 'West',
     'NV': 'West', 'WA': 'West', 'OR': 'West', 'CA': 'West', 'AK': 'West',
     'HI': 'West'
   };
-  
+
   return regions[state.toUpperCase()] || 'Unknown';
 }
 
 function getZipType(zipCode: string): string {
   if (!zipCode) return 'Unknown';
-  
+
   const firstDigit = zipCode.charAt(0);
-  
+
   // Basic ZIP code analysis
   const zipTypes: { [key: string]: string } = {
     '0': 'Northeast',
-    '1': 'Northeast', 
+    '1': 'Northeast',
     '2': 'Southeast',
     '3': 'Southeast',
     '4': 'Midwest',
@@ -166,6 +167,6 @@ function getZipType(zipCode: string): string {
     '8': 'West',
     '9': 'West'
   };
-  
+
   return zipTypes[firstDigit] || 'Unknown';
 }

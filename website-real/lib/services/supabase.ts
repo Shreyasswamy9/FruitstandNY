@@ -4,6 +4,10 @@ import { TICKETS_TABLE, TICKET_MESSAGES_TABLE } from '@/lib/tickets/config';
 
 // Types for Supabase tables
 export interface Product {
+  is_active: boolean;
+  stock_quantity: number;
+  quantity: number;
+  unit_price: number;
   id: string;
   name: string;
   description: string;
@@ -133,7 +137,7 @@ export class SupabaseProductService {
     }
 
     const { data, error } = await query.order('created_at', { ascending: false });
-    
+
     if (error) throw error;
     return data as Product[];
   }
@@ -144,7 +148,7 @@ export class SupabaseProductService {
       .select('*')
       .eq('id', id)
       .single();
-    
+
     if (error) throw error;
     return data as Product;
   }
@@ -155,7 +159,7 @@ export class SupabaseProductService {
       .insert(product)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data as Product;
   }
@@ -167,310 +171,18 @@ export class SupabaseProductService {
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data as Product;
   }
 
-  static async deleteProduct(id: string) {
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', id);
-    
-    if (error) throw error;
-  }
-}
-
-// Cart Service
-export class SupabaseCartService {
-  static async getCart(userId?: string, sessionId?: string) {
-    let query = supabase
-      .from('carts')
-      .select(`
-        *,
-        cart_items (
-          *,
-          product:products (*)
-        )
-      `);
-
-    if (userId) {
-      query = query.eq('user_id', userId);
-    } else if (sessionId) {
-      query = query.eq('session_id', sessionId);
-    } else {
-      throw new Error('Either userId or sessionId is required');
-    }
-
-    const { data, error } = await query.single();
-    
-    if (error && error.code !== 'PGRST116') { // Not found error
-      throw error;
-    }
-    
-    return data as Cart | null;
-  }
-
-  static async createCart(userId?: string, sessionId?: string) {
-    const cartData: Partial<Cart> = {};
-    if (userId) {
-      cartData.user_id = userId;
-    } else if (sessionId) {
-      cartData.session_id = sessionId;
-    } else {
-      throw new Error('Either userId or sessionId is required');
-    }
-
-    const { data, error } = await supabase
-      .from('carts')
-      .insert(cartData)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data as Cart;
-  }
-
-  static async addToCart(cartId: string, item: {
-    product_id: string;
-    quantity: number;
-    size?: string;
-    color?: string;
-    price: number;
-  }) {
-    // Check if item already exists
-    const { data: existingItem } = await supabase
-      .from('cart_items')
-      .select('*')
-      .eq('cart_id', cartId)
-      .eq('product_id', item.product_id)
-      .eq('size', item.size || '')
-      .eq('color', item.color || '')
-      .single();
-
-    if (existingItem) {
-      // Update quantity
-      const { data, error } = await supabase
-        .from('cart_items')
-        .update({ quantity: existingItem.quantity + item.quantity })
-        .eq('id', existingItem.id)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data as CartItem;
-    } else {
-      // Add new item
-      const { data, error } = await supabase
-        .from('cart_items')
-        .insert({ cart_id: cartId, ...item })
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data as CartItem;
-    }
-  }
-
-  static async updateCartItem(itemId: string, quantity: number) {
-    if (quantity <= 0) {
-      return this.removeFromCart(itemId);
-    }
-
-    const { data, error } = await supabase
-      .from('cart_items')
-      .update({ quantity })
-      .eq('id', itemId)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data as CartItem;
-  }
-
-  static async removeFromCart(itemId: string) {
-    const { error } = await supabase
-      .from('cart_items')
-      .delete()
-      .eq('id', itemId);
-    
-    if (error) throw error;
-  }
-
-  static async clearCart(cartId: string) {
-    const { error } = await supabase
-      .from('cart_items')
-      .delete()
-      .eq('cart_id', cartId);
-    
-    if (error) throw error;
-  }
-
-  static async deleteCart(cartId: string) {
-    const { error } = await supabase
-      .from('carts')
-      .delete()
-      .eq('id', cartId);
-    
-    if (error) throw error;
-  }
-}
-
-// Order Service
-export class SupabaseOrderService {
-  static async getOrders(userId: string, options: {
-    limit?: number;
-    offset?: number;
-  } = {}) {
-    let query = supabase
-      .from('orders')
-      .select(`
-        *,
-        order_items (*)
-      `)
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-
-    if (options.limit) {
-      query = query.limit(options.limit);
-    }
-    if (options.offset) {
-      query = query.range(options.offset, options.offset + (options.limit || 10) - 1);
-    }
-
-    const { data, error } = await query;
-    
-    if (error) throw error;
-    return data as Order[];
-  }
-
-  static async getOrder(id: string, userId?: string) {
-    let query = supabase
-      .from('orders')
-      .select(`
-        *,
-        order_items (*)
-      `)
-      .eq('id', id);
-
-    if (userId) {
-      query = query.eq('user_id', userId);
-    }
-
-    const { data, error } = await query.single();
-    
-    if (error) throw error;
-    return data as Order;
-  }
-
-  static async createOrder(order: {
-    user_id?: string;
-    email: string;
-    shipping_address: {
-      street: string;
-      city: string;
-      state: string;
-      zipCode: string;
-      country: string;
-    };
-    billing_address?: {
-      street: string;
-      city: string;
-      state: string;
-      zipCode: string;
-      country: string;
-    };
-    payment_method: string;
-    payment_status?: 'pending' | 'paid' | 'failed' | 'refunded';
-    order_status?: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-    payment_id?: string;
-    stripe_session_id?: string;
-    subtotal: number;
-    shipping_cost: number;
-    tax: number;
-    total_amount: number;
-    currency?: string;
-    items: Array<{
-      product_id: string;
-      name: string;
-      quantity: number;
-      size?: string;
-      color?: string;
-      price: number;
-      image?: string;
-    }>;
-  }) {
-    // Create order
-    const { items, ...orderData } = order;
-    const { data: newOrder, error: orderError } = await supabase
-      .from('orders')
-      .insert(orderData)
-      .select()
-      .single();
-
-    if (orderError) throw orderError;
-
-    // Create order items
-    const orderItems = items.map(item => ({
-      order_id: newOrder.id,
-      ...item
-    }));
-
-    const { data: newOrderItems, error: itemsError } = await supabase
-      .from('order_items')
-      .insert(orderItems)
-      .select();
-
-    if (itemsError) throw itemsError;
-
-    return { ...newOrder, order_items: newOrderItems } as Order;
-  }
-
-  static async updateOrder(id: string, updates: Partial<Order>) {
-    const { data, error } = await supabase
-      .from('orders')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data as Order;
-  }
-
-  static async updateOrderStatus(id: string, status: Order['order_status']) {
-    return this.updateOrder(id, { order_status: status });
-  }
-
-  static async updatePaymentStatus(id: string, status: Order['payment_status']) {
-    return this.updateOrder(id, { payment_status: status });
-  }
-
-  static async getOrderByStripeSession(stripeSessionId: string) {
-    const { data, error } = await supabase
-      .from('orders')
-      .select(`
-        *,
-        order_items (*)
-      `)
-      .eq('stripe_session_id', stripeSessionId)
-      .single();
-    
-    if (error) throw error;
-    return data as Order;
-  }
-}
-
-// User Profile Service
-export class SupabaseUserService {
   static async getProfile(userId: string) {
     const { data, error } = await supabase
       .from('user_profiles')
       .select('*')
       .eq('id', userId)
       .single();
-    
+
     if (error && error.code !== 'PGRST116') {
       throw error;
     }
@@ -489,7 +201,7 @@ export class SupabaseUserService {
       .insert(profile)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -504,7 +216,7 @@ export class SupabaseUserService {
       .eq('id', userId)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -560,7 +272,7 @@ export class SupabaseTicketService {
       .insert([ticketData])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data as SupportTicket;
   }
@@ -593,7 +305,7 @@ export class SupabaseTicketService {
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
-    
+
     if (error) throw error;
     return data as SupportTicket[];
   }
@@ -604,7 +316,7 @@ export class SupabaseTicketService {
       .select('*')
       .eq('user_email', email)
       .order('created_at', { ascending: false });
-    
+
     if (error) throw error;
     return data as SupportTicket[];
   }
@@ -616,7 +328,7 @@ export class SupabaseTicketService {
       .eq('ticket_id', ticketId)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data as SupportTicket;
   }
@@ -628,7 +340,7 @@ export class SupabaseTicketService {
       .select('id')
       .eq('ticket_id', ticketId)
       .single();
-    
+
     if (ticketError) throw ticketError;
 
     const { data, error } = await supabase
@@ -636,7 +348,7 @@ export class SupabaseTicketService {
       .insert([{ ...messageData, ticket_id: ticket.id }])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data as TicketMessage;
   }
@@ -648,7 +360,7 @@ export class SupabaseTicketService {
       .select('id')
       .eq('ticket_id', ticketId)
       .single();
-    
+
     if (ticketError) throw ticketError;
 
     const { data, error } = await supabase
@@ -656,7 +368,7 @@ export class SupabaseTicketService {
       .select('*')
       .eq('ticket_id', ticket.id)
       .order('created_at', { ascending: true });
-    
+
     if (error) throw error;
     return data as TicketMessage[];
   }
@@ -692,8 +404,8 @@ export class SupabaseTicketService {
       query = query.range(options.offset, options.offset + (options.limit || 10) - 1);
     }
 
-  const { data, error } = await query.order('created_at', { ascending: false });
-    
+    const { data, error } = await query.order('created_at', { ascending: false });
+
     if (error) throw error;
     return data as SupportTicket[];
   }
@@ -705,7 +417,7 @@ export class SupabaseTicketService {
       .eq('ticket_id', ticketId)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data as SupportTicket;
   }

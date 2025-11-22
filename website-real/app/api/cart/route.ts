@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
     const sessionId = request.headers.get('x-session-id');
 
     if (!userId && !sessionId) {
+      console.warn('GET /api/cart missing user and sessionId');
       return NextResponse.json(
         { success: false, error: 'Authentication or session ID required' },
         { status: 400 }
@@ -54,6 +55,7 @@ export async function POST(request: NextRequest) {
     const sessionId = request.headers.get('x-session-id');
 
     if (!userId && !sessionId) {
+      console.warn('POST /api/cart missing user and sessionId');
       return NextResponse.json(
         { success: false, error: 'Authentication or session ID required' },
         { status: 400 }
@@ -73,16 +75,31 @@ export async function POST(request: NextRequest) {
 
     // Get product details
     const product = await SupabaseProductService.getProduct(productId);
-    
-    if (!product || !product.active) {
+    console.debug('Product fetched for addToCart:', { productId, product });
+
+    if (!product) {
+      return NextResponse.json(
+        { success: false, error: 'Product not found' },
+        { status: 404 }
+      );
+    }
+
+    // Support multiple possible field names from schema
+    const isActive = product.is_active ?? product.active ?? true;
+    const inventoryQty = Number(product.stock_quantity ?? product.inventory_quantity ?? product.quantity ?? 0);
+    const price = Number(product.price ?? product.unit_price ?? 0);
+
+    // Detailed checks with logs
+    if (!isActive) {
+      console.warn('Product inactive:', productId, { isActive });
       return NextResponse.json(
         { success: false, error: 'Product not available' },
         { status: 400 }
       );
     }
 
-    // Check inventory
-    if (product.inventory_quantity < quantity) {
+    if (inventoryQty < quantity) {
+      console.warn('Insufficient inventory', { productId, inventoryQty, requested: quantity });
       return NextResponse.json(
         { success: false, error: 'Insufficient inventory' },
         { status: 400 }
@@ -94,16 +111,35 @@ export async function POST(request: NextRequest) {
     
     if (!cart) {
       cart = await SupabaseCartService.createCart(userId || undefined, sessionId || undefined);
+      console.debug('Created new cart', { cart });
     }
 
     // Add item to cart
-    const cartItem = await SupabaseCartService.addToCart(cart.id, {
-      product_id: productId,
-      quantity,
-      size,
-      color,
-      price: product.price
-    });
+    let cartItem;
+    try {
+      cartItem = await SupabaseCartService.addToCart(cart.id, {
+        product_id: productId,
+        quantity,
+        size,
+        color,
+        price
+      });
+    } catch (svcErr) {
+      console.error('SupabaseCartService.addToCart error:', svcErr);
+      return NextResponse.json(
+        { success: false, error: 'Failed to add item to cart (service error)' },
+        { status: 500 }
+      );
+    }
+
+    // Verify returned cartItem
+    if (!cartItem) {
+      console.error('addToCart returned no item', { cartId: cart.id, productId });
+      return NextResponse.json(
+        { success: false, error: 'Failed to add item to cart' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,

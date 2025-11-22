@@ -2,12 +2,35 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { TICKETS_TABLE, TICKET_MESSAGES_TABLE } from '@/lib/tickets/config'
 
-// Use a service role key for server-side operations (RLS bypass where required)
-// Falls back gracefully if env vars are missing (will surface auth errors)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+// Helper to get a Supabase client with the appropriate context
+const getSupabaseClient = (token?: string) => {
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const hasServiceRole = typeof serviceRoleKey === 'string' && serviceRoleKey.length > 0
+
+  if (hasServiceRole) {
+    return createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      serviceRoleKey
+    )
+  }
+
+  // Fallback to user-scoped client if token is available
+  if (token) {
+    return createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: { headers: { Authorization: `Bearer ${token}` } }
+      }
+    )
+  }
+
+  // Fallback to anon client
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
 
 // Narrow types for contact-page ticket responses (email-based queries)
 type ContactTicketMessage = {
@@ -33,7 +56,7 @@ export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url)
     const email = url.searchParams.get('email')
-    
+
     // Require authentication for any ticket retrieval
     const authHeader = request.headers.get('authorization')
     if (!authHeader) {
@@ -41,12 +64,15 @@ export async function GET(request: NextRequest) {
     }
 
     const token = authHeader.replace('Bearer ', '')
+    // Use a client that can verify the user
+    const supabase = getSupabaseClient(token)
+
     const { data: { user }, error: userError } = await supabase.auth.getUser(token)
-    
+
     if (userError || !user) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
-    
+
     // Handle email-based queries (must match authenticated user's email)
     if (email) {
       if (!user.email || user.email.toLowerCase() !== email.toLowerCase()) {
@@ -60,11 +86,12 @@ export async function GET(request: NextRequest) {
         .order('created_at', { ascending: false })
 
       if (ticketsError) {
+        console.error('Error fetching tickets:', ticketsError)
         return NextResponse.json({ success: false, error: 'Failed to fetch tickets' }, { status: 500 })
       }
 
-  // For each ticket gather its messages
-  const mapped: ContactTicket[] = []
+      // For each ticket gather its messages
+      const mapped: ContactTicket[] = []
       for (const t of ticketsData || []) {
         const { data: messagesData, error: messagesError } = await supabase
           .from(TICKET_MESSAGES_TABLE)
@@ -117,6 +144,7 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
 
     if (userTicketsError) {
+      console.error('Error fetching user tickets:', userTicketsError)
       return NextResponse.json({ success: false, error: 'Failed to fetch user tickets' }, { status: 500 })
     }
 
@@ -136,9 +164,9 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching tickets:', error)
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Failed to fetch tickets' 
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to fetch tickets'
     }, { status: 500 })
   }
 }
@@ -153,11 +181,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No authorization header' }, { status: 401 })
     }
     const token = authHeader.replace('Bearer ', '')
+
+    // Use a client that can verify the user and respect RLS
+    const supabase = getSupabaseClient(token)
+
     const { data: { user }, error: userError } = await supabase.auth.getUser(token)
     if (userError || !user) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
-    
+
     // Handle contact form submissions (now auth-required) -> persist ticket + initial message
     if (body.userName && body.userEmail) {
       const {
@@ -212,6 +244,7 @@ export async function POST(request: NextRequest) {
           category,
           priority: computedPriority,
           description,
+          message: description,
           order_id: orderId || null,
           product_id: productId || null,
           status: 'open',
@@ -221,11 +254,12 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (ticketError) {
-        return NextResponse.json({ success: false, error: 'Failed to create ticket' }, { status: 500 })
+        console.error('Error creating ticket:', ticketError)
+        return NextResponse.json({ success: false, error: 'Failed to create ticket: ' + ticketError.message }, { status: 500 })
       }
 
       // Insert initial message (optional failure tolerated but logged)
-      const { data: initialMessage } = await supabase
+      const { data: initialMessage, error: messageError } = await supabase
         .from(TICKET_MESSAGES_TABLE)
         .insert([{
           ticket_id: ticket.id, // FK to tickets uuid
@@ -236,6 +270,10 @@ export async function POST(request: NextRequest) {
         }])
         .select('id, message, sender_type, created_at')
         .single()
+
+      if (messageError) {
+        console.error('Error creating initial message:', messageError)
+      }
 
       const mappedTicket = {
         ticketId: ticket.ticket_id,
@@ -262,13 +300,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, ticket: mappedTicket })
     }
 
-  const { subject, description, category } = body
+    const { subject, description, category } = body
 
     // Validate required fields for account page
     if (!subject || !description || !category) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Missing required fields: subject, description, category' 
+      return NextResponse.json({
+        success: false,
+        error: 'Missing required fields: subject, description, category'
       }, { status: 400 })
     }
 
@@ -301,6 +339,7 @@ export async function POST(request: NextRequest) {
         category,
         priority: computedPriority,
         description,
+        message: description, // populate message to satisfy schema
         status: 'open',
         attachments: [],
       }])
@@ -308,7 +347,8 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (ticketError) {
-      return NextResponse.json({ success: false, error: 'Failed to create ticket' }, { status: 500 })
+      console.error('Error creating ticket (account):', ticketError)
+      return NextResponse.json({ success: false, error: 'Failed to create ticket: ' + ticketError.message }, { status: 500 })
     }
 
     const mapped = {
@@ -327,9 +367,9 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error creating ticket:', error)
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Failed to create ticket' 
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to create ticket'
     }, { status: 500 })
   }
 }

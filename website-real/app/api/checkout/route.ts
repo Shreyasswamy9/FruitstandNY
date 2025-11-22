@@ -1,128 +1,214 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-
-console.log('Stripe secret key available:', !!process.env.STRIPE_SECRET_KEY);
-console.log('Base URL:', process.env.NEXT_PUBLIC_BASE_URL);
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+import { createClient } from '@supabase/supabase-js';
 
 export async function POST(request: NextRequest) {
-  try {
-    console.log('Checkout API called');
-    const requestData = await request.json();
-    console.log('Request data received:', requestData);
-    
-    const { items, shipping, tax, guestData, customerData } = requestData;
+  console.log('Checkout API: Request received');
 
-    if (!items || items.length === 0) {
-      console.error('No items provided');
+  try {
+    // 1. Validate Environment Variables
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const baseUrlRaw = process.env.NEXT_PUBLIC_BASE_URL;
+
+    // Log configuration status (DO NOT log actual keys)
+    const isTestKey = stripeKey?.startsWith('sk_test_');
+    console.log('Checkout API: Configuration Check', {
+      hasStripeKey: !!stripeKey,
+      keyType: isTestKey ? 'TEST' : (stripeKey ? 'LIVE' : 'MISSING'),
+      hasSupabaseUrl: !!supabaseUrl,
+      hasSupabaseServiceKey: !!supabaseServiceKey,
+      hasBaseUrl: !!baseUrlRaw,
+      baseUrlValue: baseUrlRaw // Safe to log base URL
+    });
+
+    if (!stripeKey || !supabaseUrl || !supabaseServiceKey || !baseUrlRaw) {
+      const missing = [];
+      if (!stripeKey) missing.push('STRIPE_SECRET_KEY');
+      if (!supabaseUrl) missing.push('NEXT_PUBLIC_SUPABASE_URL');
+      if (!supabaseServiceKey) missing.push('SUPABASE_SERVICE_ROLE_KEY');
+      if (!baseUrlRaw) missing.push('NEXT_PUBLIC_BASE_URL');
+
+      console.error('Checkout API: Missing environment variables:', missing);
       return NextResponse.json(
-        { error: 'No items provided' },
-        { status: 400 }
+        { error: `Server configuration error: Missing ${missing.join(', ')}` },
+        { status: 500 }
       );
     }
 
-    console.log('Processing items:', items);
-    console.log('Guest data:', guestData);
-    console.log('Customer data:', customerData);
+    // 2. Initialize Clients
+    const stripe = new Stripe(stripeKey);
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+    const baseUrl = baseUrlRaw.replace(/\/$/, '');
 
-    // Server-side validation
-    const customerInfo = customerData || guestData;
-    
-    if (customerInfo && customerInfo.email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(customerInfo.email)) {
-        console.error('Invalid email format:', customerInfo.email);
-        return NextResponse.json(
-          { error: 'Invalid email address format. Please enter a valid email address.' },
-          { status: 400 }
-        );
+    // 3. Parse Request
+    let requestData;
+    try {
+      requestData = await request.json();
+    } catch (e) {
+      console.error('Checkout API: Failed to parse JSON body', e);
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
+
+    console.log('Checkout API: Request data parsed');
+    const { items, shipping, tax, guestData, customerData } = requestData;
+
+    // 4. Auth (Optional)
+    const authHeader = request.headers.get('authorization');
+    let userId = null;
+    if (authHeader) {
+      try {
+        const token = authHeader.replace('Bearer ', '');
+        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+        if (authError) console.warn('Checkout API: Auth check failed', authError);
+        userId = user?.id;
+      } catch (e) {
+        console.warn('Checkout API: Auth token processing error', e);
       }
     }
 
-    // Validate required environment variables
-    if (!process.env.STRIPE_SECRET_KEY) {
-      console.error('Stripe secret key not configured');
-      return NextResponse.json(
-        { error: 'Payment system configuration error. Please try again later.' },
-        { status: 500 }
-      );
-    }
+    // 5. Calculate Totals
+    const safeShipping = typeof shipping === 'number' ? shipping : 0;
+    const safeTax = typeof tax === 'number' ? tax : 0;
+    const subtotal = items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+    const totalAmount = subtotal + safeShipping + safeTax;
+    const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
-    if (!process.env.NEXT_PUBLIC_BASE_URL) {
-      console.error('Base URL not configured');
-      return NextResponse.json(
-        { error: 'System configuration error. Please try again later.' },
-        { status: 500 }
-      );
-    }
+    console.log('Checkout API: Order details calculated', { orderNumber, totalAmount });
 
-    // Create line items for Stripe
-    type CheckoutItem = {
-      name: string;
-      image?: string;
-      productId: string;
-      size?: string;
-      color?: string;
-      price: number;
-      quantity: number;
+    // 6. Create Order in Supabase
+    // Helper to get address field
+    const getAddressField = (field: 'street' | 'street2' | 'city' | 'state' | 'zipCode' | 'country') => {
+      return guestData?.address?.[field] || customerData?.address?.[field] || '';
     };
 
-    const lineItems = items.map((item: CheckoutItem) => ({
-      price_data: {
-        currency: 'usd',
-        product_data: {
-          name: item.name,
-          images: item.image ? [`${process.env.NEXT_PUBLIC_BASE_URL}${item.image}`] : [],
-          metadata: {
-            productId: item.productId,
-            size: item.size || '',
-            color: item.color || '',
-          },
-        },
-        unit_amount: Math.round(item.price * 100), // Convert to cents
+    const { data: order, error: orderError } = await supabaseAdmin
+      .from('orders')
+      .insert({
+        user_id: userId,
+        order_number: orderNumber,
+        status: 'pending',
+        payment_status: 'pending',
+        total_amount: totalAmount,
+        subtotal: subtotal,
+        tax_amount: safeTax,
+        shipping_amount: safeShipping,
+        discount_amount: 0,
+        shipping_name: customerData?.name || `${guestData?.firstName} ${guestData?.lastName}`,
+        shipping_email: customerData?.email || guestData?.email,
+        shipping_phone: guestData?.phone || customerData?.phone || '',
+        shipping_address_line1: getAddressField('street'),
+        shipping_address_line2: getAddressField('street2') || '',
+        shipping_city: getAddressField('city'),
+        shipping_state: getAddressField('state'),
+        shipping_postal_code: getAddressField('zipCode'),
+        shipping_country: getAddressField('country') || 'US',
+      })
+      .select()
+      .single();
+
+    if (orderError) {
+      console.error('Checkout API: Failed to create order in Supabase', orderError);
+      return NextResponse.json(
+        { error: 'Failed to create order record' },
+        { status: 500 }
+      );
+    }
+
+    console.log('Checkout API: Order created', order.id);
+
+    // 7. Create Order Items
+    const orderItems = items.map((item: any) => ({
+      order_id: order.id,
+      product_id: item.productId,
+      variant_id: null,
+      product_name: item.name,
+      product_image_url: item.image,
+      variant_details: {
+        size: item.size,
+        color: item.color
       },
       quantity: item.quantity,
+      unit_price: item.price,
+      total_price: item.price * item.quantity
     }));
 
-    // Add shipping as a line item if it exists
-    if (shipping > 0) {
-      lineItems.push({
+    const { error: itemsError } = await supabaseAdmin
+      .from('order_items')
+      .insert(orderItems);
+
+    if (itemsError) {
+      console.error('Checkout API: Failed to create order items', itemsError);
+      // Continue anyway, as the order exists
+    }
+
+    // 8. Prepare Stripe Session
+    const lineItems = items.map((item: any) => {
+      let imageUrl = item.image;
+      if (imageUrl && !imageUrl.startsWith('http')) {
+        const cleanPath = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
+        imageUrl = `${baseUrl}${cleanPath}`;
+      }
+
+      if (imageUrl) {
+        try {
+          imageUrl = encodeURI(imageUrl);
+        } catch (e) {
+          console.error('Checkout API: Error encoding image URL', imageUrl, e);
+          imageUrl = undefined;
+        }
+      }
+
+      return {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: 'Shipping',
+            name: item.name,
+            images: imageUrl ? [imageUrl] : [],
+            metadata: {
+              productId: item.productId,
+              size: item.size || '',
+              color: item.color || '',
+            },
           },
-          unit_amount: Math.round(shipping * 100),
+          unit_amount: Math.round(item.price * 100),
+        },
+        quantity: item.quantity,
+      };
+    });
+
+    if (safeShipping > 0) {
+      lineItems.push({
+        price_data: {
+          currency: 'usd',
+          product_data: { name: 'Shipping' },
+          unit_amount: Math.round(safeShipping * 100),
         },
         quantity: 1,
       });
     }
 
-    // Add tax as a line item
-    if (tax > 0) {
+    if (safeTax > 0) {
       lineItems.push({
         price_data: {
           currency: 'usd',
-          product_data: {
-            name: 'Tax',
-          },
-          unit_amount: Math.round(tax * 100),
+          product_data: { name: 'Tax' },
+          unit_amount: Math.round(safeTax * 100),
         },
         quantity: 1,
       });
     }
 
-    // Create Stripe checkout session
-    // Prepare session configuration
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ['card'],
       line_items: lineItems as Stripe.Checkout.SessionCreateParams.LineItem[],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cart`,
+      success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/cart`,
       metadata: {
-        orderItems: JSON.stringify(items),
+        order_id: order.id,
+        order_number: orderNumber,
       },
       shipping_address_collection: {
         allowed_countries: ['US', 'CA'],
@@ -130,27 +216,39 @@ export async function POST(request: NextRequest) {
       billing_address_collection: 'required',
     };
 
-    // If customer information is available, pre-fill the form
-    if (customerInfo && customerInfo.email) {
+    const customerInfo = customerData || guestData;
+    if (customerInfo?.email) {
       sessionConfig.customer_email = customerInfo.email;
+      if (customerInfo.name) {
+        sessionConfig.customer_creation = 'always';
+      }
     }
 
-    // Add customer creation if we have enough info for returning customers
-    if (customerInfo && customerInfo.email && customerInfo.name) {
-      sessionConfig.customer_creation = 'always';
-    }
-
+    console.log('Checkout API: Creating Stripe session...');
     const session = await stripe.checkout.sessions.create(sessionConfig);
-    
-    console.log('Stripe session created successfully:', session.id);
-    console.log('Session config used:', sessionConfig);
+    console.log('Checkout API: Stripe session created', session.id);
 
-    return NextResponse.json({ sessionId: session.id });
-  } catch (error) {
-    console.error('Error creating checkout session:', error);
-    console.error('Error details:', error);
+    // 9. Update Order with Session ID
+    await supabaseAdmin
+      .from('orders')
+      .update({ stripe_checkout_session_id: session.id })
+      .eq('id', order.id);
+
+    return NextResponse.json({
+      sessionId: session.id,
+      orderId: order.id,
+      orderNumber: orderNumber
+    });
+
+  } catch (error: any) {
+    console.error('Checkout API: Unhandled error', error);
+    console.error('Checkout API: Error stack', error.stack);
     return NextResponse.json(
-      { error: 'Error creating checkout session', details: error instanceof Error ? error.message : 'Unknown error' },
+      {
+        error: 'Internal Server Error',
+        details: error.message || 'Unknown error',
+        code: error.code
+      },
       { status: 500 }
     );
   }
