@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
 import CustomerReviews from "@/components/CustomerReviews";
@@ -63,7 +63,7 @@ const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
 export default function GalaTshirtPage() {
   const [selectedColor, setSelectedColor] = useState<GalaColorOption>(GALA_COLOR_OPTIONS[0]);
   const [selectedImage, setSelectedImage] = useState(GALA_COLOR_OPTIONS[0].images[0]);
-  const searchParams = useSearchParams();
+  // read query params at runtime inside effect to avoid prerender/suspense issues
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
@@ -83,9 +83,11 @@ export default function GalaTshirtPage() {
     setTimeout(() => setShowPopup(false), 1500);
   };
 
-  // Preselect variant via query param (?color=slug)
+  // Preselect variant via query param (?color=slug) — done at runtime only
   useEffect(() => {
-    const colorSlug = searchParams.get('color');
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const colorSlug = params.get('color');
     if (colorSlug) {
       const found = GALA_COLOR_OPTIONS.find(c => c.slug === colorSlug);
       if (found) {
@@ -93,7 +95,7 @@ export default function GalaTshirtPage() {
         setSelectedImage(found.images[0]);
       }
     }
-  }, [searchParams]);
+  }, []);
 
   const boughtTogetherItems = [
     { id: 'hockey-jersey', name: 'Broadway Blueberry Jersey', price: 90, image: '/images/products/hockey Jersey/JN.png' },

@@ -3,7 +3,7 @@ import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import SizeGuide from "@/components/SizeGuide";
 import CustomerReviews from "@/components/CustomerReviews";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 
 const TRACKSUIT_IMAGE_MAP: Record<string, string[]> = {
@@ -61,6 +61,8 @@ const PRODUCT = {
   ],
 };
 
+const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
+
 export default function TracksuitPage() {
   const colorOptions = TRACKSUIT_VARIANTS;
   const [selectedColor, setSelectedColor] = useState<TracksuitVariant>(colorOptions[0]);
@@ -69,18 +71,18 @@ export default function TracksuitPage() {
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
-  const searchParams = useSearchParams();
-
+  
   useEffect(() => {
-    const colorSlug = searchParams.get('color');
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const colorSlug = params.get('color');
     if (!colorSlug) return;
     const found = colorOptions.find(option => option.slug === colorSlug);
     if (found) {
       setSelectedColor(found);
       setSelectedImage(found.images[0]);
     }
-  }, [searchParams]);
+  }, [colorOptions]);
 
   // Show popup and keep it visible
   const handleAddToCart = () => {

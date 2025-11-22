@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
-import React, { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import React, { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
 import CustomerReviews from "@/components/CustomerReviews";
@@ -33,18 +33,18 @@ const PRODUCT = {
 };
 
 export default function MutsuTshirtPage() {
-  const colorOptions = [
+  const colorOptions = useMemo(() => [
     { name: 'Broadway Noir', slug: 'broadway-noir', color: '#000000', images: MUTSU_COLOR_IMAGE_MAP['broadway-noir'], bg: '#ffffff', border: '#e5e7eb' },
     { name: 'Sutton Place Snow', slug: 'sutton-place-snow', color: '#ffffff', images: MUTSU_COLOR_IMAGE_MAP['sutton-place-snow'], bg: '#ffffff', border: '#e5e7eb' },
-  ];
+  ], []);
   const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
   const [selectedImage, setSelectedImage] = useState(colorOptions[0].images[0]);
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
-  const searchParams = useSearchParams();
+  
+  // read color from window.location in effect to avoid useSearchParams suspense issues
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
@@ -61,7 +61,9 @@ export default function MutsuTshirtPage() {
   };
 
   useEffect(() => {
-    const colorSlug = searchParams.get('color');
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const colorSlug = params.get('color');
     if (colorSlug) {
       const found = colorOptions.find(c => c.slug === colorSlug);
       if (found) {
@@ -69,7 +71,7 @@ export default function MutsuTshirtPage() {
         setSelectedImage(found.images[0]);
       }
     }
-  }, [searchParams]);
+  }, [colorOptions]);
 
   const boughtTogetherItems = [
     { id: 'denim-hat', name: 'Denim Hat', price: 20, image: '/images/denimhat1.jpeg' },

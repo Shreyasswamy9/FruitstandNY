@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react"
 import { supabase } from "../../supabase-client"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import type { User } from "@supabase/supabase-js"
 
@@ -80,8 +80,14 @@ function CompleteProfileContent() {
     }
   }, [])
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const redirectTo = searchParams.get("redirect") || "account"
+  const [redirectTo, setRedirectTo] = useState<string>('account')
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const r = params.get('redirect') || 'account'
+    setRedirectTo(r)
+  }, [])
 
   useEffect(() => {
     if (!isLoaded) return // Still loading

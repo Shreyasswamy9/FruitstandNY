@@ -1,21 +1,24 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 function SuccessContent() {
-  const searchParams = useSearchParams();
-  const sessionId = searchParams.get('session_id');
   const [loading, setLoading] = useState(true);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    if (sessionId) {
-      const fromAccountCreation = searchParams.get('from') === 'account-creation';
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const sid = params.get('session_id');
+    const fromAccountCreation = params.get('from') === 'account-creation';
+    setSessionId(sid);
+    if (sid) {
       if (!fromAccountCreation) {
-        router.push(`/success/create-account?session_id=${sessionId}`);
+        router.push(`/success/create-account?session_id=${sid}`);
         return;
       }
       localStorage.removeItem('cart');
@@ -24,7 +27,7 @@ function SuccessContent() {
     } else {
       setLoading(false);
     }
-  }, [sessionId, router, searchParams]);
+  }, [router]);
 
   if (loading) {
     return (

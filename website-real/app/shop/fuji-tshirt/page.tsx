@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
-import React, { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import React, { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
 import CustomerReviews from "@/components/CustomerReviews";
@@ -46,20 +46,20 @@ const PRODUCT = {
 };
 
 export default function FujiTshirtPage() {
-  const colorOptions = [
+  const colorOptions = useMemo(() => [
     { name: 'Arboretum', slug: 'arboretum', color: '#0f5132', images: FUJI_COLOR_IMAGE_MAP['arboretum'], bg: '#e6f3ec', border: '#b6d9c6' },
     { name: 'Hudson Blue', slug: 'hudson-blue', color: '#243b5a', images: FUJI_COLOR_IMAGE_MAP['hudson-blue'], bg: '#e5edf6', border: '#c2d2e6' },
     { name: 'Redbird', slug: 'redbird', color: '#c21010', images: FUJI_COLOR_IMAGE_MAP['redbird'], bg: '#fceaea', border: '#f4bcbc' },
     { name: 'Broadway Noir', slug: 'broadway-noir', color: '#000000', images: FUJI_COLOR_IMAGE_MAP['broadway-noir'], bg: '#ededed', border: '#d4d4d4' },
-  ];
+  ], []);
   const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
   const [selectedImage, setSelectedImage] = useState(colorOptions[0].images[0]);
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
-  const searchParams = useSearchParams();
+  
+  // useSearchParams can cause build-time suspense issues; read from window.location in an effect instead
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
@@ -77,7 +77,9 @@ export default function FujiTshirtPage() {
 
   // Preselect variant via query param (?color=slug)
   useEffect(() => {
-    const colorSlug = searchParams.get('color');
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const colorSlug = params.get('color');
     if (colorSlug) {
       const found = colorOptions.find(c => c.slug === colorSlug);
       if (found) {
@@ -85,7 +87,7 @@ export default function FujiTshirtPage() {
         setSelectedImage(found.images[0]);
       }
     }
-  }, [searchParams]);
+  }, [colorOptions]);
 
   const boughtTogetherItems = [
     { id: 'empire-hat', name: 'Empire Cordury hat', price: 22, image: '/images/empirehatfemale1.jpeg' },

@@ -4,7 +4,6 @@ import Image from 'next/image'
 import { useMemo, useState } from 'react'
 import { bundles as defaultBundles, type Bundle } from '@/lib/bundles'
 import { products as gridProducts, type Product } from './ProductsGridHome'
-import { useCart } from './CartContext'
 import BundleSheet from './BundleSheet'
 
 function parsePrice(priceStr: string): number {
@@ -24,7 +23,7 @@ export type FeaturedBundleProps = {
 }
 
 export default function FeaturedBundle({ bundle, bundles = defaultBundles, products = gridProducts, className }: FeaturedBundleProps) {
-  const { addToCart, addBundleToCart } = useCart()
+  // no direct cart operations here; adding bundles handled via BundleSheet
   const [openSheet, setOpenSheet] = useState(false)
   const [selectedForSheet, setSelectedForSheet] = useState<string | null>(null)
 
@@ -38,13 +37,7 @@ export default function FeaturedBundle({ bundle, bundles = defaultBundles, produ
   const discount = featured.discountPercent ? Math.round(subtotal * (featured.discountPercent / 100)) : 0
   const total = Math.max(0, subtotal - discount)
 
-  const addBundle = (b: Bundle) => {
-    const items = b.itemIds.map(id => productMap.get(id)).filter(Boolean) as typeof productMap extends Map<any, infer U> ? U[] : any[]
-    const subtotal = items.reduce((acc, p) => acc + parsePrice((p as any).price), 0)
-    const discount = b.discountPercent ? Math.round(subtotal * (b.discountPercent / 100)) : 0
-    const total = Math.max(0, subtotal - discount)
-    addBundleToCart({ bundleId: b.id, name: b.title, price: total, image: items[0]?.image || '/images/classicteemale1.jpeg', itemIds: b.itemIds })
-  }
+  // Add bundle helper removed — use BundleSheet for selection to keep UI consistent
 
   return (
     <section className={className} aria-label="Featured bundle">
