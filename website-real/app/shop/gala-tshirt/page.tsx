@@ -1,10 +1,11 @@
 "use client";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
 import CustomerReviews from "@/components/CustomerReviews";
+import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 
 // Color-specific image sets (kept explicit for clarity and to avoid client fs access)
 const COLOR_IMAGE_MAP: Record<string, string[]> = {
@@ -63,7 +64,7 @@ const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
 export default function GalaTshirtPage() {
   const [selectedColor, setSelectedColor] = useState<GalaColorOption>(GALA_COLOR_OPTIONS[0]);
   const [selectedImage, setSelectedImage] = useState(GALA_COLOR_OPTIONS[0].images[0]);
-  const searchParams = useSearchParams();
+  // read query params at runtime inside effect to avoid prerender/suspense issues
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
@@ -83,9 +84,11 @@ export default function GalaTshirtPage() {
     setTimeout(() => setShowPopup(false), 1500);
   };
 
-  // Preselect variant via query param (?color=slug)
+  // Preselect variant via query param (?color=slug) — done at runtime only
   useEffect(() => {
-    const colorSlug = searchParams.get('color');
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const colorSlug = params.get('color');
     if (colorSlug) {
       const found = GALA_COLOR_OPTIONS.find(c => c.slug === colorSlug);
       if (found) {
@@ -93,13 +96,9 @@ export default function GalaTshirtPage() {
         setSelectedImage(found.images[0]);
       }
     }
-  }, [searchParams]);
+  }, []);
 
-  const boughtTogetherItems = [
-    { id: 'hockey-jersey', name: 'Broadway Blueberry Jersey', price: 90, image: '/images/products/hockey Jersey/JN.png' },
-    { id: 'white-hat', name: 'White Hat', price: 18, image: '/images/beigehatfemale1.jpeg' },
-    { id: 'tracksuit', name: 'Retro Track Suit', price: 45, image: '/images/B&Wtracksuitmale1.jpeg' },
-  ];
+  const boughtTogetherItems = getFBTForPage('gala-tshirt');
 
   const handleAddBoughtTogetherItem = (item: { id: string; name: string; price: number; image: string }) => {
     addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: "M" });
@@ -222,27 +221,11 @@ export default function GalaTshirtPage() {
         </div>
       </div>
 
-      {/* Frequently Bought Together */}
-  <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
-        <div className="max-w-4xl mx-auto w-full">
-          <h2 className="text-3xl font-bold text-center mb-8">Frequently Bought Together</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {boughtTogetherItems.map((item) => (
-              <div key={item.id} className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
-                <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden">
-                  <Image src={item.image} alt={item.name} fill style={{ objectFit: "cover" }} sizes="(max-width: 768px) 100vw, 300px" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{item.name}</h3>
-                <p className="text-lg font-bold text-gray-800 mb-4">${item.price}</p>
-                <button onClick={() => handleAddBoughtTogetherItem(item)} className="w-full bg-black text-white py-2 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors">Add to Cart</button>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <button onClick={handleAddAllToCart} className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">Add All to Cart - Save 15%</button>
-          </div>
-        </div>
-      </div>
+      <FrequentlyBoughtTogether
+        products={boughtTogetherItems}
+        onAddToCart={handleAddBoughtTogetherItem}
+        onAddAllToCart={handleAddAllToCart}
+      />
 
       {/* Reviews */}
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">

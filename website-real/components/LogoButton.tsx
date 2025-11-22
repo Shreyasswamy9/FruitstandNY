@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useContext } from "react"
+import Image from 'next/image'
 import { LogoVisibilityContext } from "./ClientRootLayout"
 import Link from "next/link"
 
@@ -56,22 +57,21 @@ export default function LogoButton() {
         e.currentTarget.style.outlineOffset = '0px';
       }}
     >
-      <img
-        src="/images/newlogo.png"
-        alt="Fruitstand Logo"
-        width={logoSize}
-        height={logoSize}
-        style={{
-          width: '100%',
-          height: '100%',
-          transformOrigin: 'top left',
-          objectFit: 'contain',
-          display: 'block',
-          pointerEvents: 'none',
-          userSelect: 'none',
-        }}
-        draggable={false}
-      />
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <Image
+          src="/images/newlogo.png"
+          alt="Fruitstand Logo"
+          fill
+          unoptimized
+          draggable={false}
+          style={{
+            objectFit: 'contain',
+            display: 'block',
+            pointerEvents: 'none',
+            userSelect: 'none',
+          }}
+        />
+      </div>
     </Link>
   )
 }

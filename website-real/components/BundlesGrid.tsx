@@ -4,7 +4,6 @@ import Image from 'next/image'
 import { useMemo, useState } from 'react'
 import { bundles as defaultBundles, type Bundle } from '@/lib/bundles'
 import { products as gridProducts, type Product } from './ProductsGridHome'
-import { useCart } from './CartContext'
 import BundleSheet from './BundleSheet'
 
 function parsePrice(priceStr: string): number {
@@ -23,7 +22,7 @@ export type BundlesGridProps = {
 }
 
 export default function BundlesGrid({ bundles = defaultBundles, products = gridProducts, className }: BundlesGridProps) {
-  const { addToCart, addBundleToCart } = useCart()
+  // bundle actions handled in the sheet; no direct cart ops here
   const [openSheet, setOpenSheet] = useState(false)
   const [selectedForSheet, setSelectedForSheet] = useState<string | null>(null)
 

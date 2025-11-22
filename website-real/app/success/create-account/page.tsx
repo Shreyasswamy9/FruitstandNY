@@ -1,25 +1,28 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 //import Link from 'next/link';
 function CreateAccountContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const sessionId = searchParams.get('session_id');
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!sessionId) {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const sid = params.get('session_id');
+    setSessionId(sid);
+    if (!sid) {
       router.push('/');
     }
-  }, [sessionId, router]);
+  }, [router]);
 
   const handleSkip = () => {
-    router.push(`/success?session_id=${sessionId}&from=account-creation`);
+  router.push(`/success?session_id=${sessionId}&from=account-creation`);
   };
 
   const handleCreateAccount = async (e: React.FormEvent) => {

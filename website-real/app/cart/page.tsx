@@ -438,9 +438,8 @@ export default function CartPage() {
   };
 
   const validatePhone = (phone: string): string => {
-    if (!phone) return ""; // Phone is optional
-    const phoneRegex = /^[\+]?[1-9][\d]{0,2}?[-\s\.]?[\(]?\d{3}[\)]?[-\s\.]?\d{3}[-\s\.]?\d{4}$/;
-    if (!phoneRegex.test(phone.replace(/\s/g, ''))) return "Please enter a valid phone number";
+    // Phone is optional and we no longer enforce a strict phone number format for guest checkout.
+    // Return an empty string to indicate no validation error.
     return "";
   };
 

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback } from 'react';
+import Image from 'next/image'
 import { StorageManager, BucketName, UploadResult } from '@/lib/storage';
 
 interface FileAttachmentProps {
@@ -34,49 +35,8 @@ export default function FileAttachment({
   const [files, setFiles] = useState<FilePreview[]>([]);
   const [dragActive, setDragActive] = useState(false);
 
-  // Handle file selection
-  const handleFiles = useCallback(async (selectedFiles: FileList | File[]) => {
-    const fileArray = Array.from(selectedFiles);
-    const currentFileCount = files.length + existingFiles.length;
-    
-    if (currentFileCount + fileArray.length > maxFiles) {
-      alert(`Maximum ${maxFiles} files allowed`);
-      return;
-    }
-
-    // Create previews for new files
-    const newFilePreviews: FilePreview[] = [];
-    
-    for (const file of fileArray) {
-      // Validate file first
-      const validation = StorageManager.validateFile(file, bucket);
-      if (!validation.valid) {
-        alert(`${file.name}: ${validation.error}`);
-        continue;
-      }
-
-      const filePreview: FilePreview = {
-        file,
-        uploading: false,
-        uploaded: false
-      };
-
-      // Create preview for images
-      if (file.type.startsWith('image/')) {
-        filePreview.preview = URL.createObjectURL(file);
-      }
-
-      newFilePreviews.push(filePreview);
-    }
-
-    setFiles(prev => [...prev, ...newFilePreviews]);
-
-    // Start uploading files
-    uploadFiles(newFilePreviews);
-  }, [bucket, files.length, existingFiles.length, maxFiles]);
-
   // Upload files to storage
-  const uploadFiles = async (filesToUpload: FilePreview[]) => {
+  const uploadFiles = useCallback(async (filesToUpload: FilePreview[]) => {
     const uploadResults: UploadResult[] = [];
 
     for (let i = 0; i < filesToUpload.length; i++) {
@@ -130,7 +90,48 @@ export default function FileAttachment({
     if (onFilesUploaded) {
       onFilesUploaded(uploadResults.filter(r => r.success));
     }
-  };
+  }, [bucket, userId, onFilesUploaded]);
+
+  // Handle file selection
+  const handleFiles = useCallback(async (selectedFiles: FileList | File[]) => {
+    const fileArray = Array.from(selectedFiles);
+    const currentFileCount = files.length + existingFiles.length;
+    
+    if (currentFileCount + fileArray.length > maxFiles) {
+      alert(`Maximum ${maxFiles} files allowed`);
+      return;
+    }
+
+    // Create previews for new files
+    const newFilePreviews: FilePreview[] = [];
+    
+    for (const file of fileArray) {
+      // Validate file first
+      const validation = StorageManager.validateFile(file, bucket);
+      if (!validation.valid) {
+        alert(`${file.name}: ${validation.error}`);
+        continue;
+      }
+
+      const filePreview: FilePreview = {
+        file,
+        uploading: false,
+        uploaded: false
+      };
+
+      // Create preview for images
+      if (file.type.startsWith('image/')) {
+        filePreview.preview = URL.createObjectURL(file);
+      }
+
+      newFilePreviews.push(filePreview);
+    }
+
+    setFiles(prev => [...prev, ...newFilePreviews]);
+
+    // Start uploading files
+    await uploadFiles(newFilePreviews);
+  }, [bucket, files.length, existingFiles.length, maxFiles, uploadFiles]);
 
   // Remove file
   const removeFile = (index: number) => {
@@ -286,10 +287,13 @@ export default function FileAttachment({
           {files.map((filePreview, index) => (
             <div key={index} className="flex items-center justify-between bg-white/5 rounded-lg p-3">
               <div className="flex items-center space-x-3">
-                {filePreview.preview ? (
-                  <img
+                  {filePreview.preview ? (
+                  <Image
                     src={filePreview.preview}
                     alt="Preview"
+                    width={48}
+                    height={48}
+                    unoptimized
                     className="w-12 h-12 object-cover rounded-lg"
                   />
                 ) : (

@@ -36,7 +36,7 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
     if (menuOpen) {
       setMenuOpen(false)
     }
-  }, [pathname])
+  }, [pathname, menuOpen])
   
   return (
     <LogoVisibilityContext.Provider value={{ hideLogo, setHideLogo }}>

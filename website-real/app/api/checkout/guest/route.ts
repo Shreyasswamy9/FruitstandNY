@@ -27,61 +27,36 @@ export async function POST(req: NextRequest) {
 
     // Persist order to Supabase (orders + order_items)
     try {
-      // 1. Create Order
-      const { data: order, error: orderError } = await supabaseAdmin
-        .from('orders')
-        .insert({
-          user_id: null, // Guest has no user_id
-          order_number: orderNumber,
-          status: 'pending',
-          payment_status: 'pending',
-          total_amount: orderData.total || 0,
-          subtotal: orderData.subtotal || 0,
-          tax_amount: orderData.tax || 0,
-          shipping_amount: orderData.shipping || 0,
-          discount_amount: 0,
-          shipping_name: `${firstName} ${lastName}`,
-          shipping_email: email,
-          shipping_phone: phone || '',
-          shipping_address_line1: address.street || '',
-          shipping_address_line2: address.street2 || '',
-          shipping_city: address.city || '',
-          shipping_state: address.state || '',
-          shipping_postal_code: address.zipCode || '',
-          shipping_country: address.country || 'US',
-        })
-        .select()
-        .single();
-
-      if (orderError) {
-        console.error('Failed to create guest order:', orderError);
-        throw orderError;
-      }
-
-      // 2. Create Order Items
-      const orderItems = (orderData.items || []).map((it: any) => ({
-        order_id: order.id,
-        product_id: it.id || it.productId || null,
-        variant_id: null, // We don't have variant_id lookup here yet, could be added if critical
-        product_name: it.name || it.title || '',
-        product_image_url: (it.image || (it.product?.images && it.product.images[0]) || null),
-        variant_details: {
-          size: it.size || it.selectedSize || null,
-          color: it.color || null
+      const orderPayload = {
+        email,
+        shipping_address: {
+          street: address.street || '',
+          city: address.city || '',
+          state: address.state || '',
+          zipCode: address.zipCode || '',
+          country: address.country || 'US'
         },
-        quantity: it.quantity || 1,
-        unit_price: it.price || it.unitPrice || 0,
-        total_price: (it.price || it.unitPrice || 0) * (it.quantity || 1)
-      }));
+        payment_method: 'stripe',
+        payment_status: 'pending',
+        order_status: 'pending',
+        subtotal: orderData.subtotal || 0,
+        shipping_cost: orderData.shipping || 0,
+        tax: orderData.tax || 0,
+        total_amount: orderData.total || 0,
+        currency: orderData.currency || 'USD',
+        items: (orderData.items || []).map((it: any) => ({
+          product_id: it.id || it.productId || null,
+          name: it.name || it.title || '',
+          quantity: it.quantity || 1,
+          size: it.size || it.selectedSize || null,
+          color: it.color || null,
+          price: it.price || it.unitPrice || 0,
+          image: (it.image || (it.product?.images && it.product.images[0]) || null)
+        }))
+      };
 
-      const { error: itemsError } = await supabaseAdmin
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) {
-        console.error('Failed to create guest order items:', itemsError);
-        // Non-fatal for now, but ideally we'd rollback
-      }
+      // createOrder expects a typed object; cast to any to avoid narrow literal type issues
+      const created = await SupabaseOrderService.createOrder(orderPayload as any);
 
       // Record marketing preference if opted in
       if (marketing && marketing.emailUpdates) {

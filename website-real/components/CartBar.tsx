@@ -69,7 +69,7 @@ export default function CartBar() {
     if (typeof window !== 'undefined') {
       localStorage.setItem('cartCount', count.toString());
     }
-  }, [items, isCartPage]);
+  }, [items, isCartPage, showPopup]);
 
   // Handle page navigation - ensure cart bar visibility is correct
   useEffect(() => {
@@ -79,7 +79,7 @@ export default function CartBar() {
     } else if (isCartPage) {
       setShowCartBar(false);
     }
-  }, [pathname, isCartPage, showPopup]);
+  }, [pathname, isCartPage, showPopup, items]);
 
   // Cleanup timeout on unmount
   useEffect(() => {

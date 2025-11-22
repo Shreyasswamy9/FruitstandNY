@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import FrequentlyBoughtTogether, { FBTProduct } from "@/components/FrequentlyBoughtTogether";
+import FrequentlyBoughtTogether, { FBTProduct, getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import SizeGuide from "@/components/SizeGuide";
 import CustomerReviews from "@/components/CustomerReviews";
 import React, { useState } from "react";
@@ -52,11 +52,7 @@ export default function TrackTopPage() {
   };
 
   // Example: fetch or compute FBT products dynamically in the future
-  const boughtTogetherItems: FBTProduct[] = [
-    { id: 'gala-tshirt', name: 'Gala Tee', price: 40, image: '/images/products/gala-tshirt/broadwaynoir/GN4.png' },
-    { id: 'tracksuit', name: 'Retro Track Suit', price: 120, image: '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png' },
-    { id: 'hockey-jersey', name: 'Broadway Blueberry Jersey', price: 90, image: '/images/products/hockey Jersey/JN.png' },
-  ];
+  const boughtTogetherItems: FBTProduct[] = getFBTForPage('track-top');
 
   return (
     <div style={{ height: '100vh', overflowY: 'auto' }}>

@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import FrequentlyBoughtTogether, { FBTProduct } from "@/components/FrequentlyBoughtTogether";
+import FrequentlyBoughtTogether, { FBTProduct, getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import SizeGuide from "@/components/SizeGuide";
 import CustomerReviews from "@/components/CustomerReviews";
 import React, { useState } from "react";
@@ -55,11 +55,7 @@ export default function TrackPantsPage() {
   const taskbarHeight = items.length > 0 && !showPopup ? 64 : 0;
 
   // Example: fetch or compute FBT products dynamically in the future
-  const boughtTogetherItems: FBTProduct[] = [
-    { id: 'gala-tshirt', name: 'Gala Tee', price: 40, image: '/images/products/gala-tshirt/broadwaynoir/GN4.png' },
-    { id: 'tracksuit', name: 'Retro Track Suit', price: 120, image: '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png' },
-    { id: 'hockey-jersey', name: 'Broadway Blueberry Jersey', price: 90, image: '/images/products/hockey Jersey/JN.png' },
-  ];
+  const boughtTogetherItems: FBTProduct[] = getFBTForPage('track-pants');
 
   
 
@@ -96,7 +92,7 @@ export default function TrackPantsPage() {
       >
         ← Go Back
       </span>
-      <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingTop: 120 }}>
+  <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingTop: 120, paddingBottom: taskbarHeight }}>
         <div className="flex w-full md:w-1/2 flex-col items-center gap-4">
           <div className="relative w-full max-w-sm md:max-w-full aspect-square rounded-xl overflow-hidden shadow-sm" style={{ background: selectedColor.bg }}>
             <Image src={selectedColor.img} alt={PRODUCT.name} fill sizes="(max-width: 768px) 90vw, 420px" style={{ objectFit: "contain", background: selectedColor.bg }} priority />

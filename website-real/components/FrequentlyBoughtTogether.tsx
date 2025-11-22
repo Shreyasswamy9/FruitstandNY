@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 
 export interface FBTProduct {
@@ -23,7 +24,7 @@ const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> = ({ pro
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {products.map((item) => (
             <div key={item.id} className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
-              <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden">
+              <Link href={`/shop/${item.id}`} className="relative w-full h-48 mb-4 rounded-lg overflow-hidden block">
                 <Image
                   src={item.image}
                   alt={item.name}
@@ -31,8 +32,10 @@ const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> = ({ pro
                   style={{ objectFit: "cover" }}
                   sizes="(max-width: 768px) 100vw, 300px"
                 />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">{item.name}</h3>
+              </Link>
+              <h3 className="text-xl font-semibold mb-2">
+                <Link href={`/shop/${item.id}`} className="hover:underline">{item.name}</Link>
+              </h3>
               <p className="text-lg font-bold text-gray-800 mb-4">${item.price}</p>
               <button
                 className="w-full bg-black text-white py-2 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors"
@@ -57,3 +60,35 @@ const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> = ({ pro
 };
 
 export default FrequentlyBoughtTogether;
+
+// --- Centralized FBT data and helper (moved from components/fbt-products.ts) ---
+export const defaultFBT: FBTProduct[] = [
+  { id: 'gala-tshirt', name: 'Gala Tee', price: 40, image: '/images/products/gala-tshirt/broadwaynoir/GN4.png' },
+  { id: 'wasabi-tee', name: 'Wasabi Tee', price: 45, image: '/images/products/Wasabi Tee/Wabasabi 1.png' },
+  { id: 'forest-hills-hat', name: 'Forest Hills Hat', price: 46, image: '/images/products/Forest Hills Hat/G1.png' },
+];
+
+export const FBT_BY_PAGE: Record<string, FBTProduct[]> = {
+  'forest-hills-hat': [
+    { id: 'gala-tshirt', name: 'Gala Tee', price: 40, image: '/images/products/gala-tshirt/broadwaynoir/GN4.png' },
+    { id: 'porcelain-hat', name: 'Porcelain Hat', price: 44, image: '/images/products/Porcelain Hat/FS2.png' },
+    { id: 'wasabi-tee', name: 'Wasabi Tee', price: 45, image: '/images/products/Wasabi Tee/Wabasabi 1.png' },
+  ],
+
+  'track-pants': [
+    { id: 'retro-tracksuit', name: 'Retro Track Suit', price: 120, image: '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png' },
+    { id: 'forest-hills-hat', name: 'Forest Hills Hat', price: 46, image: '/images/products/Forest Hills Hat/G1.png' },
+    { id: 'gala-tshirt', name: 'Gala Tee', price: 40, image: '/images/products/gala-tshirt/broadwaynoir/GN4.png' },
+  ],
+
+  'track-top': [
+    { id: 'retro-tracksuit', name: 'Retro Track Suit', price: 120, image: '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png' },
+    { id: 'porcelain-hat', name: 'Porcelain Hat', price: 44, image: '/images/products/Porcelain Hat/FS2.png' },
+    { id: 'first-edition-tee', name: 'First Edition Tee', price: 45, image: '/images/products/First Edition Tee/FE1.png' },
+  ],
+};
+
+export function getFBTForPage(slug?: string): FBTProduct[] {
+  if (!slug) return defaultFBT;
+  return FBT_BY_PAGE[slug] || defaultFBT;
+}

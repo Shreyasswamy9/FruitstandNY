@@ -46,10 +46,10 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
   // Custom builder state
   const [comboSize, setComboSize] = useState<CustomBundleSize>(2)
   type CustomItem = { tee: TeeVariant; color: TeeColor; size?: SizeOption }
-  const defaultItem = (i: number): CustomItem => {
+  const defaultItem = useCallback((i: number): CustomItem => {
     const tee = TEE_VARIANTS[i % TEE_VARIANTS.length]
     return { tee, color: tee.colors[0], size: undefined }
-  }
+  }, [])
   const [customItems, setCustomItems] = useState<CustomItem[]>(Array.from({ length: comboSize }, (_, i) => defaultItem(i)))
   // Refs for guided scrolling
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
@@ -141,15 +141,15 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
     teeRefs.current.length = Number(comboSize)
     colorRefs.current.length = Number(comboSize)
     sizeRefs.current.length = Number(comboSize)
-  }, [comboSize])
+  }, [comboSize, defaultItem])
 
   // Actions
   const addCuratedToCart = (bundle: Bundle) => {
     if (adding) return
     setAdding(true)
     // compute subtotal/discount/total
-    const items = (bundle.itemIds.map(id => productMap.get(id)).filter(Boolean) as typeof productMap extends Map<any, infer U> ? U[] : any[])
-    const subtotal = items.reduce((acc, p) => acc + parsePrice((p as any).price), 0)
+  const items = (bundle.itemIds.map(id => productMap.get(id)).filter(Boolean) as Product[])
+  const subtotal = items.reduce((acc, p) => acc + parsePrice(p.price), 0)
     const discount = bundle.discountPercent ? Math.round(subtotal * (bundle.discountPercent / 100)) : 0
     const total = Math.max(0, subtotal - discount)
   // add a single bundle line item to the cart, include chosen size if present
@@ -247,7 +247,6 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
                     const discount = b.discountPercent ? Math.round(subtotal * (b.discountPercent / 100)) : 0
                     const total = Math.max(0, subtotal - discount)
                     const isSelected = selectedId === b.id
-                    const hasTees = items.some(p => ((p.category || '').toLowerCase().includes('top') || (p.category || '').toLowerCase().includes('tee')))
                     // Also consider other size-bearing categories (jersey, tracksuit, pants, shirt)
                     const hasSizedItems = items.some(p => {
                       const c = (p.category || '').toLowerCase()

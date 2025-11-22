@@ -989,15 +989,12 @@ export default function Home() {
                         paddingBottom: window.innerWidth <= 768 ? "130%" : "120%",
                         overflow: "hidden",
                       }}>
-                        <img
+                        <Image
                           src={product.image}
                           alt={product.name}
+                          fill
+                          unoptimized
                           style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            width: "100%",
-                            height: "100%",
                             objectFit: "cover",
                             transition: "all 0.3s ease",
                           }}
@@ -1092,15 +1089,12 @@ export default function Home() {
                   overflow: "hidden",
                   paddingBottom: "120%",
                 }}>
-                  <img
+                  <Image
                     src="/images/products/First Edition Tee/FE3.png"
                     alt="Brand Story"
+                    fill
+                    unoptimized
                     style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
                       objectFit: "cover",
                     }}
                   />
