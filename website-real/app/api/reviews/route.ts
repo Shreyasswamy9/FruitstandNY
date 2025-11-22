@@ -24,14 +24,36 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { product_id, name, rating, review } = body
-    if (!product_id || !name || !rating || !review) {
+    const { product_id, title, rating, review } = body
+
+    // 1. Require Authentication
+    const authHeader = request.headers.get('authorization')
+    if (!authHeader) {
+      return NextResponse.json({ error: 'Authentication required to post reviews' }, { status: 401 })
+    }
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Invalid user token' }, { status: 401 })
+    }
+
+    if (!product_id || !rating || !review) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
+    // 2. Insert Review
     const { data, error } = await supabaseAdmin
       .from('product_reviews')
-      .insert({ product_id, name, rating, review })
+      .insert({
+        product_id,
+        user_id: user.id, // Use authenticated user ID
+        rating,
+        title: title || '', // Optional in schema?
+        comment: review,    // Map 'review' to 'comment'
+        verified_purchase: false, // Default
+        is_approved: false // Default
+      })
       .select()
       .single()
 
