@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
+import CustomerReviews from "@/components/CustomerReviews";
 
 // Color-specific image sets (kept explicit for clarity and to avoid client fs access)
 const COLOR_IMAGE_MAP: Record<string, string[]> = {
@@ -57,7 +58,7 @@ const GALA_COLOR_OPTIONS: GalaColorOption[] = [
   { name: 'Italian Ice', slug: 'italian-ice', color: '#c7eaff', images: ['/images/products/gala-tshirt/italianice/GN1.png','/images/products/gala-tshirt/italianice/GN2.png'], bg: '#eaf7ff', border: '#cfe9f9' },
 ];
 
-const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL"] as const;
+const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
  
 export default function GalaTshirtPage() {
   const [selectedColor, setSelectedColor] = useState<GalaColorOption>(GALA_COLOR_OPTIONS[0]);
@@ -114,10 +115,7 @@ export default function GalaTshirtPage() {
 
   const taskbarHeight = items.length > 0 && !showPopup ? 64 : 0;
 
-  const customerReviews = [
-    { id: 1, name: 'Alex P.', rating: 5, review: 'Great weight and color depth.', date: '2 weeks ago' },
-    { id: 2, name: 'Jordan R.', rating: 4, review: 'Fits true to size and holds shape.', date: '1 month ago' },
-  ];
+  
 
   return (
     <div style={{ height: '100vh', overflowY: 'auto' }}>
@@ -205,17 +203,15 @@ export default function GalaTshirtPage() {
             </div>
           </div>
 
-          {/* Size Selection + Size Guide */}
+          {/* Size Selection */}
           <div style={{ marginBottom: 18 }}>
             <p className="text-sm font-medium text-gray-700 mb-3">Size:</p>
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div className="flex gap-2 flex-wrap">
-                {SIZE_OPTIONS.map((size) => (
-                  <button key={size} className={`px-4 py-2 rounded-lg font-semibold border-2 transition-all ${selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'}`} style={{ minWidth: 48, fontSize: 14 }} onClick={() => setSelectedSize(size)} type="button">{size}</button>
-                ))}
-              </div>
-              <SizeGuide productSlug="gala-tshirt" className="mt-2" />
+            <div className="size-single-line">
+              {SIZE_OPTIONS.map((size) => (
+                <button key={size} className={`size-button px-3 rounded-lg font-semibold border-2 transition-all ${selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'}`} onClick={() => setSelectedSize(size)} type="button">{size}</button>
+              ))}
             </div>
+            <div className="mt-2"><SizeGuide productSlug="gala-tshirt" /></div>
           </div>
 
           <p className="text-lg text-gray-700 mb-4">{PRODUCT.description}</p>
@@ -249,29 +245,9 @@ export default function GalaTshirtPage() {
       </div>
 
       {/* Reviews */}
-  <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
         <div className="max-w-4xl mx-auto w-full">
-          <h2 className="text-3xl font-bold text-center mb-8">Customer Reviews</h2>
-          <div className="space-y-6">
-            {customerReviews.map((review) => (
-              <div key={review.id} className="bg-gray-50 rounded-lg p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center font-bold text-gray-700">{review.name.charAt(0)}</div>
-                    <div>
-                      <h4 className="font-semibold text-lg">{review.name}</h4>
-                      <div className="flex items-center gap-1">{[...Array(5)].map((_, index) => (<span key={index} className={`text-lg ${index < review.rating ? 'text-yellow-400' : 'text-gray-300'}`}>★</span>))}</div>
-                    </div>
-                  </div>
-                  <span className="text-gray-500 text-sm">{review.date}</span>
-                </div>
-                <p className="text-gray-700 leading-relaxed">{review.review}</p>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <button className="bg-gray-800 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-700 transition-colors">View All Reviews</button>
-          </div>
+          <CustomerReviews productId="gala-tshirt" />
         </div>
       </div>
 

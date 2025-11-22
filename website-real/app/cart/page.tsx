@@ -80,8 +80,7 @@ export default function CartPage() {
       country: "US"
     },
     marketing: {
-      emailUpdates: false,
-      analytics: true
+      emailUpdates: true
     }
   })
   const { items, removeFromCart, clearCart, addToCart } = useCart();
@@ -604,29 +603,52 @@ export default function CartPage() {
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-4 sm:space-y-0">
                         {/* Product Image - Clickable */}
-                        <Link 
-                          href={`/shop/${item.productId}`}
-                          className="relative w-20 h-20 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 hover:ring-2 hover:ring-black hover:ring-opacity-50 transition-all duration-200 cursor-pointer"
-                        >
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            fill
-                            className="object-cover hover:scale-105 transition-transform duration-200"
-                            sizes="80px"
-                          />
-                        </Link>
+                        {item.isBundle ? (
+                          <div className="relative w-20 h-20 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 transition-all duration-200">
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              fill
+                              className="object-cover"
+                              sizes="80px"
+                            />
+                            <span className="absolute left-1 top-1 text-[10px] bg-black text-white px-2 py-0.5 rounded">Bundle</span>
+                          </div>
+                        ) : (
+                          <Link 
+                            href={`/shop/${item.productId}`}
+                            className="relative w-20 h-20 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 hover:ring-2 hover:ring-black hover:ring-opacity-50 transition-all duration-200 cursor-pointer"
+                          >
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              fill
+                              className="object-cover hover:scale-105 transition-transform duration-200"
+                              sizes="80px"
+                            />
+                          </Link>
+                        )}
                         
                         {/* Product Details - Full width on mobile */}
                         <div className="flex-1 min-w-0">
-                          <Link 
-                            href={`/shop/${item.productId}`}
-                            className="block hover:text-blue-600 transition-colors duration-200"
-                          >
-                            <h3 className="text-lg font-semibold text-gray-900 truncate hover:text-blue-600 transition-colors">
-                              {item.name}
-                            </h3>
-                          </Link>
+                          {item.isBundle ? (
+                            <div className="block">
+                              <h3 className="text-lg font-semibold text-gray-900 truncate">{item.name}</h3>
+                              <p className="text-xs text-gray-500">Bundle contents: {Array.isArray(item.bundleItems) ? item.bundleItems.join(', ') : ''}</p>
+                              {item.bundleSize && (
+                                <p className="text-xs text-gray-500">Size: {item.bundleSize}</p>
+                              )}
+                            </div>
+                          ) : (
+                            <Link 
+                              href={`/shop/${item.productId}`}
+                              className="block hover:text-blue-600 transition-colors duration-200"
+                            >
+                              <h3 className="text-lg font-semibold text-gray-900 truncate hover:text-blue-600 transition-colors">
+                                {item.name}
+                              </h3>
+                            </Link>
+                          )}
                           <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 mt-1 space-y-1 sm:space-y-0">
                             {item.size && (
                               <span className="text-sm text-gray-500">Size: {item.size}</span>
@@ -1133,17 +1155,7 @@ export default function CartPage() {
                               Email me about new products and exclusive offers
                             </span>
                           </label>
-                          <label className="flex items-start">
-                            <input
-                              type="checkbox"
-                              checked={guestData.marketing.analytics}
-                              onChange={(e) => handleGuestInputChange("marketing.analytics", e.target.checked)}
-                              className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black mt-0.5"
-                            />
-                            <span className="ml-2 text-xs text-gray-600">
-                              Help improve our service with anonymous usage data
-                            </span>
-                          </label>
+                          {/* analytics consent removed per request */}
                         </div>
                       </div>
 

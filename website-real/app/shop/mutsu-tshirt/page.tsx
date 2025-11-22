@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
+import CustomerReviews from "@/components/CustomerReviews";
 
 // Per-color image map (multiple images per color)
 const MUTSU_COLOR_IMAGE_MAP: Record<string, string[]> = {
@@ -23,6 +24,12 @@ const PRODUCT = {
   name: "Mutsu Tee",
   price: 45,
   description: "Everyday tee with Mutsu-inspired tones. Smooth knit, breathable, and easy to style.",
+  details: [
+    "100% organic cotton (180 GSM), Portugal",
+    "Medium weight, vintage wash",
+    "Shorter body length for easy tucking",
+    "Pre-shrunk and colorfast",
+  ],
 };
 
 export default function MutsuTshirtPage() {
@@ -36,6 +43,7 @@ export default function MutsuTshirtPage() {
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
   const searchParams = useSearchParams();
 
   const handleAddToCart = () => {
@@ -65,7 +73,7 @@ export default function MutsuTshirtPage() {
 
   const boughtTogetherItems = [
     { id: 'denim-hat', name: 'Denim Hat', price: 20, image: '/images/denimhat1.jpeg' },
-    { id: 'tracksuit', name: 'Retro Track Suit', price: 45, image: '/images/B&Wtracksuitmale1.jpeg' },
+    { id: 'tracksuit', name: 'Retro Track Suit', price: 120, image: '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png' },
     { id: 'empire-hat', name: 'Empire Cordury hat', price: 22, image: '/images/empirehatfemale1.jpeg' },
   ];
 
@@ -83,10 +91,7 @@ export default function MutsuTshirtPage() {
 
   const taskbarHeight = items.length > 0 && !showPopup ? 64 : 0;
 
-  const customerReviews = [
-    { id: 1, name: 'Lee A.', rating: 5, review: 'Color is unique and fabric feels premium.', date: '1 week ago' },
-    { id: 2, name: 'Chris N.', rating: 4, review: 'Nice fit and the sky color pops.', date: '1 month ago' },
-  ];
+  
 
   return (
     <div style={{ height: '100vh', overflowY: 'auto' }}>
@@ -148,20 +153,30 @@ export default function MutsuTshirtPage() {
             ))}
           </div>
 
-          {/* Size Selection + Size Guide */}
+          {/* Size Selection */}
           <div style={{ marginBottom: 18 }}>
             <p className="text-sm font-medium text-gray-700 mb-3">Size:</p>
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div className="flex gap-2 flex-wrap">
-                {["XS","S","M","L","XL","XXL"].map((size) => (
-                  <button key={size} className={`px-4 py-2 rounded-lg font-semibold border-2 transition-all ${selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'}`} style={{ minWidth: 48, fontSize: 14 }} onClick={() => setSelectedSize(size)} type="button">{size}</button>
-                ))}
-              </div>
-              <SizeGuide productSlug="mutsu-tshirt" className="mt-2" />
+            <div className="size-single-line">
+              {["XS","S","M","L","XL","XXL","XXXL"].map((size) => (
+                <button key={size} className={`size-button px-3 rounded-lg font-semibold border-2 transition-all ${selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'}`} onClick={() => setSelectedSize(size)} type="button">{size}</button>
+              ))}
             </div>
+            <div className="mt-2"><SizeGuide productSlug="mutsu-tshirt" /></div>
           </div>
 
-          <p className="text-lg text-gray-700 mb-4">{PRODUCT.description}</p>
+          <div className="mb-4 space-y-4">
+            <p className="text-lg text-gray-700 leading-relaxed">{PRODUCT.description}</p>
+            {PRODUCT.details && (
+              <div>
+                <span className="text-xs uppercase tracking-[0.2em] text-gray-500">Details</span>
+                <ul className="mt-2 list-disc list-inside text-gray-700 text-sm sm:text-base space-y-1">
+                  {PRODUCT.details.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
           <div className="text-2xl font-semibold mb-6">${PRODUCT.price}</div>
           <button className={`bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2 ${!selectedSize ? 'opacity-50 cursor-not-allowed' : ''}`} onClick={handleAddToCart} disabled={!selectedSize}>
             {!selectedSize ? 'Pick a size to add to cart' : 'Add to Cart'}
@@ -192,29 +207,9 @@ export default function MutsuTshirtPage() {
       </div>
 
       {/* Reviews */}
-  <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
         <div className="max-w-4xl mx-auto w-full">
-          <h2 className="text-3xl font-bold text-center mb-8">Customer Reviews</h2>
-          <div className="space-y-6">
-            {customerReviews.map((review) => (
-              <div key={review.id} className="bg-gray-50 rounded-lg p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center font-bold text-gray-700">{review.name.charAt(0)}</div>
-                    <div>
-                      <h4 className="font-semibold text-lg">{review.name}</h4>
-                      <div className="flex items-center gap-1">{[...Array(5)].map((_, index) => (<span key={index} className={`text-lg ${index < review.rating ? 'text-yellow-400' : 'text-gray-300'}`}>★</span>))}</div>
-                    </div>
-                  </div>
-                  <span className="text-gray-500 text-sm">{review.date}</span>
-                </div>
-                <p className="text-gray-700 leading-relaxed">{review.review}</p>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <button className="bg-gray-800 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-700 transition-colors">View All Reviews</button>
-          </div>
+          <CustomerReviews productId="mutsu-tshirt" />
         </div>
       </div>
 

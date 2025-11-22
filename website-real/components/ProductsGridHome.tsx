@@ -47,16 +47,46 @@ export const products: Product[] = [
   { id: 1042, name: "Fuji Long Sleeve", price: "$80", image: "/images/products/fuji-tshirt/Hudson blue/F1.png", hoverImage: "/images/products/fuji-tshirt/Hudson blue/F9.png", category: "Tops", variantColor: "Hudson Blue", variantSlug: "hudson-blue" },
   { id: 1043, name: "Fuji Long Sleeve", price: "$80", image: "/images/products/fuji-tshirt/Redbird/F4.png", hoverImage: "/images/products/fuji-tshirt/Redbird/F5.png", category: "Tops", variantColor: "Redbird", variantSlug: "redbird" },
   { id: 1044, name: "Fuji Long Sleeve", price: "$80", image: "/images/products/fuji-tshirt/Broadwaynoir/F3.png", hoverImage: "/images/products/fuji-tshirt/Broadwaynoir/F7.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
-  // Denim Hat (male)
-  { id: 7, name: "Denim Hat", price: "$40", image: "/images/denimhatmale1.jpeg", hoverImage: "/images/denimhatmale2.jpeg", category: "Hats" },
-  // Denim Hat (female)
-  { id: 8, name: "Denim Hat", price: "$40", image: "/images/denimhatfemale1.jpeg", hoverImage: "/images/denimhatsolo.jpeg", category: "Hats" },
-  // White Hat (male)
-  { id: 9, name: "White Hat", price: "$40", image: "/images/whitehatmale1.jpeg", hoverImage: "/images/whitehatsolo.jpeg", category: "Hats" },
-  // Beige Hat (female)
-  { id: 10, name: "Beige Hat", price: "$40", image: "/images/beigehatfemale1.jpeg", hoverImage: "/images/beigehatsolo.jpeg", category: "Hats" },
-  // Empire Cordury hat (NEW)
-  { id: 11, name: "Empire Cordury hat", price: "$42", image: "/images/empirehatfemale.jpg", hoverImage: "/images/empirehatsolo.jpg", category: "Hats" },
+  // New additions: Wasabi Tee and First Edition Tee
+  { id: 1071, name: "Wasabi Tee", price: "$45", image: "/images/products/Wasabi Tee/Wabasabi 1.png", hoverImage: "/images/products/Wasabi Tee/Wabasabi 2.png", category: "Tops", variantSlug: "wasabi-tee" },
+  { id: 1072, name: "First Edition Tee", price: "$45", image: "/images/products/First Edition Tee/FE1.png", hoverImage: "/images/products/First Edition Tee/FE2.png", category: "Tops", variantColor: "White", variantSlug: "first-edition-tee" },
+  { id: 1073, name: "First Edition Tee", price: "$45", image: "/images/products/First Edition Tee/FE1.png", hoverImage: "/images/products/First Edition Tee/FE2.png", category: "Tops", variantColor: "Black", variantSlug: "first-edition-tee" },
+
+  // Forest Hills Hat (Green)
+  { id: 3001, name: "Forest Hills Hat", price: "$46", image: "/images/products/Forest Hills Hat/G1.png", hoverImage: "/images/products/Forest Hills Hat/G2.png", category: "Hats" },
+
+  // Porcelain Hat (White)
+  { id: 3002, name: "Porcelain Hat", price: "$44", image: "/images/products/Porcelain Hat/FS2.png", hoverImage: "/images/products/Porcelain Hat/Fruitscale Hat.png", category: "Hats", variantSlug: "porcelain-hat" },
+
+  // Ecru Hat (Beige)
+  { id: 3003, name: "Ecru Hat", price: "$44", image: "/images/products/Ecru Hat/B1.png", hoverImage: "/images/products/Ecru Hat/Beige Hat.png", category: "Hats", variantSlug: "ecru-hat" },
+
+  // Empire Corduroy Hat
+  { id: 3004, name: "Empire Corduroy Hat", price: "$49", image: "/images/products/empire-hat/A2.png", hoverImage: "/images/products/empire-hat/A1.png", category: "Hats" },
+
+  // Indigo Hat (Denim)
+  { id: 3005, name: "Indigo Hat", price: "$44", image: "/images/products/denim-hat/D1.png", hoverImage: "/images/products/denim-hat/D2.png", category: "Hats" },
+
+  // Mandarin Tee
+  { id: 4001, name: "Mandarin Tee", price: "$38", image: "/images/products/Mandarin Tee/Mandarin 1.png", hoverImage: "/images/products/Mandarin Tee/Mandarin 2.png", category: "Tops", variantSlug: "mandarin-tee", },
+
+  // Track Pants (variants)
+  { id: 5001, name: "Track Pants", price: "$65", image: "/images/products/Track Pants/ELMHURST TARO CUSTARD/P6.png", hoverImage: "/images/products/Track Pants/ELMHURST TARO CUSTARD/P6.png", category: "Tracksuits", variantColor: "Elmhurst Taro Custard", variantSlug: "elmhurst-taro-custard" },
+  { id: 5002, name: "Track Pants", price: "$65", image: "/images/products/Track Pants/Greenpoint Patina Crew/P4.png", hoverImage: "/images/products/Track Pants/Greenpoint Patina Crew/P4.png", category: "Tracksuits", variantColor: "Greenpoint Patina Crew", variantSlug: "greenpoint-patina-crew" },
+  { id: 5003, name: "Track Pants", price: "$65", image: "/images/products/Track Pants/NOHO NAPOLETANOS/P7.png", hoverImage: "/images/products/Track Pants/NOHO NAPOLETANOS/P7.png", category: "Tracksuits", variantColor: "Noho Napoletanos", variantSlug: "noho-napoletanos" },
+  { id: 5004, name: "Track Pants", price: "$65", image: "/images/products/Track Pants/THE FACTORY FLOOR/P4.png", hoverImage: "/images/products/Track Pants/THE FACTORY FLOOR/P4.png", category: "Tracksuits", variantColor: "The Factory Floor", variantSlug: "the-factory-floor" },
+  { id: 5005, name: "Track Pants", price: "$65", image: "/images/products/Track Pants/VICE CITY RUNNERS/P4.png", hoverImage: "/images/products/Track Pants/VICE CITY RUNNERS/P4.png", category: "Tracksuits", variantColor: "Vice City Runners", variantSlug: "vice-city-runners" },
+  { id: 5006, name: "Track Pants", price: "$65", image: "/images/products/Track Pants/Victory Liberty Club/P4.png", hoverImage: "/images/products/Track Pants/Victory Liberty Club/P4.png", category: "Tracksuits", variantColor: "Victory Liberty Club", variantSlug: "victory-liberty-club" },
+  { id: 5007, name: "Track Pants", price: "$65", image: "/images/products/Track Pants/YORKVILLE BLACK AND WHITE COOKIES/P4.png", hoverImage: "/images/products/Track Pants/YORKVILLE BLACK AND WHITE COOKIES/P4.png", category: "Tracksuits", variantColor: "Yorkville Black and White Cookies", variantSlug: "yorkville-black-and-white-cookies" },
+
+  // Track Top (variants)
+  { id: 6001, name: "Track Top", price: "$75", image: "/images/products/Track Top/ELMHURST TARO CUSTARD/J6.png", hoverImage: "/images/products/Track Top/ELMHURST TARO CUSTARD/J6.png", category: "Tracksuits", variantColor: "Elmhurst Taro Custard", variantSlug: "elmhurst-taro-custard" },
+  { id: 6002, name: "Track Top", price: "$75", image: "/images/products/Track Top/Greenpoint Patina Crew/J1.png", hoverImage: "/images/products/Track Top/Greenpoint Patina Crew/J1.png", category: "Tracksuits", variantColor: "Greenpoint Patina Crew", variantSlug: "greenpoint-patina-crew" },
+  { id: 6003, name: "Track Top", price: "$75", image: "/images/products/Track Top/NOHO NAPOLETANOS/J1.png", hoverImage: "/images/products/Track Top/NOHO NAPOLETANOS/J1.png", category: "Tracksuits", variantColor: "Noho Napoletanos", variantSlug: "noho-napoletanos" },
+  { id: 6004, name: "Track Top", price: "$75", image: "/images/products/Track Top/THE FACTORY FLOOR/J1.png", hoverImage: "/images/products/Track Top/THE FACTORY FLOOR/J1.png", category: "Tracksuits", variantColor: "The Factory Floor", variantSlug: "the-factory-floor" },
+  { id: 6005, name: "Track Top", price: "$75", image: "/images/products/Track Top/VICE CITY RUNNERS/J1.png", hoverImage: "/images/products/Track Top/VICE CITY RUNNERS/J1.png", category: "Tracksuits", variantColor: "Vice City Runners", variantSlug: "vice-city-runners" },
+  { id: 6006, name: "Track Top", price: "$75", image: "/images/products/Track Top/Victory Liberty Club/J1.png", hoverImage: "/images/products/Track Top/Victory Liberty Club/J1.png", category: "Tracksuits", variantColor: "Victory Liberty Club", variantSlug: "victory-liberty-club" },
+  { id: 6007, name: "Track Top", price: "$75", image: "/images/products/Track Top/YORKVILLE BLACK AND WHITE COOKIES/J1.png", hoverImage: "/images/products/Track Top/YORKVILLE BLACK AND WHITE COOKIES/J1.png", category: "Tracksuits", variantColor: "Yorkville Black and White Cookies", variantSlug: "yorkville-black-and-white-cookies" },
 ];
 
 interface ProductsGridProps {
@@ -135,14 +165,22 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
     setRepresentativeByName(nextMap);
   }, [variantGroups]);
 
-  const displayProducts: Product[] = useMemo(() => (
-    Object.entries(variantGroups).map(([name, group]) => {
+  const displayProducts: Product[] = useMemo(() => {
+    // Get one representative per product name
+    const reps = Object.entries(variantGroups).map(([name, group]) => {
       if (!group.length) return group[0];
       if (group.length === 1) return group[0];
       const repId = representativeByName[name];
       return group.find(item => item.id === repId) || group[0];
-    })
-  ), [variantGroups, representativeByName]);
+    });
+    // Sort so that hats always come last
+    return reps.sort((a, b) => {
+      const isHatA = a?.category === "Hats";
+      const isHatB = b?.category === "Hats";
+      if (isHatA === isHatB) return 0;
+      return isHatA ? 1 : -1;
+    });
+  }, [variantGroups, representativeByName]);
   // Store touch state for each product card
   const touchState = useRef<{ [key: number]: { start: number; moved: boolean } }>({});
   // Track which product is showing hover image on mobile
@@ -156,6 +194,9 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
 
   // Map variant color names to hex for swatch display
   const COLOR_HEX: Record<string, string> = {
+    // Common basics
+    'White': '#ffffff',
+    'Black': '#000000',
     // Gala
     'Broadway Noir': '#000000',
     'Sutton Place Snow': '#ffffff',
@@ -247,15 +288,25 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
         const getProductLink = () => {
           const basePathMap: Record<string, string> = {
             'Empire Cordury hat': '/shop/empire-hat',
+            'Empire Corduroy Hat': '/shop/empire-hat',
             'Denim Hat': '/shop/denim-hat',
+            'Indigo Hat': '/shop/denim-hat',
+            'Forest Hills Hat': '/shop/forest-hills-hat',
             'Broadway Blueberry Jersey': '/shop/hockey-jersey',
             'Gala Tee': '/shop/gala-tshirt',
             'Cameo Tee': '/shop/cameo-tshirt',
             'Mutsu Tee': '/shop/mutsu-tshirt',
-            'Fuji Long Sleeve': '/shop/fuji-tshirt', // keeping existing route; can change to /shop/fuji-full-sleeve later
+            'Fuji Long Sleeve': '/shop/fuji-tshirt',
             'Retro Track Suit': '/shop/tracksuit',
             'White Hat': '/shop/white-hat',
             'Beige Hat': '/shop/beige-hat',
+            'Porcelain Hat': '/shop/porcelain-hat',
+            'Ecru Hat': '/shop/ecru-hat',
+            'Mandarin Tee': '/shop/mandarin-tee',
+            'Track Pants': '/shop/track-pants',
+            'Track Top': '/shop/track-top',
+            'Wasabi Tee': '/shop/wasabi-tee',
+            'First Edition Tee': '/shop/first-edition-tee',
           };
           const base = basePathMap[product.name] || `/products/${product.id}`;
           const slug = activeVariant.variantSlug;

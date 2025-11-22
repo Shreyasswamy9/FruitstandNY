@@ -9,11 +9,18 @@ export interface CartItem {
   quantity: number;
   size?: string;
   color?: string;
+  // bundle metadata
+  isBundle?: boolean;
+  bundleId?: string;
+  bundleItems?: number[];
+  bundleSize?: string;
 }
 
 interface CartContextType {
   items: CartItem[];
   addToCart: (item: CartItem) => void;
+  // Add a bundle as a single cart line with its own price
+  addBundleToCart: (opts: { bundleId: string; name: string; price: number; image: string; itemIds?: number[]; bundleSize?: string; quantity?: number }) => void;
   removeFromCart: (productId: string) => void;
   clearCart: () => void;
 }
@@ -74,6 +81,28 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  const addBundleToCart = ({ bundleId, name, price, image, itemIds = [], bundleSize, quantity = 1 }: { bundleId: string; name: string; price: number; image: string; itemIds?: number[]; bundleSize?: string; quantity?: number }) => {
+    const productId = `bundle-${bundleId}`;
+    setItems(prev => {
+      const existing = prev.find(i => i.productId === productId);
+      if (existing) {
+        return prev.map(i => i.productId === productId ? { ...i, quantity: i.quantity + quantity } : i);
+      }
+      const bundleItem: CartItem = {
+        productId,
+        name,
+        price,
+        image,
+        quantity,
+        isBundle: true,
+        bundleId,
+        bundleItems: itemIds,
+        bundleSize,
+      };
+      return [...prev, bundleItem];
+    });
+  };
+
   const removeFromCart = (productId: string) => {
     setItems(prev => prev.filter(i => i.productId !== productId));
   };
@@ -87,7 +116,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <CartContext.Provider value={{ items, addToCart, removeFromCart, clearCart }}>
+    <CartContext.Provider value={{ items, addToCart, addBundleToCart, removeFromCart, clearCart }}>
       {children}
     </CartContext.Provider>
   );

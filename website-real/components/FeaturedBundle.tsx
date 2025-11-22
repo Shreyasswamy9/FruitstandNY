@@ -24,8 +24,9 @@ export type FeaturedBundleProps = {
 }
 
 export default function FeaturedBundle({ bundle, bundles = defaultBundles, products = gridProducts, className }: FeaturedBundleProps) {
-  const { addToCart } = useCart()
+  const { addToCart, addBundleToCart } = useCart()
   const [openSheet, setOpenSheet] = useState(false)
+  const [selectedForSheet, setSelectedForSheet] = useState<string | null>(null)
 
   const featured = bundle ?? bundles[0]
   const productMap = useMemo(() => new Map(products.map(p => [p.id, p])), [products])
@@ -38,17 +39,11 @@ export default function FeaturedBundle({ bundle, bundles = defaultBundles, produ
   const total = Math.max(0, subtotal - discount)
 
   const addBundle = (b: Bundle) => {
-    for (const id of b.itemIds) {
-      const p = productMap.get(id)
-      if (!p) continue
-      addToCart({
-        productId: String(p.id),
-        name: p.name,
-        price: parsePrice(p.price),
-        image: p.image,
-        quantity: 1,
-      })
-    }
+    const items = b.itemIds.map(id => productMap.get(id)).filter(Boolean) as typeof productMap extends Map<any, infer U> ? U[] : any[]
+    const subtotal = items.reduce((acc, p) => acc + parsePrice((p as any).price), 0)
+    const discount = b.discountPercent ? Math.round(subtotal * (b.discountPercent / 100)) : 0
+    const total = Math.max(0, subtotal - discount)
+    addBundleToCart({ bundleId: b.id, name: b.title, price: total, image: items[0]?.image || '/images/classicteemale1.jpeg', itemIds: b.itemIds })
   }
 
   return (
@@ -108,14 +103,14 @@ export default function FeaturedBundle({ bundle, bundles = defaultBundles, produ
         {/* Actions */}
         <div className="flex items-center gap-3 px-4 pb-4">
           <button
-            onClick={() => addBundle(featured)}
+            onClick={() => { setSelectedForSheet(featured.id); setOpenSheet(true) }}
             className="flex-1 bg-black text-white py-2.5 rounded-xl font-medium shadow-sm active:opacity-90"
             aria-label={`Add ${featured.title} bundle to cart`}
           >
             Add bundle to cart
           </button>
           <button
-            onClick={() => setOpenSheet(true)}
+            onClick={() => { setSelectedForSheet(featured.id); setOpenSheet(true) }}
             className="px-4 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-50"
             aria-label="View all bundle options"
           >
@@ -124,7 +119,7 @@ export default function FeaturedBundle({ bundle, bundles = defaultBundles, produ
         </div>
       </div>
 
-      <BundleSheet open={openSheet} onClose={() => setOpenSheet(false)} />
+      <BundleSheet open={openSheet} initialSelectedId={selectedForSheet} onClose={() => { setOpenSheet(false); setSelectedForSheet(null) }} />
     </section>
   )
 }

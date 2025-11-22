@@ -1,0 +1,227 @@
+"use client";
+import Image from "next/image";
+import FrequentlyBoughtTogether, { FBTProduct } from "@/components/FrequentlyBoughtTogether";
+import SizeGuide from "@/components/SizeGuide";
+import CustomerReviews from "@/components/CustomerReviews";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCart } from "../../../components/CartContext";
+
+const COLOR_DATA = [
+  { name: "Elmhurst Taro Custard", slug: "elmhurst-taro-custard", color: "#8271c2", img: "/images/products/Track Pants/ELMHURST TARO CUSTARD/P6.png", bg: "#eee9ff", border: "2px solid #d1c8f3" },
+  { name: "Greenpoint Patina Crew", slug: "greenpoint-patina-crew", color: "#58543a", img: "/images/products/Track Pants/Greenpoint Patina Crew/P4.png", bg: "#f1f0e6", border: "2px solid #d2cfba" },
+  { name: "Noho Napoletanos", slug: "noho-napoletanos", color: "#ab8c65", img: "/images/products/Track Pants/NOHO NAPOLETANOS/P7.png", bg: "#f4ecdf", border: "2px solid #e1d2b8" },
+  { name: "The Factory Floor", slug: "the-factory-floor", color: "#1e2744", img: "/images/products/Track Pants/THE FACTORY FLOOR/P1.png", bg: "#e6e9f4", border: "2px solid #c2c8da" },
+  { name: "Vice City Runners", slug: "vice-city-runners", color: "#fddde9", img: "/images/products/Track Pants/VICE CITY RUNNERS/P2.png", bg: "#fff0f6", border: "2px solid #f7c2d8" },
+  { name: "Victory Liberty Club", slug: "victory-liberty-club", color: "#7a273b", img: "/images/products/Track Pants/Victory Liberty Club/P3.png", bg: "#f4dde4", border: "2px solid #e6b8c7" },
+  { name: "Yorkville Black and White Cookies", slug: "yorkville-black-and-white-cookies", color: "#000000", img: "/images/products/Track Pants/YORKVILLE BLACK AND WHITE COOKIES/P5.png", bg: "#f5f5f5", border: "2px solid #d4d4d4" },
+];
+
+const PRODUCT = {
+  name: "Track Pants",
+  price: 90,
+  description: "Inspired by classic New York athletic warm-ups, these track pants feature bold color blocking and a relaxed, vintage silhouette designed for movement and comfort. Each colorway pays homage to various motifs, with contrasting panels and an embroidered FRUITSTAND logo.",
+  details: [
+    "Heavyweight brushed fleece for structure and comfort",
+    "Relaxed, vintage silhouette designed for movement",
+    "Contrasting panels with embroidered FRUITSTAND logo",
+    "Adjustable waistband and tapered ankle hem",
+  ],
+  sizes: ["XS", "S", "M", "L", "XL", "XXL", "XXXL"],
+};
+
+export default function TrackPantsPage() {
+  const colorOptions = COLOR_DATA;
+  const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
+  const [selectedSize, setSelectedSize] = useState(PRODUCT.sizes[0]);
+  const { addToCart, items } = useCart();
+  const [showPopup, setShowPopup] = useState(false);
+  const router = useRouter();
+  const handleAddToCart = () => {
+    addToCart({
+      productId: `track-pants-${selectedColor.slug}`,
+      name: `${PRODUCT.name} - ${selectedColor.name}`,
+      price: PRODUCT.price,
+      image: selectedColor.img,
+      quantity: 1,
+      size: selectedSize,
+      color: selectedColor.name,
+    });
+    setShowPopup(true);
+    setTimeout(() => setShowPopup(false), 1500);
+  };
+
+  // Height of the taskbar (matches py-3 + px-2, but add extra for safety)
+  const taskbarHeight = items.length > 0 && !showPopup ? 64 : 0;
+
+  // Example: fetch or compute FBT products dynamically in the future
+  const boughtTogetherItems: FBTProduct[] = [
+    { id: 'gala-tshirt', name: 'Gala Tee', price: 40, image: '/images/products/gala-tshirt/broadwaynoir/GN4.png' },
+    { id: 'tracksuit', name: 'Retro Track Suit', price: 120, image: '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png' },
+    { id: 'hockey-jersey', name: 'Broadway Blueberry Jersey', price: 90, image: '/images/products/hockey Jersey/JN.png' },
+  ];
+
+  
+
+  return (
+    <div style={{ height: '100vh', overflowY: 'auto' }}>
+      {/* Go Back button */}
+      <span
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          try { router.back(); } catch { window.history.back(); }
+        }}
+        style={{
+          position: 'fixed',
+          top: 24,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontSize: 16,
+          color: '#232323',
+          cursor: 'pointer',
+          fontWeight: 500,
+          zIndex: 10005,
+          userSelect: 'none',
+          background: 'rgba(255, 255, 255, 0.9)',
+          border: '1px solid #e0e0e0',
+          borderRadius: '20px',
+          padding: '8px 16px',
+          textDecoration: 'none',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.2s ease',
+          pointerEvents: 'auto',
+        }}
+      >
+        ← Go Back
+      </span>
+      <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingTop: 120 }}>
+        <div className="flex w-full md:w-1/2 flex-col items-center gap-4">
+          <div className="relative w-full max-w-sm md:max-w-full aspect-square rounded-xl overflow-hidden shadow-sm" style={{ background: selectedColor.bg }}>
+            <Image src={selectedColor.img} alt={PRODUCT.name} fill sizes="(max-width: 768px) 90vw, 420px" style={{ objectFit: "contain", background: selectedColor.bg }} priority />
+          </div>
+        </div>
+        <div className="md:w-1/2 flex flex-col justify-start">
+          <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
+          {/* Color Picker */}
+          <div className="flex gap-3 mb-4 px-1" style={{ overflowX: 'auto', marginBottom: 24, paddingTop: 8, paddingBottom: 8, minHeight: 48 }}>
+            {colorOptions.map((opt) => (
+              <button
+                key={opt.name}
+                aria-label={opt.name}
+                onClick={() => setSelectedColor(opt)}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: opt.color,
+                  border: selectedColor.name === opt.name ? '2px solid #232323' : (opt.border || '2px solid #fff'),
+                  outline: selectedColor.name === opt.name ? '2px solid #3B82F6' : 'none',
+                  boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #3B82F6' : '0 1px 4px 0 rgba(0,0,0,0.07)',
+                  display: 'inline-block',
+                  cursor: 'pointer',
+                  marginRight: 4,
+                }}
+              />
+            ))}
+          </div>
+          {/* Size Selection */}
+          <div style={{ marginBottom: 18 }}>
+            <p className="text-sm font-medium text-gray-700 mb-3">Size:</p>
+            <div className="size-single-line">
+              {PRODUCT.sizes.map((size) => (
+                <button key={size} className={`size-button px-3 rounded-lg font-semibold border-2 transition-all ${selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'}`} onClick={() => setSelectedSize(size)} type="button">{size}</button>
+              ))}
+            </div>
+            <div className="mt-2"><SizeGuide productSlug="track-pants" /></div>
+          </div>
+          <div className="mb-4 space-y-4">
+            <p className="text-lg text-gray-700 leading-relaxed">{PRODUCT.description}</p>
+            {PRODUCT.details && (
+              <div>
+                <span className="text-xs uppercase tracking-[0.2em] text-gray-500">Details</span>
+                <ul className="mt-2 list-disc list-inside text-gray-700 text-sm sm:text-base space-y-1">
+                  {PRODUCT.details.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+          <div className="text-2xl font-semibold mb-6">${PRODUCT.price}.00</div>
+          <button className={`bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2 ${!selectedSize ? 'opacity-50 cursor-not-allowed' : ''}`} onClick={handleAddToCart}>
+            {!selectedSize ? 'Pick a size to add to cart' : 'Add to Cart'}
+          </button>
+        </div>
+      </div>
+
+      {/* Section 2: Frequently Bought Together */}
+      <FrequentlyBoughtTogether
+        products={boughtTogetherItems}
+        onAddToCart={(product) => {
+          addToCart({
+            productId: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.image,
+            quantity: 1,
+            size: selectedSize,
+          });
+          setShowPopup(true);
+          setTimeout(() => setShowPopup(false), 1500);
+        }}
+        onAddAllToCart={(products) => {
+          products.forEach(product => {
+            addToCart({
+              productId: product.id,
+              name: product.name,
+              price: product.price * 0.85, // 15% discount
+              image: product.image,
+              quantity: 1,
+              size: selectedSize,
+            });
+          });
+          setShowPopup(true);
+          setTimeout(() => setShowPopup(false), 1500);
+        }}
+      />
+
+      {/* Section 3: Customer Reviews */}
+      <div
+        style={{
+          minHeight: '100vh',
+          scrollSnapAlign: 'start',
+          display: 'flex',
+          alignItems: 'center',
+          background: '#fbf6f0'
+        }}
+        className="py-12 px-4"
+      >
+        <div className="max-w-4xl mx-auto w-full">
+          <CustomerReviews productId="track-pants" />
+        </div>
+      </div>
+
+      {/* Minimalistic cart taskbar at bottom if cart has items */}
+      {items.length > 0 && !showPopup && (
+        <div
+          className="fixed left-0 right-0 bottom-0 z-50 bg-black text-white px-2 py-3 md:px-4 md:py-4 flex items-center justify-between"
+          style={{ borderTopLeftRadius: 16, borderTopRightRadius: 16, boxShadow: '0 4px 24px 0 rgba(0,0,0,0.18)', borderBottom: 'none' }}
+        >
+          <span className="font-medium text-sm md:text-base">Cart</span>
+          <div className="flex items-center gap-2 md:gap-3">
+            <span className="inline-block bg-white text-black rounded px-2 py-1 md:px-3 font-bold text-sm md:text-base">{items.reduce((sum, i) => sum + i.quantity, 0)}</span>
+            <a
+              href="/cart"
+              className="ml-1 md:ml-2 px-3 py-2 md:px-4 md:py-2 bg-white text-black rounded font-semibold hover:bg-gray-200 text-xs md:text-base"
+              style={{ textDecoration: 'none' }}
+            >
+              Head to Cart
+            </a>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

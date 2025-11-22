@@ -23,24 +23,17 @@ export type BundlesGridProps = {
 }
 
 export default function BundlesGrid({ bundles = defaultBundles, products = gridProducts, className }: BundlesGridProps) {
-  const { addToCart } = useCart()
+  const { addToCart, addBundleToCart } = useCart()
   const [openSheet, setOpenSheet] = useState(false)
+  const [selectedForSheet, setSelectedForSheet] = useState<string | null>(null)
 
   const productMap = useMemo(() => new Map(products.map(p => [p.id, p])), [products])
   const maxDiscount = useMemo(() => Math.max(0, ...bundles.map(b => b.discountPercent || 0)), [bundles])
 
-  const addBundle = (bundle: Bundle) => {
-    for (const id of bundle.itemIds) {
-      const p = productMap.get(id)
-      if (!p) continue
-      addToCart({
-        productId: String(p.id),
-        name: p.name,
-        price: parsePrice(p.price),
-        image: p.image,
-        quantity: 1,
-      })
-    }
+  // Open sheet for bundle so user can choose size/options before adding
+  const openBundleSheetFor = (bundle: Bundle) => {
+    setSelectedForSheet(bundle.id)
+    setOpenSheet(true)
   }
 
   return (
@@ -111,14 +104,14 @@ export default function BundlesGrid({ bundles = defaultBundles, products = gridP
               {/* Actions */}
               <div className="flex items-center gap-3 px-4 pb-4">
                 <button
-                  onClick={() => addBundle(b)}
+                  onClick={() => openBundleSheetFor(b)}
                   className="flex-1 bg-black text-white py-2.5 rounded-xl font-medium shadow-sm active:opacity-90"
                   aria-label={`Add ${b.title} bundle to cart`}
                 >
                   Add bundle to cart
                 </button>
                 <button
-                  onClick={() => setOpenSheet(true)}
+                  onClick={() => { setSelectedForSheet(b.id); setOpenSheet(true) }}
                   className="px-4 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-50"
                   aria-label="View bundle details"
                 >
@@ -131,7 +124,7 @@ export default function BundlesGrid({ bundles = defaultBundles, products = gridP
       </div>
 
       {/* Optional sheet for full experience */}
-      <BundleSheet open={openSheet} onClose={() => setOpenSheet(false)} />
+      <BundleSheet open={openSheet} initialSelectedId={selectedForSheet} onClose={() => { setOpenSheet(false); setSelectedForSheet(null); }} />
     </section>
   )
 }

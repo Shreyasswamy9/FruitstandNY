@@ -2,6 +2,7 @@
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import SizeGuide from "@/components/SizeGuide";
+import CustomerReviews from "@/components/CustomerReviews";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "@/components/CartContext";
 
@@ -33,7 +34,7 @@ export default function HockeyJerseyPage() {
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL"];
+  const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -101,30 +102,7 @@ export default function HockeyJerseyPage() {
     { id: 'tracksuit', name: 'Retro Track Suit', price: 120, image: '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png' },
   ];
 
-  // Sample customer reviews
-  const customerReviews = [
-    {
-      id: 1,
-      name: 'Sarah M.',
-      rating: 5,
-      review: 'Weighty but breathable with that old-school striping. Feels like an authentic sweater straight from the bench.',
-      date: '2 weeks ago'
-    },
-    {
-      id: 2,
-      name: 'Mike R.',
-      rating: 4,
-      review: 'Fit is slightly oversized in the best way. Embroidered crest looks premium and holds up after washes.',
-      date: '1 month ago'
-    },
-    {
-      id: 3,
-      name: 'Emma K.',
-      rating: 5,
-      review: 'Bought for game nights and now I wear it daily. The brushed inside is ridiculously soft.',
-      date: '3 weeks ago'
-    },
-  ];
+  
 
   return (
     <div style={{ height: '100vh', overflowY: 'auto' }}>
@@ -236,29 +214,26 @@ export default function HockeyJerseyPage() {
             />
           ))}
         </div>
-        {/* Size Selection + Size Guide */}
+        {/* Size Selection */}
         <div style={{ marginBottom: 18 }}>
           <p className="text-sm font-medium text-gray-700 mb-3">Size:</p>
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex gap-2 flex-wrap">
-              {sizeOptions.map((size) => (
-                <button
-                  key={size}
-                  className={`px-4 py-2 rounded-lg font-semibold border-2 transition-all ${
-                    selectedSize === size
-                      ? 'border-black bg-black text-white'
-                      : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'
-                  }`}
-                  style={{ minWidth: 48, fontSize: 14 }}
-                  onClick={() => setSelectedSize(size)}
-                  type="button"
-                >
-                  {size}
-                </button>
-              ))}
-            </div>
-            <SizeGuide productSlug="hockey-jersey" className="mt-2" />
+          <div className="size-single-line">
+            {sizeOptions.map((size) => (
+              <button
+                key={size}
+                className={`size-button px-3 rounded-lg font-semibold border-2 transition-all ${
+                  selectedSize === size
+                    ? 'border-black bg-black text-white'
+                    : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'
+                }`}
+                onClick={() => setSelectedSize(size)}
+                type="button"
+              >
+                {size}
+              </button>
+            ))}
           </div>
+          <div className="mt-2"><SizeGuide productSlug="hockey-jersey" /></div>
         </div>
         <p className="text-lg text-gray-700 mb-4">{PRODUCT.description}</p>
         <div className="text-2xl font-semibold mb-6">${PRODUCT.price}</div>
@@ -330,40 +305,7 @@ export default function HockeyJerseyPage() {
         className="py-12 px-4"
       >
         <div className="max-w-4xl mx-auto w-full">
-          <h2 className="text-3xl font-bold text-center mb-8">Customer Reviews</h2>
-          <div className="space-y-6">
-            {customerReviews.map((review) => (
-              <div key={review.id} className="bg-gray-50 rounded-lg p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center font-bold text-gray-700">
-                      {review.name.charAt(0)}
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-lg">{review.name}</h4>
-                      <div className="flex items-center gap-1">
-                        {[...Array(5)].map((_, index) => (
-                          <span
-                            key={index}
-                            className={`text-lg ${index < review.rating ? 'text-yellow-400' : 'text-gray-300'}`}
-                          >
-                            ★
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <span className="text-gray-500 text-sm">{review.date}</span>
-                </div>
-                <p className="text-gray-700 leading-relaxed">{review.review}</p>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <button className="bg-gray-800 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-700 transition-colors">
-              View All Reviews
-            </button>
-          </div>
+          <CustomerReviews productId="hockey-jersey" />
         </div>
       </div>
 

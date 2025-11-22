@@ -1,19 +1,31 @@
 "use client";
 import Image from "next/image";
 import React, { useState } from "react";
+import CustomerReviews from "@/components/CustomerReviews";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 
 const empireHatImages = [
-  "/images/empirehatfemale.jpg",
-  "/images/empirehatsolo.jpg",
-  "/images/empirehatmale.jpg",
+  "/images/products/empire-hat/A1.png",
+  "/images/products/empire-hat/A2.png",
+  "/images/products/empire-hat/A3.png",
+  "/images/products/empire-hat/A4.png",
+  "/images/products/empire-hat/A5.png",
 ];
 
 const PRODUCT = {
-  name: "Empire Corduroy hat",
-  price: 42,
-  description: "Classic denim hat with a modern fit. Durable, stylish, and perfect for any season.",
+    name: "EMPIRE CORDUROY HAT",
+    price: 49,
+    description: "Crafted from premium corduroy with an apple-inspired silhouette. Designed in NYC, worn everywhere.",
+    details: [
+      "Red corduroy construction",
+      "Apple-inspired silhouette",
+      "6-panel camp hat",
+      "Adjustable size, one size fits most",
+      "Detailed embroidery on front, back and brim of hat",
+      "Flexible brim",
+      "Made in Fujian, China",
+    ],
 };
 
 export default function EmpireHatPage() {
@@ -73,30 +85,7 @@ export default function EmpireHatPage() {
     { id: 'hockey-jersey', name: 'Broadway Blueberry Jersey', price: 90, image: '/images/products/hockey Jersey/JN.png' },
   ];
 
-  // Sample customer reviews
-  const customerReviews = [
-    {
-      id: 1,
-      name: 'Sarah M.',
-      rating: 5,
-      review: 'Perfect fit and great quality! The denim material feels premium and the hat looks exactly like the photos.',
-      date: '2 weeks ago'
-    },
-    {
-      id: 2,
-      name: 'Mike R.',
-      rating: 4,
-      review: 'Really comfortable and stylish. Goes well with any outfit. Shipping was fast too!',
-      date: '1 month ago'
-    },
-    {
-      id: 3,
-      name: 'Emma K.',
-      rating: 5,
-      review: 'Love this hat! The blue color is beautiful and it fits perfectly. Definitely recommending to friends.',
-      date: '3 weeks ago'
-    },
-  ];
+  
 
   return (
     <div style={{ height: '100vh', overflowY: 'auto' }}>
@@ -255,40 +244,7 @@ export default function EmpireHatPage() {
         className="py-12 px-4"
       >
         <div className="max-w-4xl mx-auto w-full">
-          <h2 className="text-3xl font-bold text-center mb-8">Customer Reviews</h2>
-          <div className="space-y-6">
-            {customerReviews.map((review) => (
-              <div key={review.id} className="bg-gray-50 rounded-lg p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center font-bold text-gray-700">
-                      {review.name.charAt(0)}
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-lg">{review.name}</h4>
-                      <div className="flex items-center gap-1">
-                        {[...Array(5)].map((_, index) => (
-                          <span
-                            key={index}
-                            className={`text-lg ${index < review.rating ? 'text-yellow-400' : 'text-gray-300'}`}
-                          >
-                            ★
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <span className="text-gray-500 text-sm">{review.date}</span>
-                </div>
-                <p className="text-gray-700 leading-relaxed">{review.review}</p>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <button className="bg-gray-800 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-700 transition-colors">
-              View All Reviews
-            </button>
-          </div>
+          <CustomerReviews productId="empire-hat" />
         </div>
       </div>
 

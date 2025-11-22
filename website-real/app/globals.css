@@ -371,3 +371,51 @@ html, body {
     display: none !important;
   }
 }
+
+/* Size selector: single-line, non-wrapping, compact and polished */
+.size-single-line {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: nowrap; /* force single line */
+  width: 100%;
+}
+.size-single-line .size-button {
+  /* Make buttons expand to fill available width and share space evenly.
+     min-width: 0 prevents overflowing due to long text and allows
+     proper shrinking on very narrow screens. Center text for consistency. */
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 10px 0;
+  font-size: 15px;
+  border-radius: 9px;
+  text-align: center;
+}
+
+/* Slightly smaller buttons on narrow screens to help them fit */
+@media (max-width: 420px) {
+  .size-single-line {
+    gap: 0.35rem;
+  }
+  .size-single-line .size-button {
+    /* keep buttons generous on mobile while letting them share the row */
+    padding: 12px 0;
+    font-size: 14px;
+    border-radius: 8px;
+  }
+}
+
+  /* Ensure selects inside bundle UI do not trigger mobile zoom (iOS) by
+     using at least 16px font-size and disabling automatic text-size adjust. */
+  .glass-subcard select,
+  .glass-card select,
+  .bundle-sheet-select,
+  .glass-banner select {
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100% !important;
+  }
+
+/* Ensure bundle sheet scrolling on iOS is smooth */
+.bundle-sheet-scroll {
+  -webkit-overflow-scrolling: touch;
+}

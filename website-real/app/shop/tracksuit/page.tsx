@@ -2,6 +2,7 @@
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import SizeGuide from "@/components/SizeGuide";
+import CustomerReviews from "@/components/CustomerReviews";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 
@@ -50,8 +51,14 @@ type TracksuitVariant = typeof TRACKSUIT_VARIANTS[number];
 
 const PRODUCT = {
   name: "Retro Track Suit",
-  price: 120,
-  description: "Signature Retro Track Suit set cut in heavyweight brushed fleece with directional palettes from Elmhurst Taro Custard to Yorkville Black & White Cookies.",
+  price: 165,
+  description: "Inspired by classic New York athletic warm-ups, this track suit features bold color blocking and a relaxed, vintage silhouette designed for movement and comfort. Each colorway pays homage to various motifs, with contrasting panels and embroidered FRUITSTAND logos.",
+  details: [
+    "Heavyweight brushed fleece for structure and comfort",
+    "Relaxed, vintage silhouette designed for movement",
+    "Contrasting panels with embroidered FRUITSTAND logos",
+    "Machine wash cold, tumble low",
+  ],
 };
 
 export default function TracksuitPage() {
@@ -62,7 +69,7 @@ export default function TracksuitPage() {
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL"];
+  const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -100,33 +107,10 @@ export default function TracksuitPage() {
     { id: 'empire-hat', name: 'Empire Cordury hat', price: 42, image: '/images/empirehatfemale.jpg' },
   ];
 
-  // Sample customer reviews
-  const customerReviews = [
-    {
-      id: 1,
-      name: 'Sarah M.',
-      rating: 5,
-      review: 'The Elmhurst set is buttery soft and drapes perfectly for travel days. Color looks even richer in person.',
-      date: '2 weeks ago'
-    },
-    {
-      id: 2,
-      name: 'Mike R.',
-      rating: 4,
-      review: 'Greenpoint Patina has been my go-to warmup kit. Breathes well and the zipper pockets are clutch.',
-      date: '1 month ago'
-    },
-    {
-      id: 3,
-      name: 'Emma K.',
-      rating: 5,
-      review: 'Vice City Runners is a statement set. Super comfy and the color blocking turns heads every time.',
-      date: '3 weeks ago'
-    },
-  ];
+  // Customer reviews are loaded via the centralized CustomerReviews component (Supabase-backed)
 
   return (
-    <div style={{ height: '100vh', overflowY: 'auto', scrollSnapType: 'y mandatory' }}>
+    <div style={{ height: '100vh', overflowY: 'auto' }}>
       {/* Go Back button - top center to avoid overlap with logo (left) and menu (right) */}
       <span
         onClick={(e) => {
@@ -182,7 +166,6 @@ export default function TracksuitPage() {
           paddingBottom: taskbarHeight,
           minHeight: '100vh',
           paddingTop: 120,
-          scrollSnapAlign: 'start'
         }}
       >
         {/* Images */}
@@ -212,7 +195,7 @@ export default function TracksuitPage() {
         </div>
         {/* Product Info */}
         <div className="md:w-1/2 flex flex-col justify-start">
-  <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
+  <h1 className="text-3xl font-bold mb-2">{PRODUCT.name} <span className="text-base font-medium text-gray-500">/ {selectedColor.name}</span></h1>
         {/* Color Picker */}
   <div className="flex gap-3 mb-4 px-1" style={{ overflowX: 'auto', marginBottom: 24, paddingTop: 8, paddingBottom: 8, minHeight: 48 }}>
           {colorOptions.map((opt) => (
@@ -239,32 +222,41 @@ export default function TracksuitPage() {
             />
           ))}
         </div>
-        {/* Size Selection + Size Guide */}
+        {/* Size Selection */}
         <div style={{ marginBottom: 18 }}>
           <p className="text-sm font-medium text-gray-700 mb-3">Size:</p>
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex gap-2 flex-wrap">
-              {sizeOptions.map((size) => (
-                <button
-                  key={size}
-                  className={`px-4 py-2 rounded-lg font-semibold border-2 transition-all ${
-                    selectedSize === size
-                      ? 'border-black bg-black text-white'
-                      : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'
-                  }`}
-                  style={{ minWidth: 48, fontSize: 14 }}
-                  onClick={() => setSelectedSize(size)}
-                  type="button"
-                >
-                  {size}
-                </button>
-              ))}
-            </div>
-            <SizeGuide productSlug="tracksuit" className="mt-2" />
+          <div className="size-single-line">
+            {sizeOptions.map((size) => (
+              <button
+                key={size}
+                className={`size-button px-3 rounded-lg font-semibold border-2 transition-all ${
+                  selectedSize === size
+                    ? 'border-black bg-black text-white'
+                    : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'
+                }`}
+                onClick={() => setSelectedSize(size)}
+                type="button"
+              >
+                {size}
+              </button>
+            ))}
           </div>
+          <div className="mt-2"><SizeGuide productSlug="tracksuit" /></div>
         </div>
-        <p className="text-lg text-gray-700 mb-4">{PRODUCT.description}</p>
-        <div className="text-2xl font-semibold mb-6">${PRODUCT.price}</div>
+        <div className="mb-4 space-y-4">
+          <p className="text-lg text-gray-700 leading-relaxed">{PRODUCT.description}</p>
+          {PRODUCT.details && (
+            <div>
+              <span className="text-xs uppercase tracking-[0.2em] text-gray-500">Details</span>
+              <ul className="mt-2 list-disc list-inside text-gray-700 text-sm sm:text-base space-y-1">
+                {PRODUCT.details.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+        <div className="text-2xl font-semibold mb-6">${PRODUCT.price}.00</div>
         <button
           className={`bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2 ${!selectedSize ? 'opacity-50 cursor-not-allowed' : ''}`}
           onClick={handleAddToCart}
@@ -280,7 +272,6 @@ export default function TracksuitPage() {
       <div
         style={{
           minHeight: '100vh',
-          scrollSnapAlign: 'start',
           display: 'flex',
           alignItems: 'center',
           background: '#fbf6f0'
@@ -321,7 +312,6 @@ export default function TracksuitPage() {
       <div
         style={{
           minHeight: '100vh',
-          scrollSnapAlign: 'start',
           display: 'flex',
           alignItems: 'center',
           background: '#fbf6f0'
@@ -330,38 +320,8 @@ export default function TracksuitPage() {
       >
         <div className="max-w-4xl mx-auto w-full">
           <h2 className="text-3xl font-bold text-center mb-8">Customer Reviews</h2>
-          <div className="space-y-6">
-            {customerReviews.map((review) => (
-              <div key={review.id} className="bg-gray-50 rounded-lg p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center font-bold text-gray-700">
-                      {review.name.charAt(0)}
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-lg">{review.name}</h4>
-                      <div className="flex items-center gap-1">
-                        {[...Array(5)].map((_, index) => (
-                          <span
-                            key={index}
-                            className={`text-lg ${index < review.rating ? 'text-yellow-400' : 'text-gray-300'}`}
-                          >
-                            ★
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <span className="text-gray-500 text-sm">{review.date}</span>
-                </div>
-                <p className="text-gray-700 leading-relaxed">{review.review}</p>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <button className="bg-gray-800 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-700 transition-colors">
-              View All Reviews
-            </button>
+          <div>
+            <CustomerReviews productId="tracksuit" />
           </div>
         </div>
       </div>
