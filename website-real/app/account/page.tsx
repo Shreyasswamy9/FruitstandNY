@@ -71,40 +71,40 @@ export default function AccountPage() {
 
   useEffect(() => {
     let mounted = true
-    ;(async () => {
-      const { data } = await supabase.auth.getUser()
-      if (!mounted) return
-      console.log('Supabase user data:', data.user) // Debug log
-      setUser(data.user ?? null)
-      setIsSignedIn(!!data.user)
-      
-      // Load user profile data from metadata
-      if (data.user?.user_metadata) {
-        setProfileData({
-          firstName: data.user.user_metadata.firstName || '',
-          lastName: data.user.user_metadata.lastName || '',
-          email: data.user.email || '',
-          phone: data.user.user_metadata.phone || '',
-          address: data.user.user_metadata.address || {
-            street: '',
-            street2: '',
-            city: '',
-            state: '',
-            zipCode: '',
-            country: 'US'
-          }
-        })
-        
-        setNotifications(data.user.user_metadata.notifications || {
-          email: true,
-          sms: false,
-          marketing: true,
-          orderUpdates: true
-        })
-      }
-      
-      setIsLoaded(true)
-    })()
+      ; (async () => {
+        const { data } = await supabase.auth.getUser()
+        if (!mounted) return
+        console.log('Supabase user data:', data.user) // Debug log
+        setUser(data.user ?? null)
+        setIsSignedIn(!!data.user)
+
+        // Load user profile data from metadata
+        if (data.user?.user_metadata) {
+          setProfileData({
+            firstName: data.user.user_metadata.firstName || '',
+            lastName: data.user.user_metadata.lastName || '',
+            email: data.user.email || '',
+            phone: data.user.user_metadata.phone || '',
+            address: data.user.user_metadata.address || {
+              street: '',
+              street2: '',
+              city: '',
+              state: '',
+              zipCode: '',
+              country: 'US'
+            }
+          })
+
+          setNotifications(data.user.user_metadata.notifications || {
+            email: true,
+            sms: false,
+            marketing: true,
+            orderUpdates: true
+          })
+        }
+
+        setIsLoaded(true)
+      })()
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       const u = session?.user ?? null
@@ -122,7 +122,7 @@ export default function AccountPage() {
 
   // Track active section for nav highlighting
   useEffect(() => {
-    const ids = ['profile','orders','notifications','security','tickets']
+    const ids = ['profile', 'orders', 'notifications', 'security', 'tickets']
     const elements: HTMLElement[] = ids
       .map(id => document.getElementById(id))
       .filter((el): el is HTMLElement => !!el)
@@ -132,7 +132,7 @@ export default function AccountPage() {
     const observer = new IntersectionObserver((entries) => {
       const visible = entries
         .filter(e => e.isIntersecting)
-        .sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0]
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
       if (visible?.target && (visible.target as HTMLElement).id) {
         setActiveSection((visible.target as HTMLElement).id)
       }
@@ -149,7 +149,7 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (!isLoaded) return; // Still loading
-    
+
     if (!isSignedIn) {
       // User not signed in, stop loading
       setLoading(false);
@@ -166,7 +166,7 @@ export default function AccountPage() {
         } else {
           setError("Failed to fetch orders");
         }
-        
+
         // Fetch tickets
         const ticketsResponse = await TicketService.getTickets();
         if (ticketsResponse.success) {
@@ -220,9 +220,9 @@ export default function AccountPage() {
           address: updatedData.address
         }
       })
-      
+
       if (error) throw error
-      
+
       setProfileData(updatedData)
       alert('Profile updated successfully!')
     } catch (error) {
@@ -241,9 +241,9 @@ export default function AccountPage() {
           notifications: updatedNotifications
         }
       })
-      
+
       if (error) throw error
-      
+
       setNotifications(updatedNotifications)
       alert('Notification preferences updated!')
     } catch (error) {
@@ -254,15 +254,15 @@ export default function AccountPage() {
     }
   }
 
-  const handlePasswordUpdate = async (currentPassword: string, newPassword: string) => {
+  const handlePasswordUpdate = async (newPassword: string) => {
     setSaving(true)
     try {
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       })
-      
+
       if (error) throw error
-      
+
       alert('Password updated successfully!')
     } catch (error) {
       console.error('Error updating password:', error)
@@ -281,7 +281,7 @@ export default function AccountPage() {
     setSaving(true)
     try {
       const response = await TicketService.createTicket(ticketData)
-      
+
       if (response.success) {
         setTickets(prev => [response.data, ...prev])
         setShowTicketModal(false)
@@ -300,15 +300,15 @@ export default function AccountPage() {
   // Show loading only while Clerk is initializing
   if (!isLoaded) {
     return (
-  <div className="min-h-screen bg-[#fbf6f0] text-gray-900">
+      <div className="min-h-screen bg-[#fbf6f0] text-gray-900">
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="w-16 h-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-gray-600">Loading...</p>
           </div>
         </div>
-        
-        
+
+
       </div>
     );
   }
@@ -316,7 +316,7 @@ export default function AccountPage() {
   // Show sign-in prompt if user is not authenticated
   if (!isSignedIn) {
     return (
-  <div className="min-h-screen bg-[#fbf6f0] text-gray-900">
+      <div className="min-h-screen bg-[#fbf6f0] text-gray-900">
         {/* Subtle Background Pattern */}
         <div className="fixed inset-0 opacity-10">
           <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50"></div>
@@ -356,7 +356,7 @@ export default function AccountPage() {
           </div>
         </div>
 
-        
+
       </div>
     );
   }
@@ -364,21 +364,21 @@ export default function AccountPage() {
   // Show loading while fetching orders for authenticated users
   if (loading) {
     return (
-  <div className="min-h-screen bg-[#fbf6f0] text-gray-900">
+      <div className="min-h-screen bg-[#fbf6f0] text-gray-900">
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="w-16 h-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-gray-600">Loading your account...</p>
           </div>
         </div>
-        
-        
+
+
       </div>
     );
   }
 
   return (
-  <div className="min-h-screen bg-[#fbf6f0] text-gray-900 overflow-x-hidden">
+    <div className="min-h-screen bg-[#fbf6f0] text-gray-900 overflow-x-hidden">
       {/* Top scroll progress bar */}
       <div className="fixed top-0 left-0 h-1 bg-gray-900 z-[60] transition-[width] duration-150" style={{ width: `${scrollProgress}%` }} />
       {/* Subtle Background Pattern */}
@@ -392,7 +392,7 @@ export default function AccountPage() {
       {/* Hero Section */}
       <div className="relative pt-20 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto relative">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -402,43 +402,43 @@ export default function AccountPage() {
               <div className="relative w-24 h-24 mx-auto mb-4 flex items-center justify-center">
                 {/* Apple shape container */}
                 <div className="w-full h-full bg-gradient-to-br from-red-500 via-red-600 to-red-700 relative overflow-hidden"
-                     style={{
-                       borderRadius: '50% 50% 50% 50% / 60% 60% 40% 40%',
-                       transform: 'rotate(-15deg)'
-                     }}>
+                  style={{
+                    borderRadius: '50% 50% 50% 50% / 60% 60% 40% 40%',
+                    transform: 'rotate(-15deg)'
+                  }}>
                   {/* Apple indentation at top */}
                   <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1"
-                       style={{
-                         width: '8px',
-                         height: '6px',
-                         backgroundColor: 'rgb(15 23 42)',
-                         borderRadius: '0 0 50% 50%'
-                       }}></div>
-                  
+                    style={{
+                      width: '8px',
+                      height: '6px',
+                      backgroundColor: 'rgb(15 23 42)',
+                      borderRadius: '0 0 50% 50%'
+                    }}></div>
+
                   {/* Apple stem */}
                   <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-2"
-                       style={{
-                         width: '2px',
-                         height: '8px',
-                         backgroundColor: '#8B4513'
-                       }}></div>
-                  
+                    style={{
+                      width: '2px',
+                      height: '8px',
+                      backgroundColor: '#8B4513'
+                    }}></div>
+
                   {/* Apple leaf */}
                   <div className="absolute top-0 left-1/2 transform translate-x-2 -translate-y-1"
-                       style={{
-                         width: '6px',
-                         height: '4px',
-                         backgroundColor: '#22C55E',
-                         borderRadius: '0 100% 0 100%',
-                         transform: 'rotate(45deg)'
-                       }}></div>
-                  
+                    style={{
+                      width: '6px',
+                      height: '4px',
+                      backgroundColor: '#22C55E',
+                      borderRadius: '0 100% 0 100%',
+                      transform: 'rotate(45deg)'
+                    }}></div>
+
                   {/* Shine effect */}
                   <div className="absolute top-2 left-2 w-3 h-4 bg-white/30 rounded-full transform rotate-45"></div>
-                  
+
                   {/* User initial */}
                   <div className="absolute inset-0 flex items-center justify-center"
-                       style={{ transform: 'rotate(15deg)' }}>
+                    style={{ transform: 'rotate(15deg)' }}>
                     <span className="text-xl font-bold text-white drop-shadow-lg">
                       {user?.user_metadata?.full_name?.charAt(0) || user?.user_metadata?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                     </span>
@@ -525,9 +525,8 @@ export default function AccountPage() {
                       <li key={link.id}>
                         <a
                           href={`#${link.id}`}
-                          className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                            activeSection === link.id ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'
-                          }`}
+                          className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeSection === link.id ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'
+                            }`}
                           aria-current={activeSection === link.id ? 'true' : undefined}
                         >
                           {link.label}
@@ -566,8 +565,8 @@ export default function AccountPage() {
                   Sign Out
                 </button>
               </div>
-            {/* Profile + Settings merged */}
-            <section id="profile" className="space-y-8 mb-12">
+              {/* Profile + Settings merged */}
+              <section id="profile" className="space-y-8 mb-12">
                 {/* Profile Info */}
                 <div className="glass-card rounded-3xl p-8 md:p-12">
                   <h2 className="text-3xl font-light text-gray-900 mb-8">Account Information</h2>
@@ -715,13 +714,13 @@ export default function AccountPage() {
                     </div>
                   </div>
                 </div>
-            </section>
+              </section>
 
-            {/* Orders */}
-            <section id="orders" className="space-y-6 mb-12">
-              <div className="glass-card rounded-3xl p-8 md:p-12">
+              {/* Orders */}
+              <section id="orders" className="space-y-6 mb-12">
+                <div className="glass-card rounded-3xl p-8 md:p-12">
                   <h2 className="text-3xl font-light text-gray-900 mb-8">Order History</h2>
-                  
+
                   {error && (
                     <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl mb-6">
                       {error}
@@ -756,20 +755,19 @@ export default function AccountPage() {
                             </div>
                             <div className="text-right">
                               <p className="font-semibold text-gray-900 text-lg">${order.totalAmount.toFixed(2)}</p>
-                              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                                order.orderStatus === "delivered" 
-                                  ? "bg-green-100 text-green-700 border border-green-200"
-                                  : order.orderStatus === "shipped"
+                              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${order.orderStatus === "delivered"
+                                ? "bg-green-100 text-green-700 border border-green-200"
+                                : order.orderStatus === "shipped"
                                   ? "bg-blue-100 text-blue-700 border border-blue-200"
                                   : order.orderStatus === "cancelled"
-                                  ? "bg-red-100 text-red-700 border border-red-200"
-                                  : "bg-yellow-100 text-yellow-700 border border-yellow-200"
-                              }`}>
+                                    ? "bg-red-100 text-red-700 border border-red-200"
+                                    : "bg-yellow-100 text-yellow-700 border border-yellow-200"
+                                }`}>
                                 {order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
                               </span>
                             </div>
                           </div>
-                          
+
                           <div className="border-t border-gray-200 pt-4">
                             <p className="text-gray-700 mb-3">
                               Items: {order.items.map(item => `${item.name} (x${item.quantity})`).join(", ")}
@@ -789,340 +787,323 @@ export default function AccountPage() {
                       )}
                     </div>
                   )}
-              </div>
-            </section>
-
-            {/* Notifications */}
-            <section id="notifications" className="space-y-6 mb-12">
-              <div className="glass-card rounded-3xl p-8 md:p-12">
-                <h2 className="text-3xl font-light text-gray-900 mb-8">Notification Preferences</h2>
-                
-                <div className="space-y-6">
-                  <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-medium text-gray-900">Email Notifications</h3>
-                        <p className="text-gray-600 text-sm">Receive updates via email</p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={notifications.email}
-                          onChange={(e) => setNotifications(prev => ({ ...prev, email: e.target.checked }))}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-medium text-gray-900">SMS Notifications</h3>
-                        <p className="text-gray-600 text-sm">Receive text messages for important updates</p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={notifications.sms}
-                          onChange={(e) => setNotifications(prev => ({ ...prev, sms: e.target.checked }))}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-medium text-gray-900">Marketing Communications</h3>
-                        <p className="text-gray-600 text-sm">Get notified about sales, new products, and promotions</p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={notifications.marketing}
-                          onChange={(e) => setNotifications(prev => ({ ...prev, marketing: e.target.checked }))}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-medium text-gray-900">Order Updates</h3>
-                        <p className="text-gray-600 text-sm">Get notified about order status changes and shipping updates</p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={notifications.orderUpdates}
-                          onChange={(e) => setNotifications(prev => ({ ...prev, orderUpdates: e.target.checked }))}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end pt-6 border-t border-gray-200">
-                    <button
-                      onClick={() => handleNotificationUpdate(notifications)}
-                      disabled={saving}
-                      className="bg-black text-white px-8 py-3 rounded-xl font-medium hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {saving ? 'Saving...' : 'Save Preferences'}
-                    </button>
-                  </div>
                 </div>
-              </div>
-            </section>
+              </section>
 
-            {/* Security (collapsible) */}
-            <section id="security" className="space-y-6 mb-12">
-              <div className="glass-card rounded-3xl p-8 md:p-12">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-3xl font-light text-gray-900">Security</h2>
-                  <button onClick={() => setShowSecurity((v) => !v)} className="px-4 py-2 rounded-xl border border-gray-300 text-gray-800 hover:bg-gray-50">
-                    {showSecurity ? 'Hide' : 'Manage'}
-                  </button>
-                </div>
-                {!showSecurity ? (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Notifications */}
+              <section id="notifications" className="space-y-6 mb-12">
+                <div className="glass-card rounded-3xl p-8 md:p-12">
+                  <h2 className="text-3xl font-light text-gray-900 mb-8">Notification Preferences</h2>
+
+                  <div className="space-y-6">
                     <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
-                      <h3 className="font-medium text-gray-900 mb-1">Password</h3>
-                      <p className="text-sm text-gray-600">Last updated recently</p>
-                    </div>
-                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
-                      <h3 className="font-medium text-gray-900 mb-1">Email</h3>
-                      <p className="text-sm text-gray-600 truncate">{user?.email}</p>
-                    </div>
-                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
-                      <h3 className="font-medium text-gray-900 mb-1">Two-Factor</h3>
-                      <p className="text-sm text-gray-600">Disabled</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-8">
-                    {/* Change Password */}
-                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
-                      <h3 className="text-xl font-medium text-gray-900 mb-4">Change Password</h3>
-                      <form onSubmit={(e) => {
-                        e.preventDefault()
-                        const formData = new FormData(e.target as HTMLFormElement)
-                        const currentPassword = formData.get('currentPassword') as string
-                        const newPassword = formData.get('newPassword') as string
-                        const confirmPassword = formData.get('confirmPassword') as string
-                        
-                        if (newPassword !== confirmPassword) {
-                          alert('New passwords do not match')
-                          return
-                        }
-                        
-                        handlePasswordUpdate(currentPassword, newPassword)
-                      }} className="space-y-4">
-                        
+                      <div className="flex items-center justify-between">
                         <div>
-                          <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                            Current Password
-                          </label>
+                          <h3 className="font-medium text-gray-900">Email Notifications</h3>
+                          <p className="text-gray-600 text-sm">Receive updates via email</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
                           <input
-                            type="password"
-                            id="currentPassword"
-                            name="currentPassword"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
-                            placeholder="Enter current password"
-                            required
+                            type="checkbox"
+                            checked={notifications.email}
+                            onChange={(e) => setNotifications(prev => ({ ...prev, email: e.target.checked }))}
+                            className="sr-only peer"
                           />
-                        </div>
-                        
-                        <div>
-                          <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                            New Password
-                          </label>
-                          <input
-                            type="password"
-                            id="newPassword"
-                            name="newPassword"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
-                            placeholder="Enter new password"
-                            required
-                          />
-                        </div>
-                        
-                        <div>
-                          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                            Confirm New Password
-                          </label>
-                          <input
-                            type="password"
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
-                            placeholder="Confirm new password"
-                            required
-                          />
-                        </div>
-                        
-                        <div className="flex justify-end">
-                          <button
-                            type="submit"
-                            disabled={saving}
-                            className="bg-black text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {saving ? 'Updating...' : 'Update Password'}
-                          </button>
-                        </div>
-                      </form>
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                      </div>
                     </div>
 
-                    {/* Change Email */}
                     <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
-                      <h3 className="text-xl font-medium text-gray-900 mb-4">Change Email Address</h3>
-                      <p className="text-gray-600 mb-4">Current email: {user?.email}</p>
-                      <form onSubmit={(e) => {
-                        e.preventDefault()
-                        const formData = new FormData(e.target as HTMLFormElement)
-                        const newEmail = formData.get('newEmail') as string
-                        
-                        const confirmChange = confirm('Are you sure you want to change your email? You will need to verify the new email address.')
-                        if (confirmChange) {
-                          supabase.auth.updateUser({ email: newEmail })
-                            .then(({ error }) => {
-                              if (error) {
-                                alert('Failed to update email: ' + error.message)
-                              } else {
-                                alert('Email update initiated. Please check your new email for verification.')
-                              }
-                            })
-                        }
-                      }} className="space-y-4">
-                        
+                      <div className="flex items-center justify-between">
                         <div>
-                          <label htmlFor="newEmail" className="block text-sm font-medium text-gray-700 mb-2">
-                            New Email Address
-                          </label>
+                          <h3 className="font-medium text-gray-900">SMS Notifications</h3>
+                          <p className="text-gray-600 text-sm">Receive text messages for important updates</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
                           <input
-                            type="email"
-                            id="newEmail"
-                            name="newEmail"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
-                            placeholder="Enter new email address"
-                            required
+                            type="checkbox"
+                            checked={notifications.sms}
+                            onChange={(e) => setNotifications(prev => ({ ...prev, sms: e.target.checked }))}
+                            className="sr-only peer"
                           />
-                        </div>
-                        
-                        <div className="flex justify-end">
-                          <button
-                            type="submit"
-                            disabled={saving}
-                            className="bg-black text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            Update Email
-                          </button>
-                        </div>
-                      </form>
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                      </div>
                     </div>
 
-                    {/* Two-Factor Authentication */}
                     <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
-                      <h3 className="text-xl font-medium text-gray-900 mb-4">Two-Factor Authentication</h3>
-                      <p className="text-gray-600 mb-4">Add an extra layer of security to your account</p>
-                      <button className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-all duration-300">
-                        Enable 2FA
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-medium text-gray-900">Marketing Communications</h3>
+                          <p className="text-gray-600 text-sm">Get notified about sales, new products, and promotions</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={notifications.marketing}
+                            onChange={(e) => setNotifications(prev => ({ ...prev, marketing: e.target.checked }))}
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-medium text-gray-900">Order Updates</h3>
+                          <p className="text-gray-600 text-sm">Get notified about order status changes and shipping updates</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={notifications.orderUpdates}
+                            onChange={(e) => setNotifications(prev => ({ ...prev, orderUpdates: e.target.checked }))}
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-6 border-t border-gray-200">
+                      <button
+                        onClick={() => handleNotificationUpdate(notifications)}
+                        disabled={saving}
+                        className="bg-black text-white px-8 py-3 rounded-xl font-medium hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {saving ? 'Saving...' : 'Save Preferences'}
                       </button>
                     </div>
                   </div>
-                )}
-              </div>
-            </section>
-
-            {/* Tickets */}
-            <section id="tickets" className="space-y-6 mb-12">
-              <div className="glass-card rounded-3xl p-8 md:p-12">
-                <div className="flex justify-between items-center mb-8">
-                  <div>
-                    <h2 className="text-3xl font-light text-gray-900">Support Tickets</h2>
-                    <p className="text-gray-600 mt-2">View and manage your support tickets. You can also submit tickets through our <a href="/contact" className="text-blue-600 hover:text-blue-800 underline">contact page</a>.</p>
-                  </div>
-                  <button 
-                    onClick={() => setShowTicketModal(true)}
-                    className="bg-black text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition-all duration-300"
-                  >
-                    New Ticket
-                  </button>
                 </div>
-                
-                {tickets.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                      </svg>
-                    </div>
-                    <p className="text-gray-600 mb-6 text-lg">No support tickets yet</p>
-                    <p className="text-gray-500 text-sm">When you create a support ticket, it will appear here</p>
+              </section>
+
+              {/* Security (collapsible) */}
+              <section id="security" className="space-y-6 mb-12">
+                <div className="glass-card rounded-3xl p-8 md:p-12">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-3xl font-light text-gray-900">Security</h2>
+                    <button onClick={() => setShowSecurity((v) => !v)} className="px-4 py-2 rounded-xl border border-gray-300 text-gray-800 hover:bg-gray-50">
+                      {showSecurity ? 'Hide' : 'Manage'}
+                    </button>
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    {(tickets.slice(0, 3)).map((ticket) => (
-                      <div key={ticket.id} className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
-                        <div className="flex justify-between items-start mb-4">
+                  {!showSecurity ? (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                        <h3 className="font-medium text-gray-900 mb-1">Password</h3>
+                        <p className="text-sm text-gray-600">Last updated recently</p>
+                      </div>
+                      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                        <h3 className="font-medium text-gray-900 mb-1">Email</h3>
+                        <p className="text-sm text-gray-600 truncate">{user?.email}</p>
+                      </div>
+                      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                        <h3 className="font-medium text-gray-900 mb-1">Two-Factor</h3>
+                        <p className="text-sm text-gray-600">Disabled</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-8">
+                      {/* Change Password */}
+                      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                        <h3 className="text-xl font-medium text-gray-900 mb-4">Change Password</h3>
+                        <form onSubmit={(e) => {
+                          e.preventDefault()
+                          const formData = new FormData(e.target as HTMLFormElement)
+                          const newPassword = formData.get('newPassword') as string
+                          const confirmPassword = formData.get('confirmPassword') as string
+
+                          if (newPassword !== confirmPassword) {
+                            alert('New passwords do not match')
+                            return
+                          }
+
+                          handlePasswordUpdate(newPassword)
+                        }} className="space-y-4">
+
                           <div>
-                            <h3 className="font-semibold text-gray-900">{ticket.subject}</h3>
-                            <p className="text-sm text-gray-600">
-                              Ticket #{ticket.id} • {ticket.category}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              Created: {new Date(ticket.createdAt).toLocaleDateString()}
-                            </p>
+                            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                              New Password
+                            </label>
+                            <input
+                              type="password"
+                              id="newPassword"
+                              name="newPassword"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                              placeholder="Enter new password"
+                              required
+                            />
                           </div>
-                          <div className="text-right">
-                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                              ticket.status === "resolved" 
+
+                          <div>
+                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                              Confirm New Password
+                            </label>
+                            <input
+                              type="password"
+                              id="confirmPassword"
+                              name="confirmPassword"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                              placeholder="Confirm new password"
+                              required
+                            />
+                          </div>
+
+                          <div className="flex justify-end">
+                            <button
+                              type="submit"
+                              disabled={saving}
+                              className="bg-black text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {saving ? 'Updating...' : 'Update Password'}
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+
+                      {/* Change Email */}
+                      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                        <h3 className="text-xl font-medium text-gray-900 mb-4">Change Email Address</h3>
+                        <p className="text-gray-600 mb-4">Current email: {user?.email}</p>
+                        <form onSubmit={(e) => {
+                          e.preventDefault()
+                          const formData = new FormData(e.target as HTMLFormElement)
+                          const newEmail = formData.get('newEmail') as string
+
+                          const confirmChange = confirm('Are you sure you want to change your email? You will need to verify the new email address.')
+                          if (confirmChange) {
+                            supabase.auth.updateUser({ email: newEmail })
+                              .then(({ error }) => {
+                                if (error) {
+                                  alert('Failed to update email: ' + error.message)
+                                } else {
+                                  alert('Email update initiated. Please check your new email for verification.')
+                                }
+                              })
+                          }
+                        }} className="space-y-4">
+
+                          <div>
+                            <label htmlFor="newEmail" className="block text-sm font-medium text-gray-700 mb-2">
+                              New Email Address
+                            </label>
+                            <input
+                              type="email"
+                              id="newEmail"
+                              name="newEmail"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent"
+                              placeholder="Enter new email address"
+                              required
+                            />
+                          </div>
+
+                          <div className="flex justify-end">
+                            <button
+                              type="submit"
+                              disabled={saving}
+                              className="bg-black text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              Update Email
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+
+                      {/* Two-Factor Authentication */}
+                      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                        <h3 className="text-xl font-medium text-gray-900 mb-4">Two-Factor Authentication</h3>
+                        <p className="text-gray-600 mb-4">Add an extra layer of security to your account</p>
+                        <button className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-all duration-300">
+                          Enable 2FA
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              {/* Tickets */}
+              <section id="tickets" className="space-y-6 mb-12">
+                <div className="glass-card rounded-3xl p-8 md:p-12">
+                  <div className="flex justify-between items-center mb-8">
+                    <div>
+                      <h2 className="text-3xl font-light text-gray-900">Support Tickets</h2>
+                      <p className="text-gray-600 mt-2">View and manage your support tickets. You can also submit tickets through our <a href="/contact" className="text-blue-600 hover:text-blue-800 underline">contact page</a>.</p>
+                    </div>
+                    <button
+                      onClick={() => setShowTicketModal(true)}
+                      className="bg-black text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition-all duration-300"
+                    >
+                      New Ticket
+                    </button>
+                  </div>
+
+                  {tickets.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                      </div>
+                      <p className="text-gray-600 mb-6 text-lg">No support tickets yet</p>
+                      <p className="text-gray-500 text-sm">When you create a support ticket, it will appear here</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {(tickets.slice(0, 3)).map((ticket) => (
+                        <div key={ticket.id} className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h3 className="font-semibold text-gray-900">{ticket.subject}</h3>
+                              <p className="text-sm text-gray-600">
+                                Ticket #{ticket.id} • {ticket.category}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                Created: {new Date(ticket.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${ticket.status === "resolved"
                                 ? "bg-green-100 text-green-700 border border-green-200"
                                 : ticket.status === "in-progress"
-                                ? "bg-blue-100 text-blue-700 border border-blue-200"
-                                : ticket.status === "closed"
-                                ? "bg-gray-100 text-gray-700 border border-gray-200"
-                                : "bg-yellow-100 text-yellow-700 border border-yellow-200"
-                            }`}>
-                              {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
-                            </span>
-                            <div className="mt-2">
-                              <span className={`inline-block px-2 py-1 rounded text-xs ${
-                                ticket.priority === "high" 
+                                  ? "bg-blue-100 text-blue-700 border border-blue-200"
+                                  : ticket.status === "closed"
+                                    ? "bg-gray-100 text-gray-700 border border-gray-200"
+                                    : "bg-yellow-100 text-yellow-700 border border-yellow-200"
+                                }`}>
+                                {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
+                              </span>
+                              <div className="mt-2">
+                                <span className={`inline-block px-2 py-1 rounded text-xs ${ticket.priority === "high"
                                   ? "bg-red-100 text-red-600"
                                   : ticket.priority === "medium"
-                                  ? "bg-yellow-100 text-yellow-600"
-                                  : "bg-green-100 text-green-600"
-                              }`}>
-                                {ticket.priority} priority
-                              </span>
+                                    ? "bg-yellow-100 text-yellow-600"
+                                    : "bg-green-100 text-green-600"
+                                  }`}>
+                                  {ticket.priority} priority
+                                </span>
+                              </div>
                             </div>
                           </div>
+
+                          <div className="border-t border-gray-200 pt-4">
+                            <p className="text-gray-700 mb-3">{ticket.description}</p>
+                            <button className="text-black hover:text-gray-700 font-medium transition-colors">
+                              View Details →
+                            </button>
+                          </div>
                         </div>
-                        
-                        <div className="border-t border-gray-200 pt-4">
-                          <p className="text-gray-700 mb-3">{ticket.description}</p>
-                          <button className="text-black hover:text-gray-700 font-medium transition-colors">
-                            View Details →
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </section>
-            {/* End sections */}
-          </motion.div>
-        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </section>
+              {/* End sections */}
+            </motion.div>
+          </div>
         </div>
       </div>
 
@@ -1142,7 +1123,7 @@ export default function AccountPage() {
                   </svg>
                 </button>
               </div>
-              
+
               <form onSubmit={(e) => {
                 e.preventDefault()
                 const formData = new FormData(e.target as HTMLFormElement)
@@ -1154,7 +1135,7 @@ export default function AccountPage() {
                 }
                 handleCreateTicket(ticketData)
               }} className="space-y-6">
-                
+
                 <div>
                   <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
                     Subject *
@@ -1189,7 +1170,7 @@ export default function AccountPage() {
                       <option value="Other">Other</option>
                     </select>
                   </div>
-                  
+
                   <div>
                     <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-2">
                       Priority
@@ -1243,9 +1224,9 @@ export default function AccountPage() {
         </div>
       )}
 
-        
 
-      
+
+
     </div>
   );
 }
