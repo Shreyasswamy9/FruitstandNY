@@ -48,7 +48,7 @@ export default function MutsuTshirtPage() {
   const [bundleOpen, setBundleOpen] = useState(false);
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  
+
   // read color from window.location in effect to avoid useSearchParams suspense issues
 
   const handleAddToCart = () => {
@@ -94,7 +94,7 @@ export default function MutsuTshirtPage() {
 
   const taskbarHeight = items.length > 0 && !showPopup ? 64 : 0;
 
-  
+
 
   return (
     <div style={{ height: '100vh', overflowY: 'auto' }}>
@@ -107,7 +107,7 @@ export default function MutsuTshirtPage() {
         ← Go Back
       </span>
 
-  <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingBottom: taskbarHeight, minHeight: '100vh', paddingTop: 120 }}>
+      <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingBottom: taskbarHeight, minHeight: '100vh', paddingTop: 120 }}>
         {/* Images */}
         <div className="flex w-full md:w-1/2 flex-col items-center gap-4">
           <div className="relative w-full max-w-sm md:max-w-full aspect-square rounded-xl overflow-hidden bg-white shadow-sm">
@@ -126,41 +126,44 @@ export default function MutsuTshirtPage() {
         <div className="md:w-1/2 flex flex-col justify-start">
           <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
           {/* Color Picker */}
-          <div className="flex gap-3 mb-4 px-1" style={{ overflowX: 'auto', marginBottom: 24, paddingTop: 8, paddingBottom: 8, minHeight: 48 }}>
-            {colorOptions.map((opt) => (
-              <button
-                key={opt.name}
-                aria-label={opt.name}
-                onClick={() => { 
-                  setSelectedColor(opt); 
-                  setSelectedImage(opt.images[0]); 
-                  window.history.replaceState(null, '', `/shop/mutsu-tshirt?color=${opt.slug}`);
-                }}
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: '50%',
-                  background: opt.color,
-                  border: selectedColor.name === opt.name
-                    ? '2px solid #232323'
-                    : (['#ffffff','#f9fafb','#fafbfc','#f5f5f5'].includes(opt.color.toLowerCase())
+          <div className="mb-6">
+            <p className="text-sm font-medium text-gray-700 mb-2">Color: <span className="font-semibold text-gray-900">{selectedColor.name}</span></p>
+            <div className="flex gap-3 px-1" style={{ overflowX: 'auto', paddingTop: 6, paddingBottom: 6, minHeight: 56 }}>
+              {colorOptions.map((opt) => (
+                <button
+                  key={opt.name}
+                  aria-label={opt.name}
+                  onClick={() => {
+                    setSelectedColor(opt);
+                    setSelectedImage(opt.images[0]);
+                    window.history.replaceState(null, '', `/shop/mutsu-tshirt?color=${opt.slug}`);
+                  }}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    background: opt.color,
+                    border: selectedColor.name === opt.name
+                      ? '2px solid #232323'
+                      : (['#ffffff', '#f9fafb', '#fafbfc', '#f5f5f5'].includes(opt.color.toLowerCase())
                         ? '2px solid #d1d5db'
                         : (opt.border || '2px solid #fff')),
-                  outline: 'none',
-                  boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #232323' : '0 1px 4px 0 rgba(0,0,0,0.07)',
-                  display: 'inline-block',
-                  cursor: 'pointer',
-                  marginRight: 4
-                }}
-              />
-            ))}
+                    outline: 'none',
+                    boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #232323' : '0 1px 4px 0 rgba(0,0,0,0.07)',
+                    display: 'inline-block',
+                    cursor: 'pointer',
+                    marginRight: 4
+                  }}
+                />
+              ))}
+            </div>
           </div>
 
           {/* Size Selection */}
           <div style={{ marginBottom: 18 }}>
             <p className="text-sm font-medium text-gray-700 mb-3">Size:</p>
             <div className="size-single-line">
-              {["XS","S","M","L","XL","XXL","XXXL"].map((size) => (
+              {["XS", "S", "M", "L", "XL", "XXL", "XXXL"].map((size) => (
                 <button key={size} className={`size-button px-3 rounded-lg font-semibold border-2 transition-all ${selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'}`} onClick={() => setSelectedSize(size)} type="button">{size}</button>
               ))}
             </div>

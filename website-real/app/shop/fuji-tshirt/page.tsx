@@ -138,9 +138,11 @@ export default function FujiTshirtPage() {
 
         {/* Product Info */}
         <div className="md:w-1/2 flex flex-col justify-start">
-          <h1 className="text-3xl font-bold mb-2">{PRODUCT.name} <span className="text-base font-medium text-gray-500">/ {selectedColor.name}</span></h1>
+          <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
           {/* Color Picker */}
-          <div className="flex gap-3 mb-4 px-1" style={{ overflowX: 'auto', marginBottom: 24, paddingTop: 8, paddingBottom: 8, minHeight: 48 }}>
+          <div className="mb-6">
+            <p className="text-sm font-medium text-gray-700 mb-2">Color: <span className="font-semibold text-gray-900">{selectedColor.name}</span></p>
+            <div className="flex gap-3 px-1" style={{ overflowX: 'auto', paddingTop: 6, paddingBottom: 6, minHeight: 56 }}>
             {colorOptions.map((opt) => (
               <button
                 key={opt.name}
@@ -169,6 +171,7 @@ export default function FujiTshirtPage() {
                 data-active={selectedColor.name === opt.name || undefined}
               />
             ))}
+            </div>
           </div>
 
           {/* Size Selection */}

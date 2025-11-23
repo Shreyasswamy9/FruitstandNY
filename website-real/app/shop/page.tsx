@@ -122,7 +122,7 @@ export default function ShopPage() {
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">FRUITSTAND</h2>
               <p className="text-gray-600 max-w-md mx-auto">
-                Premium streetwear and lifestyle apparel designed for the modern individual.
+                Organic New York Culture™
               </p>
             </div>
 
