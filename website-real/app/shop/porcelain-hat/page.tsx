@@ -3,6 +3,7 @@ import Image from "next/image";
 import React, { useState } from "react";
 import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
+import Price from '@/components/Price';
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 
@@ -14,6 +15,7 @@ const porcelainHatImages = [
 const PRODUCT = {
   name: "Porcelain Hat",
   price: 44,
+  salePrice: 25,
   description: "Crisp porcelain white hat, clean look for any outfit.",
 };
 
@@ -27,6 +29,7 @@ export default function PorcelainHatPage() {
       productId: "porcelain-hat",
       name: PRODUCT.name,
       price: PRODUCT.price,
+      salePrice: PRODUCT.salePrice,
       image: selectedImage,
       quantity: 1,
     });
@@ -37,13 +40,13 @@ export default function PorcelainHatPage() {
   const boughtTogetherItems = getFBTForPage('porcelain-hat');
 
   const handleAddBoughtTogetherItem = (item: { id: string; name: string; price: number; image: string }) => {
-    addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1 });
+    addToCart({ productId: item.id, name: item.name, price: item.price, salePrice: (item as any).salePrice, image: item.image, quantity: 1 });
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };
 
   const handleAddAllToCart = () => {
-    boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, image: item.image, quantity: 1 }));
+    boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, salePrice: (item as any).salePrice ? (item as any).salePrice * 0.85 : undefined, image: item.image, quantity: 1 }));
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };
@@ -88,7 +91,7 @@ export default function PorcelainHatPage() {
         <div className="md:w-1/2 flex flex-col justify-start">
           <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
           <p className="text-lg text-gray-700 mb-4">{PRODUCT.description}</p>
-          <div className="text-2xl font-semibold mb-6">${PRODUCT.price}</div>
+          <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} salePrice={PRODUCT.salePrice} /></div>
           <button className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2" onClick={handleAddToCart}>
             Add to Cart
           </button>

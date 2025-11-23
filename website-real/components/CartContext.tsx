@@ -14,6 +14,11 @@ export interface CartItem {
   bundleId?: string;
   bundleItems?: number[];
   bundleSize?: string;
+  // Support sale prices and keep original price for UI
+  salePrice?: number;
+  originalPrice?: number;
+  // Unique line identifier to distinguish same product with different options
+  lineId?: string;
 }
 
 interface CartContextType {
@@ -39,7 +44,21 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const parsedItems = JSON.parse(stored);
         console.log('Parsed cart items:', parsedItems);
-        setItems(parsedItems);
+        // Normalize loaded items to ensure originalPrice, salePrice, and effective stored price are correct
+        const normalized = (parsedItems as any[]).map(it => {
+          const orig = (it.originalPrice ?? it.price) as number;
+          const sale = it.salePrice ?? undefined;
+          const effective = (sale ?? orig) as number;
+          const lineId = `${it.productId}::${it.size ?? ''}::${it.color ?? ''}::${it.isBundle ? 'bundle' : ''}`;
+          return {
+            ...it,
+            originalPrice: orig,
+            salePrice: sale,
+            price: effective,
+            lineId,
+          } as CartItem;
+        });
+        setItems(normalized);
       } catch (error) {
         console.error('Error parsing cart from localStorage:', error);
         localStorage.removeItem('cart'); // Clear corrupted data
@@ -69,15 +88,23 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addToCart = (item: CartItem) => {
     setItems(prev => {
-      const existing = prev.find(i => i.productId === item.productId);
+      // Normalize incoming item: preserve originalPrice and salePrice, and set stored price to effective price
+      const orig = (item.originalPrice ?? item.price) as number;
+      const sale = item.salePrice ?? undefined;
+      const effectivePrice = (sale ?? orig) as number;
+      const normalized: CartItem = { ...item, originalPrice: orig, salePrice: sale, price: effectivePrice };
+      const lineId = `${normalized.productId}::${normalized.size ?? ''}::${normalized.color ?? ''}::${normalized.isBundle ? 'bundle' : ''}`;
+      normalized.lineId = lineId;
+
+      const existing = prev.find(i => i.lineId === lineId);
       if (existing) {
         return prev.map(i =>
-          i.productId === item.productId
-            ? { ...i, quantity: i.quantity + item.quantity }
+          i.lineId === lineId
+            ? { ...i, quantity: i.quantity + normalized.quantity }
             : i
         );
       }
-      return [...prev, item];
+      return [...prev, normalized];
     });
   };
 
@@ -88,6 +115,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (existing) {
         return prev.map(i => i.productId === productId ? { ...i, quantity: i.quantity + quantity } : i);
       }
+      const lineId = `${productId}::${bundleSize ?? ''}::bundle`;
       const bundleItem: CartItem = {
         productId,
         name,
@@ -98,13 +126,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         bundleId,
         bundleItems: itemIds,
         bundleSize,
+        lineId,
       };
       return [...prev, bundleItem];
     });
   };
 
   const removeFromCart = (productId: string) => {
-    setItems(prev => prev.filter(i => i.productId !== productId));
+    setItems(prev => {
+      // If the provided id matches a lineId, remove only that line. Otherwise fall back to removing by productId for compatibility.
+      const hasLine = prev.some(i => i.lineId === productId);
+      if (hasLine) return prev.filter(i => i.lineId !== productId);
+      return prev.filter(i => i.productId !== productId);
+    });
   };
 
   const clearCart = () => {

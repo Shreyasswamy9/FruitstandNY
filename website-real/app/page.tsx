@@ -898,7 +898,7 @@ export default function Home() {
                         fontSize: "1.1rem",
                         fontWeight: 600,
                       }}>
-                        $120
+                        $165
                       </span>
                     </div>
                   </div>
@@ -950,7 +950,7 @@ export default function Home() {
                   {/* Product Cards */}
                   {[
                       { name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/broadwaynoir/GN4.png", hoverImage: "/images/products/gala-tshirt/broadwaynoir/GN5.png", link: "/shop/gala-tshirt" },
-                      { name: "Retro Track Suit", price: "$120", image: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png", hoverImage: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TS7.png", link: "/shop/tracksuit" },
+                      { name: "Retro Track Suit", price: "$165", image: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png", hoverImage: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TS7.png", link: "/shop/tracksuit" },
                       { name: "Wasabi Tee", price: "$45", image: "/images/products/Wasabi Tee/Wabasabi 1.png", hoverImage: "/images/products/Wasabi Tee/Wabsabi 4.png", link: "/shop/wasabi-tee" },
                       { name: "First Edition Tee", price: "$45", image: "/images/products/First Edition Tee/FE1.png", hoverImage: "/images/products/First Edition Tee/FE2.png", link: "/shop/first-edition-tee" },
                   ].map((product, index) => (

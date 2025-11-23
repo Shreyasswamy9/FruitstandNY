@@ -4,11 +4,13 @@ import Image from "next/image";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import BundleSheet from './BundleSheet'
+import Price from './Price'
 
 export interface Product {
   id: number;
   name: string;
   price: string;
+  salePrice?: number | string;
   image: string;
   hoverImage?: string;
   category?: string;
@@ -19,74 +21,74 @@ export interface Product {
 // Editable product list for the homepage grid
 export const products: Product[] = [
   // Retro Track Suit Collection (spotlight first)
-  { id: 2001, name: "Retro Track Suit", price: "$120", image: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png", hoverImage: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TS7.png", category: "Tracksuits", variantColor: "Elmhurst Taro Custard", variantSlug: "elmhurst-taro-custard" },
-  { id: 2002, name: "Retro Track Suit", price: "$120", image: "/images/products/tracksuits/Greenpoint Patina Crew/GB.png", hoverImage: "/images/products/tracksuits/Greenpoint Patina Crew/TS2.png", category: "Tracksuits", variantColor: "Greenpoint Patina Crew", variantSlug: "greenpoint-patina-crew" },
-  { id: 2003, name: "Retro Track Suit", price: "$120", image: "/images/products/tracksuits/NOHO NAPOLETANOS/TB.png", hoverImage: "/images/products/tracksuits/NOHO NAPOLETANOS/TS3.png", category: "Tracksuits", variantColor: "Noho Napoletanos", variantSlug: "noho-napoletanos" },
-  { id: 2004, name: "Retro Track Suit", price: "$120", image: "/images/products/tracksuits/THE FACTORY FLOOR/BG.png", hoverImage: "/images/products/tracksuits/THE FACTORY FLOOR/TS4.png", category: "Tracksuits", variantColor: "The Factory Floor", variantSlug: "the-factory-floor" },
-  { id: 2005, name: "Retro Track Suit", price: "$120", image: "/images/products/tracksuits/VICE CITY RUNNERS/PB.png", hoverImage: "/images/products/tracksuits/VICE CITY RUNNERS/TS5.png", category: "Tracksuits", variantColor: "Vice City Runners", variantSlug: "vice-city-runners" },
-  { id: 2006, name: "Retro Track Suit", price: "$120", image: "/images/products/tracksuits/Victory Liberty Club/RB.png", hoverImage: "/images/products/tracksuits/Victory Liberty Club/TS6.png", category: "Tracksuits", variantColor: "Victory Liberty Club", variantSlug: "victory-liberty-club" },
-  { id: 2007, name: "Retro Track Suit", price: "$120", image: "/images/products/tracksuits/YORKVILLE BLACK AND WHITE COOKIES/BW.png", hoverImage: "/images/products/tracksuits/YORKVILLE BLACK AND WHITE COOKIES/TS1.png", category: "Tracksuits", variantColor: "Yorkville Black and White Cookies", variantSlug: "yorkville-black-and-white-cookies" },
+  { id: 2001, name: "Retro Track Suit", price: "$165", salePrice: 110, image: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png", hoverImage: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TS7.png", category: "Tracksuits", variantColor: "Elmhurst Taro Custard", variantSlug: "elmhurst-taro-custard" },
+  { id: 2002, name: "Retro Track Suit", price: "$165", salePrice: 110, image: "/images/products/tracksuits/Greenpoint Patina Crew/GB.png", hoverImage: "/images/products/tracksuits/Greenpoint Patina Crew/TS2.png", category: "Tracksuits", variantColor: "Greenpoint Patina Crew", variantSlug: "greenpoint-patina-crew" },
+  { id: 2003, name: "Retro Track Suit", price: "$165", salePrice: 110, image: "/images/products/tracksuits/NOHO NAPOLETANOS/TB.png", hoverImage: "/images/products/tracksuits/NOHO NAPOLETANOS/TS3.png", category: "Tracksuits", variantColor: "Noho Napoletanos", variantSlug: "noho-napoletanos" },
+  { id: 2004, name: "Retro Track Suit", price: "$165", salePrice: 110, image: "/images/products/tracksuits/THE FACTORY FLOOR/BG.png", hoverImage: "/images/products/tracksuits/THE FACTORY FLOOR/TS4.png", category: "Tracksuits", variantColor: "The Factory Floor", variantSlug: "the-factory-floor" },
+  { id: 2005, name: "Retro Track Suit", price: "$165", salePrice: 110, image: "/images/products/tracksuits/VICE CITY RUNNERS/PB.png", hoverImage: "/images/products/tracksuits/VICE CITY RUNNERS/TS5.png", category: "Tracksuits", variantColor: "Vice City Runners", variantSlug: "vice-city-runners" },
+  { id: 2006, name: "Retro Track Suit", price: "$165", salePrice: 110, image: "/images/products/tracksuits/Victory Liberty Club/RB.png", hoverImage: "/images/products/tracksuits/Victory Liberty Club/TS6.png", category: "Tracksuits", variantColor: "Victory Liberty Club", variantSlug: "victory-liberty-club" },
+  { id: 2007, name: "Retro Track Suit", price: "$165", salePrice: 110, image: "/images/products/tracksuits/YORKVILLE BLACK AND WHITE COOKIES/BW.png", hoverImage: "/images/products/tracksuits/YORKVILLE BLACK AND WHITE COOKIES/TS1.png", category: "Tracksuits", variantColor: "Yorkville Black and White Cookies", variantSlug: "yorkville-black-and-white-cookies" },
   // Broadway Blueberry Jersey (merch slot before tees)
-  { id: 1, name: "Broadway Blueberry Jersey", price: "$90", image: "/images/products/hockey Jersey/JN.png", hoverImage: "/images/products/hockey Jersey/JN1.png", category: "Jerseys", variantColor: "Black Ice", variantSlug: "hockey-jersey" },
+  { id: 1, name: "Broadway Blueberry Jersey", price: "$180", salePrice: 94, image: "/images/products/hockey Jersey/JN.png", hoverImage: "/images/products/hockey Jersey/JN1.png", category: "Jerseys", variantColor: "Black Ice", variantSlug: "hockey-jersey" },
   // New Tee lineup
   // Gala Tee – each color variant surfaced individually
   { id: 1011, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/broadwaynoir/GN4.png", hoverImage: "/images/products/gala-tshirt/broadwaynoir/GN5.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
   { id: 1012, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/suttonplacesnow/GN6.png", hoverImage: "/images/products/gala-tshirt/suttonplacesnow/GN11.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
   { id: 1013, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/Grasshopper/GN3.png", hoverImage: "/images/products/gala-tshirt/Grasshopper/GN8.png", category: "Tops", variantColor: "Grasshopper", variantSlug: "grasshopper" },
-  { id: 1014, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/frostedlemonade/GN9.png", hoverImage: "/images/products/gala-tshirt/frostedlemonade/GN10.png", category: "Tops", variantColor: "Frosted Lemonade", variantSlug: "frosted-lemonade" },
+  { id: 1014, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/frostedlemonade/GN10.png", hoverImage: "/images/products/gala-tshirt/frostedlemonade/GN9.png", category: "Tops", variantColor: "Frosted Lemonade", variantSlug: "frosted-lemonade" },
   { id: 1015, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/italianice/GN1.png", hoverImage: "/images/products/gala-tshirt/italianice/GN2.png", category: "Tops", variantColor: "Italian Ice", variantSlug: "italian-ice" },
   { id: 1016, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/ruby red/GN.png", hoverImage: "/images/products/gala-tshirt/ruby red/GN7.png", category: "Tops", variantColor: "Ruby Red", variantSlug: "ruby-red" },
   // Cameo variants
   { id: 1021, name: "Cameo Tee", price: "$40", image: "/images/products/cameo-tshirt/broadwaynoir/MN.png", hoverImage: "/images/products/cameo-tshirt/broadwaynoir/MN3.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
   { id: 1022, name: "Cameo Tee", price: "$40", image: "/images/products/cameo-tshirt/suttonplacesnow/MN1.png", hoverImage: "/images/products/cameo-tshirt/suttonplacesnow/MN2.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
   // Mutsu variants
-  { id: 1031, name: "Mutsu Tee", price: "$45", image: "/images/products/mutsu-tshirt/broadwaynoir/N1.png", hoverImage: "/images/products/mutsu-tshirt/broadwaynoir/N2.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
-  { id: 1032, name: "Mutsu Tee", price: "$45", image: "/images/products/mutsu-tshirt/suttonplacesnow/N3.png", hoverImage: "/images/products/mutsu-tshirt/suttonplacesnow/N4.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
+  { id: 1031, name: "Mutsu Tee", price: "$45.00", image: "/images/products/mutsu-tshirt/broadwaynoir/N1.png", hoverImage: "/images/products/mutsu-tshirt/broadwaynoir/N2.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
+  { id: 1032, name: "Mutsu Tee", price: "$45.00", image: "/images/products/mutsu-tshirt/suttonplacesnow/N3.png", hoverImage: "/images/products/mutsu-tshirt/suttonplacesnow/N4.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
   // Fuji Long Sleeve variants (updated colors & images)
   { id: 1041, name: "Fuji Long Sleeve", price: "$80", image: "/images/products/fuji-tshirt/Arboretum/F2.png", hoverImage: "/images/products/fuji-tshirt/Arboretum/F11.png", category: "Tops", variantColor: "Arboretum", variantSlug: "arboretum" },
   { id: 1042, name: "Fuji Long Sleeve", price: "$80", image: "/images/products/fuji-tshirt/Hudson blue/F1.png", hoverImage: "/images/products/fuji-tshirt/Hudson blue/F9.png", category: "Tops", variantColor: "Hudson Blue", variantSlug: "hudson-blue" },
   { id: 1043, name: "Fuji Long Sleeve", price: "$80", image: "/images/products/fuji-tshirt/Redbird/F4.png", hoverImage: "/images/products/fuji-tshirt/Redbird/F5.png", category: "Tops", variantColor: "Redbird", variantSlug: "redbird" },
   { id: 1044, name: "Fuji Long Sleeve", price: "$80", image: "/images/products/fuji-tshirt/Broadwaynoir/F3.png", hoverImage: "/images/products/fuji-tshirt/Broadwaynoir/F7.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
   // New additions: Wasabi Tee and First Edition Tee
-  { id: 1071, name: "Wasabi Tee", price: "$45", image: "/images/products/Wasabi Tee/Wabasabi 1.png", hoverImage: "/images/products/Wasabi Tee/Wabasabi 2.png", category: "Tops", variantSlug: "wasabi-tee" },
+  { id: 1071, name: "Wabisabi™ SCcheffel  Hall Pears Tee", price: "$45", image: "/images/products/Wasabi Tee/Wabasabi 1.png", hoverImage: "/images/products/Wasabi Tee/Wabasabi 2.png", category: "Tops", variantSlug: "wasabi-tee" },
   { id: 1072, name: "First Edition Tee", price: "$45", image: "/images/products/First Edition Tee/FE1.png", hoverImage: "/images/products/First Edition Tee/FE2.png", category: "Tops", variantColor: "White", variantSlug: "first-edition-tee" },
   { id: 1073, name: "First Edition Tee", price: "$45", image: "/images/products/First Edition Tee/FE1.png", hoverImage: "/images/products/First Edition Tee/FE2.png", category: "Tops", variantColor: "Black", variantSlug: "first-edition-tee" },
 
   // Forest Hills Hat (Green)
-  { id: 3001, name: "Forest Hills Hat", price: "$46", image: "/images/products/Forest Hills Hat/G1.png", hoverImage: "/images/products/Forest Hills Hat/G2.png", category: "Hats" },
+  { id: 3001, name: "Forest Hills Hat", price: "$46", salePrice: 25, image: "/images/products/Forest Hills Hat/G1.png", hoverImage: "/images/products/Forest Hills Hat/G2.png", category: "Hats" },
 
   // Porcelain Hat (White)
-  { id: 3002, name: "Porcelain Hat", price: "$44", image: "/images/products/Porcelain Hat/FS2.png", hoverImage: "/images/products/Porcelain Hat/Fruitscale Hat.png", category: "Hats", variantSlug: "porcelain-hat" },
+  { id: 3002, name: "Porcelain Hat", price: "$44", salePrice: 25, image: "/images/products/Porcelain Hat/FS2.png", hoverImage: "/images/products/Porcelain Hat/Fruitscale Hat.png", category: "Hats", variantSlug: "porcelain-hat" },
 
   // Ecru Hat (Beige)
-  { id: 3003, name: "Ecru Hat", price: "$44", image: "/images/products/Ecru Hat/B1.png", hoverImage: "/images/products/Ecru Hat/Beige Hat.png", category: "Hats", variantSlug: "ecru-hat" },
+  { id: 3003, name: "Ecru Hat", price: "$44", salePrice: 25, image: "/images/products/Ecru Hat/B1.png", hoverImage: "/images/products/Ecru Hat/Beige Hat.png", category: "Hats", variantSlug: "ecru-hat" },
 
   // Empire Corduroy Hat
-  { id: 3004, name: "Empire Corduroy Hat", price: "$49", image: "/images/products/empire-hat/A2.png", hoverImage: "/images/products/empire-hat/A1.png", category: "Hats" },
+  { id: 3004, name: "Empire Corduroy Hat", price: "$49", salePrice: 25, image: "/images/products/empire-hat/A2.png", hoverImage: "/images/products/empire-hat/A1.png", category: "Hats" },
 
   // Indigo Hat (Denim)
-  { id: 3005, name: "Indigo Hat", price: "$44", image: "/images/products/denim-hat/D1.png", hoverImage: "/images/products/denim-hat/D2.png", category: "Hats" },
+  { id: 3005, name: "Indigo Hat", price: "$44", salePrice: 25, image: "/images/products/denim-hat/D1.png", hoverImage: "/images/products/denim-hat/D2.png", category: "Hats" },
 
   // Mandarin Tee
-  { id: 4001, name: "Mandarin Tee", price: "$38", image: "/images/products/Mandarin Tee/Mandarin 1.png", hoverImage: "/images/products/Mandarin Tee/Mandarin 2.png", category: "Tops", variantSlug: "mandarin-tee", },
+  { id: 4001, name: "Mandarin 橘子 [JUZI] Tee", price: "$68.00", image: "/images/products/Mandarin Tee/Mandarin Tee.png", hoverImage: "/images/products/Mandarin Tee/Mandarin 2.png", category: "Tops", variantSlug: "mandarin-tee", },
 
   // Track Pants (variants)
-  { id: 5001, name: "Track Pants", price: "$65", image: "/images/products/Track Pants/ELMHURST TARO CUSTARD/P6.png", hoverImage: "/images/products/Track Pants/ELMHURST TARO CUSTARD/P6.png", category: "Tracksuits", variantColor: "Elmhurst Taro Custard", variantSlug: "elmhurst-taro-custard" },
-  { id: 5002, name: "Track Pants", price: "$65", image: "/images/products/Track Pants/Greenpoint Patina Crew/P4.png", hoverImage: "/images/products/Track Pants/Greenpoint Patina Crew/P4.png", category: "Tracksuits", variantColor: "Greenpoint Patina Crew", variantSlug: "greenpoint-patina-crew" },
-  { id: 5003, name: "Track Pants", price: "$65", image: "/images/products/Track Pants/NOHO NAPOLETANOS/P7.png", hoverImage: "/images/products/Track Pants/NOHO NAPOLETANOS/P7.png", category: "Tracksuits", variantColor: "Noho Napoletanos", variantSlug: "noho-napoletanos" },
-  { id: 5004, name: "Track Pants", price: "$65", image: "/images/products/Track Pants/THE FACTORY FLOOR/P1.png", hoverImage: "/images/products/Track Pants/THE FACTORY FLOOR/P1.png", category: "Tracksuits", variantColor: "The Factory Floor", variantSlug: "the-factory-floor" },
-  { id: 5005, name: "Track Pants", price: "$65", image: "/images/products/Track Pants/VICE CITY RUNNERS/P2.png", hoverImage: "/images/products/Track Pants/VICE CITY RUNNERS/P2.png", category: "Tracksuits", variantColor: "Vice City Runners", variantSlug: "vice-city-runners" },
-  { id: 5006, name: "Track Pants", price: "$65", image: "/images/products/Track Pants/Victory Liberty Club/P3.png", hoverImage: "/images/products/Track Pants/Victory Liberty Club/P3.png", category: "Tracksuits", variantColor: "Victory Liberty Club", variantSlug: "victory-liberty-club" },
-  { id: 5007, name: "Track Pants", price: "$65", image: "/images/products/Track Pants/YORKVILLE BLACK AND WHITE COOKIES/P5.png", hoverImage: "/images/products/Track Pants/YORKVILLE BLACK AND WHITE COOKIES/P5.png", category: "Tracksuits", variantColor: "Yorkville Black and White Cookies", variantSlug: "yorkville-black-and-white-cookies" },
+  { id: 5001, name: "Retro Track Pants", price: "$90", salePrice: 57, image: "/images/products/Track Pants/ELMHURST TARO CUSTARD/P6.png", hoverImage: "/images/products/Track Pants/ELMHURST TARO CUSTARD/P6.png", category: "Tracksuits", variantColor: "Elmhurst Taro Custard", variantSlug: "elmhurst-taro-custard" },
+  { id: 5002, name: "Retro Track Pants", price: "$90", salePrice: 57, image: "/images/products/Track Pants/Greenpoint Patina Crew/P4.png", hoverImage: "/images/products/Track Pants/Greenpoint Patina Crew/P4.png", category: "Tracksuits", variantColor: "Greenpoint Patina Crew", variantSlug: "greenpoint-patina-crew" },
+  { id: 5003, name: "Retro Track Pants", price: "$90", salePrice: 57, image: "/images/products/Track Pants/NOHO NAPOLETANOS/P7.png", hoverImage: "/images/products/Track Pants/NOHO NAPOLETANOS/P7.png", category: "Tracksuits", variantColor: "Noho Napoletanos", variantSlug: "noho-napoletanos" },
+  { id: 5004, name: "Retro Track Pants", price: "$90", salePrice: 57, image: "/images/products/Track Pants/THE FACTORY FLOOR/P1.png", hoverImage: "/images/products/Track Pants/THE FACTORY FLOOR/P1.png", category: "Tracksuits", variantColor: "The Factory Floor", variantSlug: "the-factory-floor" },
+  { id: 5005, name: "Retro Track Pants", price: "$90", salePrice: 57, image: "/images/products/Track Pants/VICE CITY RUNNERS/P2.png", hoverImage: "/images/products/Track Pants/VICE CITY RUNNERS/P2.png", category: "Tracksuits", variantColor: "Vice City Runners", variantSlug: "vice-city-runners" },
+  { id: 5006, name: "Retro Track Pants", price: "$90", salePrice: 57, image: "/images/products/Track Pants/Victory Liberty Club/P3.png", hoverImage: "/images/products/Track Pants/Victory Liberty Club/P3.png", category: "Tracksuits", variantColor: "Victory Liberty Club", variantSlug: "victory-liberty-club" },
+  { id: 5007, name: "Retro Track Pants", price: "$90", salePrice: 57, image: "/images/products/Track Pants/YORKVILLE BLACK AND WHITE COOKIES/P5.png", hoverImage: "/images/products/Track Pants/YORKVILLE BLACK AND WHITE COOKIES/P5.png", category: "Tracksuits", variantColor: "Yorkville Black and White Cookies", variantSlug: "yorkville-black-and-white-cookies" },
 
   // Track Top (variants)
-  { id: 6001, name: "Track Top", price: "$75", image: "/images/products/Track Top/ELMHURST TARO CUSTARD/J6.png", hoverImage: "/images/products/Track Top/ELMHURST TARO CUSTARD/J6.png", category: "Tracksuits", variantColor: "Elmhurst Taro Custard", variantSlug: "elmhurst-taro-custard" },
-  { id: 6002, name: "Track Top", price: "$75", image: "/images/products/Track Top/Greenpoint Patina Crew/J1.png", hoverImage: "/images/products/Track Top/Greenpoint Patina Crew/J1.png", category: "Tracksuits", variantColor: "Greenpoint Patina Crew", variantSlug: "greenpoint-patina-crew" },
-  { id: 6003, name: "Track Top", price: "$75", image: "/images/products/Track Top/NOHO NAPOLETANOS/J7.png", hoverImage: "/images/products/Track Top/NOHO NAPOLETANOS/J7.png", category: "Tracksuits", variantColor: "Noho Napoletanos", variantSlug: "noho-napoletanos" },
-  { id: 6004, name: "Track Top", price: "$75", image: "/images/products/Track Top/THE FACTORY FLOOR/J4.png", hoverImage: "/images/products/Track Top/THE FACTORY FLOOR/J4.png", category: "Tracksuits", variantColor: "The Factory Floor", variantSlug: "the-factory-floor" },
-  { id: 6005, name: "Track Top", price: "$75", image: "/images/products/Track Top/VICE CITY RUNNERS/J3.png", hoverImage: "/images/products/Track Top/VICE CITY RUNNERS/J3.png", category: "Tracksuits", variantColor: "Vice City Runners", variantSlug: "vice-city-runners" },
-  { id: 6006, name: "Track Top", price: "$75", image: "/images/products/Track Top/Victory Liberty Club/J2.png", hoverImage: "/images/products/Track Top/Victory Liberty Club/J2.png", category: "Tracksuits", variantColor: "Victory Liberty Club", variantSlug: "victory-liberty-club" },
-  { id: 6007, name: "Track Top", price: "$75", image: "/images/products/Track Top/YORKVILLE BLACK AND WHITE COOKIES/J5.png", hoverImage: "/images/products/Track Top/YORKVILLE BLACK AND WHITE COOKIES/J5.png", category: "Tracksuits", variantColor: "Yorkville Black and White Cookies", variantSlug: "yorkville-black-and-white-cookies" },
+  { id: 6001, name: "Retro Track Jacket", price: "$110", salePrice: 73, image: "/images/products/Track Top/ELMHURST TARO CUSTARD/J6.png", hoverImage: "/images/products/Track Top/ELMHURST TARO CUSTARD/J6.png", category: "Tracksuits", variantColor: "Elmhurst Taro Custard", variantSlug: "elmhurst-taro-custard" },
+  { id: 6002, name: "Retro Track Jacket", price: "$110", salePrice: 73, image: "/images/products/Track Top/Greenpoint Patina Crew/J1.png", hoverImage: "/images/products/Track Top/Greenpoint Patina Crew/J1.png", category: "Tracksuits", variantColor: "Greenpoint Patina Crew", variantSlug: "greenpoint-patina-crew" },
+  { id: 6003, name: "Retro Track Jacket", price: "$110", salePrice: 73, image: "/images/products/Track Top/NOHO NAPOLETANOS/J7.png", hoverImage: "/images/products/Track Top/NOHO NAPOLETANOS/J7.png", category: "Tracksuits", variantColor: "Noho Napoletanos", variantSlug: "noho-napoletanos" },
+  { id: 6004, name: "Retro Track Jacket", price: "$110", salePrice: 73, image: "/images/products/Track Top/THE FACTORY FLOOR/J4.png", hoverImage: "/images/products/Track Top/THE FACTORY FLOOR/J4.png", category: "Tracksuits", variantColor: "The Factory Floor", variantSlug: "the-factory-floor" },
+  { id: 6005, name: "Retro Track Jacket", price: "$110", salePrice: 73, image: "/images/products/Track Top/VICE CITY RUNNERS/J3.png", hoverImage: "/images/products/Track Top/VICE CITY RUNNERS/J3.png", category: "Tracksuits", variantColor: "Vice City Runners", variantSlug: "vice-city-runners" },
+  { id: 6006, name: "Retro Track Jacket", price: "$110", salePrice: 73, image: "/images/products/Track Top/Victory Liberty Club/J2.png", hoverImage: "/images/products/Track Top/Victory Liberty Club/J2.png", category: "Tracksuits", variantColor: "Victory Liberty Club", variantSlug: "victory-liberty-club" },
+  { id: 6007, name: "Retro Track Jacket", price: "$110", salePrice: 73, image: "/images/products/Track Top/YORKVILLE BLACK AND WHITE COOKIES/J5.png", hoverImage: "/images/products/Track Top/YORKVILLE BLACK AND WHITE COOKIES/J5.png", category: "Tracksuits", variantColor: "Yorkville Black and White Cookies", variantSlug: "yorkville-black-and-white-cookies" },
 ];
 
 interface ProductsGridProps {
@@ -302,10 +304,10 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
             'Beige Hat': '/shop/beige-hat',
             'Porcelain Hat': '/shop/porcelain-hat',
             'Ecru Hat': '/shop/ecru-hat',
-            'Mandarin Tee': '/shop/mandarin-tee',
-            'Track Pants': '/shop/track-pants',
-            'Track Top': '/shop/track-top',
-            'Wasabi Tee': '/shop/wasabi-tee',
+            'Mandarin 橘子 [JUZI] Tee': '/shop/mandarin-tee',
+            'Retro Track Pants': '/shop/track-pants',
+            'Retro Track Jacket': '/shop/track-top',
+            'Wabisabi™ SCcheffel  Hall Pears Tee': '/shop/wasabi-tee',
             'First Edition Tee': '/shop/first-edition-tee',
           };
           const base = basePathMap[product.name] || `/products/${product.id}`;
@@ -490,7 +492,9 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
                     lineHeight: 1.2,
                     letterSpacing: '0.01em',
                     fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
-                  }}>{formatPrice(product.price)}</p>
+                  }}>{/* price */}
+                    <Price price={product.price} salePrice={(product as any).salePrice} />
+                  </p>
                 </div>
             </div>
           </div>

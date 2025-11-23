@@ -103,7 +103,7 @@ export default function FirstEditionTeePage() {
                 <button key={size} className={`size-button px-3 rounded-lg font-semibold border-2 transition-all ${selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'}`} onClick={() => setSelectedSize(size)} type="button">{size}</button>
               ))}
             </div>
-            <div className="mt-2"><SizeGuide productSlug="first-edition-tee" /></div>
+            <div className="mt-2"><SizeGuide productSlug="first-edition-tee" imagePath="/images/size-guides/Size Guide/First Edition Tee Table.png" /></div>
           </div>
 
           <div className="mb-4 space-y-4">

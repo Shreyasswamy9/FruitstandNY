@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 import FrequentlyBoughtTogether, { FBTProduct, getFBTForPage } from "@/components/FrequentlyBoughtTogether";
+import Price from '@/components/Price';
 import CustomerReviews from "@/components/CustomerReviews";
 
 const greenHatImages = [
@@ -16,7 +17,15 @@ const greenHatImages = [
 const PRODUCT = {
   name: "Forest Hills Hat",
   price: 46,
-  description: "Rich green hat inspired by Forest Hills. Adjustable fit, soft corduroy, and a classic look for any season.",
+  salePrice: 25,
+  description: "Crafted from premium cotton. Designed in NYC, worn everywhere.",
+  details: [
+    "Lime green color 6-panel camp hat.",
+    "Adjustable size, one size fits most.",
+    "Detailed embroidery on front and back.",
+    "Flexible brim.",
+    "Made in Fujian, China",
+  ],
 };
 
 export default function ForestHillsHatPage() {
@@ -103,10 +112,15 @@ export default function ForestHillsHatPage() {
         {/* Product Info */}
         <div className="md:w-1/2 flex flex-col justify-start">
           <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
-          <p className="text-sm text-gray-600 mb-6">Soft corduroy finish in Forest Hills green.</p>
-          <p className="text-sm text-gray-600 mb-6">Adjustable strap ensures an easy, one-size fit.</p>
           <p className="text-lg text-gray-700 mb-4">{PRODUCT.description}</p>
-          <div className="text-2xl font-semibold mb-6">${PRODUCT.price}</div>
+          {PRODUCT.details && PRODUCT.details.length > 0 && (
+            <ul className="list-disc list-inside text-sm text-gray-700 mb-6">
+              {PRODUCT.details.map((d, idx) => (
+                <li key={idx} className="mb-1">{d}</li>
+              ))}
+            </ul>
+          )}
+          <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} salePrice={PRODUCT.salePrice} /></div>
           <button className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2" onClick={handleAddToCart}>
             Add to Cart
           </button>

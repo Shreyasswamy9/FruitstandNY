@@ -37,6 +37,9 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
       setMenuOpen(false)
     }
   }, [pathname, menuOpen])
+
+  // Hide logo on certain routes (cart) to avoid visual overlap with page headers
+  // Note: logo visibility is now controlled by context only. Keep logo visible on all routes by default.
   
   return (
     <LogoVisibilityContext.Provider value={{ hideLogo, setHideLogo }}>

@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import SizeGuide from "@/components/SizeGuide";
+import Price from '@/components/Price';
 import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import { useRouter } from "next/navigation";
@@ -25,8 +26,17 @@ type HockeyJerseyVariant = typeof HOCKEY_JERSEY_VARIANTS[number];
 
 const PRODUCT = {
   name: "Broadway Blueberry Jersey",
-  price: 90,
-  description: "Team-weight knit with retro striping, finished with a brushed interior that stays soft game after game.",
+  price: 180,
+  salePrice: 94,
+  description: "Inspired by vintage New York hockey uniforms, this jersey features an all-over blueberry print in a deep, tonal blue, accented with white striping featuring a red cherry pattern.\n\nAn embroidered FRUITSTAND logo runs across the chest. The relaxed fit drapes naturally and layers easily over a tee or hoodie.",
+  details: [
+    "100% polyester",
+    "Blueberry base with cherry red accents",
+    "Relaxed, hockey jersey silhouette",
+    "Ribbed V-neck",
+    "Made in Sialkot, Pakistan",
+    "Ships with a custom FRUITSTAND sticker printed in NYC",
+  ],
 };
 
 const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
@@ -59,6 +69,7 @@ export default function HockeyJerseyPage() {
       productId: "hockey-jersey",
       name: PRODUCT.name,
       price: PRODUCT.price,
+      salePrice: PRODUCT.salePrice,
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -73,6 +84,7 @@ export default function HockeyJerseyPage() {
       productId: item.id,
       name: item.name,
       price: item.price,
+      salePrice: (item as any).salePrice,
       image: item.image,
       quantity: 1,
       size: "M", // Default size for bought together items
@@ -88,6 +100,7 @@ export default function HockeyJerseyPage() {
         productId: item.id,
         name: item.name,
         price: item.price * 0.85, // 15% discount
+        salePrice: (item as any).salePrice ? (item as any).salePrice * 0.85 : undefined,
         image: item.image,
         quantity: 1,
         size: "M", // Default size for bought together items
@@ -234,10 +247,22 @@ export default function HockeyJerseyPage() {
               </button>
             ))}
           </div>
-          <div className="mt-2"><SizeGuide productSlug="hockey-jersey" /></div>
+          <div className="mt-2"><SizeGuide productSlug="hockey-jersey" imagePath="/images/size-guides/Size Guide/Hockey Jersey Table.png" /></div>
         </div>
-        <p className="text-lg text-gray-700 mb-4">{PRODUCT.description}</p>
-        <div className="text-2xl font-semibold mb-6">${PRODUCT.price}</div>
+        <div className="mb-4">
+          <p className="text-lg text-gray-700 leading-relaxed">{PRODUCT.description}</p>
+          {PRODUCT.details && (
+            <div className="mt-3">
+              <span className="text-xs uppercase tracking-[0.2em] text-gray-500">Details</span>
+              <ul className="mt-2 list-disc list-inside text-gray-700 text-sm sm:text-base space-y-1">
+                {PRODUCT.details.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+          <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} salePrice={PRODUCT.salePrice} /></div>
         <button
           className={`bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2 ${!selectedSize ? 'opacity-50 cursor-not-allowed' : ''}`}
           onClick={handleAddToCart}

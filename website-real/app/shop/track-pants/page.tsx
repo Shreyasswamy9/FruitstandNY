@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import FrequentlyBoughtTogether, { FBTProduct, getFBTForPage } from "@/components/FrequentlyBoughtTogether";
+import Price from '@/components/Price';
 import SizeGuide from "@/components/SizeGuide";
 import CustomerReviews from "@/components/CustomerReviews";
 import React, { useState } from "react";
@@ -18,8 +19,9 @@ const COLOR_DATA = [
 ];
 
 const PRODUCT = {
-  name: "Track Pants",
+  name: "Retro Track Pants",
   price: 90,
+  salePrice: 57,
   description: "Inspired by classic New York athletic warm-ups, these track pants feature bold color blocking and a relaxed, vintage silhouette designed for movement and comfort. Each colorway pays homage to various motifs, with contrasting panels and an embroidered FRUITSTAND logo.",
   details: [
     "Heavyweight brushed fleece for structure and comfort",
@@ -130,7 +132,7 @@ export default function TrackPantsPage() {
                 <button key={size} className={`size-button px-3 rounded-lg font-semibold border-2 transition-all ${selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'}`} onClick={() => setSelectedSize(size)} type="button">{size}</button>
               ))}
             </div>
-            <div className="mt-2"><SizeGuide productSlug="track-pants" /></div>
+            <div className="mt-2"><SizeGuide productSlug="track-pants" imagePath="/images/size-guides/Size Guide/Track Pant Table.png" /></div>
           </div>
           <div className="mb-4 space-y-4">
             <p className="text-lg text-gray-700 leading-relaxed">{PRODUCT.description}</p>
@@ -145,7 +147,7 @@ export default function TrackPantsPage() {
               </div>
             )}
           </div>
-          <div className="text-2xl font-semibold mb-6">${PRODUCT.price}.00</div>
+          <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} salePrice={PRODUCT.salePrice} /></div>
           <button className={`bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2 ${!selectedSize ? 'opacity-50 cursor-not-allowed' : ''}`} onClick={handleAddToCart}>
             {!selectedSize ? 'Pick a size to add to cart' : 'Add to Cart'}
           </button>
@@ -160,6 +162,7 @@ export default function TrackPantsPage() {
             productId: product.id,
             name: product.name,
             price: product.price,
+            salePrice: (product as any).salePrice,
             image: product.image,
             quantity: 1,
             size: selectedSize,
@@ -173,6 +176,7 @@ export default function TrackPantsPage() {
               productId: product.id,
               name: product.name,
               price: product.price * 0.85, // 15% discount
+              salePrice: (product as any).salePrice ? (product as any).salePrice * 0.85 : undefined,
               image: product.image,
               quantity: 1,
               size: selectedSize,

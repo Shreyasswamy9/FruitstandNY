@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
+import BundleSheet from '@/components/BundleSheet'
 import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 
@@ -57,6 +58,7 @@ export default function FujiTshirtPage() {
   const [selectedImage, setSelectedImage] = useState(colorOptions[0].images[0]);
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
+  const [bundleOpen, setBundleOpen] = useState(false);
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   
@@ -93,13 +95,13 @@ export default function FujiTshirtPage() {
   const boughtTogetherItems = getFBTForPage('fuji-tshirt');
 
   const handleAddBoughtTogetherItem = (item: { id: string; name: string; price: number; image: string }) => {
-    addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: "M" });
+    addToCart({ productId: item.id, name: item.name, price: item.price, salePrice: (item as any).salePrice, image: item.image, quantity: 1, size: "M" });
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };
 
   const handleAddAllToCart = () => {
-    boughtTogetherItems.forEach(item => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, image: item.image, quantity: 1, size: "M" }));
+    boughtTogetherItems.forEach(item => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, salePrice: (item as any).salePrice ? (item as any).salePrice * 0.85 : undefined, image: item.image, quantity: 1, size: "M" }));
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };
@@ -177,11 +179,21 @@ export default function FujiTshirtPage() {
                 <button key={size} className={`size-button px-3 rounded-lg font-semibold border-2 transition-all ${selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'}`} onClick={() => setSelectedSize(size)} type="button">{size}</button>
               ))}
             </div>
-            <div className="mt-2"><SizeGuide productSlug="fuji-tshirt" /></div>
+            <div className="mt-2"><SizeGuide productSlug="fuji-tshirt" imagePath="/images/size-guides/Size Guide/Fuji Table.png" /></div>
           </div>
 
           <div className="mb-4 space-y-4">
             <p className="text-lg text-gray-700 leading-relaxed">{PRODUCT.description}</p>
+            {/* Bundle CTA: open bundle sheet on custom tab */}
+            <div className="mt-2 flex items-center gap-3">
+              <span className="text-sm text-gray-500">Want to bundle this tee?</span>
+              <button
+                onClick={() => setBundleOpen(true)}
+                className="inline-flex items-center px-3 py-1.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-800 hover:bg-gray-100 transition-colors"
+              >
+                Build a Custom Bundle
+              </button>
+            </div>
             {PRODUCT.details && (
               <div>
                 <span className="text-xs uppercase tracking-[0.2em] text-gray-500">Details</span>
@@ -223,6 +235,8 @@ export default function FujiTshirtPage() {
           </div>
         </div>
       )}
+      {/* Bundle sheet modal: opens when CTA is clicked */}
+      <BundleSheet open={bundleOpen} onClose={() => setBundleOpen(false)} initialTab="custom" />
     </div>
   );
 }

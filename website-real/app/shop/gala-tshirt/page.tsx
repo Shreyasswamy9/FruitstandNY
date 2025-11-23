@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
+import BundleSheet from '@/components/BundleSheet'
 import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 
@@ -38,7 +39,14 @@ const COLOR_IMAGE_MAP: Record<string, string[]> = {
 const PRODUCT = {
   name: "Gala Tee",
   price: 40,
-  description: "Premium cotton tee inspired by fresh seasonal shades: Broadway Noir, Sutton Place Snow, Grasshopper, Frosted Lemonade, Ruby Red, and Italian Ice.",
+  description: "Crafted from 100% organic cotton in Portugal, made in a relaxed fit. At 120 GSM, it’s super lightweight, soft, and breathable — designed for effortless everyday wear.",
+  details: [
+    "100% organic cotton (120 GSM)",
+    "Oversized, loose silhouette",
+    "Breathable and soft for everyday wear",
+    "Made in Portugal",
+    "Ships with a custom FRUITSTAND sticker printed in NYC",
+  ],
 };
 
 type GalaColorOption = {
@@ -67,6 +75,7 @@ export default function GalaTshirtPage() {
   // read query params at runtime inside effect to avoid prerender/suspense issues
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
+  const [bundleOpen, setBundleOpen] = useState(false);
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
 
@@ -101,13 +110,13 @@ export default function GalaTshirtPage() {
   const boughtTogetherItems = getFBTForPage('gala-tshirt');
 
   const handleAddBoughtTogetherItem = (item: { id: string; name: string; price: number; image: string }) => {
-    addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: "M" });
+    addToCart({ productId: item.id, name: item.name, price: item.price, salePrice: (item as any).salePrice, image: item.image, quantity: 1, size: "M" });
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };
 
   const handleAddAllToCart = () => {
-    boughtTogetherItems.forEach(item => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, image: item.image, quantity: 1, size: "M" }));
+    boughtTogetherItems.forEach(item => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, salePrice: (item as any).salePrice ? (item as any).salePrice * 0.85 : undefined, image: item.image, quantity: 1, size: "M" }));
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };
@@ -210,11 +219,33 @@ export default function GalaTshirtPage() {
                 <button key={size} className={`size-button px-3 rounded-lg font-semibold border-2 transition-all ${selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'}`} onClick={() => setSelectedSize(size)} type="button">{size}</button>
               ))}
             </div>
-            <div className="mt-2"><SizeGuide productSlug="gala-tshirt" /></div>
+            <div className="mt-2"><SizeGuide productSlug="gala-tshirt" imagePath="/images/size-guides/Size Guide/Gala Table.png" /></div>
           </div>
 
-          <p className="text-lg text-gray-700 mb-4">{PRODUCT.description}</p>
-          <div className="text-2xl font-semibold mb-6">${PRODUCT.price}</div>
+          <div className="mb-4">
+            <p className="text-lg text-gray-700 leading-relaxed">{PRODUCT.description}</p>
+            {/* Bundle CTA: open bundle sheet on custom tab */}
+            <div className="mt-2 flex items-center gap-3">
+              <span className="text-sm text-gray-500">Want to bundle this tee?</span>
+              <button
+                onClick={() => setBundleOpen(true)}
+                className="inline-flex items-center px-3 py-1.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-800 hover:bg-gray-100 transition-colors"
+              >
+                Build a Custom Bundle
+              </button>
+            </div>
+            {PRODUCT.details && (
+              <div className="mt-3">
+                <span className="text-xs uppercase tracking-[0.2em] text-gray-500">Details</span>
+                <ul className="mt-2 list-disc list-inside text-gray-700 text-sm sm:text-base space-y-1">
+                  {PRODUCT.details.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+          <div className="text-2xl font-semibold mb-6">${PRODUCT.price.toFixed(2)}</div>
           <button className={`bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2 ${!selectedSize ? 'opacity-50 cursor-not-allowed' : ''}`} onClick={handleAddToCart} disabled={!selectedSize}>
             {!selectedSize ? 'Pick a size to add to cart' : 'Add to Cart'}
           </button>
@@ -244,6 +275,8 @@ export default function GalaTshirtPage() {
           </div>
         </div>
       )}
+      {/* Bundle sheet modal: opens when CTA is clicked */}
+      <BundleSheet open={bundleOpen} onClose={() => setBundleOpen(false)} initialTab="custom" />
     </div>
   );
 }

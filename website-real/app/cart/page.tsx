@@ -7,6 +7,7 @@ import Link from "next/link"
 import { motion } from "framer-motion"
 import { useCart } from "../../components/CartContext"
 import Image from "next/image"
+import Price from '@/components/Price'
 import { useCheckout } from "../../hooks/useCheckout"
 import { supabase } from "../supabase-client"
 import { useEffect } from "react"
@@ -154,8 +155,9 @@ export default function CartPage() {
   };
 
   const handleRemove = (productId: string) => {
-    const item = items.find(i => i.productId === productId);
-    const label = item ? `${item.name}` : 'this item';
+    // `productId` may be a lineId (preferred) or a productId for backwards compatibility
+    const item = items.find(i => i.lineId === productId) || items.find(i => i.productId === productId);
+    const label = item ? `${item.name}${item.size ? ' — ' + item.size : ''}` : 'this item';
     if (typeof window === 'undefined' || window.confirm(`Remove ${label} from your cart?`)) {
       removeFromCart(productId);
     }
@@ -167,30 +169,36 @@ export default function CartPage() {
     }
   };
 
-  const updateQuantity = (productId: string, newQuantity: number) => {
+  const updateQuantity = (id: string, newQuantity: number) => {
     if (newQuantity <= 0) {
-      handleRemove(productId);
+      handleRemove(id);
       return;
     }
-    
-    const item = items.find(i => i.productId === productId);
+
+    const item = items.find(i => i.lineId === id) || items.find(i => i.productId === id);
     if (item) {
-      // Remove the item first
-      removeFromCart(productId);
+      // Remove the specific line first (use its lineId if available)
+      removeFromCart(item.lineId ?? item.productId);
       // Add it back with new quantity
       addToCart({ ...item, quantity: newQuantity });
     }
   };
 
-  const subtotal = getCartTotal();
-  const shipping = subtotal >= 20 ? 0 : 8.99;
-  const isPriorityShipping = subtotal >= 125;
-  
+  // Effective subtotal (sale prices) and original subtotal (pre-sale prices)
+  const effectiveSubtotal = getCartTotal();
+  const originalSubtotal = items.reduce((sum, item) => {
+    const orig = (item as any).originalPrice ?? item.price;
+    return sum + (orig * item.quantity);
+  }, 0);
+
+  const blackFridaySavings = Math.max(0, originalSubtotal - effectiveSubtotal);
+
+  // subtotal here refers to the effective subtotal (sale prices, before coupon)
+  const subtotal = effectiveSubtotal;
+
   // Apply coupon discount
   let discount = 0;
   let discountedSubtotal = subtotal;
-  let freeShipping = shipping === 0;
-  
   if (appliedCoupon) {
     if (appliedCoupon.type === 'percentage') {
       discount = subtotal * (appliedCoupon.discount / 100);
@@ -199,12 +207,19 @@ export default function CartPage() {
       discount = Math.min(appliedCoupon.discount, subtotal);
       discountedSubtotal = subtotal - discount;
     } else if (appliedCoupon.type === 'shipping') {
-      freeShipping = true;
+      // shipping coupon doesn't change subtotal
+      discountedSubtotal = subtotal;
     }
   }
-  
+
+  // Shipping rules are determined from discountedSubtotal (post-coupon) per earlier change
+  const shipping = discountedSubtotal >= 20 ? 0 : 8.99;
+  const isPriorityShipping = discountedSubtotal >= 125;
+  let freeShipping = shipping === 0;
+  if (appliedCoupon?.type === 'shipping') freeShipping = true;
   const finalShipping = freeShipping ? 0 : shipping;
-  const tax = discountedSubtotal * 0.08875; // NY tax rate
+
+  const tax = discountedSubtotal * 0.08875; // NY tax rate applied after discounts
   const total = discountedSubtotal + finalShipping + tax;
 
   // Calculate available offers to entice more purchases
@@ -212,51 +227,30 @@ export default function CartPage() {
     const offers = [];
     
     // Free shipping offer
-    if (subtotal < 20 && subtotal > 0) {
-      const needed = 20 - subtotal;
+    if (discountedSubtotal < 20 && discountedSubtotal > 0) {
+      const needed = 20 - discountedSubtotal;
       offers.push({
         type: 'shipping',
         message: `Add $${needed.toFixed(2)} more for FREE shipping!`,
         savings: 8.99,
         threshold: 20,
-        current: subtotal
+        current: discountedSubtotal
       });
     }
-    
+
     // Priority shipping offer
-    if (subtotal >= 20 && subtotal < 125) {
-      const needed = 125 - subtotal;
+    if (discountedSubtotal >= 20 && discountedSubtotal < 125) {
+      const needed = 125 - discountedSubtotal;
       offers.push({
         type: 'priority',
         message: `Add $${needed.toFixed(2)} more for FREE priority shipping!`,
         savings: 15.99,
         threshold: 125,
-        current: subtotal
+        current: discountedSubtotal
       });
     }
     
-    // Bulk discount offers
-    if (subtotal < 50) {
-      const needed = 50 - subtotal;
-      offers.push({
-        type: 'bulk',
-        message: `Spend $${needed.toFixed(2)} more and save 10% with code SAVE10!`,
-        savings: subtotal * 0.1 + needed * 0.1,
-        threshold: 50,
-        current: subtotal
-      });
-    }
-    
-    if (subtotal < 100) {
-      const needed = 100 - subtotal;
-      offers.push({
-        type: 'bulk',
-        message: `Spend $${needed.toFixed(2)} more and save 20% with code WELCOME20!`,
-        savings: subtotal * 0.2 + needed * 0.2,
-        threshold: 100,
-        current: subtotal
-      });
-    }
+    // No other offers shown here; only shipping/priority messaging is displayed.
     
     return offers;
   };
@@ -534,16 +528,16 @@ export default function CartPage() {
   return (
   <div className="min-h-screen bg-[#fbf6f0]">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b pt-20 sm:pt-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
+      <div className="bg-white shadow-sm border-b pt-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6 text-center">
           <motion.h1 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-3xl font-bold text-gray-900"
+            className="text-3xl font-bold text-gray-900 text-center"
           >
             Shopping Cart
           </motion.h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-gray-600 mt-2 mx-auto">
             {items.length === 0 ? "Your cart is empty" : `${items.length} item${items.length !== 1 ? 's' : ''} in your cart`}
           </p>
         </div>
@@ -593,7 +587,7 @@ export default function CartPage() {
                 <div className="divide-y divide-gray-200">
                   {items.map((item, index) => (
                     <motion.div
-                      key={item.productId}
+                      key={item.lineId ?? item.productId}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05, duration: 0.3 }}
@@ -657,7 +651,7 @@ export default function CartPage() {
                             )}
                           </div>
                           <p className="text-lg font-bold text-gray-900 mt-2">
-                            ${item.price.toFixed(2)}
+                            <Price price={item.originalPrice ?? item.price} salePrice={item.salePrice} />
                           </p>
                         </div>
                         
@@ -666,7 +660,7 @@ export default function CartPage() {
                           {/* Quantity Controls */}
                           <div className="flex items-center space-x-2 sm:space-x-3">
                             <button
-                              onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                              onClick={() => updateQuantity(item.lineId ?? item.productId, item.quantity - 1)}
                               className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -679,7 +673,7 @@ export default function CartPage() {
                             </span>
                             
                             <button
-                              onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                              onClick={() => updateQuantity(item.lineId ?? item.productId, item.quantity + 1)}
                               className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -695,7 +689,7 @@ export default function CartPage() {
                             </p>
                             
                             <button
-                              onClick={() => handleRemove(item.productId)}
+                              onClick={() => handleRemove(item.lineId ?? item.productId)}
                               className="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors"
                             >
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -815,10 +809,22 @@ export default function CartPage() {
 
                 <div className="space-y-4">
                   <div className="flex justify-between text-gray-600">
-                    <span>Subtotal</span>
+                    <span>Original Prices Subtotal</span>
+                    <span>${originalSubtotal.toFixed(2)}</span>
+                  </div>
+
+                  {blackFridaySavings > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Black Friday Savings</span>
+                      <span>-${blackFridaySavings.toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between text-gray-600">
+                    <span>Sale Subtotal</span>
                     <span>${subtotal.toFixed(2)}</span>
                   </div>
-                  
+
                   {appliedCoupon && discount > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>Discount ({appliedCoupon.code})</span>
@@ -861,15 +867,15 @@ export default function CartPage() {
                     </p>
                   )}
                   
-                  {subtotal < 20 && subtotal > 0 && appliedCoupon?.type !== 'shipping' && (
+                  {discountedSubtotal < 20 && discountedSubtotal > 0 && appliedCoupon?.type !== 'shipping' && (
                     <p className="text-sm text-gray-500">
-                      Add ${(20 - subtotal).toFixed(2)} more for free shipping
+                      Add ${(20 - discountedSubtotal).toFixed(2)} more for free shipping
                     </p>
                   )}
-                  
-                  {subtotal >= 20 && subtotal < 125 && appliedCoupon?.type !== 'shipping' && (
+
+                  {discountedSubtotal >= 20 && discountedSubtotal < 125 && appliedCoupon?.type !== 'shipping' && (
                     <p className="text-sm text-purple-500">
-                      Add ${(125 - subtotal).toFixed(2)} more for priority shipping!
+                      Add ${(125 - discountedSubtotal).toFixed(2)} more for priority shipping!
                     </p>
                   )}
                   

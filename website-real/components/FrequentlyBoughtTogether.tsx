@@ -2,11 +2,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import Price from './Price';
 
 export interface FBTProduct {
   id: string;
   name: string;
   price: number;
+  salePrice?: number;
   image: string;
 }
 
@@ -36,7 +38,9 @@ const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> = ({ pro
               <h3 className="text-xl font-semibold mb-2">
                 <Link href={`/shop/${item.id}`} className="hover:underline">{item.name}</Link>
               </h3>
-              <p className="text-lg font-bold text-gray-800 mb-4">${item.price}</p>
+              <div className="text-lg font-bold text-gray-800 mb-4">
+                <Price price={item.price} salePrice={item.salePrice} />
+              </div>
               <button
                 className="w-full bg-black text-white py-2 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors"
                 onClick={() => onAddToCart && onAddToCart(item)}
@@ -64,26 +68,26 @@ export default FrequentlyBoughtTogether;
 // --- Centralized FBT data and helper (moved from components/fbt-products.ts) ---
 export const defaultFBT: FBTProduct[] = [
   { id: 'gala-tshirt', name: 'Gala Tee', price: 40, image: '/images/products/gala-tshirt/broadwaynoir/GN4.png' },
-  { id: 'wasabi-tee', name: 'Wasabi Tee', price: 45, image: '/images/products/Wasabi Tee/Wabasabi 1.png' },
-  { id: 'forest-hills-hat', name: 'Forest Hills Hat', price: 46, image: '/images/products/Forest Hills Hat/G1.png' },
+  { id: 'wasabi-tee', name: 'Wabisabi™ SCcheffel  Hall Pears Tee', price: 45, image: '/images/products/Wasabi Tee/Wabasabi 1.png' },
+  { id: 'forest-hills-hat', name: 'Forest Hills Hat', price: 46, salePrice: 25, image: '/images/products/Forest Hills Hat/G1.png' },
 ];
 
 export const FBT_BY_PAGE: Record<string, FBTProduct[]> = {
   'forest-hills-hat': [
     { id: 'gala-tshirt', name: 'Gala Tee', price: 40, image: '/images/products/gala-tshirt/broadwaynoir/GN4.png' },
-    { id: 'porcelain-hat', name: 'Porcelain Hat', price: 44, image: '/images/products/Porcelain Hat/FS2.png' },
-    { id: 'wasabi-tee', name: 'Wasabi Tee', price: 45, image: '/images/products/Wasabi Tee/Wabasabi 1.png' },
+    { id: 'porcelain-hat', name: 'Porcelain Hat', price: 44, salePrice: 25, image: '/images/products/Porcelain Hat/FS2.png' },
+    { id: 'wasabi-tee', name: 'Wabisabi™ SCcheffel  Hall Pears Tee', price: 45, image: '/images/products/Wasabi Tee/Wabasabi 1.png' },
   ],
 
   'track-pants': [
-    { id: 'retro-tracksuit', name: 'Retro Track Suit', price: 120, image: '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png' },
-    { id: 'forest-hills-hat', name: 'Forest Hills Hat', price: 46, image: '/images/products/Forest Hills Hat/G1.png' },
+    { id: 'retro-tracksuit', name: 'Retro Track Suit', price: 165, salePrice: 110, image: '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png' },
+    { id: 'forest-hills-hat', name: 'Forest Hills Hat', price: 46, salePrice: 25, image: '/images/products/Forest Hills Hat/G1.png' },
     { id: 'gala-tshirt', name: 'Gala Tee', price: 40, image: '/images/products/gala-tshirt/broadwaynoir/GN4.png' },
   ],
 
   'track-top': [
-    { id: 'retro-tracksuit', name: 'Retro Track Suit', price: 120, image: '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png' },
-    { id: 'porcelain-hat', name: 'Porcelain Hat', price: 44, image: '/images/products/Porcelain Hat/FS2.png' },
+    { id: 'retro-tracksuit', name: 'Retro Track Suit', price: 165, salePrice: 110, image: '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png' },
+    { id: 'porcelain-hat', name: 'Porcelain Hat', price: 44, salePrice: 25, image: '/images/products/Porcelain Hat/FS2.png' },
     { id: 'first-edition-tee', name: 'First Edition Tee', price: 45, image: '/images/products/First Edition Tee/FE1.png' },
   ],
 };

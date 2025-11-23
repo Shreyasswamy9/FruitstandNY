@@ -8,16 +8,24 @@ import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 
 const mandarinImages = [
-  "/images/products/Mandarin Tee/Mandarin 1.png",
+  "/images/products/Mandarin Tee/Mandarin Tee.png",
   "/images/products/Mandarin Tee/Mandarin 2.png",
   "/images/products/Mandarin Tee/Mandarin 3.png",
   "/images/products/Mandarin Tee/Mandarin 4.png",
 ];
 
 const PRODUCT = {
-  name: "Mandarin Tee",
-  price: 38,
-  description: "Soft, premium Mandarin Tee. Available in multiple sizes.",
+  name: "Mandarin 橘子 [JUZI] Tee",
+  price: 68.00,
+  description: "Cut from heavyweight 300 GSM cotton, the Mandarin Tee brings structure to a relaxed, cropped silhouette. Featuring minimal seams for an uninterrupted, full-tee print front and back.",
+  details: [
+    "100% premium heavyweight cotton (300 GSM)",
+    "Two-panel design for a clean, seamless look",
+    "Cropped, boxy fit",
+    "32\" screen-printed graphic on front and back",
+    "Made in Dongguan, Guangdong, China",
+    "Ships with a custom FRUITSTAND sticker printed in NYC",
+  ],
   sizes: ["XS", "S", "M", "L", "XL", "XXL", "XXXL"],
 };
 
@@ -32,6 +40,7 @@ export default function MandarinTeePage() {
       productId: "mandarin-tee",
       name: PRODUCT.name,
       price: PRODUCT.price,
+      salePrice: (PRODUCT as any).salePrice,
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -43,13 +52,13 @@ export default function MandarinTeePage() {
   const boughtTogetherItems = getFBTForPage('mandarin-tee');
 
   const handleAddBoughtTogetherItem = (item: { id: string; name: string; price: number; image: string }) => {
-    addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: PRODUCT.sizes[2] });
+    addToCart({ productId: item.id, name: item.name, price: item.price, salePrice: (item as any).salePrice, image: item.image, quantity: 1, size: PRODUCT.sizes[2] });
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };
 
   const handleAddAllToCart = () => {
-    boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, image: item.image, quantity: 1, size: PRODUCT.sizes[2] }));
+    boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, salePrice: (item as any).salePrice ? (item as any).salePrice * 0.85 : undefined, image: item.image, quantity: 1, size: PRODUCT.sizes[2] }));
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };
@@ -81,7 +90,7 @@ export default function MandarinTeePage() {
         </div>
         <div className="md:w-1/2 flex flex-col justify-start">
           <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
-          <div className="text-2xl font-semibold mb-6">${PRODUCT.price}</div>
+          <div className="text-2xl font-semibold mb-6">${PRODUCT.price.toFixed(2)}</div>
           <div className="mb-4">
             <p className="text-sm font-medium text-gray-700 mb-3">Size:</p>
             <div className="size-single-line">
@@ -89,11 +98,21 @@ export default function MandarinTeePage() {
                 <button key={size} className={`size-button px-3 rounded-lg font-semibold border-2 transition-all ${selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'}`} onClick={() => setSelectedSize(size)} type="button">{size}</button>
               ))}
             </div>
-            <div className="mt-2"><SizeGuide productSlug="mandarin-tee" /></div>
+            <div className="mt-2"><SizeGuide productSlug="mandarin-tee" imagePath="/images/size-guides/Size Guide/Mandarin Tee Table.png" /></div>
           </div>
 
           <div className="mb-4">
             <p className="text-lg text-gray-700 leading-relaxed">{PRODUCT.description}</p>
+            {PRODUCT.details && (
+              <div className="mt-3">
+                <span className="text-xs uppercase tracking-[0.2em] text-gray-500">Details</span>
+                <ul className="mt-2 list-disc list-inside text-gray-700 text-sm sm:text-base space-y-1">
+                  {PRODUCT.details.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           <button className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2" onClick={handleAddToCart}>

@@ -69,7 +69,7 @@ export default function DenimHatPage() {
   // Sample data for "bought together" items
   const boughtTogetherItems = [
     { id: 'gala-tshirt', name: 'Gala Tee', price: 40, image: '/images/products/gala-tshirt/broadwaynoir/GN4.png' },
-    { id: 'tracksuit', name: 'Retro Track Suit', price: 120, image: '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png' },
+    { id: 'tracksuit', name: 'Retro Track Suit', price: 165, image: '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png' },
     { id: 'hockey-jersey', name: 'Broadway Blueberry Jersey', price: 90, image: '/images/products/hockey Jersey/JN.png' },
   ];
 

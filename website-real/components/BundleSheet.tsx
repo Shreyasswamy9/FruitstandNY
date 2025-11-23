@@ -27,10 +27,12 @@ export type BundleSheetProps = {
   products?: Product[]
   // optionally preselect a bundle when opening the sheet
   initialSelectedId?: string | null
+  // optionally open the sheet on the 'custom' tab
+  initialTab?: 'curated' | 'custom'
 }
 
 // Rebuilt from scratch: a clean, polished bottom sheet for curated bundles and a custom builder
-export default function BundleSheet({ open, onClose, bundles = defaultBundles, products = gridProducts, initialSelectedId = null }: BundleSheetProps) {
+export default function BundleSheet({ open, onClose, bundles = defaultBundles, products = gridProducts, initialSelectedId = null, initialTab = 'curated' }: BundleSheetProps) {
   const { addToCart, addBundleToCart } = useCart()
 
   // allow choosing a default size per curated bundle (applies to tees in bundle)
@@ -120,8 +122,11 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
     }
   }, [open])
   useEffect(() => {
-    if (open) setSelectedId(prev => prev ?? (initialSelectedId ?? bundles[0]?.id ?? null))
-  }, [open, bundles, initialSelectedId])
+    if (open) {
+      setSelectedId(prev => prev ?? (initialSelectedId ?? bundles[0]?.id ?? null))
+      setTab(initialTab ?? 'curated')
+    }
+  }, [open, bundles, initialSelectedId, initialTab])
 
   useEffect(() => {
     // when opening, ensure selected bundle has a default size (M)

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import SizeGuide from "@/components/SizeGuide";
 import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
+import Price from '@/components/Price';
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 
@@ -53,6 +54,7 @@ type TracksuitVariant = typeof TRACKSUIT_VARIANTS[number];
 const PRODUCT = {
   name: "Retro Track Suit",
   price: 165,
+  salePrice: 110,
   description: "Inspired by classic New York athletic warm-ups, this track suit features bold color blocking and a relaxed, vintage silhouette designed for movement and comfort. Each colorway pays homage to various motifs, with contrasting panels and embroidered FRUITSTAND logos.",
   details: [
     "Heavyweight brushed fleece for structure and comfort",
@@ -92,6 +94,8 @@ export default function TracksuitPage() {
       productId: "tracksuit",
       name: PRODUCT.name,
       price: PRODUCT.price,
+      originalPrice: PRODUCT.price,
+      salePrice: PRODUCT.salePrice,
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -240,10 +244,33 @@ export default function TracksuitPage() {
               </button>
             ))}
           </div>
-          <div className="mt-2"><SizeGuide productSlug="tracksuit" /></div>
+          <div className="mt-2"><SizeGuide productSlug="tracksuit" imagePath="/images/size-guides/Size Guide/Track Jacket.png" /></div>
         </div>
         <div className="mb-4 space-y-4">
           <p className="text-lg text-gray-700 leading-relaxed">{PRODUCT.description}</p>
+          {/* Suggested separate pieces (jacket / pants) - small, subtle CTA links */}
+          <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-2">
+            <span className="text-sm text-gray-500 mr-2">Prefer pieces?</span>
+            <div className="flex gap-2">
+              <a
+                href="/shop/track-top"
+                className="inline-flex items-center px-3 py-1.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-800 hover:bg-gray-100 transition-colors"
+                aria-label="Buy the track jacket"
+                title="Buy the track jacket"
+              >
+                Jacket
+              </a>
+
+              <a
+                href="/shop/track-pants"
+                className="inline-flex items-center px-3 py-1.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-800 hover:bg-gray-100 transition-colors"
+                aria-label="Buy the track pants"
+                title="Buy the track pants"
+              >
+                Pants
+              </a>
+            </div>
+          </div>
           {PRODUCT.details && (
             <div>
               <span className="text-xs uppercase tracking-[0.2em] text-gray-500">Details</span>
@@ -255,7 +282,7 @@ export default function TracksuitPage() {
             </div>
           )}
         </div>
-        <div className="text-2xl font-semibold mb-6">${PRODUCT.price}.00</div>
+          <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} salePrice={PRODUCT.salePrice} /></div>
         <button
           className={`bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2 ${!selectedSize ? 'opacity-50 cursor-not-allowed' : ''}`}
           onClick={handleAddToCart}
@@ -269,8 +296,8 @@ export default function TracksuitPage() {
 
       <FrequentlyBoughtTogether
         products={boughtTogetherItems}
-        onAddToCart={(item) => { addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: 'M' }); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
-        onAddAllToCart={() => { boughtTogetherItems.forEach(item => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, image: item.image, quantity: 1, size: 'M' })); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
+        onAddToCart={(item) => { addToCart({ productId: item.id, name: item.name, price: item.price, salePrice: (item as any).salePrice, image: item.image, quantity: 1, size: 'M' }); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
+        onAddAllToCart={() => { boughtTogetherItems.forEach(item => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, salePrice: (item as any).salePrice ? (item as any).salePrice * 0.85 : undefined, image: item.image, quantity: 1, size: 'M' })); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
       />
 
       {/* Section 3: Customer Reviews */}
