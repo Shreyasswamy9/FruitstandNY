@@ -222,6 +222,178 @@ export class SupabaseProductService {
   }
 }
 
+
+// Cart Service
+export class SupabaseCartService {
+  static async getCart(userId?: string, sessionId?: string) {
+    if (!userId && !sessionId) {
+      return null;
+    }
+    try {
+      return await this.getOrCreateCart(userId, sessionId);
+    } catch {
+      return null;
+    }
+  }
+
+  static async createCart(userId?: string, sessionId?: string) {
+    const cartData: Partial<Cart> = {};
+    if (userId) {
+      cartData.user_id = userId;
+    } else if (sessionId) {
+      cartData.session_id = sessionId;
+    }
+
+    const { data, error } = await supabase
+      .from('carts')
+      .insert(cartData)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { ...data, cart_items: [] } as Cart & { cart_items: CartItem[] };
+  }
+
+  static async getOrCreateCart(userId?: string, sessionId?: string) {
+    if (!userId && !sessionId) {
+      throw new Error('Either userId or sessionId is required');
+    }
+
+    // First try to find existing cart
+    let query = supabase.from('carts').select(`
+      *,
+      cart_items (
+        *,
+        product:products (*),
+        variant:product_variants (*)
+      )
+    `);
+
+    if (userId) {
+      query = query.eq('user_id', userId);
+    } else {
+      query = query.eq('session_id', sessionId);
+    }
+
+    const { data: existingCart } = await query.maybeSingle();
+
+    if (existingCart) {
+      return existingCart as Cart & { cart_items: CartItem[] };
+    }
+
+    // Create new cart if none exists
+    const cartData: Partial<Cart> = {};
+    if (userId) {
+      cartData.user_id = userId;
+    } else {
+      cartData.session_id = sessionId;
+    }
+
+    const { data: newCart, error } = await supabase
+      .from('carts')
+      .insert(cartData)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return { ...newCart, cart_items: [] } as Cart & { cart_items: CartItem[] };
+  }
+
+  static async addToCart(cartId: string, item: {
+    product_id: string;
+    variant_id?: string;
+    quantity: number;
+    size?: string;
+    color?: string;
+    price: number;
+  }) {
+    // Check if item already exists
+    let query = supabase
+      .from('cart_items')
+      .select('*')
+      .eq('cart_id', cartId)
+      .eq('product_id', item.product_id);
+
+    if (item.variant_id) {
+      query = query.eq('variant_id', item.variant_id);
+    } else {
+      query = query.is('variant_id', null);
+    }
+
+    if (item.size) {
+      query = query.eq('size', item.size);
+    } else {
+      query = query.is('size', null);
+    }
+
+    if (item.color) {
+      query = query.eq('color', item.color);
+    } else {
+      query = query.is('color', null);
+    }
+
+    const { data: existingItem } = await query.maybeSingle();
+
+    if (existingItem) {
+      // Update quantity
+      const { data, error } = await supabase
+        .from('cart_items')
+        .update({ quantity: existingItem.quantity + item.quantity })
+        .eq('id', existingItem.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as CartItem;
+    } else {
+      // Add new item
+      const { data, error } = await supabase
+        .from('cart_items')
+        .insert({ cart_id: cartId, ...item })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as CartItem;
+    }
+  }
+
+  static async updateCartItem(itemId: string, quantity: number) {
+    if (quantity <= 0) {
+      return this.removeFromCart(itemId);
+    }
+
+    const { data, error } = await supabase
+      .from('cart_items')
+      .update({ quantity })
+      .eq('id', itemId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as CartItem;
+  }
+
+  static async removeFromCart(itemId: string) {
+    const { error } = await supabase
+      .from('cart_items')
+      .delete()
+      .eq('id', itemId);
+
+    if (error) throw error;
+  }
+
+  static async clearCart(cartId: string) {
+    const { error } = await supabase
+      .from('cart_items')
+      .delete()
+      .eq('cart_id', cartId);
+
+    if (error) throw error;
+  }
+}
+
 // Support Ticket Types
 export interface SupportTicket {
   id: string;
