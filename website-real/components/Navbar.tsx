@@ -106,7 +106,7 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                
+
                 {/* User Dropdown */}
                 <AnimatePresence>
                   {isUserMenuOpen && (
@@ -163,7 +163,7 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
                 </Link>
               </div>
             )}
-            
+
             <Link
               href="/contact"
               className="hidden md:block text-white hover:text-gray-300 transition-colors duration-200"
@@ -254,22 +254,22 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
                     </Link>
                   </motion.div>
                 )}
-                
+
                 {/* Mobile Authentication */}
                 {isSignedIn ? (
                   <div className="border-t border-gray-600 pt-2 mt-2">
                     <div className="px-3 py-2 text-white font-medium">
                       Hi, {user?.user_metadata?.name || user?.email?.split('@')[0] || 'User'}
                     </div>
-                    <Link 
-                      href="/account" 
+                    <Link
+                      href="/account"
                       className="block text-white hover:text-gray-300 px-3 py-2 text-base font-medium"
                     >
                       My Account
                     </Link>
                     {user?.user_metadata?.role === "admin" && (
-                      <Link 
-                        href="/admin" 
+                      <Link
+                        href="/admin"
                         className="block text-white hover:text-gray-300 px-3 py-2 text-base font-medium"
                       >
                         Admin Dashboard
@@ -284,21 +284,21 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
                   </div>
                 ) : (
                   <div className="border-t border-gray-600 pt-2 mt-2">
-                    <Link 
-                      href="/auth/signin" 
+                    <Link
+                      href="/auth/signin"
                       className="block text-white hover:text-gray-300 px-3 py-2 text-base font-medium"
                     >
                       Sign In
                     </Link>
-                    <Link 
-                      href="/auth/signup" 
+                    <Link
+                      href="/auth/signup"
                       className="block text-white hover:text-gray-300 px-3 py-2 text-base font-medium"
                     >
                       Sign Up
                     </Link>
                   </div>
                 )}
-                
+
                 <Link href="/contact" className="block text-white hover:text-gray-300 px-3 py-2 text-base font-medium">
                   Contact
                 </Link>
