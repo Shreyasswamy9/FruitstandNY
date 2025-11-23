@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
     // 7. Create Order Items
     const orderItems = items.map((item: any) => ({
       order_id: order.id,
-      product_id: item.productId,
+      product_id: null,
       variant_id: null,
       product_name: item.name,
       product_image_url: item.image,
