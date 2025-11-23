@@ -4,12 +4,12 @@ import { createClient } from '@supabase/supabase-js';
 
 // Create service role client for admin operations
 // Fallback to regular client if service role key is not set (development mode)
-const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY && 
+const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY &&
   process.env.SUPABASE_SERVICE_ROLE_KEY !== 'your_service_role_key_here'
   ? createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
   : supabase; // Fallback to regular client for development
 
 // Types matching your existing schema
@@ -161,7 +161,7 @@ export class SupabaseProductService {
     }
 
     const { data, error } = await query.order('created_at', { ascending: false });
-    
+
     if (error) throw error;
     return data as Product[];
   }
@@ -176,7 +176,7 @@ export class SupabaseProductService {
       `)
       .eq('id', id)
       .single();
-    
+
     if (error) throw error;
     return data as Product;
   }
@@ -191,7 +191,7 @@ export class SupabaseProductService {
       `)
       .eq('slug', slug)
       .single();
-    
+
     if (error) throw error;
     return data as Product;
   }
@@ -273,7 +273,7 @@ export class SupabaseCartService {
         .eq('id', existingItem.id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data as CartItem;
     } else {
@@ -283,7 +283,7 @@ export class SupabaseCartService {
         .insert({ cart_id: cartId, ...item })
         .select()
         .single();
-      
+
       if (error) throw error;
       return data as CartItem;
     }
@@ -300,7 +300,7 @@ export class SupabaseCartService {
       .eq('id', itemId)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data as CartItem;
   }
@@ -310,7 +310,7 @@ export class SupabaseCartService {
       .from('cart_items')
       .delete()
       .eq('id', itemId);
-    
+
     if (error) throw error;
   }
 
@@ -319,7 +319,7 @@ export class SupabaseCartService {
       .from('cart_items')
       .delete()
       .eq('cart_id', cartId);
-    
+
     if (error) throw error;
   }
 }
@@ -347,7 +347,7 @@ export class SupabaseOrderService {
     }
 
     const { data, error } = await query;
-    
+
     if (error) throw error;
     return data as Order[];
   }
@@ -366,7 +366,7 @@ export class SupabaseOrderService {
     }
 
     const { data, error } = await query.single();
-    
+
     if (error) throw error;
     return data as Order;
   }
@@ -409,7 +409,7 @@ export class SupabaseOrderService {
   }) {
     // Use admin client to bypass RLS for order creation
     const { items, ...order } = orderData;
-    
+
     const { data: newOrder, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert(order)
@@ -441,7 +441,7 @@ export class SupabaseOrderService {
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data as Order;
   }
@@ -453,7 +453,31 @@ export class SupabaseOrderService {
       .eq('id', id)
       .select()
       .single();
-    
+
+    if (error) throw error;
+    return data as Order;
+  }
+
+  static async updateOrderWithShipping(id: string, updateData: {
+    shipping_name?: string;
+    shipping_email?: string;
+    shipping_phone?: string | null;
+    shipping_address_line1?: string;
+    shipping_address_line2?: string | null;
+    shipping_city?: string;
+    shipping_state?: string;
+    shipping_postal_code?: string;
+    shipping_country?: string;
+    payment_status?: string;
+    status?: string;
+  }) {
+    const { data, error } = await supabaseAdmin
+      .from('orders')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
     if (error) throw error;
     return data as Order;
   }
@@ -467,7 +491,7 @@ export class SupabaseOrderService {
       `)
       .eq('stripe_checkout_session_id', stripeSessionId)
       .single();
-    
+
     if (error) throw error;
     return data as Order;
   }
@@ -481,7 +505,7 @@ export class SupabaseOrderService {
       `)
       .eq('stripe_payment_intent_id', paymentIntentId)
       .single();
-    
+
     if (error) throw error;
     return data as Order;
   }

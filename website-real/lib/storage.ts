@@ -3,7 +3,7 @@ import { supabase } from '../app/supabase-client';
 // Storage bucket configuration
 export const STORAGE_BUCKETS = {
   TICKETS: 'tickets',
-  PRODUCTS: 'products', 
+  PRODUCTS: 'products',
   USERS: 'users',
   ORDERS: 'orders',
   GENERAL: 'general'
@@ -20,8 +20,8 @@ export const BUCKET_CONFIG: Record<BucketName, {
 }> = {
   tickets: {
     maxFileSize: 10 * 1024 * 1024, // 10MB
-    allowedTypes: ['image/*', 'application/pdf', '.txt', '.doc', '.docx'],
-    allowedExtensions: ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.txt', '.doc', '.docx'],
+    allowedTypes: ['image/*'],
+    allowedExtensions: ['.jpg', '.jpeg', '.png', '.gif'],
     description: 'Support ticket attachments'
   },
   products: {
@@ -72,11 +72,11 @@ export interface UploadResult {
 }
 
 export class StorageManager {
-  
+
   // Validate file before upload
   static validateFile(file: File, bucket: BucketName): { valid: boolean; error?: string } {
     const config = BUCKET_CONFIG[bucket];
-    
+
     // Check file size
     if (file.size > config.maxFileSize) {
       return {
@@ -84,7 +84,7 @@ export class StorageManager {
         error: `File size exceeds ${config.maxFileSize / (1024 * 1024)}MB limit`
       };
     }
-    
+
     // Check file type if not wildcard
     if (config.allowedTypes[0] !== '*') {
       const isValidType = config.allowedTypes.some((type: string) => {
@@ -93,11 +93,11 @@ export class StorageManager {
         }
         return file.type === type;
       });
-      
+
       if (!isValidType && config.allowedExtensions.length > 0) {
         const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
         const isValidExtension = config.allowedExtensions.includes(fileExtension);
-        
+
         if (!isValidExtension) {
           return {
             valid: false,
@@ -111,10 +111,10 @@ export class StorageManager {
         };
       }
     }
-    
+
     return { valid: true };
   }
-  
+
   // Generate unique file path
   static generateFilePath(bucket: BucketName, fileName: string, userId?: string, customPath?: string): string {
     const timestamp = Date.now();
@@ -122,11 +122,11 @@ export class StorageManager {
     const extension = fileName.split('.').pop();
     const baseName = fileName.split('.').slice(0, -1).join('.');
     const sanitizedBaseName = baseName.replace(/[^a-zA-Z0-9-_]/g, '_');
-    
+
     if (customPath) {
       return `${customPath}/${timestamp}_${randomId}_${sanitizedBaseName}.${extension}`;
     }
-    
+
     switch (bucket) {
       case 'tickets':
         return `tickets/${userId || 'anonymous'}/${timestamp}_${randomId}_${sanitizedBaseName}.${extension}`;
@@ -142,54 +142,55 @@ export class StorageManager {
         return `${timestamp}_${randomId}_${sanitizedBaseName}.${extension}`;
     }
   }
-  
+
   // Upload file to storage
   static async uploadFile(options: UploadOptions): Promise<UploadResult> {
     try {
       const { bucket, file, path, userId, replace = false } = options;
-      
+
       // Validate file
       const validation = this.validateFile(file, bucket);
       if (!validation.valid) {
         return { success: false, error: validation.error };
       }
-      
+
       // Generate file path
       const filePath = path || this.generateFilePath(bucket, file.name, userId);
-      
+
       // Check if bucket exists, create if not
-      const { data: buckets } = await supabase.storage.listBuckets();
-      const bucketExists = buckets?.some(b => b.name === bucket);
-      
-      if (!bucketExists) {
-        const { error: createError } = await supabase.storage.createBucket(bucket, {
-          public: bucket === 'products', // Make product images public
-          allowedMimeTypes: [...BUCKET_CONFIG[bucket].allowedTypes],
-          fileSizeLimit: BUCKET_CONFIG[bucket].maxFileSize
-        });
-        
-        if (createError) {
-          return { success: false, error: `Failed to create bucket: ${createError.message}` };
-        }
-      }
-      
+      // const { data: buckets } = await supabase.storage.listBuckets();
+      // const bucketExists = buckets?.some(b => b.name === bucket);
+
+      // if (!bucketExists) {
+      //   const { error: createError } = await supabase.storage.createBucket(bucket, {
+      //     public: bucket === 'products', // Make product images public
+      //     allowedMimeTypes: [...BUCKET_CONFIG[bucket].allowedTypes],
+      //     fileSizeLimit: BUCKET_CONFIG[bucket].maxFileSize
+      //   });
+
+      //   if (createError) {
+      //     return { success: false, error: `Failed to create bucket: ${createError.message}` };
+      //   }
+      // }
+
       // Upload file
       const { data, error } = await supabase.storage
         .from(bucket)
         .upload(filePath, file, {
+          contentType: file.type,
           cacheControl: '3600',
           upsert: replace
         });
-      
+
       if (error) {
         return { success: false, error: error.message };
       }
-      
+
       // Get public URL
       const { data: urlData } = supabase.storage
         .from(bucket)
         .getPublicUrl(data.path);
-      
+
       return {
         success: true,
         data: {
@@ -200,49 +201,49 @@ export class StorageManager {
           type: file.type
         }
       };
-      
+
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Upload failed' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Upload failed'
       };
     }
   }
-  
+
   // Upload multiple files
   static async uploadMultipleFiles(files: UploadOptions[]): Promise<UploadResult[]> {
     const results = await Promise.allSettled(
       files.map(options => this.uploadFile(options))
     );
-    
-    return results.map(result => 
-      result.status === 'fulfilled' 
-        ? result.value 
+
+    return results.map(result =>
+      result.status === 'fulfilled'
+        ? result.value
         : { success: false, error: 'Upload failed' }
     );
   }
-  
+
   // Delete file from storage
   static async deleteFile(bucket: BucketName, path: string): Promise<{ success: boolean; error?: string }> {
     try {
       const { error } = await supabase.storage
         .from(bucket)
         .remove([path]);
-      
+
       if (error) {
         return { success: false, error: error.message };
       }
-      
+
       return { success: true };
-      
+
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Delete failed' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Delete failed'
       };
     }
   }
-  
+
   // List files in bucket
   static async listFiles(bucket: BucketName, path?: string, limit?: number) {
     try {
@@ -252,21 +253,21 @@ export class StorageManager {
           limit: limit || 100,
           sortBy: { column: 'created_at', order: 'desc' }
         });
-      
+
       if (error) {
         return { success: false, error: error.message };
       }
-      
+
       return { success: true, files: data };
-      
+
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'List failed' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'List failed'
       };
     }
   }
-  
+
   // Get file info
   static async getFileInfo(bucket: BucketName, path: string) {
     try {
@@ -274,15 +275,15 @@ export class StorageManager {
       const { data: urlData } = supabase.storage
         .from(bucket)
         .getPublicUrl(path);
-      
+
       // Get file metadata (if available)
       const { data: files } = await supabase.storage
         .from(bucket)
         .list(path.split('/').slice(0, -1).join('/'));
-      
+
       const fileName = path.split('/').pop();
       const fileInfo = files?.find(f => f.name === fileName);
-      
+
       return {
         success: true,
         data: {
@@ -290,68 +291,68 @@ export class StorageManager {
           metadata: fileInfo
         }
       };
-      
+
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Get info failed' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Get info failed'
       };
     }
   }
-  
+
   // Download file
   static async downloadFile(bucket: BucketName, path: string) {
     try {
       const { data, error } = await supabase.storage
         .from(bucket)
         .download(path);
-      
+
       if (error) {
         return { success: false, error: error.message };
       }
-      
+
       return { success: true, data };
-      
+
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Download failed' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Download failed'
       };
     }
   }
 }
 
 // Utility functions for common operations
-export const uploadTicketAttachment = (file: File, userId?: string) => 
+export const uploadTicketAttachment = (file: File, userId?: string) =>
   StorageManager.uploadFile({ bucket: 'tickets', file, userId });
 
-export const uploadProductImage = (file: File, productId?: string) => 
-  StorageManager.uploadFile({ 
-    bucket: 'products', 
-    file, 
-    path: productId ? `products/${productId}` : undefined 
+export const uploadProductImage = (file: File, productId?: string) =>
+  StorageManager.uploadFile({
+    bucket: 'products',
+    file,
+    path: productId ? `products/${productId}` : undefined
   });
 
-export const uploadUserProfilePicture = (file: File, userId: string) => 
+export const uploadUserProfilePicture = (file: File, userId: string) =>
   StorageManager.uploadFile({ bucket: 'users', file, userId });
 
-export const uploadOrderDocument = (file: File, userId: string, orderId?: string) => 
-  StorageManager.uploadFile({ 
-    bucket: 'orders', 
-    file, 
+export const uploadOrderDocument = (file: File, userId: string, orderId?: string) =>
+  StorageManager.uploadFile({
+    bucket: 'orders',
+    file,
     userId,
-    path: orderId ? `orders/${orderId}` : undefined 
+    path: orderId ? `orders/${orderId}` : undefined
   });
 
 // Create buckets script (run once during setup)
 export const initializeBuckets = async () => {
   const results = [];
-  
+
   for (const bucketName of Object.values(STORAGE_BUCKETS)) {
     try {
       const { data: buckets } = await supabase.storage.listBuckets();
       const exists = buckets?.some(b => b.name === bucketName);
-      
+
       if (!exists) {
         const config = BUCKET_CONFIG[bucketName as BucketName];
         const { error } = await supabase.storage.createBucket(bucketName, {
@@ -359,7 +360,7 @@ export const initializeBuckets = async () => {
           allowedMimeTypes: [...config.allowedTypes],
           fileSizeLimit: config.maxFileSize
         });
-        
+
         results.push({
           bucket: bucketName,
           created: !error,
@@ -380,6 +381,6 @@ export const initializeBuckets = async () => {
       });
     }
   }
-  
+
   return results;
 };

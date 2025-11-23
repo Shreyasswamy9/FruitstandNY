@@ -35,21 +35,21 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed':
         const session = event.data.object;
-        
+
         // Update order status to paid if order exists
         await handleSuccessfulPayment(session);
         break;
 
       case 'payment_intent.succeeded':
         const paymentIntent = event.data.object;
-        
+
         // Update payment status in existing order
         await updateOrderPaymentStatus(paymentIntent.id, 'paid');
         break;
 
       case 'payment_intent.payment_failed':
         const failedPayment = event.data.object;
-        
+
         // Update payment status to failed
         await updateOrderPaymentStatus(failedPayment.id, 'failed');
         break;
@@ -71,22 +71,49 @@ export async function POST(request: NextRequest) {
 
 async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
   try {
+    console.log('Processing checkout.session.completed for session:', session.id);
+
+    // Extract shipping details from Stripe
+    const customerDetails = session.customer_details;
+    const shippingAddress = customerDetails?.address;
+
+    if (!customerDetails || !shippingAddress) {
+      console.error('No shipping details found in session');
+      return;
+    }
+
+    // Prepare shipping data from Stripe
+    const shippingData = {
+      shipping_name: customerDetails?.name || 'Unknown',
+      shipping_email: session.customer_email || customerDetails?.email || '',
+      shipping_phone: customerDetails?.phone || null,
+      shipping_address_line1: shippingAddress?.line1 || '',
+      shipping_address_line2: shippingAddress?.line2 || null,
+      shipping_city: shippingAddress?.city || '',
+      shipping_state: shippingAddress?.state || '',
+      shipping_postal_code: shippingAddress?.postal_code || '',
+      shipping_country: shippingAddress?.country || 'US',
+      payment_status: 'paid' as const,
+      status: 'confirmed' as const,
+    };
+
+    console.log('Extracted shipping data from Stripe:', shippingData);
+
     // Try to find existing order by stripe session ID
     try {
       const existingOrder = await SupabaseOrderService.getOrderByStripeSession(session.id);
       if (existingOrder) {
-        // Update existing order to paid status
-        await SupabaseOrderService.updatePaymentStatus(existingOrder.id, 'paid');
-        await SupabaseOrderService.updateOrderStatus(existingOrder.id, 'confirmed');
-        console.log(`Updated existing order ${existingOrder.id} to paid status`);
+        // Update existing order with Stripe shipping data + payment status
+        await SupabaseOrderService.updateOrderWithShipping(existingOrder.id, shippingData);
+        console.log(`Updated order ${existingOrder.id} with Stripe shipping data and paid status`);
         return;
       }
     } catch (err) {
-      console.log('No existing order found, will create new one if needed', err);
+      console.log('No existing order found', err);
     }
 
     console.log('Webhook processed successfully');
-    
+
   } catch (err) {
     console.error('Error handling successful payment:', err);
     throw err;
