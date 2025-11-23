@@ -65,51 +65,63 @@ export async function POST(req: NextRequest) {
         variant_id: null, // We don't have variant_id lookup here yet, could be added if critical
         product_name: it.name || it.title || '',
         product_image_url: (it.image || (it.product?.images && it.product.images[0]) || null),
+        quantity: it.quantity || 1,
+        unit_price: it.price || it.unitPrice || 0,
+        total_price: (it.quantity || 1) * (it.price || it.unitPrice || 0),
         variant_details: {
           size: it.size || it.selectedSize || null,
           color: it.color || null,
           price: it.price || it.unitPrice || 0,
           image: (it.image || (it.product?.images && it.product.images[0]) || null)
-        }))
-    };
+        }
+      }));
 
-    // createOrder expects a typed object; cast to any to avoid narrow literal type issues
-    const created = await SupabaseOrderService.createOrder(orderPayload as any);
+      // Insert order items
+      if (orderItems.length > 0) {
+        const { error: itemsError } = await supabaseAdmin
+          .from('order_items')
+          .insert(orderItems);
 
-    // Record marketing preference if opted in
-    if (marketing && marketing.emailUpdates) {
-      try {
-        await supabaseClient
-          .from('marketing_subscribers')
-          .insert([{ email, first_name: firstName || '', last_name: lastName || '', phone: phone || '', source: 'guest_checkout', subscribed: true }]);
-      } catch (err) {
-        console.warn('Failed to insert marketing subscriber:', err);
+        if (itemsError) {
+          console.error('Failed to create order items:', itemsError);
+          throw itemsError;
+        }
       }
+
+      // Record marketing preference if opted in
+      if (marketing && marketing.emailUpdates) {
+        try {
+          await supabaseClient
+            .from('marketing_subscribers')
+            .insert([{ email, first_name: firstName || '', last_name: lastName || '', phone: phone || '', source: 'guest_checkout', subscribed: true }]);
+        } catch (err) {
+          console.warn('Failed to insert marketing subscriber:', err);
+        }
+      }
+
+      console.log('Guest checkout persisted to Supabase, order id:', order.id);
+
+      return NextResponse.json({
+        success: true,
+        message: 'Guest checkout data processed and saved to Supabase',
+        order: { id: order.id, order_number: order.order_number, total: order.total_amount }
+      });
+
+    } catch (dbError: any) {
+      console.error('Failed to persist guest order to Supabase:', dbError);
+      return NextResponse.json(
+        { error: 'Failed to persist guest order to Supabase', details: dbError.message },
+        { status: 500 }
+      );
     }
 
-    console.log('Guest checkout persisted to Supabase, order id:', order.id);
-
-    return NextResponse.json({
-      success: true,
-      message: 'Guest checkout data processed and saved to Supabase',
-      order: { id: order.id, order_number: order.order_number, total: order.total_amount }
-    });
-
-  } catch (dbError: any) {
-    console.error('Failed to persist guest order to Supabase:', dbError);
+  } catch (error) {
+    console.error("Guest checkout error:", error);
     return NextResponse.json(
-      { error: 'Failed to persist guest order to Supabase', details: dbError.message },
+      { error: "Failed to process guest checkout" },
       { status: 500 }
     );
   }
-
-} catch (error) {
-  console.error("Guest checkout error:", error);
-  return NextResponse.json(
-    { error: "Failed to process guest checkout" },
-    { status: 500 }
-  );
-}
 }
 
 function getRegionFromState(state: string): string {
