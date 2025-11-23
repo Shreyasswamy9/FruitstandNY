@@ -68,7 +68,7 @@ export default FrequentlyBoughtTogether;
 // --- Centralized FBT data and helper (moved from components/fbt-products.ts) ---
 export const defaultFBT: FBTProduct[] = [
   { id: 'gala-tshirt', name: 'Gala Tee', price: 40, image: '/images/products/gala-tshirt/broadwaynoir/GN4.png' },
-  { id: 'wasabi-tee', name: 'Wabisabi™ SCcheffel  Hall Pears Tee', price: 45, image: '/images/products/Wasabi Tee/Wabasabi 1.png' },
+  { id: 'wasabi-tee', name: 'Wabisabi™ Scheffel Hall Pears Tee', price: 45, image: '/images/products/Wasabi Tee/Wabasabi 1.png' },
   { id: 'forest-hills-hat', name: 'Forest Hills Hat', price: 46, salePrice: 25, image: '/images/products/Forest Hills Hat/G1.png' },
 ];
 
@@ -76,7 +76,7 @@ export const FBT_BY_PAGE: Record<string, FBTProduct[]> = {
   'forest-hills-hat': [
     { id: 'gala-tshirt', name: 'Gala Tee', price: 40, image: '/images/products/gala-tshirt/broadwaynoir/GN4.png' },
     { id: 'porcelain-hat', name: 'Porcelain FS Cap', price: 44, salePrice: 25, image: '/images/products/Porcelain Hat/FS2.png' },
-    { id: 'wasabi-tee', name: 'Wabisabi™ SCcheffel  Hall Pears Tee', price: 45, image: '/images/products/Wasabi Tee/Wabasabi 1.png' },
+    { id: 'wasabi-tee', name: 'Wabisabi™ Scheffel Hall Pears Tee', price: 45, image: '/images/products/Wasabi Tee/Wabasabi 1.png' },
   ],
 
   'track-pants': [

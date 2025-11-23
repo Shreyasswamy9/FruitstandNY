@@ -50,7 +50,7 @@ export const products: Product[] = [
   { id: 1043, name: "Fuji Long Sleeve", price: "$80", image: "/images/products/fuji-tshirt/Redbird/F4.png", hoverImage: "/images/products/fuji-tshirt/Redbird/F5.png", category: "Tops", variantColor: "Redbird", variantSlug: "redbird" },
   { id: 1044, name: "Fuji Long Sleeve", price: "$80", image: "/images/products/fuji-tshirt/Broadwaynoir/F3.png", hoverImage: "/images/products/fuji-tshirt/Broadwaynoir/F7.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
   // New additions: Wasabi Tee and First Edition Tee
-  { id: 1071, name: "Wabisabi™ SCcheffel  Hall Pears Tee", price: "$45", image: "/images/products/Wasabi Tee/Wabasabi 1.png", hoverImage: "/images/products/Wasabi Tee/Wabasabi 2.png", category: "Tops", variantSlug: "wasabi-tee" },
+  { id: 1071, name: "Wabisabi™ Scheffel Hall Pears Tee", price: "$45", image: "/images/products/Wasabi Tee/Wabasabi 1.png", hoverImage: "/images/products/Wasabi Tee/Wabasabi 2.png", category: "Tops", variantSlug: "wasabi-tee" },
   { id: 1072, name: "First Edition Tee", price: "$45", image: "/images/products/First Edition Tee/FE1.png", hoverImage: "/images/products/First Edition Tee/FE2.png", category: "Tops", variantColor: "White", variantSlug: "first-edition-tee" },
   { id: 1073, name: "First Edition Tee", price: "$45", image: "/images/products/First Edition Tee/FE1.png", hoverImage: "/images/products/First Edition Tee/FE2.png", category: "Tops", variantColor: "Black", variantSlug: "first-edition-tee" },
 
@@ -307,7 +307,7 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
             'Mandarin 橘子 [JUZI] Tee': '/shop/mandarin-tee',
             'Retro Track Pants': '/shop/track-pants',
             'Retro Track Jacket': '/shop/track-top',
-            'Wabisabi™ SCcheffel  Hall Pears Tee': '/shop/wasabi-tee',
+            'Wabisabi™ Scheffel Hall Pears Tee': '/shop/wasabi-tee',
             'First Edition Tee': '/shop/first-edition-tee',
           };
           const base = basePathMap[product.name] || `/products/${product.id}`;
