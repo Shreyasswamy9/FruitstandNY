@@ -7,6 +7,7 @@ import SizeGuide from "@/components/SizeGuide";
 import BundleSheet from '@/components/BundleSheet'
 import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
+import ColorPicker from '@/components/ColorPicker';
 
 // Color-specific image sets (kept explicit for clarity and to avoid client fs access)
 const COLOR_IMAGE_MAP: Record<string, string[]> = {
@@ -164,52 +165,15 @@ export default function GalaTshirtPage() {
         <div className="md:w-1/2 flex flex-col justify-start">
           <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
           {/* Color Picker */}
-          <div className="mb-6">
-            <p className="text-sm font-medium text-gray-700 mb-2">Color: <span className="font-semibold text-gray-900">{selectedColor.name}</span></p>
-            <div className="flex gap-3 px-1" style={{ overflowX: 'auto', paddingTop: 6, paddingBottom: 6, minHeight: 56 }}>
-              {GALA_COLOR_OPTIONS.map((opt) => (
-                <button
-                  key={opt.name}
-                  aria-label={opt.name}
-                  title={opt.name}
-                  onClick={() => { 
-                    setSelectedColor(opt); 
-                    setSelectedImage(opt.images[0]); 
-                    const newUrl = `/shop/gala-tshirt?color=${opt.slug}`; 
-                    window.history.replaceState(null, '', newUrl); 
-                  }}
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: '50%',
-                    background: opt.color,
-                    border: selectedColor.name === opt.name
-                      ? '2px solid #232323'
-                      : (['#ffffff','#f9fafb','#fafbfc','#f5f5f5','#eaf7ff','#e4ecf3'].includes(opt.color.toLowerCase())
-                          ? '2px solid #d1d5db'
-                          : (opt.border || '2px solid #fff')),
-                    boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #232323' : '0 1px 4px 0 rgba(0,0,0,0.12)',
-                    position: 'relative',
-                    cursor: 'pointer'
-                  }}
-                >
-                  {selectedColor.name === opt.name && (
-                    <span style={{
-                      position: 'absolute',
-                      inset: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 14,
-                      fontWeight: 600,
-                      color: opt.color === '#ffffff' ? '#111' : '#fff',
-                      textShadow: '0 1px 2px rgba(0,0,0,0.25)'
-                    }}>✓</span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
+          <ColorPicker
+            options={GALA_COLOR_OPTIONS as any}
+            selectedName={selectedColor.name}
+            onSelect={(opt) => {
+              setSelectedColor(opt as any);
+              setSelectedImage((opt.images && opt.images[0]) || selectedImage);
+              if (typeof window !== 'undefined' && opt.slug) window.history.replaceState(null, '', `/shop/gala-tshirt?color=${opt.slug}`);
+            }}
+          />
 
           {/* Size Selection */}
           <div style={{ marginBottom: 18 }}>

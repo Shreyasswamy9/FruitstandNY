@@ -6,6 +6,7 @@ import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
+import ColorPicker from '@/components/ColorPicker';
 
 const feImages = [
   "/images/products/First Edition Tee/FE1.png",
@@ -77,25 +78,14 @@ export default function FirstEditionTeePage() {
           <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
           <div className="text-2xl font-semibold mb-6">${PRODUCT.price}</div>
           {/* Color Picker */}
-          <div className="flex gap-3 mb-4 px-1" style={{ overflowX: 'auto', marginBottom: 24, paddingTop: 8, paddingBottom: 8, minHeight: 48 }}>
-            {colorOptions.map((opt) => (
-              <button
-                key={opt.slug}
-                aria-label={opt.name}
-                title={opt.name}
-                onClick={() => { setSelectedColor(opt); setSelectedImage(opt.images[0]); }}
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: '50%',
-                  background: opt.color,
-                  border: selectedColor.name === opt.name ? '2px solid #232323' : (opt.border || '2px solid #fff'),
-                  boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #232323' : '0 1px 4px 0 rgba(0,0,0,0.07)',
-                  cursor: 'pointer'
-                }}
-              />
-            ))}
-          </div>
+          <ColorPicker
+            options={colorOptions as any}
+            selectedName={selectedColor.name}
+            onSelect={(opt) => {
+              setSelectedColor(opt as any);
+              setSelectedImage((opt.images && opt.images[0]) || selectedImage);
+            }}
+          />
           <div className="mb-4">
             <p className="text-sm font-medium text-gray-700 mb-3">Size:</p>
             <div className="size-single-line">

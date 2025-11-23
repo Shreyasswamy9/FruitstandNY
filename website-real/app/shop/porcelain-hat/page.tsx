@@ -8,8 +8,8 @@ import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 
 const porcelainHatImages = [
-  "/images/products/Porcelain Hat/FS2.png",
   "/images/products/Porcelain Hat/Fruitscale Hat.png",
+  "/images/products/Porcelain Hat/FS2.png",
 ];
 
 const PRODUCT = {

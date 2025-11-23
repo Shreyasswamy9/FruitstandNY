@@ -72,7 +72,7 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
               href="/"
               className="text-white hover:text-gray-300 transition-colors duration-200 font-bold text-xl"
             >
-              FRUITSTAND
+              FRUITSTAND®
             </Link>
             <div className="relative">
               <button

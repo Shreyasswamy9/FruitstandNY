@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 
 const empireHatImages = [
+  "/images/products/empire-hat/Apple Hat.png",
   "/images/products/empire-hat/A1.png",
   "/images/products/empire-hat/A2.png",
   "/images/products/empire-hat/A3.png",

@@ -55,19 +55,19 @@ export const products: Product[] = [
   { id: 1073, name: "First Edition Tee", price: "$45", image: "/images/products/First Edition Tee/FE1.png", hoverImage: "/images/products/First Edition Tee/FE2.png", category: "Tops", variantColor: "Black", variantSlug: "first-edition-tee" },
 
   // Forest Hills Hat (Green)
-  { id: 3001, name: "Forest Hills Hat", price: "$46", salePrice: 25, image: "/images/products/Forest Hills Hat/G1.png", hoverImage: "/images/products/Forest Hills Hat/G2.png", category: "Hats" },
+  { id: 3001, name: "Forest Hills Hat", price: "$46", salePrice: 25, image: "/images/products/Forest Hills Hat/Green Hat.png", hoverImage: "/images/products/Forest Hills Hat/G1.png", category: "Hats" },
 
-  // Porcelain Hat (White)
-  { id: 3002, name: "Porcelain Hat", price: "$44", salePrice: 25, image: "/images/products/Porcelain Hat/FS2.png", hoverImage: "/images/products/Porcelain Hat/Fruitscale Hat.png", category: "Hats", variantSlug: "porcelain-hat" },
+  // Porcelain FS Cap (White)
+  { id: 3002, name: "Porcelain FS Cap", price: "$44", salePrice: 25, image: "/images/products/Porcelain Hat/Fruitscale Hat.png", hoverImage: "/images/products/Porcelain Hat/FS2.png", category: "Hats", variantSlug: "porcelain-hat" },
 
-  // Ecru Hat (Beige)
-  { id: 3003, name: "Ecru Hat", price: "$44", salePrice: 25, image: "/images/products/Ecru Hat/B1.png", hoverImage: "/images/products/Ecru Hat/Beige Hat.png", category: "Hats", variantSlug: "ecru-hat" },
+  // Ecru FS Cap (Beige)
+  { id: 3003, name: "Ecru FS Cap", price: "$44", salePrice: 25, image: "/images/products/Ecru Hat/Beige Hat.png", hoverImage: "/images/products/Ecru Hat/B1.png", category: "Hats", variantSlug: "ecru-hat" },
 
   // Empire Corduroy Hat
-  { id: 3004, name: "Empire Corduroy Hat", price: "$49", salePrice: 25, image: "/images/products/empire-hat/A2.png", hoverImage: "/images/products/empire-hat/A1.png", category: "Hats" },
+  { id: 3004, name: "Empire Corduroy Hat", price: "$49", salePrice: 25, image: "/images/products/empire-hat/Apple Hat.png", hoverImage: "/images/products/empire-hat/A2.png", category: "Hats" },
 
-  // Indigo Hat (Denim)
-  { id: 3005, name: "Indigo Hat", price: "$44", salePrice: 25, image: "/images/products/denim-hat/D1.png", hoverImage: "/images/products/denim-hat/D2.png", category: "Hats" },
+  // Indigo FS Cap (Denim)
+  { id: 3005, name: "Indigo FS Cap", price: "$44", salePrice: 25, image: "/images/products/denim-hat/Denim Hat.png", hoverImage: "/images/products/denim-hat/D1.png", category: "Hats" },
 
   // Mandarin Tee
   { id: 4001, name: "Mandarin 橘子 [JUZI] Tee", price: "$68.00", image: "/images/products/Mandarin Tee/Mandarin Tee.png", hoverImage: "/images/products/Mandarin Tee/Mandarin 2.png", category: "Tops", variantSlug: "mandarin-tee", },
@@ -292,7 +292,7 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
             'Empire Cordury hat': '/shop/empire-hat',
             'Empire Corduroy Hat': '/shop/empire-hat',
             'Denim Hat': '/shop/denim-hat',
-            'Indigo Hat': '/shop/denim-hat',
+            'Indigo FS Cap': '/shop/denim-hat',
             'Forest Hills Hat': '/shop/forest-hills-hat',
             'Broadway Blueberry Jersey': '/shop/hockey-jersey',
             'Gala Tee': '/shop/gala-tshirt',
@@ -302,8 +302,8 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
             'Retro Track Suit': '/shop/tracksuit',
             'White Hat': '/shop/white-hat',
             'Beige Hat': '/shop/beige-hat',
-            'Porcelain Hat': '/shop/porcelain-hat',
-            'Ecru Hat': '/shop/ecru-hat',
+            'Porcelain FS Cap': '/shop/porcelain-hat',
+            'Ecru FS Cap': '/shop/ecru-hat',
             'Mandarin 橘子 [JUZI] Tee': '/shop/mandarin-tee',
             'Retro Track Pants': '/shop/track-pants',
             'Retro Track Jacket': '/shop/track-top',

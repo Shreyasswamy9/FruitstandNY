@@ -1323,7 +1323,7 @@ export default function Home() {
       {/* Mobile Layout */}
       <div className="block md:hidden">
         <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-          © 2024 Fruitstand LLC,<br />
+          © 2024 Fruitstand® LLC,<br />
           All Rights Reserved
         </div>
         <div style={{ textAlign: 'center' }}>
@@ -1352,7 +1352,7 @@ export default function Home() {
       {/* Desktop Layout */}
       <div className="hidden md:flex items-center justify-center">
         <div style={{ flex: 1, textAlign: 'center' }}>
-          © 2024 Fruitstand LLC,<br />
+          © 2024 Fruitstand® LLC,<br />
           All Rights Reserved
         </div>
         <a

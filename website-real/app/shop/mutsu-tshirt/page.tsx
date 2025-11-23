@@ -7,6 +7,7 @@ import SizeGuide from "@/components/SizeGuide";
 import BundleSheet from '@/components/BundleSheet'
 import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
+import ColorPicker from '@/components/ColorPicker';
 
 // Per-color image map (multiple images per color)
 const MUTSU_COLOR_IMAGE_MAP: Record<string, string[]> = {
@@ -126,38 +127,15 @@ export default function MutsuTshirtPage() {
         <div className="md:w-1/2 flex flex-col justify-start">
           <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
           {/* Color Picker */}
-          <div className="mb-6">
-            <p className="text-sm font-medium text-gray-700 mb-2">Color: <span className="font-semibold text-gray-900">{selectedColor.name}</span></p>
-            <div className="flex gap-3 px-1" style={{ overflowX: 'auto', paddingTop: 6, paddingBottom: 6, minHeight: 56 }}>
-              {colorOptions.map((opt) => (
-                <button
-                  key={opt.name}
-                  aria-label={opt.name}
-                  onClick={() => {
-                    setSelectedColor(opt);
-                    setSelectedImage(opt.images[0]);
-                    window.history.replaceState(null, '', `/shop/mutsu-tshirt?color=${opt.slug}`);
-                  }}
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: '50%',
-                    background: opt.color,
-                    border: selectedColor.name === opt.name
-                      ? '2px solid #232323'
-                      : (['#ffffff', '#f9fafb', '#fafbfc', '#f5f5f5'].includes(opt.color.toLowerCase())
-                        ? '2px solid #d1d5db'
-                        : (opt.border || '2px solid #fff')),
-                    outline: 'none',
-                    boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #232323' : '0 1px 4px 0 rgba(0,0,0,0.07)',
-                    display: 'inline-block',
-                    cursor: 'pointer',
-                    marginRight: 4
-                  }}
-                />
-              ))}
-            </div>
-          </div>
+          <ColorPicker
+            options={colorOptions as any}
+            selectedName={selectedColor.name}
+            onSelect={(opt) => {
+              setSelectedColor(opt as any);
+              setSelectedImage((opt.images && opt.images[0]) || selectedImage);
+              if (typeof window !== 'undefined' && opt.slug) window.history.replaceState(null, '', `/shop/mutsu-tshirt?color=${opt.slug}`);
+            }}
+          />
 
           {/* Size Selection */}
           <div style={{ marginBottom: 18 }}>

@@ -24,11 +24,11 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "fruitstand - New Collection 2025",
+  title: "fruitstand® - New Collection 2025",
   description:
-    "Discover the latest collection from fruitstand. Premium clothing and accessories for the modern lifestyle.",
+    "Discover the latest collection from fruitstand®. Premium clothing and accessories for the modern lifestyle.",
   keywords: "fruitstand, clothing, fashion, new collection, 2025",
-  authors: [{ name: "fruitstand" }],
+  authors: [{ name: "fruitstand®" }],
 }
 
 export const viewport = {

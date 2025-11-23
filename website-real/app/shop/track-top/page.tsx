@@ -7,6 +7,7 @@ import Price from '@/components/Price';
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
+import ColorPicker from '@/components/ColorPicker';
 
 const COLOR_DATA = [
   { name: "Elmhurst Taro Custard", slug: "elmhurst-taro-custard", color: "#8271c2", img: "/images/products/Track Top/ELMHURST TARO CUSTARD/J6.png", bg: "#eee9ff", border: "2px solid #d1c8f3" },
@@ -22,12 +23,15 @@ const PRODUCT = {
   name: "Retro Track Jacket",
   price: 110,
   salePrice: 73,
-  description: "Inspired by classic New York athletic warm-ups, this track jacket features bold color blocking and a relaxed, vintage silhouette designed for movement and comfort. Each colorway pays homage to various motifs, with contrasting panels and an embroidered FRUITSTAND logo across the chest.",
+  description: "Inspired by classic New York athletic warm-ups, this track jacket features bold color blocking and a relaxed, vintage silhouette designed for movement and comfort. Each colorway pays homage to various motifs, with contrasting panels and an embroidered FRUITSTAND® logo across the chest.",
   details: [
-    "Heavyweight brushed fleece for structure and comfort",
-    "Relaxed, vintage silhouette designed for movement",
-    "Embroidered FRUITSTAND logo across the chest",
-    "Zip front and elastic cuffs for secure fit",
+    "100% Nylon shell",
+    "Full-zip front with stand collar",
+    "Inner mesh lining",
+    "Ribbed cuffs and hem",
+    "Two front pockets",
+    "Relaxed fit",
+    "Made in Sialkot, Pakistan",
   ],
   sizes: ["XS", "S", "M", "L", "XL", "XXL", "XXXL"],
 };
@@ -73,27 +77,14 @@ export default function TrackTopPage() {
         <div className="md:w-1/2 flex flex-col justify-start">
           <h1 className="text-3xl font-bold mb-2">{PRODUCT.name} <span className="text-base font-medium text-gray-500">/ {selectedColor.name}</span></h1>
           {/* Color Picker */}
-          <div className="flex gap-3 mb-4 px-1" style={{ overflowX: 'auto', marginBottom: 24, paddingTop: 8, paddingBottom: 8, minHeight: 48 }}>
-            {colorOptions.map((opt) => (
-              <button
-                key={opt.name}
-                aria-label={opt.name}
-                onClick={() => setSelectedColor(opt)}
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: '50%',
-                  background: opt.color,
-                  border: selectedColor.name === opt.name ? '2px solid #232323' : (opt.border || '2px solid #fff'),
-                  outline: selectedColor.name === opt.name ? '2px solid #3B82F6' : 'none',
-                  boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #3B82F6' : '0 1px 4px 0 rgba(0,0,0,0.07)',
-                  display: 'inline-block',
-                  cursor: 'pointer',
-                  marginRight: 4,
-                }}
-              />
-            ))}
-          </div>
+          <ColorPicker
+            options={colorOptions as any}
+            selectedName={selectedColor.name}
+            onSelect={(opt) => {
+              setSelectedColor(opt as any);
+              if (typeof window !== 'undefined' && opt.slug) window.history.replaceState(null, '', `/shop/track-top?color=${opt.slug}`);
+            }}
+          />
           {/* Size Selection */}
           <div style={{ marginBottom: 18 }}>
             <p className="text-sm font-medium text-gray-700 mb-3">Size:</p>

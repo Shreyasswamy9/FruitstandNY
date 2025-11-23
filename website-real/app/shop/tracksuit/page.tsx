@@ -7,6 +7,7 @@ import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/Frequently
 import Price from '@/components/Price';
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
+import ColorPicker from '@/components/ColorPicker';
 
 const TRACKSUIT_IMAGE_MAP: Record<string, string[]> = {
   'elmhurst-taro-custard': [
@@ -55,12 +56,11 @@ const PRODUCT = {
   name: "Retro Track Suit",
   price: 165,
   salePrice: 110,
-  description: "Inspired by classic New York athletic warm-ups, this track suit features bold color blocking and a relaxed, vintage silhouette designed for movement and comfort. Each colorway pays homage to various motifs, with contrasting panels and embroidered FRUITSTAND logos.",
+  description: "Inspired by classic New York athletic warm-ups, this track suit features bold color blocking and a relaxed, vintage silhouette designed for movement and comfort. Each colorway pays homage to various motifs, with contrasting panels and embroidered FRUITSTAND® logos.",
   details: [
-    "Heavyweight brushed fleece for structure and comfort",
-    "Relaxed, vintage silhouette designed for movement",
-    "Contrasting panels with embroidered FRUITSTAND logos",
-    "Machine wash cold, tumble low",
+    "100% Nylon shell",
+    "Inner mesh lining",
+    "Made in Sialkot, Pakistan",
   ],
 };
 
@@ -196,35 +196,18 @@ export default function TracksuitPage() {
             ))}
           </div>
         </div>
-        {/* Product Info */}
-        <div className="md:w-1/2 flex flex-col justify-start">
-  <h1 className="text-3xl font-bold mb-2">{PRODUCT.name} <span className="text-base font-medium text-gray-500">/ {selectedColor.name}</span></h1>
-        {/* Color Picker */}
-  <div className="flex gap-3 mb-4 px-1" style={{ overflowX: 'auto', marginBottom: 24, paddingTop: 8, paddingBottom: 8, minHeight: 48 }}>
-          {colorOptions.map((opt) => (
-            <button
-              key={opt.name}
-              aria-label={opt.name}
-              onClick={() => {
-                setSelectedColor(opt);
-                setSelectedImage(opt.images[0]);
-                window.history.replaceState(null, '', `/shop/tracksuit?color=${opt.slug}`);
-              }}
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: '50%',
-                background: opt.color,
-                border: selectedColor.name === opt.name ? '2px solid #232323' : (opt.border || '2px solid #fff'),
-                outline: selectedColor.name === opt.name ? '2px solid #3B82F6' : 'none',
-                boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #3B82F6' : '0 1px 4px 0 rgba(0,0,0,0.07)',
-                display: 'inline-block',
-                cursor: 'pointer',
-                marginRight: 4,
-              }}
-            />
-          ))}
-        </div>
+  {/* Product Info */}
+  <div className="md:w-1/2 flex flex-col justify-start">
+  <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
+        <ColorPicker
+          options={colorOptions as any}
+          selectedName={selectedColor.name}
+          onSelect={(opt) => {
+            setSelectedColor(opt as any);
+            setSelectedImage((opt.images && opt.images[0]) || selectedImage);
+            if (typeof window !== 'undefined' && opt.slug) window.history.replaceState(null, '', `/shop/tracksuit?color=${opt.slug}`);
+          }}
+        />
         {/* Size Selection */}
         <div style={{ marginBottom: 18 }}>
           <p className="text-sm font-medium text-gray-700 mb-3">Size:</p>
@@ -291,7 +274,7 @@ export default function TracksuitPage() {
           {!selectedSize ? 'Pick a size to add to cart' : 'Add to Cart'}
         </button>
         {/* Buy Now button removed as requested */}
-      </div>
+        </div>
       </div>
 
       <FrequentlyBoughtTogether

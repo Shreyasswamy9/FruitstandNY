@@ -8,6 +8,7 @@ import Price from '@/components/Price';
 import CustomerReviews from "@/components/CustomerReviews";
 
 const greenHatImages = [
+  "/images/products/Forest Hills Hat/Green Hat.png",
   "/images/products/Forest Hills Hat/G1.png",
   "/images/products/Forest Hills Hat/G2.png",
   "/images/products/Forest Hills Hat/G3.png",

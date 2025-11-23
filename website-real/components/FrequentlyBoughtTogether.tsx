@@ -75,7 +75,7 @@ export const defaultFBT: FBTProduct[] = [
 export const FBT_BY_PAGE: Record<string, FBTProduct[]> = {
   'forest-hills-hat': [
     { id: 'gala-tshirt', name: 'Gala Tee', price: 40, image: '/images/products/gala-tshirt/broadwaynoir/GN4.png' },
-    { id: 'porcelain-hat', name: 'Porcelain Hat', price: 44, salePrice: 25, image: '/images/products/Porcelain Hat/FS2.png' },
+    { id: 'porcelain-hat', name: 'Porcelain FS Cap', price: 44, salePrice: 25, image: '/images/products/Porcelain Hat/FS2.png' },
     { id: 'wasabi-tee', name: 'Wabisabi™ SCcheffel  Hall Pears Tee', price: 45, image: '/images/products/Wasabi Tee/Wabasabi 1.png' },
   ],
 
@@ -87,7 +87,7 @@ export const FBT_BY_PAGE: Record<string, FBTProduct[]> = {
 
   'track-top': [
     { id: 'retro-tracksuit', name: 'Retro Track Suit', price: 165, salePrice: 110, image: '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png' },
-    { id: 'porcelain-hat', name: 'Porcelain Hat', price: 44, salePrice: 25, image: '/images/products/Porcelain Hat/FS2.png' },
+    { id: 'porcelain-hat', name: 'Porcelain FS Cap', price: 44, salePrice: 25, image: '/images/products/Porcelain Hat/FS2.png' },
     { id: 'first-edition-tee', name: 'First Edition Tee', price: 45, image: '/images/products/First Edition Tee/FE1.png' },
   ],
 };
