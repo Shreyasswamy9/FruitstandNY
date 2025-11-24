@@ -39,6 +39,7 @@ export default function ForestHillsHatPage() {
       productId: "forest-hills-hat",
       name: PRODUCT.name,
       price: PRODUCT.price,
+      salePrice: PRODUCT.salePrice,
       image: selectedImage,
       quantity: 1,
     });

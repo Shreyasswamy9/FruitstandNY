@@ -48,6 +48,7 @@ export default function TrackTopPage() {
       productId: `track-top-${selectedColor.slug}`,
       name: `${PRODUCT.name} - ${selectedColor.name}`,
       price: PRODUCT.price,
+      salePrice: PRODUCT.salePrice,
       image: selectedColor.img,
       quantity: 1,
       size: selectedSize,
