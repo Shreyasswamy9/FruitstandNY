@@ -47,7 +47,7 @@ export default function SupabaseAuth() {
                 Welcome <span className="font-semibold">back</span>
               </h1>
               <p className="text-lg text-gray-600 max-w-md">
-                Sign in to manage orders, track shipments, and personalize your Fruitstand experience. Choose Google, Apple, or classic email authentication.
+                Sign in to manage orders, track shipments, and personalize your {<>FRUITSTAND<sup>®</sup></>} experience. Choose Google, Apple, or classic email authentication.
               </p>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li className="flex items-center gap-2"><span className="inline-block w-2 h-2 rounded-full bg-gray-400" /> Order history & tracking</li>

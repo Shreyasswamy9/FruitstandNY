@@ -278,7 +278,7 @@ export default function Home() {
 
   // Translations for 'Fruitstand' in different languages (unchanged)
   const fruitstandTranslations = [
-    "Fruitstand", // English
+  "FRUITSTAND", // English
     "水果摊", // Chinese
     "Frutaria", // Portuguese
     "Frutería", // Spanish
@@ -1321,8 +1321,8 @@ export default function Home() {
     }}>
       {/* Mobile Layout */}
       <div className="block md:hidden">
-        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-          © 2024 Fruitstand® LLC,<br />
+          <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+          © 2024 FRUITSTAND<sup>®</sup> LLC,<br />
           All Rights Reserved
         </div>
         <div style={{ textAlign: 'center' }}>
@@ -1351,7 +1351,7 @@ export default function Home() {
       {/* Desktop Layout */}
       <div className="hidden md:flex items-center justify-center">
         <div style={{ flex: 1, textAlign: 'center' }}>
-          © 2024 Fruitstand® LLC,<br />
+          © 2024 FRUITSTAND<sup>®</sup> LLC,<br />
           All Rights Reserved
         </div>
         <a

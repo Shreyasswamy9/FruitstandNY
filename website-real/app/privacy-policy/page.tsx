@@ -36,7 +36,6 @@ export default function PrivacyPolicyPage() {
             <ul className="list-disc pl-6 space-y-2 text-gray-700">
               <li>We collect info like your name, email, phone, shipping address, and payment details.</li>
               <li>We use your data to fulfill orders, run events, and send marketing if you&apos;ve opted in.</li>
-              <li>Marketing messages (SMS/email) are optional — you can opt out anytime.</li>
               <li>We work with trusted partners (Google, Meta, Snapchat, Mailchimp, Squarespace, Stripe, PayPal, etc.).</li>
               <li>We don&apos;t sell your personal data.</li>
               <li>We keep data as long as needed for business/legal reasons unless you ask us to delete it.</li>
@@ -49,7 +48,7 @@ export default function PrivacyPolicyPage() {
           {/* Introduction */}
           <section className="mb-8">
             <p className="text-gray-700 leading-relaxed mb-4">
-              This Privacy Policy explains how Fruitstand LLC (&quot;FRUITSTAND,&quot; &quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) collects, uses, and shares your personal information when you interact with us online or offline, and the rights and choices you have regarding that information.
+              This Privacy Policy explains how FRUITSTAND® LLC (&quot;FRUITSTAND,&quot; &quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) collects, uses, and shares your personal information when you interact with us online or offline, and the rights and choices you have regarding that information.
             </p>
             <p className="text-gray-700 leading-relaxed">
               By using our website, services, in-person events, or participating in our programs, you agree to the collection and use of your information as described in this Policy.
@@ -59,7 +58,7 @@ export default function PrivacyPolicyPage() {
           {/* Company Information */}
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Company Information</h2>
-            <p className="text-gray-700 leading-relaxed mb-3">Fruitstand LLC is a New York limited liability company with:</p>
+            <p className="text-gray-700 leading-relaxed mb-3">{<>FRUITSTAND<sup>®</sup> LLC is a New York limited liability company with:</>}</p>
             <ul className="list-disc pl-6 space-y-2 text-gray-700 mb-3">
               <li><strong>Registered Address (Articles of Organization):</strong> 45 West 60th Street, New York, NY 10023</li>
               <li><strong>Operating Address:</strong> 3730 Review Avenue, Long Island City, NY 11101</li>
@@ -122,8 +121,10 @@ export default function PrivacyPolicyPage() {
           {/* Marketing & SMS Consent */}
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Marketing & SMS Consent</h2>
-            <p className="text-gray-700 leading-relaxed mb-3">
-              By providing your phone number or email, you consent to receive recurring marketing messages, including via SMS:
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {<>
+                This Privacy Policy explains how FRUITSTAND<sup>®</sup> LLC ("FRUITSTAND," "we," "our," or "us") collects, uses, and shares your personal information when you interact with us online or offline, and the rights and choices you have regarding that information.
+              </>}
             </p>
             <ul className="list-disc pl-6 space-y-2 text-gray-700 mb-3">
               <li>Message frequency varies</li>

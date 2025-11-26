@@ -141,7 +141,7 @@ export default function ReturnPolicyPage() {
               </li>
             </ul>
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <p className="text-gray-900 font-semibold mb-1">FRUITSTAND LLC – Returns Department</p>
+              <p className="text-gray-900 font-semibold mb-1">FRUITSTAND<sup>®</sup> LLC – Returns Department</p>
               <p className="text-gray-700">3730 Review Avenue, Ste 202</p>
               <p className="text-gray-700">Long Island City, NY 11101</p>
             </div>

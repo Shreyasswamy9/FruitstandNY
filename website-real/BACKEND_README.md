@@ -1,8 +1,8 @@
-# FruitstandNY E-commerce Backend
+# FRUITSTANDNY E-commerce Backend
 
 ## Overview
 
-This is a comprehensive backend implementation for the FruitstandNY e-commerce application built with Next.js, MongoDB, and NextAuth.js.
+This is a comprehensive backend implementation for the FRUITSTANDNY e-commerce application built with Next.js, MongoDB, and NextAuth.js.
 
 ## Features
 

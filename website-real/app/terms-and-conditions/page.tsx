@@ -50,7 +50,7 @@ export default function TermsPage() {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Interpretation and Definitions</h2>
             <div className="space-y-3 text-gray-700 leading-relaxed">
-              <p><strong>Company</strong> refers to Fruitstand LLC, a New York limited liability company with its principal office listed in its Articles of Organization at 45 West 60th Street, New York, NY 10023, and its current business operations located at 3730 Review Avenue, Long Island City, NY 11101 (&quot;FRUITSTAND,&quot; &quot;we,&quot; &quot;us,&quot; or &quot;our&quot).</p>
+              <p><strong>Company</strong> refers to {<>FRUITSTAND<sup>®</sup> LLC</>}, a New York limited liability company with its principal office listed in its Articles of Organization at 45 West 60th Street, New York, NY 10023, and its current business operations located at 3730 Review Avenue, Long Island City, NY 11101 (&quot;FRUITSTAND,&quot; &quot;we,&quot; &quot;us,&quot; or &quot;our&quot).</p>
               <p><strong>Service</strong> refers to the website fruitstandny.com and related ecommerce and digital services.</p>
               <p><strong>Goods</strong> refers to the items offered for sale on our Service.</p>
               <p><strong>Account</strong> means a unique account created for you to access our Service or parts of our Service.</p>
