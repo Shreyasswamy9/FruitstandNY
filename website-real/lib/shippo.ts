@@ -5,7 +5,7 @@ const client = new Shippo({
 });
 // Your warehouse/sender address
 const FROM_ADDRESS = {
-    name: 'Fruitstand NY',
+    name: 'FRUITSTAND NY',
     street1: '123 Your Warehouse Street', // UPDATE THIS
     city: 'New York',
     state: 'NY',

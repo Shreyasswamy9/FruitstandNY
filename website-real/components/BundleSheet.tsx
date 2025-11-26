@@ -8,12 +8,21 @@ import { bundles as defaultBundles, type Bundle } from '@/lib/bundles'
 import { TEE_VARIANTS, SIZE_OPTIONS, type TeeVariant, type TeeColor, type SizeOption } from '@/lib/teeVariants'
 import { CUSTOM_BUNDLE_SIZES, CUSTOM_BUNDLE_PRICES, type CustomBundleSize } from '@/lib/customBundles'
 import { products as gridProducts, type Product } from './ProductsGridHome'
+import Price from './Price'
 import { useCart } from './CartContext'
 
 // ---------- utils
 function parsePrice(priceStr: string): number {
-  const n = Number(priceStr.replace(/[^0-9.]/g, ''))
+  const n = Number(String(priceStr).replace(/[^0-9.]/g, ''))
   return Number.isFinite(n) ? n : 0
+}
+
+function getEffectivePrice(p: Product): number {
+  if (p.salePrice != null) {
+    const s = typeof p.salePrice === 'number' ? p.salePrice : parsePrice(String(p.salePrice))
+    if (Number.isFinite(s) && s > 0) return s
+  }
+  return parsePrice(p.price)
 }
 function formatPrice(n: number): string {
   return `$${n.toFixed(2).replace(/\.00$/, '')}`
@@ -154,9 +163,10 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
     setAdding(true)
     // compute subtotal/discount/total
   const items = (bundle.itemIds.map(id => productMap.get(id)).filter(Boolean) as Product[])
-  const subtotal = items.reduce((acc, p) => acc + parsePrice(p.price), 0)
-    const discount = bundle.discountPercent ? Math.round(subtotal * (bundle.discountPercent / 100)) : 0
-    const total = Math.max(0, subtotal - discount)
+    const originalSubtotal = items.reduce((acc, p) => acc + parsePrice(p.price), 0)
+    const effectiveSubtotal = items.reduce((acc, p) => acc + getEffectivePrice(p), 0)
+    const discount = Math.max(0, originalSubtotal - effectiveSubtotal)
+    const total = Math.max(0, effectiveSubtotal)
   // add a single bundle line item to the cart, include chosen size if present
   const chosenSize = selectedSizes[bundle.id]
   addBundleToCart({ bundleId: bundle.id, name: bundle.title, price: total, image: items[0]?.image || '/images/classicteemale1.jpeg', itemIds: bundle.itemIds, bundleSize: chosenSize, quantity: 1 })
@@ -248,9 +258,11 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
                 <div className="space-y-4">
                   {bundles.map(b => {
                     const items = (b.itemIds.map(id => productMap.get(id)).filter(Boolean) as Product[])
-                    const subtotal = items.reduce((acc, p) => acc + parsePrice(p.price), 0)
-                    const discount = b.discountPercent ? Math.round(subtotal * (b.discountPercent / 100)) : 0
-                    const total = Math.max(0, subtotal - discount)
+                    const originalSubtotal = items.reduce((acc, p) => acc + parsePrice(p.price), 0)
+                    const effectiveSubtotal = items.reduce((acc, p) => acc + getEffectivePrice(p), 0)
+                    const discount = Math.max(0, originalSubtotal - effectiveSubtotal)
+                    const total = Math.max(0, effectiveSubtotal)
+                    const computedPercent = originalSubtotal > 0 ? Math.round((discount / originalSubtotal) * 100) : 0
                     const isSelected = selectedId === b.id
                     // Also consider other size-bearing categories (jersey, tracksuit, pants, shirt)
                     const hasSizedItems = items.some(p => {
@@ -310,18 +322,18 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
                                   <Image src={p.image} alt={p.name} fill sizes="33vw" className="object-cover" />
                                 </div>
                                 <p className="mt-1 text-[12px] font-medium truncate">{p.name}</p>
-                                <p className="text-[12px]">{p.price}</p>
+                                <p className="text-[12px]"><Price price={p.price} salePrice={p.salePrice} /></p>
                               </div>
                             ))}
                           </div>
                           <div className="mt-3 rounded-xl glass-thumb p-3 text-sm">
                             <div className="flex items-center justify-between">
                               <span>Subtotal</span>
-                              <span className="font-medium">{formatPrice(subtotal)}</span>
+                              <span className="font-medium">{formatPrice(originalSubtotal)}</span>
                             </div>
-                            {b.discountPercent ? (
+                            {discount > 0 ? (
                               <div className="flex items-center justify-between mt-1">
-                                <span>Discount ({b.discountPercent}%)</span>
+                                <span>Bundle discount</span>
                                 <span>- {formatPrice(discount)}</span>
                               </div>
                             ) : null}

@@ -8,6 +8,7 @@ import FeaturedBundle from "../components/FeaturedBundle"
 import BundleSheet from "../components/BundleSheet"
 import { SignupModal } from "../components/SIgnUpModal"
 import { useScrollTrigger } from "../hooks/useScrollTrigger"
+import Price from "../components/Price"
 
 export default function Home() {
   const { setHideLogo } = useContext(LogoVisibilityContext)
@@ -715,7 +716,7 @@ export default function Home() {
                   position: "relative",
                   borderRadius: "clamp(16px, 3vw, 24px)",
                   overflow: "hidden",
-                  background: "linear-gradient(135deg, #fbf6f0 0%, #f1ede5 100%)",
+                  background: "linear-gradient(135deg, #0f172a 0%, #111827 100%)",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "flex-end",
@@ -723,8 +724,8 @@ export default function Home() {
                   cursor: "pointer",
                   transition: "transform 0.3s ease",
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.02)"}
-                onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.02)" }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)" }}
                 onClick={() => window.location.href = "/shop"}
                 >
                     <div style={{
@@ -736,8 +737,13 @@ export default function Home() {
                     backgroundImage: "url('/images/products/hockey Jersey/JN.png')",
                     backgroundSize: "cover",
                     backgroundPosition: "center",
-                    opacity: 0.9,
+                    opacity: 0.45,
+                    filter: 'brightness(0.6)'
                   }}></div>
+                  <div style={{ position: 'absolute', left: 24, top: 24, zIndex: 3, background: 'rgba(255,255,255,0.95)', padding: '6px 10px', borderRadius: 10 }}>
+                    <div style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', color: '#111' }}>Black Friday</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#111', opacity: 0.9 }}>Up to 50% off</div>
+                  </div>
                   <div style={{
                     position: "relative",
                     zIndex: 2,
@@ -745,43 +751,35 @@ export default function Home() {
                   }}>
                     <h1 style={{
                       fontSize: "clamp(2rem, 6vw, 4rem)",
-                      fontWeight: 700,
-                      marginBottom: "16px",
-                      lineHeight: 1.1,
-                      textShadow: "0 2px 12px rgba(0,0,0,0.3)",
+                      fontWeight: 900,
+                      marginBottom: "12px",
+                      lineHeight: 1.02,
                     }}>
-                      New Collection
+                      BLACK FRIDAY SALE
                     </h1>
                     <p style={{
-                      fontSize: "clamp(1rem, 2vw, 1.2rem)",
+                      fontSize: "clamp(1rem, 2vw, 1.1rem)",
                       opacity: 0.95,
-                      marginBottom: "32px",
-                      textShadow: "0 1px 8px rgba(0,0,0,0.2)",
+                      marginBottom: "24px",
                     }}>
-                      Discover our latest arrivals
+                      Discover our biggest deals — limited time only
                     </p>
                     <button style={{
-                      background: "rgba(255,255,255,0.95)",
-                      color: "#111",
+                      background: "#ef4444",
+                      color: "#fff",
                       border: "none",
-                      padding: "16px 32px",
+                      padding: "14px 28px",
                       borderRadius: "12px",
                       fontSize: "1rem",
-                      fontWeight: 600,
+                      fontWeight: 700,
                       cursor: "pointer",
-                      transition: "all 0.2s ease",
-                      backdropFilter: "blur(10px)",
+                      transition: "transform 0.15s ease, box-shadow 0.15s ease",
+                      boxShadow: '0 6px 20px rgba(239,68,68,0.18)'
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "#fff";
-                      e.currentTarget.style.transform = "translateY(-2px)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "rgba(255,255,255,0.95)";
-                      e.currentTarget.style.transform = "translateY(0)";
-                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = '0 10px 30px rgba(239,68,68,0.22)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = '0 6px 20px rgba(239,68,68,0.18)'; }}
                     >
-                      Shop Now
+                      Shop Black Friday
                     </button>
                   </div>
                 </div>
@@ -876,30 +874,50 @@ export default function Home() {
                     <div style={{
                       position: "relative",
                       zIndex: 2,
-                      color: "#fff",
+                      color: "#111",
                       maxWidth: "55%",
                     }}>
+                      {/* Sale badge */}
+                      <div style={{ display: 'inline-block', marginBottom: 8, background: 'rgba(255,255,255,0.95)', padding: '6px 10px', borderRadius: 10 }}>
+                        <strong style={{ fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Black Friday</strong>
+                        <div style={{ fontSize: 11, fontWeight: 700, opacity: 0.9 }}>Up to 50% off</div>
+                      </div>
                       <h3 style={{
-                        fontSize: "1.6rem",
-                        fontWeight: 600,
-                        marginBottom: "12px",
-                        lineHeight: 1.2,
+                        fontSize: "1.4rem",
+                        fontWeight: 800,
+                        marginBottom: "8px",
+                        lineHeight: 1.1,
+                        textTransform: 'uppercase'
                       }}>
                         New Drop
                       </h3>
                       <p style={{
-                        fontSize: "1rem",
+                        fontSize: "0.98rem",
                         opacity: 0.95,
-                        marginBottom: "16px",
+                        marginBottom: "12px",
+                        fontWeight: 700
                       }}>
                         Retro Track Suit
                       </p>
-                      <span style={{
-                        fontSize: "1.1rem",
-                        fontWeight: 600,
-                      }}>
-                        $165
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ fontSize: "1.1rem", fontWeight: 800, color: '#b91c1c' }}>
+                          <Price price="$165" salePrice={110} strikeColor="#374151" />
+                        </div>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); window.location.href = '/shop/tracksuit'; }}
+                          style={{
+                            background: '#111',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '10px 14px',
+                            borderRadius: 8,
+                            fontWeight: 700,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Shop Now
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -951,7 +969,7 @@ export default function Home() {
                   {[
                       { name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/broadwaynoir/GN4.png", hoverImage: "/images/products/gala-tshirt/broadwaynoir/GN5.png", link: "/shop/gala-tshirt" },
                       { name: "Retro Track Suit", price: "$165", image: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png", hoverImage: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TS7.png", link: "/shop/tracksuit" },
-                      { name: "Wasabi Tee", price: "$45", image: "/images/products/Wasabi Tee/Wabasabi 1.png", hoverImage: "/images/products/Wasabi Tee/Wabsabi 4.png", link: "/shop/wasabi-tee" },
+                      { name: "Wabisabi™ Scheffel Hall Pears Tee", price: "$45", image: "/images/products/Wasabi Tee/Wabasabi 1.png", hoverImage: "/images/products/Wasabi Tee/Wabsabi 4.png", link: "/shop/wasabi-tee" },
                       { name: "First Edition Tee", price: "$45", image: "/images/products/First Edition Tee/FE1.png", hoverImage: "/images/products/First Edition Tee/FE2.png", link: "/shop/first-edition-tee" },
                   ].map((product, index) => (
                     <div
@@ -1017,7 +1035,11 @@ export default function Home() {
                           color: "#666",
                           margin: 0,
                         }}>
-                          {product.price}
+                          {product.name === 'Retro Track Suit' ? (
+                            <Price price={product.price} salePrice={110} strikeColor="#374151" />
+                          ) : (
+                            product.price
+                          )}
                         </p>
                       </div>
                     </div>
@@ -1058,30 +1080,7 @@ export default function Home() {
                   }}>
                     Every piece in our collection is thoughtfully designed and carefully crafted to meet the demands of contemporary lifestyle while maintaining timeless appeal.
                   </p>
-                  <button
-                    style={{
-                      background: "#111",
-                      color: "#fff",
-                      border: "none",
-                      padding: "clamp(12px, 3vw, 16px) clamp(24px, 6vw, 32px)",
-                      borderRadius: "12px",
-                      fontSize: "clamp(0.9rem, 2vw, 1rem)",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      transition: "all 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "#333";
-                      e.currentTarget.style.transform = "translateY(-2px)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "#111";
-                      e.currentTarget.style.transform = "translateY(0)";
-                    }}
-                    onClick={() => window.location.href = "/contact"}
-                  >
-                    Learn More
-                  </button>
+                  {/* Learn More button intentionally removed per design */}
                 </div>
                 <div style={{
                   position: "relative",

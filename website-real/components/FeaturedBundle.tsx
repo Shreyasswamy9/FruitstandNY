@@ -5,10 +5,19 @@ import { useMemo, useState } from 'react'
 import { bundles as defaultBundles, type Bundle } from '@/lib/bundles'
 import { products as gridProducts, type Product } from './ProductsGridHome'
 import BundleSheet from './BundleSheet'
+import Price from './Price'
 
 function parsePrice(priceStr: string): number {
-  const n = Number(priceStr.replace(/[^0-9.]/g, ''))
+  const n = Number(String(priceStr).replace(/[^0-9.]/g, ''))
   return Number.isFinite(n) ? n : 0
+}
+
+function getEffectivePrice(p: Product): number {
+  if (p.salePrice != null) {
+    const s = typeof p.salePrice === 'number' ? p.salePrice : parsePrice(String(p.salePrice))
+    if (Number.isFinite(s) && s > 0) return s
+  }
+  return parsePrice(p.price)
 }
 
 function formatPrice(n: number): string {
@@ -33,9 +42,11 @@ export default function FeaturedBundle({ bundle, bundles = defaultBundles, produ
   if (!featured) return null
 
   const items = featured.itemIds.map(id => productMap.get(id)).filter(Boolean) as Product[]
-  const subtotal = items.reduce((acc, p) => acc + parsePrice(p.price), 0)
-  const discount = featured.discountPercent ? Math.round(subtotal * (featured.discountPercent / 100)) : 0
-  const total = Math.max(0, subtotal - discount)
+  const originalSubtotal = items.reduce((acc, p) => acc + parsePrice(p.price), 0)
+  const effectiveSubtotal = items.reduce((acc, p) => acc + getEffectivePrice(p), 0)
+  const discount = Math.max(0, originalSubtotal - effectiveSubtotal)
+  const total = Math.max(0, effectiveSubtotal)
+  const computedPercent = originalSubtotal > 0 ? Math.round((discount / originalSubtotal) * 100) : 0
 
   // Add bundle helper removed — use BundleSheet for selection to keep UI consistent
 
@@ -53,9 +64,9 @@ export default function FeaturedBundle({ bundle, bundles = defaultBundles, produ
             <h3 className="text-lg font-semibold">{featured.title}</h3>
             {featured.description && <p className="text-sm">{featured.description}</p>}
           </div>
-          {featured.discountPercent ? (
+          {discount > 0 ? (
             <span className="glass-badge" data-variant="discount">
-              Save {featured.discountPercent}%
+              Save {computedPercent}%
             </span>
           ) : null}
         </div>
@@ -69,7 +80,7 @@ export default function FeaturedBundle({ bundle, bundles = defaultBundles, produ
                   <Image src={p.image} alt={p.name} fill sizes="112px" style={{ objectFit: 'cover' }} />
                 </div>
                 <p className="text-xs mt-1 font-medium truncate">{p.name}</p>
-                <p className="text-xs">{p.price}</p>
+                <p className="text-xs"><Price price={p.price} salePrice={p.salePrice} /></p>
               </div>
             ))}
           </div>
@@ -79,11 +90,11 @@ export default function FeaturedBundle({ bundle, bundles = defaultBundles, produ
         <div className="px-4 pt-2 pb-4">
           <div className="flex items-center justify-between text-sm">
             <span>Subtotal</span>
-            <span className="font-medium">{formatPrice(subtotal)}</span>
+            <span className="font-medium">{formatPrice(originalSubtotal)}</span>
           </div>
-          {featured.discountPercent ? (
+          {discount > 0 ? (
             <div className="flex items-center justify-between text-sm">
-              <span>Discount ({featured.discountPercent}%)</span>
+              <span>Bundle discount</span>
               <span>- {formatPrice(discount)}</span>
             </div>
           ) : null}

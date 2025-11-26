@@ -120,7 +120,7 @@ export default function ShopPage() {
           >
             {/* Brand Logo/Name */}
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">FRUITSTAND®</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">FRUITSTAND<sup>®</sup></h2>
               <p className="text-gray-600 max-w-md mx-auto">
                 Organic New York Culture™
               </p>
@@ -158,7 +158,7 @@ export default function ShopPage() {
             {/* Copyright */}
             <div className="border-t border-gray-200 pt-8">
               <p className="text-gray-500 text-sm">
-                © {new Date().getFullYear()} Fruitstand®. All rights reserved.
+                © {new Date().getFullYear()} FRUITSTAND<sup>®</sup>. All rights reserved.
               </p>
               <p className="text-gray-400 text-xs mt-2">
                 Designed and crafted with care in New York, NY

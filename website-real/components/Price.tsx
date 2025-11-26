@@ -4,6 +4,7 @@ type PriceProp = {
   price: number | string;
   salePrice?: number | string | null;
   className?: string;
+  strikeColor?: string;
 };
 
 const toNumber = (v: number | string) => {
@@ -14,7 +15,7 @@ const toNumber = (v: number | string) => {
 
 const format = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-export default function Price({ price, salePrice, className }: PriceProp) {
+export default function Price({ price, salePrice, className, strikeColor }: PriceProp) {
   const p = toNumber(price);
   const s = salePrice != null ? toNumber(salePrice) : NaN;
 
@@ -26,7 +27,7 @@ export default function Price({ price, salePrice, className }: PriceProp) {
   if (Number.isFinite(s) && s < p) {
     return (
       <span className={className}>
-        <span style={{ textDecoration: 'line-through', color: '#6b7280', marginRight: 8 }}>{format(p)}</span>
+        <span style={{ textDecoration: 'line-through', color: strikeColor || '#6b7280', marginRight: 8 }}>{format(p)}</span>
         <span style={{ fontWeight: 700, color: '#111827' }}>{format(s)}</span>
       </span>
     );

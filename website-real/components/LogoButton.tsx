@@ -20,8 +20,8 @@ export default function LogoButton() {
   return (
     <Link
       href="/"
-      aria-label="Fruitstand® home"
-      title="Fruitstand®"
+      aria-label="FRUITSTAND® home"
+      title="FRUITSTAND®"
       onClick={handleLogoClick}
       style={{
         position: 'fixed',
@@ -60,7 +60,7 @@ export default function LogoButton() {
       <div style={{ position: 'relative', width: '100%', height: '100%' }}>
         <Image
           src="/images/newlogo.png"
-          alt="Fruitstand® Logo"
+          alt="FRUITSTAND® Logo"
           fill
           unoptimized
           draggable={false}
