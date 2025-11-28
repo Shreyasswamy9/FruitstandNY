@@ -91,7 +91,7 @@ export function SignupModal({ isOpen, onClose }: SupabaseAuthModalProps) {
           color: '#111',
           textAlign: 'center',
         }}>
-          Join FRUITSTAND<sup>®</sup>
+          Recieve exclusive offers!
         </h2>
 
         <Auth
