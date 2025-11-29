@@ -56,16 +56,23 @@ export async function POST(request: NextRequest) {
 
     // 4. Auth (Optional)
     const authHeader = request.headers.get('authorization');
+    console.log('Checkout API: Auth header present:', !!authHeader);
     let userId = null;
     if (authHeader) {
       try {
         const token = authHeader.replace('Bearer ', '');
         const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-        if (authError) console.warn('Checkout API: Auth check failed', authError);
-        userId = user?.id;
+        if (authError) {
+          console.warn('Checkout API: Auth check failed', authError);
+        } else {
+          userId = user?.id;
+          console.log('Checkout API: User authenticated', { userId, email: user?.email });
+        }
       } catch (e) {
         console.warn('Checkout API: Auth token processing error', e);
       }
+    } else {
+      console.log('Checkout API: No auth header, creating guest order');
     }
 
     // 5. Calculate Totals
