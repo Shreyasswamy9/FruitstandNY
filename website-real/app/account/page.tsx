@@ -6,19 +6,10 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { OrderService, TicketService } from "@/lib/services/api";
 import type { User } from "@supabase/supabase-js";
+import type { Order, OrderItem } from "@/lib/services/supabase-existing";
 
-interface Order {
-  _id: string;
-  orderNumber: string;
-  createdAt: string;
-  totalAmount: number;
-  orderStatus: string;
-  items: Array<{
-    name: string;
-    quantity: number;
-    price: number;
-  }>;
-}
+// Extend Order type to include order_items
+type OrderWithItems = Order & { order_items?: OrderItem[] };
 
 interface Ticket {
   id: string;
@@ -32,7 +23,7 @@ interface Ticket {
 }
 
 export default function AccountPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   // Dashboard sections are now all visible on one page; we keep compact expand toggles per section
@@ -79,6 +70,7 @@ export default function AccountPage() {
         setIsSignedIn(!!data.user)
 
         // Load user profile data from metadata
+        console.log('Account Page: User loaded', { userId: data.user?.id, email: data.user?.email });
         if (data.user?.user_metadata) {
           setProfileData({
             firstName: data.user.user_metadata.firstName || '',
@@ -159,11 +151,15 @@ export default function AccountPage() {
     // Fetch user orders and tickets
     const fetchUserData = async () => {
       try {
+        console.log('Account Page: Fetching orders for user', user?.id);
         // Fetch orders
         const ordersResponse = await OrderService.getOrders();
+        console.log('Account Page: Orders response', ordersResponse);
         if (ordersResponse.success) {
+          console.log('Account Page: Orders data', ordersResponse.data);
           setOrders(ordersResponse.data);
         } else {
+          console.error('Account Page: Failed to fetch orders', ordersResponse);
           setError("Failed to fetch orders");
         }
 
@@ -700,7 +696,7 @@ export default function AccountPage() {
                   <div className="glass-subcard rounded-2xl p-6">
                     <div className="text-center">
                       <div className="text-3xl font-bold text-purple-600 mb-2">
-                        ${orders.reduce((sum, order) => sum + order.totalAmount, 0).toFixed(0)}
+                        ${orders.reduce((sum, order) => sum + order.total_amount, 0).toFixed(0)}
                       </div>
                       <div className="text-gray-700">Total Spent</div>
                     </div>
@@ -745,32 +741,32 @@ export default function AccountPage() {
                   ) : (
                     <div className="space-y-4">
                       {(showAllOrders ? orders : orders.slice(0, 3)).map((order) => (
-                        <div key={order._id} className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                        <div key={order.id} className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
                           <div className="flex justify-between items-start mb-4">
                             <div>
-                              <p className="font-semibold text-gray-900">Order #{order.orderNumber}</p>
+                              <p className="font-semibold text-gray-900">Order #{order.order_number}</p>
                               <p className="text-sm text-gray-600">
-                                {new Date(order.createdAt).toLocaleDateString()}
+                                {new Date(order.created_at).toLocaleDateString()}
                               </p>
                             </div>
                             <div className="text-right">
-                              <p className="font-semibold text-gray-900 text-lg">${order.totalAmount.toFixed(2)}</p>
-                              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${order.orderStatus === "delivered"
+                              <p className="font-semibold text-gray-900 text-lg">${order.total_amount.toFixed(2)}</p>
+                              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${order.status === "delivered"
                                 ? "bg-green-100 text-green-700 border border-green-200"
-                                : order.orderStatus === "shipped"
+                                : order.status === "shipped"
                                   ? "bg-blue-100 text-blue-700 border border-blue-200"
-                                  : order.orderStatus === "cancelled"
+                                  : order.status === "cancelled"
                                     ? "bg-red-100 text-red-700 border border-red-200"
                                     : "bg-yellow-100 text-yellow-700 border border-yellow-200"
                                 }`}>
-                                {order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
+                                {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                               </span>
                             </div>
                           </div>
 
                           <div className="border-t border-gray-200 pt-4">
                             <p className="text-gray-700 mb-3">
-                              Items: {order.items.map(item => `${item.name} (x${item.quantity})`).join(", ")}
+                              Items: {order.order_items?.map(item => `${item.product_name} (x${item.quantity})`).join(", ") || 'No items'}
                             </p>
                             <button className="text-black hover:text-gray-700 font-medium transition-colors">
                               View Details →

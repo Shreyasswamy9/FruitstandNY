@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
+import { supabase } from '@/app/supabase-client';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -55,11 +56,29 @@ export const useCheckout = () => {
 
       console.log('Starting checkout with data:', { items, shipping, tax, guestData, customerData });
 
+      // Get auth token if user is logged in
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Checkout: Session check', {
+        hasSession: !!session,
+        hasAccessToken: !!session?.access_token,
+        userId: session?.user?.id,
+        userEmail: session?.user?.email
+      });
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+        console.log('Checkout: User is authenticated, sending auth token for user:', session.user?.id);
+      } else {
+        console.log('Checkout: Guest user, no auth token');
+      }
+
       const response = await fetch('/api/checkout', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           items,
           shipping,
@@ -75,7 +94,7 @@ export const useCheckout = () => {
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Checkout API error response:', errorData);
-        
+
         // Show user-friendly error message
         const errorMessage = errorData.error || `Network response was not ok: ${response.status}`;
         throw new Error(errorMessage);
@@ -83,7 +102,7 @@ export const useCheckout = () => {
 
       const responseData = await response.json();
       console.log('Checkout API response data:', responseData);
-      
+
       const { sessionId } = responseData;
 
       const stripe = await stripePromise;
