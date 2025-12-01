@@ -6,7 +6,7 @@ import "./globals.css"
 import ClientRootLayout from "../components/ClientRootLayout"
 import { CartProvider } from "../components/CartContext"
 import Script from 'next/script'
-
+import { Analytics } from "@vercel/analytics/next"
 declare global {
   interface Window {
     __SHOW_LOGO__?: boolean;
