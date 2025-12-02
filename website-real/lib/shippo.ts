@@ -1,181 +1,171 @@
-const Shippo = require('shippo');
+// Lightweight Shippo helper using direct HTTP calls (avoids the shippo npm package differences)
+// Uses global fetch on the server (Node 18+ / Next.js runtime).
 
-const client = new Shippo({
-    apiKeyHeader: process.env.SHIPPO_API_TOKEN!,
-});
-// Your warehouse/sender address
-const FROM_ADDRESS = {
-    name: 'FRUITSTAND NY',
-    street1: '123 Your Warehouse Street', // UPDATE THIS
-    city: 'New York',
-    state: 'NY',
-    zip: '10001', // UPDATE THIS
-    country: 'US',
-    phone: '+1234567890', // UPDATE THIS
-    email: 'shipping@fruitstand.com', // UPDATE THIS
-};
+const SHIPPO_TOKEN = process.env.SHIPPO_API_TOKEN || process.env.SHIPPO_TOKEN || ''
+const SHIPPO_API = 'https://api.goshippo.com'
 
 export interface ShippoAddress {
-    name: string;
-    street1: string;
-    street2?: string | null;
-    city: string;
-    state: string;
-    zip: string;
-    country: string;
-    phone?: string | null;
-    email?: string;
+  name: string
+  street1: string
+  street2?: string | null
+  city: string
+  state: string
+  zip: string
+  country: string
+  phone?: string | null
+  email?: string
 }
 
 export interface ShippoParcel {
-    length: string;
-    width: string;
-    height: string;
-    weight: string;
-    distance_unit: 'in' | 'cm';
-    mass_unit: 'lb' | 'kg';
+  length: string
+  width: string
+  height: string
+  weight: string
+  distance_unit: 'in' | 'cm'
+  mass_unit: 'lb' | 'kg'
 }
 
 export interface ShippoShipmentResult {
-    object_id: string;
-    rates: any[];
+  object_id: string
+  rates: any[]
 }
 
 export interface ShippoLabelResult {
-    tracking_number: string;
-    tracking_url_provider: string;
-    label_url: string;
-    carrier: string;
-    service_level: string;
+  tracking_number: string
+  tracking_url_provider: string
+  label_url: string
+  carrier: string
+  service_level: string
 }
 
-/**
- * Create a shipment in Shippo
- */
+function shippoFetch(path: string, opts: RequestInit = {}) {
+  const url = `${SHIPPO_API}${path}`
+  const headers = Object.assign({
+    Authorization: `ShippoToken ${SHIPPO_TOKEN}`,
+    'Content-Type': 'application/json',
+  }, opts.headers || {})
+
+  return fetch(url, Object.assign({}, opts, { headers }))
+    .then(async (res) => {
+      const text = await res.text()
+      let body: any = text
+      try { body = text ? JSON.parse(text) : {} } catch (e) { /* non-json response */ }
+      if (!res.ok) {
+        const err = new Error(`Shippo API error: ${res.status} ${res.statusText} - ${JSON.stringify(body)}`)
+        ;(err as any).status = res.status
+        ;(err as any).body = body
+        throw err
+      }
+      return body
+    })
+}
+
+const FROM_ADDRESS = {
+  name: 'FRUITSTAND NY',
+  company: 'FRUITSTAND NY',
+  street1: '123 Your Warehouse Street',
+  city: 'New York',
+  state: 'NY',
+  zip: '10001',
+  country: 'US',
+  phone: '+',
+  email: 'info@fruitstandny.com',
+}
+
+function ensureToken() {
+  if (!SHIPPO_TOKEN) throw new Error('Missing Shippo token (set SHIPPO_API_TOKEN or SHIPPO_TOKEN)')
+}
+
 export async function createShippoShipment(
-    toAddress: ShippoAddress,
-    parcel: ShippoParcel = {
-        length: '10',
-        width: '8',
-        height: '4',
-        weight: '1',
-        distance_unit: 'in',
-        mass_unit: 'lb',
-    }
+  toAddress: ShippoAddress,
+  parcel: ShippoParcel = {
+    length: '10',
+    width: '8',
+    height: '4',
+    weight: '1',
+    distance_unit: 'in',
+    mass_unit: 'lb',
+  }
 ): Promise<ShippoShipmentResult> {
-    try {
-        const shipment = await client.shipments.create({
-            address_from: FROM_ADDRESS,
-            address_to: {
-                name: toAddress.name,
-                street1: toAddress.street1,
-                street2: toAddress.street2 || '',
-                city: toAddress.city,
-                state: toAddress.state,
-                zip: toAddress.zip,
-                country: toAddress.country,
-                phone: toAddress.phone || '',
-                email: toAddress.email || '',
-            },
-            parcels: [parcel],
-            async: false, // Wait for rates synchronously
-        });
+  ensureToken()
 
-        console.log('Shippo shipment created:', shipment.object_id);
-        return {
-            object_id: shipment.object_id!,
-            rates: shipment.rates || [],
-        };
-    } catch (error) {
-        console.error('Error creating Shippo shipment:', error);
-        throw error;
-    }
+  const payload = {
+    address_from: FROM_ADDRESS,
+    address_to: toAddress,
+    parcels: [parcel],
+    async: false,
+  }
+
+  const res = await shippoFetch('/shipments/', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+
+  // res should contain object_id and rates
+  return {
+    object_id: res.object_id,
+    rates: res.rates || [],
+  }
+}
+
+function getCheapestRate(rates: any[]) {
+  if (!rates || rates.length === 0) throw new Error('No rates available')
+  // rates typically have an 'amount' string
+  const sorted = rates.slice().sort((a, b) => {
+    const aAmt = parseFloat(a.amount || a.price || a.rate || 0)
+    const bAmt = parseFloat(b.amount || b.price || b.rate || 0)
+    return aAmt - bAmt
+  })
+  return sorted[0]
 }
 
 /**
- * Get the cheapest shipping rate
- */
-export function getCheapestRate(rates: any[]) {
-    if (!rates || rates.length === 0) {
-        throw new Error('No shipping rates available');
-    }
-
-    // Filter out invalid rates
-    const validRates = rates.filter(
-        (rate) => rate.available && rate.amount && rate.amount !== '0.00'
-    );
-
-    if (validRates.length === 0) {
-        throw new Error('No valid shipping rates available');
-    }
-
-    // Sort by price and return cheapest
-    const sorted = validRates.sort((a, b) => parseFloat(a.amount) - parseFloat(b.amount));
-    return sorted[0];
-}
-
-/**
- * Purchase a shipping label
+ * Purchase a shipping label using a Shippo rate id
  */
 export async function purchaseShippoLabel(
-    shipmentId: string,
-    rateId?: string
+  shipmentId: string,
+  rateId?: string
 ): Promise<ShippoLabelResult> {
-    try {
-        // If no rate ID provided, get the shipment and find cheapest rate
-        if (!rateId) {
-            const shipment = await client.shipments.get(shipmentId);
-            const cheapestRate = getCheapestRate(shipment.rates || []);
-            rateId = cheapestRate.object_id;
-        }
+  ensureToken()
 
-        // Purchase the label
-        const transaction = await client.transactions.create({
-            rate: rateId,
-            async: false,
-            label_file_type: 'PDF',
-        });
+  // If rateId not provided, fetch shipment to get rates
+  if (!rateId) {
+    const shipment = await shippoFetch(`/shipments/${shipmentId}/`, { method: 'GET' })
+    const cheapest = getCheapestRate(shipment.rates || [])
+    rateId = cheapest.object_id || cheapest.rate_id || cheapest.object_id
+  }
 
-        if (transaction.status !== 'SUCCESS') {
-            throw new Error(`Label purchase failed: ${transaction.messages}`);
-        }
+  const payload = {
+    rate: rateId,
+    async: false,
+    label_file_type: 'PDF',
+  }
 
-        console.log('Shippo label purchased:', transaction.tracking_number);
+  const tx = await shippoFetch('/transactions/', { method: 'POST', body: JSON.stringify(payload) })
 
-        return {
-            tracking_number: transaction.tracking_number!,
-            tracking_url_provider: transaction.tracking_url_provider!,
-            label_url: transaction.label_url!,
-            carrier: transaction.rate?.carrier_account || 'unknown',
-            service_level: transaction.rate?.servicelevel?.name || 'unknown',
-        };
-    } catch (error) {
-        console.error('Error purchasing Shippo label:', error);
-        throw error;
-    }
+  if (!tx || tx.status !== 'SUCCESS') {
+    const msg = tx && tx.messages ? JSON.stringify(tx.messages) : 'unknown'
+    throw new Error(`Shippo transaction failed: ${msg}`)
+  }
+
+  return {
+    tracking_number: tx.tracking_number || tx.tracking_number || '',
+    tracking_url_provider: tx.tracking_url_provider || '',
+    label_url: tx.label_url || (tx.label_urls && tx.label_urls.pdf) || '',
+    carrier: tx.rate?.carrier_account || tx.rate?.carrier || 'unknown',
+    service_level: tx.rate?.servicelevel?.name || tx.rate?.servicelevel || 'unknown',
+  }
 }
 
 /**
  * Create shipment and purchase label in one step
  */
 export async function createAndPurchaseLabel(
-    toAddress: ShippoAddress,
-    parcel?: ShippoParcel
+  toAddress: ShippoAddress,
+  parcel?: ShippoParcel
 ): Promise<ShippoLabelResult> {
-    try {
-        // 1. Create shipment
-        const shipment = await createShippoShipment(toAddress, parcel);
-
-        // 2. Get cheapest rate
-        const cheapestRate = getCheapestRate(shipment.rates);
-        console.log(`Selected shipping rate: ${cheapestRate.provider} - $${cheapestRate.amount}`);
-
-        // 3. Purchase label
-        const label = await purchaseShippoLabel(shipment.object_id, cheapestRate.object_id);
-
-        return label;
-    } catch (error) {
-        console.error('Error in createAndPurchaseLabel:', error);
-        throw error;
-    }
+  const shipment = await createShippoShipment(toAddress, parcel)
+  const cheapest = getCheapestRate(shipment.rates)
+  const label = await purchaseShippoLabel(shipment.object_id, cheapest.object_id || cheapest.rate_id)
+  return label
 }
