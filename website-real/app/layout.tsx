@@ -1,4 +1,3 @@
-
 import type { Metadata } from "next"
 // Clerk removed. Use Supabase client or custom auth provider if needed.
 import { Geist, Geist_Mono } from 'next/font/google'
@@ -6,7 +5,6 @@ import "./globals.css"
 import ClientRootLayout from "../components/ClientRootLayout"
 import { CartProvider } from "../components/CartContext"
 import Script from 'next/script'
-import { Analytics } from "@vercel/analytics/next"
 declare global {
   interface Window {
     __SHOW_LOGO__?: boolean;
@@ -50,6 +48,58 @@ export default function RootLayout({
         'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
         })(window,document,'script','dataLayer','GTM-N8M6F5WK');`}
         </Script>
+
+        {/* Ensure thumbnail borders/shadows render on top of images */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          /* Overlay border + shadow on top of thumbnail images.
+             Targets common thumbnail/container class names used across product pages.
+             Adjust selectors if your product thumbnails use different class names. */
+          .product-thumb,
+          .thumbnail,
+          .product-thumbnail,
+          .thumb,
+          .product-image-thumb {
+            position: relative; /* establish positioning context for overlay */
+            overflow: hidden;   /* clip image corners so they don't overlap borders */
+            border-radius: inherit; /* respect container rounding */
+            isolation: isolate; /* create a local stacking context to keep overlay on top */
+            -webkit-backface-visibility: hidden; /* help with rendering artifacts */
+            backface-visibility: hidden;
+          }
+          .product-thumb img,
+          .thumbnail img,
+          .product-thumbnail img,
+          .thumb img,
+          .product-image-thumb img {
+            position: relative;
+            z-index: 0 !important; /* keep image beneath the overlay */
+            display: block;
+            max-width: 100%;
+            height: auto;
+            width: 100%;
+            object-fit: cover; /* ensure images fill their container without overflow */
+            border-radius: inherit; /* match container rounding so corners are clipped */
+            /* remove any transform that could create a higher stacking context */
+            transform: none !important;
+            -webkit-transform: none !important;
+            will-change: auto !important;
+          }
+          .product-thumb::after,
+          .thumbnail::after,
+          .product-thumbnail::after,
+          .thumb::after,
+          .product-image-thumb::after {
+            content: '';
+            pointer-events: none;
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            border: 2px solid rgba(0,0,0,0.9); /* visible border on top (adjust weight/color as needed) */
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06); /* overlay shadow */
+            z-index: 9999; /* ensure overlay sits above the image and any transforms */
+            mix-blend-mode: normal;
+          }
+        `}} />
       </head>
       <body 
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#fbf6f0]`}
