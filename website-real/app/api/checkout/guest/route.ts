@@ -8,6 +8,12 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+function generateNumericOrderNumber(): string {
+  const seconds = Math.floor(Date.now() / 1000);
+  const random4 = Math.floor(1000 + Math.random() * 9000);
+  return `${seconds}${random4}`;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -23,7 +29,7 @@ export async function POST(req: NextRequest) {
       }
     } = body;
 
-    const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+    const orderNumber = generateNumericOrderNumber();
 
     // Persist order to Supabase (orders + order_items)
     try {
