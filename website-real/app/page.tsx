@@ -1298,78 +1298,7 @@ export default function Home() {
 
       
     </div>
-    <footer style={{
-      width: '100vw',
-      fontSize: '0.92rem',
-      color: '#111',
-      padding: '32px 16px 18px 16px',
-      paddingBottom: '50px', // Add extra padding to account for cart bar
-      background: 'white',
-      letterSpacing: '0.01em',
-      fontWeight: 400,
-      boxShadow: '0 -2px 12px 0 rgba(0,0,0,0.03)',
-      position: 'relative',
-    }}>
-      {/* Mobile Layout */}
-      <div className="block md:hidden">
-          <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-          © 2024 FRUITSTAND<sup>®</sup> LLC,<br />
-          All Rights Reserved
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <a
-            href="/contact"
-            style={{
-              background: '#111',
-              color: '#fff',
-              padding: '10px 22px',
-              borderRadius: 8,
-              textDecoration: 'none',
-              fontWeight: 500,
-              fontSize: '1rem',
-              boxShadow: '0 2px 8px 0 rgba(0,0,0,0.07)',
-              transition: 'background 0.2s',
-              display: 'inline-block',
-            }}
-            onMouseOver={e => (e.currentTarget.style.background = '#333')}
-            onMouseOut={e => (e.currentTarget.style.background = '#111')}
-          >
-            Contact Us
-          </a>
-        </div>
-      </div>
-      
-      {/* Desktop Layout */}
-      <div className="hidden md:flex items-center justify-center">
-        <div style={{ flex: 1, textAlign: 'center' }}>
-          © 2024 FRUITSTAND<sup>®</sup> LLC,<br />
-          All Rights Reserved
-        </div>
-        <a
-          href="/contact"
-          style={{
-            position: 'absolute',
-            right: 32,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            background: '#111',
-            color: '#fff',
-            padding: '10px 22px',
-            borderRadius: 8,
-            textDecoration: 'none',
-            fontWeight: 500,
-            fontSize: '1rem',
-            boxShadow: '0 2px 8px 0 rgba(0,0,0,0.07)',
-            transition: 'background 0.2s',
-          }}
-          onMouseOver={e => (e.currentTarget.style.background = '#333')}
-          onMouseOut={e => (e.currentTarget.style.background = '#111')}
-        >
-          Contact Us
-        </a>
-      </div>
-    </footer>
-    
+
     {/* Signup Modal */}
     <SignupModal
       isOpen={isModalOpen}

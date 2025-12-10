@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useState } from "react"
 import Link from "next/link"
 // import StaggeredMenu from "../../components/StagerredMenu"
 import { motion } from "framer-motion"
@@ -78,14 +78,6 @@ export default function CartPage() {
   // Coupons and site-wide sale/discount logic removed per request
   const [showSignInModal, setShowSignInModal] = useState(false)
   const [showGuestCheckout, setShowGuestCheckout] = useState(false)
-  const [addressSuggestions, setAddressSuggestions] = useState<Array<{
-    street: string;
-    city: string;
-    state: string;
-    zipCode: string;
-  }>>([])
-  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false)
-  const addressFieldRef = useRef<HTMLDivElement | null>(null)
 
   // Country codes for phone numbers (precomputed with flags and labels)
   const countryCodes = COUNTRY_CODE_OPTIONS;
@@ -142,17 +134,6 @@ export default function CartPage() {
       listener.subscription.unsubscribe()
     }
   }, [])
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (!addressFieldRef.current) return
-      if (!addressFieldRef.current.contains(event.target as Node)) {
-        setShowAddressSuggestions(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
   const router = useRouter();
 
   const getCartTotal = () => items.reduce((total, item) => total + (Number(item.price) * item.quantity), 0);
@@ -199,107 +180,6 @@ export default function CartPage() {
   const total = subtotal + finalShipping + tax;
 
   // Available offers removed (no coupons/promos)
-
-  // Address autocomplete function
-  const fetchAddressSuggestions = async (query: string) => {
-    if (query.length < 2) {
-      setAddressSuggestions([]);
-      setShowAddressSuggestions(false);
-      return;
-    }
-
-    try {
-      // Try to use the Places API first
-      try {
-        const response = await fetch(`/api/places?query=${encodeURIComponent(query)}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.suggestions && data.suggestions.length > 0) {
-            setAddressSuggestions(data.suggestions);
-            setShowAddressSuggestions(true);
-            return;
-          }
-        }
-      } catch (apiError) {
-        console.log('Places API not available, using fallback');
-      }
-
-      // Fallback to expanded mock address database
-      const mockAddressDatabase = [
-        // New York addresses
-        { street: "123 Main Street", city: "New York", state: "NY", zipCode: "10001" },
-        { street: "456 Broadway", city: "New York", state: "NY", zipCode: "10012" },
-        { street: "789 Fifth Avenue", city: "New York", state: "NY", zipCode: "10022" },
-        { street: "321 Park Avenue", city: "New York", state: "NY", zipCode: "10016" },
-        { street: "654 Wall Street", city: "New York", state: "NY", zipCode: "10005" },
-        { street: "987 Madison Avenue", city: "New York", state: "NY", zipCode: "10021" },
-        { street: "147 Central Park West", city: "New York", state: "NY", zipCode: "10023" },
-        { street: "258 West 14th Street", city: "New York", state: "NY", zipCode: "10011" },
-        { street: "369 East 76th Street", city: "New York", state: "NY", zipCode: "10021" },
-        { street: "741 Amsterdam Avenue", city: "New York", state: "NY", zipCode: "10025" },
-        
-        // Los Angeles addresses
-        { street: "1001 Wilshire Boulevard", city: "Los Angeles", state: "CA", zipCode: "90017" },
-        { street: "2020 Santa Monica Boulevard", city: "Los Angeles", state: "CA", zipCode: "90404" },
-        { street: "3030 Sunset Boulevard", city: "Los Angeles", state: "CA", zipCode: "90026" },
-        { street: "4040 Hollywood Boulevard", city: "Los Angeles", state: "CA", zipCode: "90028" },
-        { street: "5050 Melrose Avenue", city: "Los Angeles", state: "CA", zipCode: "90038" },
-        
-        // Chicago addresses
-        { street: "100 North Michigan Avenue", city: "Chicago", state: "IL", zipCode: "60601" },
-        { street: "200 South State Street", city: "Chicago", state: "IL", zipCode: "60604" },
-        { street: "300 West Roosevelt Road", city: "Chicago", state: "IL", zipCode: "60607" },
-        
-        // Miami addresses
-        { street: "1500 Ocean Drive", city: "Miami Beach", state: "FL", zipCode: "33139" },
-        { street: "2600 Biscayne Boulevard", city: "Miami", state: "FL", zipCode: "33137" },
-        
-        // Common street patterns that match any input
-        { street: `${query.charAt(0).toUpperCase() + query.slice(1)} Street`, city: "New York", state: "NY", zipCode: "10001" },
-        { street: `${query.charAt(0).toUpperCase() + query.slice(1)} Avenue`, city: "New York", state: "NY", zipCode: "10003" },
-        { street: `${query.charAt(0).toUpperCase() + query.slice(1)} Boulevard`, city: "Los Angeles", state: "CA", zipCode: "90210" },
-        { street: `${query.charAt(0).toUpperCase() + query.slice(1)} Drive`, city: "Chicago", state: "IL", zipCode: "60601" },
-        { street: `${query.charAt(0).toUpperCase() + query.slice(1)} Lane`, city: "Miami", state: "FL", zipCode: "33101" }
-      ];
-
-      // Smart filtering with multiple match criteria
-      const filteredSuggestions = mockAddressDatabase.filter(addr => {
-        const queryLower = query.toLowerCase();
-        return (
-          addr.street.toLowerCase().includes(queryLower) ||
-          addr.city.toLowerCase().includes(queryLower) ||
-          addr.state.toLowerCase().includes(queryLower) ||
-          addr.zipCode.includes(query) ||
-          // Partial word matching
-          addr.street.toLowerCase().split(' ').some(word => word.startsWith(queryLower)) ||
-          addr.city.toLowerCase().split(' ').some(word => word.startsWith(queryLower))
-        );
-      }).slice(0, 8); // Limit to 8 suggestions
-
-      setAddressSuggestions(filteredSuggestions);
-      setShowAddressSuggestions(filteredSuggestions.length > 0);
-
-    } catch (error) {
-      console.error('Error fetching address suggestions:', error);
-      setAddressSuggestions([]);
-      setShowAddressSuggestions(false);
-    }
-  };
-
-  const selectAddressSuggestion = (suggestion: { street: string; city: string; state: string; zipCode: string }) => {
-    setGuestData(prev => ({
-      ...prev,
-      address: {
-        ...prev.address,
-        street: suggestion.street,
-        city: suggestion.city,
-        state: suggestion.state,
-        zipCode: suggestion.zipCode
-      }
-    }));
-    setShowAddressSuggestions(false);
-    setAddressSuggestions([]);
-  };
 
   const handleCheckout = async () => {
     if (items.length === 0) return;
@@ -848,11 +728,11 @@ export default function CartPage() {
                               <p className="text-red-500 text-xs mt-1">{guestFormErrors.lastName}</p>
                             )}
                           </div>
-                          <div className="flex space-x-2">
+                          <div className="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0">
                             <select
                               value={guestData.phoneCountryCode}
                               onChange={(e) => handleGuestInputChange("phoneCountryCode", e.target.value)}
-                              className="min-w-[170px] px-2 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white"
+                              className="w-full sm:w-[200px] px-2 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white"
                               title="Select country code"
                             >
                               {countryCodes.map((country) => (
@@ -864,7 +744,7 @@ export default function CartPage() {
                             <input
                               type="tel"
                               name="tel"
-                              autoComplete="tel"
+                              autoComplete="off"
                               autoCorrect="off"
                               autoCapitalize="none"
                               spellCheck={false}
@@ -872,7 +752,7 @@ export default function CartPage() {
                               placeholder="Phone number"
                               value={guestData.phone}
                               onChange={(e) => handleGuestInputChange("phone", e.target.value)}
-                              className={`flex-1 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                              className={`w-full sm:flex-1 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
                                 guestFormErrors.phone ? 'border-red-500 bg-red-50' : 'border-gray-300'
                               }`}
                             />
@@ -888,52 +768,20 @@ export default function CartPage() {
                         <h5 className="text-xs font-medium text-gray-700 mb-2">SHIPPING ADDRESS</h5>
                         <p className="text-xs text-gray-500 mb-3">Optional — digital wallets like Apple Pay or Link will provide this automatically during payment.</p>
                         <div className="space-y-3">
-                          <div className="relative" ref={addressFieldRef}>
-                            <input
-                              type="text"
-                              name="street-address"
-                              autoComplete="shipping address-line1"
-                              autoCorrect="off"
-                              autoCapitalize="words"
-                              spellCheck={false}
-                              placeholder="Street address (optional – start typing for suggestions)"
-                              value={guestData.address.street}
-                              onChange={(e) => {
-                                handleGuestInputChange("address.street", e.target.value);
-                                fetchAddressSuggestions(e.target.value);
-                              }}
-                              onFocus={() => {
-                                if (guestData.address.street.length >= 3) {
-                                  fetchAddressSuggestions(guestData.address.street);
-                                }
-                              }}
-                              onBlur={() => {
-                                // Delay hiding suggestions to allow selection
-                                setTimeout(() => setShowAddressSuggestions(false), 200);
-                              }}
-                              className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
-                                guestFormErrors.street ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                              }`}
-                            />
-                            {showAddressSuggestions && addressSuggestions.length > 0 && (
-                              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                                {addressSuggestions.map((suggestion, index) => (
-                                  <button
-                                    key={index}
-                                    type="button"
-                                    onClick={() => selectAddressSuggestion(suggestion)}
-                                    onMouseDown={(event) => event.preventDefault()}
-                                    className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
-                                  >
-                                    <div className="font-medium">{suggestion.street}</div>
-                                    <div className="text-gray-500 text-xs">
-                                      {suggestion.city}, {suggestion.state} {suggestion.zipCode}
-                                    </div>
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                          <input
+                            type="text"
+                            name="street-address"
+                            autoComplete="off"
+                            autoCorrect="off"
+                            autoCapitalize="words"
+                            spellCheck={false}
+                            placeholder="Street address (optional)"
+                            value={guestData.address.street}
+                            onChange={(e) => handleGuestInputChange("address.street", e.target.value)}
+                            className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                              guestFormErrors.street ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                            }`}
+                          />
                           {guestFormErrors.street && (
                             <p className="text-red-500 text-xs mt-1">{guestFormErrors.street}</p>
                           )}

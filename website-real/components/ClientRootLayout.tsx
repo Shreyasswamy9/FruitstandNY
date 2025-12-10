@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import LogoButton from "./LogoButton"
 import CartBar from "./CartBar"
 import StaggeredMenu from "./StagerredMenu"
+import SiteFooter from "./SiteFooter"
 
 // Context to control logo visibility (for intro)
 export const LogoVisibilityContext = createContext<{ hideLogo: boolean; setHideLogo: (v: boolean) => void }>({ hideLogo: false, setHideLogo: () => {} })
@@ -47,6 +48,7 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
       <LogoButton />
       
       {children}
+      <SiteFooter />
       {/* Bottom spacer on shop/product pages so CartBar doesn't cover content */}
       {isShopRoute && (
         <div aria-hidden className="h-28 md:h-24" />
