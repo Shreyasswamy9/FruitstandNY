@@ -20,6 +20,11 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
   const pathname = usePathname()
   const isShopRoute = pathname?.startsWith('/shop')
 
+  // Ensure PostHog initializes on every client render
+  useEffect(() => {
+    void import("../instrumentation.client")
+  }, [])
+
   // Apply a global class to body for pages to react (e.g., hide category pills)
   useEffect(() => {
     if (typeof document !== 'undefined') {
