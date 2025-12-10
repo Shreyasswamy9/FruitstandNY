@@ -97,7 +97,7 @@ export default function HockeyJerseyPage() {
       addToCart({
         productId: item.id,
         name: item.name,
-        price: item.price * 0.85, // 15% discount
+        price: item.price,
         image: item.image,
         quantity: 1,
         size: "M", // Default size for bought together items

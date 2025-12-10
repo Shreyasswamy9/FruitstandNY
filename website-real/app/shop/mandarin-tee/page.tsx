@@ -57,7 +57,7 @@ export default function MandarinTeePage() {
   };
 
   const handleAddAllToCart = () => {
-    boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, image: item.image, quantity: 1, size: PRODUCT.sizes[2] }));
+    boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: PRODUCT.sizes[2] }));
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };

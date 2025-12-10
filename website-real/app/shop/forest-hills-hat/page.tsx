@@ -18,7 +18,6 @@ const greenHatImages = [
 const PRODUCT = {
   name: "Forest Hills Hat",
   price: 46,
-  salePrice: 25,
   description: "Crafted from premium cotton. Designed in NYC, worn everywhere.",
   details: [
     "Lime green color 6-panel camp hat.",
@@ -35,11 +34,10 @@ export default function ForestHillsHatPage() {
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
   const handleAddToCart = () => {
-    const priceToCharge = PRODUCT.salePrice ?? PRODUCT.price;
     addToCart({
       productId: "forest-hills-hat",
       name: PRODUCT.name,
-      price: priceToCharge,
+      price: PRODUCT.price,
       image: selectedImage,
       quantity: 1,
     });
@@ -122,7 +120,7 @@ export default function ForestHillsHatPage() {
               ))}
             </ul>
           )}
-          <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} salePrice={PRODUCT.salePrice} /></div>
+          <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} /></div>
           <button className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2" onClick={handleAddToCart}>
             Add to Cart
           </button>
@@ -147,7 +145,7 @@ export default function ForestHillsHatPage() {
             addToCart({
               productId: product.id,
               name: product.name,
-              price: product.price * 0.85, // 15% discount
+              price: product.price,
               image: product.image,
               quantity: 1,
             });
