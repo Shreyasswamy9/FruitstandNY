@@ -741,8 +741,8 @@ export default function Home() {
                     filter: 'brightness(0.6)'
                   }}></div>
                   <div style={{ position: 'absolute', left: 24, top: 24, zIndex: 3, background: 'rgba(255,255,255,0.95)', padding: '6px 10px', borderRadius: 10 }}>
-                    <div style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', color: '#111' }}>Black Friday</div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#111', opacity: 0.9 }}>Up to 50% off</div>
+                    <div style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', color: '#111' }}>New Arrival</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#111', opacity: 0.9 }}>Seasonal spotlight</div>
                   </div>
                   <div style={{
                     position: "relative",
@@ -755,14 +755,14 @@ export default function Home() {
                       marginBottom: "12px",
                       lineHeight: 1.02,
                     }}>
-                      BLACK FRIDAY SALE
+                      WINTER COLLECTION DROP
                     </h1>
                     <p style={{
                       fontSize: "clamp(1rem, 2vw, 1.1rem)",
                       opacity: 0.95,
                       marginBottom: "24px",
                     }}>
-                      Discover our biggest deals — limited time only
+                      Discover the latest Fruitstand essentials straight from NYC
                     </p>
                     <button style={{
                       background: "#ef4444",
@@ -779,7 +779,7 @@ export default function Home() {
                     onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = '0 10px 30px rgba(239,68,68,0.22)'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = '0 6px 20px rgba(239,68,68,0.18)'; }}
                     >
-                      Shop Black Friday
+                      Shop Collection
                     </button>
                   </div>
                 </div>
@@ -877,11 +877,6 @@ export default function Home() {
                       color: "#111",
                       maxWidth: "55%",
                     }}>
-                      {/* Sale badge */}
-                      <div style={{ display: 'inline-block', marginBottom: 8, background: 'rgba(255,255,255,0.95)', padding: '6px 10px', borderRadius: 10 }}>
-                        <strong style={{ fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Black Friday</strong>
-                        <div style={{ fontSize: 11, fontWeight: 700, opacity: 0.9 }}>Up to 50% off</div>
-                      </div>
                       <h3 style={{
                         fontSize: "1.4rem",
                         fontWeight: 800,
@@ -900,8 +895,8 @@ export default function Home() {
                         Retro Track Suit
                       </p>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ fontSize: "1.1rem", fontWeight: 800, color: '#b91c1c' }}>
-                          <Price price="$165" salePrice={110} strikeColor="#374151" />
+                        <div style={{ fontSize: "1.1rem", fontWeight: 800, color: '#111827' }}>
+                          <Price price="$165" />
                         </div>
                         <button
                           onClick={(e) => { e.stopPropagation(); window.location.href = '/shop/tracksuit'; }}
@@ -1035,11 +1030,7 @@ export default function Home() {
                           color: "#666",
                           margin: 0,
                         }}>
-                          {product.name === 'Retro Track Suit' ? (
-                            <Price price={product.price} salePrice={110} strikeColor="#374151" />
-                          ) : (
-                            product.price
-                          )}
+                          {product.price}
                         </p>
                       </div>
                     </div>

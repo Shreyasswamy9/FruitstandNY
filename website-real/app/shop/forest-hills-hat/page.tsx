@@ -35,11 +35,11 @@ export default function ForestHillsHatPage() {
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
   const handleAddToCart = () => {
+    const priceToCharge = PRODUCT.salePrice ?? PRODUCT.price;
     addToCart({
       productId: "forest-hills-hat",
       name: PRODUCT.name,
-      price: PRODUCT.price,
-      salePrice: PRODUCT.salePrice,
+      price: priceToCharge,
       image: selectedImage,
       quantity: 1,
     });

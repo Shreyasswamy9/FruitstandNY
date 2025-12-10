@@ -7,7 +7,7 @@ import SizeGuide from "@/components/SizeGuide";
 import BundleSheet from '@/components/BundleSheet'
 import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
-import ColorPicker from '@/components/ColorPicker';
+import ColorPicker, { type ColorOption } from '@/components/ColorPicker';
 
 // Per-color image map for gallery display
 const CAMEO_COLOR_IMAGE_MAP: Record<string, string[]> = {
@@ -21,6 +21,11 @@ const CAMEO_COLOR_IMAGE_MAP: Record<string, string[]> = {
     '/images/products/cameo-tshirt/suttonplacesnow/MN2.png',
     '/images/products/cameo-tshirt/suttonplacesnow/MN5.png'
   ]
+};
+
+type CameoColorOption = ColorOption & {
+  images: string[];
+  slug: keyof typeof CAMEO_COLOR_IMAGE_MAP;
 };
 
 const PRODUCT = {
@@ -37,12 +42,12 @@ const PRODUCT = {
 };
 
 export default function CameoTshirtPage() {
-  const colorOptions = useMemo(() => [
+  const colorOptions = useMemo<CameoColorOption[]>(() => [
     { name: 'Broadway Noir', slug: 'broadway-noir', color: '#000000', images: CAMEO_COLOR_IMAGE_MAP['broadway-noir'], bg: '#0a0a0a' },
     { name: 'Sutton Place Snow', slug: 'sutton-place-snow', color: '#ffffff', images: CAMEO_COLOR_IMAGE_MAP['sutton-place-snow'], bg: '#ffffff', border: '#e5e7eb' },
   ], []);
-  const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
-  const [selectedImage, setSelectedImage] = useState(colorOptions[0].images[0]);
+  const [selectedColor, setSelectedColor] = useState<CameoColorOption>(colorOptions[0]);
+  const [selectedImage, setSelectedImage] = useState<string>(colorOptions[0].images[0]);
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
   const [bundleOpen, setBundleOpen] = useState(false);
@@ -60,6 +65,7 @@ export default function CameoTshirtPage() {
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
+      color: selectedColor.name,
     });
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
@@ -71,7 +77,7 @@ export default function CameoTshirtPage() {
     const params = new URLSearchParams(window.location.search);
     const colorSlug = params.get('color');
     if (colorSlug) {
-      const found = colorOptions.find(c => c.slug === colorSlug);
+      const found = colorOptions.find(c => c.slug === colorSlug as CameoColorOption['slug']);
       if (found) {
         setSelectedColor(found);
         setSelectedImage(found.images[0]);
@@ -82,13 +88,13 @@ export default function CameoTshirtPage() {
   const boughtTogetherItems = getFBTForPage('cameo-tshirt');
 
   const handleAddBoughtTogetherItem = (item: { id: string; name: string; price: number; image: string }) => {
-    addToCart({ productId: item.id, name: item.name, price: item.price, salePrice: (item as any).salePrice, image: item.image, quantity: 1, size: "M" });
+    addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: "M" });
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };
 
   const handleAddAllToCart = () => {
-    boughtTogetherItems.forEach(item => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, salePrice: (item as any).salePrice ? (item as any).salePrice * 0.85 : undefined, image: item.image, quantity: 1, size: "M" }));
+    boughtTogetherItems.forEach(item => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, image: item.image, quantity: 1, size: "M" }));
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };
@@ -128,12 +134,15 @@ export default function CameoTshirtPage() {
           <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
           {/* Color Picker */}
           <ColorPicker
-            options={colorOptions as any}
+            options={colorOptions}
             selectedName={selectedColor.name}
             onSelect={(opt) => {
-              setSelectedColor(opt as any);
-              setSelectedImage((opt.images && opt.images[0]) || selectedImage);
-              if (typeof window !== 'undefined' && opt.slug) window.history.replaceState(null, '', `/shop/cameo-tshirt?color=${opt.slug}`);
+              const match = colorOptions.find(c => c.name === opt.name) ?? colorOptions[0];
+              setSelectedColor(match);
+              setSelectedImage(match.images[0]);
+              if (typeof window !== 'undefined' && match.slug) {
+                window.history.replaceState(null, '', `/shop/cameo-tshirt?color=${match.slug}`);
+              }
             }}
           />
 

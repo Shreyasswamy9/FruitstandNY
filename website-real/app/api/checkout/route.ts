@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-
-function generateNumericOrderNumber(): string {
-  // seconds since epoch + 4 random digits -> compact numeric id
-  const seconds = Math.floor(Date.now() / 1000);
-  const random4 = Math.floor(1000 + Math.random() * 9000);
-  return `${seconds}${random4}`;
-}
+import { generateOrderNumber } from '@/lib/orderNumbers';
 
 export async function POST(request: NextRequest) {
   console.log('Checkout API: Request received');
@@ -14,21 +8,22 @@ export async function POST(request: NextRequest) {
   try {
     // 1. Validate Environment Variables
     const stripeKey = process.env.STRIPE_SECRET_KEY;
-    const baseUrlRaw = process.env.NEXT_PUBLIC_BASE_URL;
+    const envBaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    const requestOrigin = request.headers.get('origin');
 
     // Log configuration status (DO NOT log actual keys)
     const isTestKey = stripeKey?.startsWith('sk_test_');
     console.log('Checkout API: Configuration Check', {
       hasStripeKey: !!stripeKey,
       keyType: isTestKey ? 'TEST' : (stripeKey ? 'LIVE' : 'MISSING'),
-      hasBaseUrl: !!baseUrlRaw,
-      baseUrlValue: baseUrlRaw // Safe to log base URL
+      hasBaseUrl: !!(envBaseUrl || requestOrigin),
+      baseUrlValue: requestOrigin || envBaseUrl || 'n/a'
     });
 
-    if (!stripeKey || !baseUrlRaw) {
+    if (!stripeKey || (!envBaseUrl && !requestOrigin)) {
       const missing = [];
       if (!stripeKey) missing.push('STRIPE_SECRET_KEY');
-      if (!baseUrlRaw) missing.push('NEXT_PUBLIC_BASE_URL');
+      if (!envBaseUrl && !requestOrigin) missing.push('NEXT_PUBLIC_BASE_URL or request origin header');
 
       console.error('Checkout API: Missing environment variables:', missing);
       return NextResponse.json(
@@ -39,12 +34,34 @@ export async function POST(request: NextRequest) {
 
     // 2. Initialize Stripe client only (no Supabase client or DB writes in this route)
     const stripe = new Stripe(stripeKey);
-    const baseUrl = baseUrlRaw.replace(/\/$/, '');
+    const baseUrl = (requestOrigin || envBaseUrl || '').replace(/\/$/, '');
+
+    type CheckoutItemPayload = {
+      price?: number | string;
+      quantity?: number | string;
+      name: string;
+      image?: string;
+      productId?: string;
+      size?: string;
+      color?: string;
+    };
+
+    type CheckoutRequestPayload = {
+      items?: CheckoutItemPayload[];
+      shipping?: number | string;
+      tax?: number | string;
+      guestData?: Record<string, unknown> | null;
+      customerData?: {
+        email?: string;
+        name?: string;
+        phone?: string;
+      } | null;
+    };
 
     // 3. Parse Request
-    let requestData: any;
+    let requestData: CheckoutRequestPayload;
     try {
-      requestData = await request.json();
+      requestData = await request.json() as CheckoutRequestPayload;
     } catch (e) {
       console.error('Checkout API: Failed to parse JSON body', e);
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
@@ -56,7 +73,6 @@ export async function POST(request: NextRequest) {
     // 4. Auth (Optional) - preserved for logging only
     const authHeader = request.headers.get('authorization');
     console.log('Checkout API: Auth header present:', !!authHeader);
-    let userId: string | null = null;
     if (authHeader) {
       try {
         // Attempt to extract token and inspect (no Supabase client call here to avoid DB ops)
@@ -73,15 +89,16 @@ export async function POST(request: NextRequest) {
     // 5. Calculate Totals
     const safeShipping = typeof shipping === 'number' ? shipping : Number(shipping || 0);
     const safeTax = typeof tax === 'number' ? tax : Number(tax || 0);
-    type CartItem = { price: number; quantity: number; name: string; image?: string; productId?: string; size?: string; color?: string };
-    const subtotal = (items as CartItem[]).reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 0)), 0);
+
+    const normalizedItems: CheckoutItemPayload[] = Array.isArray(items) ? items : [];
+    const subtotal = normalizedItems.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 0)), 0);
     const totalAmount = subtotal + safeShipping + safeTax;
-    const orderNumber = generateNumericOrderNumber();
+    const orderNumber = generateOrderNumber();
 
     console.log('Checkout API: Order details calculated', { orderNumber, totalAmount });
 
     // 6. Prepare Stripe line items (unchanged except image handling)
-    const lineItems = (items as CartItem[]).map((item) => {
+    const lineItems = normalizedItems.map((item) => {
       let imageUrl = item.image;
       if (imageUrl && !imageUrl.startsWith('http')) {
         const cleanPath = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
@@ -145,6 +162,30 @@ export async function POST(request: NextRequest) {
     }
 
     // 7. Create Stripe Session with metadata containing full order payload (no DB writes here)
+    type GuestAddress = {
+      street?: string;
+      city?: string;
+      state?: string;
+      zipCode?: string;
+      country?: string;
+    };
+
+    const rawGuestAddress = guestData && typeof guestData === 'object' && 'address' in guestData
+      ? (guestData as Record<string, unknown>).address
+      : undefined;
+
+    const guestAddress = rawGuestAddress && typeof rawGuestAddress === 'object'
+      ? (rawGuestAddress as GuestAddress)
+      : undefined;
+
+    const hasGuestAddress = !!(
+      guestAddress &&
+      guestAddress.street &&
+      guestAddress.city &&
+      guestAddress.state &&
+      guestAddress.zipCode
+    );
+
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ['card'],
       line_items: lineItems as Stripe.Checkout.SessionCreateParams.LineItem[],
@@ -153,7 +194,7 @@ export async function POST(request: NextRequest) {
       cancel_url: `${baseUrl}/cart`,
       metadata: {
         // Required by your webhook to create the order after payment
-        cart: JSON.stringify(items || []),
+        cart: JSON.stringify(normalizedItems || []),
         tax: String(safeTax),
         shipping: String(safeShipping),
         subtotal: String(subtotal),
@@ -162,13 +203,18 @@ export async function POST(request: NextRequest) {
         order_number: orderNumber,
         // Include any minimal identifiers needed by webhook (avoid secrets)
       },
-      shipping_address_collection: {
-        allowed_countries: ['US', 'CA'],
-      },
-      billing_address_collection: 'required',
+      billing_address_collection: 'auto',
     };
 
-    const customerInfo = customerData || guestData;
+    if (!hasGuestAddress) {
+      sessionConfig.shipping_address_collection = {
+        allowed_countries: ['US', 'CA'],
+      };
+    }
+
+    const customerInfo = customerData ?? (guestData && typeof guestData === 'object' && 'email' in guestData
+      ? guestData as { email?: string; name?: string }
+      : null);
     if (customerInfo?.email) {
       sessionConfig.customer_email = customerInfo.email;
       if (customerInfo.name) {

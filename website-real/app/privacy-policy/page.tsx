@@ -122,9 +122,7 @@ export default function PrivacyPolicyPage() {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Marketing & SMS Consent</h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              {<>
-                This Privacy Policy explains how FRUITSTAND<sup>®</sup> LLC ("FRUITSTAND," "we," "our," or "us") collects, uses, and shares your personal information when you interact with us online or offline, and the rights and choices you have regarding that information.
-              </>}
+              This Privacy Policy explains how FRUITSTAND<sup>®</sup> LLC (&ldquo;FRUITSTAND,&rdquo; &ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;) collects, uses, and shares your personal information when you interact with us online or offline, and the rights and choices you have regarding that information.
             </p>
             <ul className="list-disc pl-6 space-y-2 text-gray-700 mb-3">
               <li>Message frequency varies</li>

@@ -3,9 +3,20 @@ import { createClient } from '@supabase/supabase-js';
 
 // POST /api/admin/update-order-status
 // Manually update order payment status (for testing)
+type UpdateOrderPayload = {
+    orderId?: string;
+    paymentStatus?: string;
+    orderStatus?: string;
+};
+
+type OrderUpdateFields = Partial<{
+    payment_status: string;
+    status: string;
+}>;
+
 export async function POST(request: NextRequest) {
     try {
-        const { orderId, paymentStatus, orderStatus } = await request.json();
+        const { orderId, paymentStatus, orderStatus } = await request.json() as UpdateOrderPayload;
 
         if (!orderId) {
             return NextResponse.json(
@@ -20,7 +31,7 @@ export async function POST(request: NextRequest) {
             process.env.SUPABASE_SERVICE_ROLE_KEY!
         );
 
-        const updateData: any = {};
+        const updateData: OrderUpdateFields = {};
         if (paymentStatus) updateData.payment_status = paymentStatus;
         if (orderStatus) updateData.status = orderStatus;
 

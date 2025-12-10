@@ -27,7 +27,6 @@ type HockeyJerseyVariant = typeof HOCKEY_JERSEY_VARIANTS[number];
 const PRODUCT = {
   name: "Broadway Blueberry Jersey",
   price: 180,
-  salePrice: 94,
   description: "Inspired by vintage New York hockey uniforms, this jersey features an all-over blueberry print in a deep, tonal blue, accented with white striping featuring a red cherry pattern.\n\nAn embroidered FRUITSTAND logo runs across the chest. The relaxed fit drapes naturally and layers easily over a tee or hoodie.",
   details: [
     "100% polyester",
@@ -69,10 +68,10 @@ export default function HockeyJerseyPage() {
       productId: "hockey-jersey",
       name: PRODUCT.name,
       price: PRODUCT.price,
-      salePrice: PRODUCT.salePrice,
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
+      color: selectedColor.name,
     });
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
@@ -84,7 +83,6 @@ export default function HockeyJerseyPage() {
       productId: item.id,
       name: item.name,
       price: item.price,
-      salePrice: (item as any).salePrice,
       image: item.image,
       quantity: 1,
       size: "M", // Default size for bought together items
@@ -100,7 +98,6 @@ export default function HockeyJerseyPage() {
         productId: item.id,
         name: item.name,
         price: item.price * 0.85, // 15% discount
-        salePrice: (item as any).salePrice ? (item as any).salePrice * 0.85 : undefined,
         image: item.image,
         quantity: 1,
         size: "M", // Default size for bought together items
@@ -262,7 +259,7 @@ export default function HockeyJerseyPage() {
             </div>
           )}
         </div>
-          <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} salePrice={PRODUCT.salePrice} /></div>
+          <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} /></div>
         <button
           className={`bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2 ${!selectedSize ? 'opacity-50 cursor-not-allowed' : ''}`}
           onClick={handleAddToCart}

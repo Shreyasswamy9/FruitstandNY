@@ -5,9 +5,49 @@ import { supabase as supabaseClient } from '@/app/supabase-client';
 // It validates request, optionally records marketing opt-in (non-blocking),
 // and returns the metadata object to be embedded in the Stripe Checkout session.
 
+type CheckoutItem = {
+  id?: string;
+  name?: string;
+  price?: number | string;
+  quantity?: number;
+  image?: string;
+  size?: string;
+};
+
+type GuestMarketing = {
+  emailUpdates?: boolean;
+};
+
+type GuestAddress = {
+  street?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  country?: string;
+};
+
+type GuestData = {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  marketing?: GuestMarketing;
+  address?: GuestAddress;
+};
+
+type CheckoutPayload = {
+  orderData?: {
+    items?: CheckoutItem[];
+    shipping?: number;
+    tax?: number;
+    subtotal?: number;
+  };
+  guestData?: GuestData;
+};
+
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const body = await req.json() as CheckoutPayload;
 
     const {
       orderData = {},
@@ -21,8 +61,8 @@ export async function POST(req: NextRequest) {
 
     // Preserve marketing opt-in, but do not block checkout if it fails
     try {
-      const marketing = (guestData as any).marketing;
-      if (marketing && marketing.emailUpdates && supabaseClient) {
+      const marketing = guestData.marketing;
+      if (marketing?.emailUpdates && supabaseClient) {
         // Fire-and-forget or await but ignore errors so checkout proceeds
         try {
           await supabaseClient
@@ -56,7 +96,7 @@ export async function POST(req: NextRequest) {
       success: true,
       metadata
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Guest checkout validation error:', error);
     return NextResponse.json(
       { error: 'Failed to process guest checkout' },

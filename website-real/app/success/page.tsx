@@ -8,6 +8,9 @@ import Link from 'next/link';
 function SuccessContent() {
   const [loading, setLoading] = useState(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [orderDetails, setOrderDetails] = useState<{ orderNumber: string; totalAmount: number; status: string } | null>(null);
+  const [detailsError, setDetailsError] = useState<string | null>(null);
+  const [shouldFetchOrder, setShouldFetchOrder] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -21,6 +24,7 @@ function SuccessContent() {
         router.push(`/success/create-account?session_id=${sid}`);
         return;
       }
+      setShouldFetchOrder(true);
       localStorage.removeItem('cart');
       window.dispatchEvent(new Event('cartCleared'));
       setLoading(false);
@@ -28,6 +32,48 @@ function SuccessContent() {
       setLoading(false);
     }
   }, [router]);
+
+  useEffect(() => {
+    if (!shouldFetchOrder || !sessionId) return;
+    let isActive = true;
+
+    const loadOrder = async () => {
+      try {
+        setDetailsError(null);
+        const response = await fetch(`/api/orders/by-session?session_id=${encodeURIComponent(sessionId)}`);
+        if (!isActive) return;
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({}));
+          setDetailsError(payload?.error ?? 'Unable to load order details.');
+          setOrderDetails(null);
+          return;
+        }
+
+        const payload = await response.json();
+        if (!isActive) return;
+        if (payload?.data) {
+          setOrderDetails({
+            orderNumber: payload.data.orderNumber,
+            totalAmount: payload.data.totalAmount,
+            status: payload.data.status,
+          });
+        } else {
+          setOrderDetails(null);
+        }
+      } catch (error) {
+        if (!isActive) return;
+        setDetailsError('Unable to load order details.');
+        setOrderDetails(null);
+        console.error('Order details fetch failed:', error);
+      }
+    };
+
+    loadOrder();
+
+    return () => {
+      isActive = false;
+    };
+  }, [sessionId, shouldFetchOrder]);
 
   if (loading) {
     return (
@@ -70,9 +116,16 @@ function SuccessContent() {
         </motion.p>
         {sessionId && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="bg-gray-50 rounded-lg p-4 mb-6">
-            <p className="text-sm text-gray-500 mb-1">Order ID</p>
-            <p className="text-sm font-mono text-gray-900 break-all">{sessionId}</p>
+            <p className="text-sm text-gray-500 mb-1">Order Number</p>
+            <p className="text-sm font-mono text-gray-900 break-all">
+              {orderDetails?.orderNumber ?? sessionId}
+            </p>
           </motion.div>
+        )}
+        {detailsError && (
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }} className="text-xs text-red-500 mb-4">
+            {detailsError}
+          </motion.p>
         )}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="space-y-3">
           <Link href="/shop" className="w-full bg-black text-white py-3 px-6 rounded-lg hover:bg-gray-800 transition-colors font-semibold block" aria-label="Return to Store">

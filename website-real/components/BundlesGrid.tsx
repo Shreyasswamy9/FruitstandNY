@@ -17,10 +17,7 @@ function formatPrice(n: number): string {
 }
 
 function getEffectivePrice(p: Product): number {
-  if (p.salePrice != null) {
-    const s = typeof p.salePrice === 'number' ? p.salePrice : parsePrice(String(p.salePrice))
-    if (Number.isFinite(s) && s > 0) return s
-  }
+  // Per-product salePrice removed; use main price for bundle calculations
   return parsePrice(p.price)
 }
 
@@ -87,7 +84,7 @@ export default function BundlesGrid({ bundles = defaultBundles, products = gridP
                         <Image src={p.image} alt={p.name} fill sizes="112px" style={{ objectFit: 'cover' }} />
                       </div>
                       <p className="text-xs mt-1 font-medium truncate">{p.name}</p>
-                      <p className="text-xs"><Price price={p.price} salePrice={p.salePrice} /></p>
+                      <p className="text-xs"><Price price={p.price} /></p>
                     </div>
                   ))}
                 </div>

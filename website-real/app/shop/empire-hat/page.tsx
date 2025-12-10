@@ -38,11 +38,11 @@ export default function EmpireHatPage() {
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
   const handleAddToCart = () => {
+    const priceToCharge = PRODUCT.salePrice ?? PRODUCT.price;
     addToCart({
       productId: "empire-hat",
       name: PRODUCT.name,
-      price: PRODUCT.price,
-      salePrice: PRODUCT.salePrice,
+      price: priceToCharge,
       image: selectedImage,
       quantity: 1,
     });
