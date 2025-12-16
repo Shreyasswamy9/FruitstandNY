@@ -18,10 +18,7 @@ function parsePrice(priceStr: string): number {
 }
 
 function getEffectivePrice(p: Product): number {
-  if (p.salePrice != null) {
-    const s = typeof p.salePrice === 'number' ? p.salePrice : parsePrice(String(p.salePrice))
-    if (Number.isFinite(s) && s > 0) return s
-  }
+  // Bundle pricing uses the regular product price. Per-product sale prices removed.
   return parsePrice(p.price)
 }
 function formatPrice(n: number): string {
@@ -164,9 +161,8 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
     // compute subtotal/discount/total
   const items = (bundle.itemIds.map(id => productMap.get(id)).filter(Boolean) as Product[])
     const originalSubtotal = items.reduce((acc, p) => acc + parsePrice(p.price), 0)
-    const effectiveSubtotal = items.reduce((acc, p) => acc + getEffectivePrice(p), 0)
-    const discount = Math.max(0, originalSubtotal - effectiveSubtotal)
-    const total = Math.max(0, effectiveSubtotal)
+    const discount = Math.max(0, Math.round((bundle.discountPercent || 0) * 100) / 100 === 0 ? 0 : originalSubtotal * ((bundle.discountPercent || 0) / 100))
+    const total = Math.max(0, originalSubtotal - discount)
   // add a single bundle line item to the cart, include chosen size if present
   const chosenSize = selectedSizes[bundle.id]
   addBundleToCart({ bundleId: bundle.id, name: bundle.title, price: total, image: items[0]?.image || '/images/classicteemale1.jpeg', itemIds: bundle.itemIds, bundleSize: chosenSize, quantity: 1 })
@@ -322,7 +318,7 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
                                   <Image src={p.image} alt={p.name} fill sizes="33vw" className="object-cover" />
                                 </div>
                                 <p className="mt-1 text-[12px] font-medium truncate">{p.name}</p>
-                                <p className="text-[12px]"><Price price={p.price} salePrice={p.salePrice} /></p>
+                                <p className="text-[12px]"><Price price={p.price} /></p>
                               </div>
                             ))}
                           </div>

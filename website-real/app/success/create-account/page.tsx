@@ -8,6 +8,7 @@ function CreateAccountContent() {
   const router = useRouter();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -77,7 +78,7 @@ function CreateAccountContent() {
             </label>
             <div className="relative">
                 <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -89,7 +90,19 @@ function CreateAccountContent() {
                 required
                 minLength={8}
                 placeholder="Enter your password"
+                autoComplete="new-password"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute inset-y-0 right-3 flex items-center text-xs font-semibold uppercase tracking-wide text-gray-500"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
             </div>
                 <p className="mt-2 text-xs text-gray-500">
                     Password must be at least 8 characters long

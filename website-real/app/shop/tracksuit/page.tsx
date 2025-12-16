@@ -55,7 +55,6 @@ type TracksuitVariant = typeof TRACKSUIT_VARIANTS[number];
 const PRODUCT = {
   name: "Retro Track Suit",
   price: 165,
-  salePrice: 110,
   description: "Inspired by classic New York athletic warm-ups, this track suit features bold color blocking and a relaxed, vintage silhouette designed for movement and comfort. Each colorway pays homage to various motifs, with contrasting panels and embroidered FRUITSTAND® logos.",
   details: [
     "100% Nylon shell",
@@ -94,11 +93,10 @@ export default function TracksuitPage() {
       productId: "tracksuit",
       name: PRODUCT.name,
       price: PRODUCT.price,
-      originalPrice: PRODUCT.price,
-      salePrice: PRODUCT.salePrice,
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
+      color: selectedColor.name,
     });
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
@@ -265,7 +263,7 @@ export default function TracksuitPage() {
             </div>
           )}
         </div>
-          <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} salePrice={PRODUCT.salePrice} /></div>
+          <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} /></div>
         <button
           className={`bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2 ${!selectedSize ? 'opacity-50 cursor-not-allowed' : ''}`}
           onClick={handleAddToCart}
@@ -279,8 +277,8 @@ export default function TracksuitPage() {
 
       <FrequentlyBoughtTogether
         products={boughtTogetherItems}
-        onAddToCart={(item) => { addToCart({ productId: item.id, name: item.name, price: item.price, salePrice: (item as any).salePrice, image: item.image, quantity: 1, size: 'M' }); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
-        onAddAllToCart={() => { boughtTogetherItems.forEach(item => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, salePrice: (item as any).salePrice ? (item as any).salePrice * 0.85 : undefined, image: item.image, quantity: 1, size: 'M' })); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
+        onAddToCart={(item) => { addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: 'M' }); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
+        onAddAllToCart={() => { boughtTogetherItems.forEach(item => addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: 'M' })); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
       />
 
       {/* Section 3: Customer Reviews */}

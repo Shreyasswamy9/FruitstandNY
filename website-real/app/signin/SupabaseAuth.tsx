@@ -1,8 +1,10 @@
 "use client";
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '../supabase-client';
+import { usePasswordVisibilityToggle } from '@/hooks/usePasswordVisibilityToggle';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const appearance = {
   theme: ThemeSupa,
@@ -25,6 +27,66 @@ const appearance = {
 };
 
 export default function SupabaseAuth() {
+  usePasswordVisibilityToggle();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [redirectTo, setRedirectTo] = useState<string | undefined>(undefined);
+
+  const rawRedirect = searchParams?.get('redirect') ?? null;
+  const authCode = searchParams?.get('code') ?? null;
+
+  const safeRedirect = useMemo(() => {
+    if (!rawRedirect) return '/account';
+    if (/^https?:\/\//i.test(rawRedirect)) return '/account';
+    return rawRedirect.startsWith('/') ? rawRedirect : `/${rawRedirect}`;
+  }, [rawRedirect]);
+
+  useEffect(() => {
+    if (!authCode) return;
+
+    const finalizeOAuth = async () => {
+      const { error } = await supabase.auth.exchangeCodeForSession(authCode);
+      if (error) {
+        console.error('Supabase OAuth exchange failed:', error);
+      }
+    };
+
+    finalizeOAuth();
+  }, [authCode]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!isMounted || !session) return;
+      router.replace(safeRedirect);
+    };
+
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        router.replace(safeRedirect);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, [router, safeRedirect]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const origin = window.location.origin;
+    const signinUrl = new URL('/signin', origin);
+    if (safeRedirect) {
+      signinUrl.searchParams.set('redirect', safeRedirect);
+    }
+    setRedirectTo(signinUrl.toString());
+  }, [safeRedirect]);
+
   return (
   <div className="min-h-screen bg-[#fbf6f0] text-gray-900 overflow-hidden relative">
       {/* Subtle light decorative background */}
@@ -65,6 +127,7 @@ export default function SupabaseAuth() {
                   appearance={appearance}
                   providers={['google','apple']}
                   socialLayout="horizontal"
+                  redirectTo={redirectTo}
                   localization={{
                     variables: {
                       sign_in: {
@@ -84,6 +147,17 @@ export default function SupabaseAuth() {
       </main>
 
       <style jsx global>{`
+        .fs-password-toggle {
+          font-size: 0.75rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+          color: #4b5563;
+        }
+        .fs-password-toggle:focus-visible {
+          outline: 2px solid #111;
+          outline-offset: 2px;
+        }
         /* Supabase Auth light theme refinement */
         .sbui-Auth { background: transparent !important; color: #111 !important; }
         .sbui-Card { background: #ffffff !important; border: 1px solid #e5e7eb !important; border-radius: 1rem !important; box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important; }

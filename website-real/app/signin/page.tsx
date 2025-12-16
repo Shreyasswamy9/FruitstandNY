@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import SupabaseAuth from './SupabaseAuth';
 
 export const metadata = {
@@ -8,7 +8,9 @@ export const metadata = {
 export default function SignInPage() {
   return (
     <main>
-      <SupabaseAuth />
+      <Suspense fallback={<div className="min-h-screen" />}>
+        <SupabaseAuth />
+      </Suspense>
     </main>
   );
 }

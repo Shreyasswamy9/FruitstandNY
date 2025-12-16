@@ -40,7 +40,6 @@ export default function MandarinTeePage() {
       productId: "mandarin-tee",
       name: PRODUCT.name,
       price: PRODUCT.price,
-      salePrice: (PRODUCT as any).salePrice,
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -52,13 +51,13 @@ export default function MandarinTeePage() {
   const boughtTogetherItems = getFBTForPage('mandarin-tee');
 
   const handleAddBoughtTogetherItem = (item: { id: string; name: string; price: number; image: string }) => {
-    addToCart({ productId: item.id, name: item.name, price: item.price, salePrice: (item as any).salePrice, image: item.image, quantity: 1, size: PRODUCT.sizes[2] });
+    addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: PRODUCT.sizes[2] });
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };
 
   const handleAddAllToCart = () => {
-    boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, salePrice: (item as any).salePrice ? (item as any).salePrice * 0.85 : undefined, image: item.image, quantity: 1, size: PRODUCT.sizes[2] }));
+    boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: PRODUCT.sizes[2] }));
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };

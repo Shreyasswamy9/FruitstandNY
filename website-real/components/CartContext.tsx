@@ -14,9 +14,6 @@ export interface CartItem {
   bundleId?: string;
   bundleItems?: number[];
   bundleSize?: string;
-  // Support sale prices and keep original price for UI
-  salePrice?: number;
-  originalPrice?: number;
   // Unique line identifier to distinguish same product with different options
   lineId?: string;
 }
@@ -44,17 +41,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const parsedItems = JSON.parse(stored);
         console.log('Parsed cart items:', parsedItems);
-        // Normalize loaded items to ensure originalPrice, salePrice, and effective stored price are correct
+        // Normalize loaded items: ensure `lineId` exists and preserve price as stored
         const normalized = (parsedItems as any[]).map(it => {
-          const orig = (it.originalPrice ?? it.price) as number;
-          const sale = it.salePrice ?? undefined;
-          const effective = (sale ?? orig) as number;
           const lineId = `${it.productId}::${it.size ?? ''}::${it.color ?? ''}::${it.isBundle ? 'bundle' : ''}`;
           return {
             ...it,
-            originalPrice: orig,
-            salePrice: sale,
-            price: effective,
+            price: Number(it.price) || 0,
             lineId,
           } as CartItem;
         });
@@ -88,11 +80,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addToCart = (item: CartItem) => {
     setItems(prev => {
-      // Normalize incoming item: preserve originalPrice and salePrice, and set stored price to effective price
-      const orig = (item.originalPrice ?? item.price) as number;
-      const sale = item.salePrice ?? undefined;
-      const effectivePrice = (sale ?? orig) as number;
-      const normalized: CartItem = { ...item, originalPrice: orig, salePrice: sale, price: effectivePrice };
+      // Normalize incoming item: ensure price is numeric and produce a stable lineId
+      const normalized: CartItem = { ...item, price: Number(item.price) || 0 };
       const lineId = `${normalized.productId}::${normalized.size ?? ''}::${normalized.color ?? ''}::${normalized.isBundle ? 'bundle' : ''}`;
       normalized.lineId = lineId;
 

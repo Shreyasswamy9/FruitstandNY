@@ -7,11 +7,13 @@ import SizeGuide from "@/components/SizeGuide";
 import BundleSheet from '@/components/BundleSheet'
 import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
-import ColorPicker from '@/components/ColorPicker';
+import ColorPicker, { type ColorOption } from '@/components/ColorPicker';
 
 // Fuji Long Sleeve color image map (multiple images per color for gallery)
 // Slugs: arboretum, hudson-blue, redbird, broadway-noir
-const FUJI_COLOR_IMAGE_MAP: Record<string, string[]> = {
+type FujiColorSlug = 'arboretum' | 'hudson-blue' | 'redbird' | 'broadway-noir';
+
+const FUJI_COLOR_IMAGE_MAP: Record<FujiColorSlug, string[]> = {
   'arboretum': [
     '/images/products/fuji-tshirt/Arboretum/F2.png',
     '/images/products/fuji-tshirt/Arboretum/F11.png',
@@ -34,6 +36,14 @@ const FUJI_COLOR_IMAGE_MAP: Record<string, string[]> = {
   ]
 };
 
+const isFujiColorSlug = (value: string): value is FujiColorSlug =>
+  Object.prototype.hasOwnProperty.call(FUJI_COLOR_IMAGE_MAP, value);
+
+type FujiColorOption = ColorOption & {
+  images: string[];
+  slug: FujiColorSlug;
+};
+
 const PRODUCT = {
   name: "Fuji Long Sleeve",
   price: 80,
@@ -49,14 +59,14 @@ const PRODUCT = {
 };
 
 export default function FujiTshirtPage() {
-  const colorOptions = useMemo(() => [
+  const colorOptions = useMemo<FujiColorOption[]>(() => [
     { name: 'Arboretum', slug: 'arboretum', color: '#0f5132', images: FUJI_COLOR_IMAGE_MAP['arboretum'], bg: '#e6f3ec', border: '#b6d9c6' },
     { name: 'Hudson Blue', slug: 'hudson-blue', color: '#243b5a', images: FUJI_COLOR_IMAGE_MAP['hudson-blue'], bg: '#e5edf6', border: '#c2d2e6' },
     { name: 'Redbird', slug: 'redbird', color: '#c21010', images: FUJI_COLOR_IMAGE_MAP['redbird'], bg: '#fceaea', border: '#f4bcbc' },
     { name: 'Broadway Noir', slug: 'broadway-noir', color: '#000000', images: FUJI_COLOR_IMAGE_MAP['broadway-noir'], bg: '#ededed', border: '#d4d4d4' },
   ], []);
-  const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
-  const [selectedImage, setSelectedImage] = useState(colorOptions[0].images[0]);
+  const [selectedColor, setSelectedColor] = useState<FujiColorOption>(colorOptions[0]);
+  const [selectedImage, setSelectedImage] = useState<string>(colorOptions[0].images[0]);
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
   const [bundleOpen, setBundleOpen] = useState(false);
@@ -74,6 +84,7 @@ export default function FujiTshirtPage() {
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
+      color: selectedColor.name,
     });
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
@@ -83,26 +94,26 @@ export default function FujiTshirtPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
-    const colorSlug = params.get('color');
-    if (colorSlug) {
-      const found = colorOptions.find(c => c.slug === colorSlug);
-      if (found) {
-        setSelectedColor(found);
-        setSelectedImage(found.images[0]);
-      }
+    const colorSlugParam = params.get('color');
+    if (!colorSlugParam || !isFujiColorSlug(colorSlugParam)) return;
+    const colorSlug = colorSlugParam;
+    const found = colorOptions.find(c => c.slug === colorSlug);
+    if (found) {
+      setSelectedColor(found);
+      setSelectedImage(found.images[0]);
     }
   }, [colorOptions]);
 
   const boughtTogetherItems = getFBTForPage('fuji-tshirt');
 
   const handleAddBoughtTogetherItem = (item: { id: string; name: string; price: number; image: string }) => {
-    addToCart({ productId: item.id, name: item.name, price: item.price, salePrice: (item as any).salePrice, image: item.image, quantity: 1, size: "M" });
+    addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: "M" });
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };
 
   const handleAddAllToCart = () => {
-    boughtTogetherItems.forEach(item => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, salePrice: (item as any).salePrice ? (item as any).salePrice * 0.85 : undefined, image: item.image, quantity: 1, size: "M" }));
+    boughtTogetherItems.forEach(item => addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: "M" }));
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };
@@ -146,10 +157,12 @@ export default function FujiTshirtPage() {
               options={colorOptions}
               selectedName={selectedColor.name}
               onSelect={(opt) => {
-                // cast to the page's variant type to satisfy TS
-                setSelectedColor(opt as any);
-                setSelectedImage((opt.images && opt.images[0]) || selectedImage);
-                if (typeof window !== 'undefined' && opt.slug) window.history.replaceState(null, '', `/shop/fuji-tshirt?color=${opt.slug}`);
+                const match = colorOptions.find(c => c.name === opt.name) ?? colorOptions[0];
+                setSelectedColor(match);
+                setSelectedImage(match.images[0]);
+                if (typeof window !== 'undefined' && match.slug) {
+                  window.history.replaceState(null, '', `/shop/fuji-tshirt?color=${match.slug}`);
+                }
               }}
             />
           </div>

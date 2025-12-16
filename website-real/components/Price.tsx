@@ -2,7 +2,7 @@ import React from 'react';
 
 type PriceProp = {
   price: number | string;
-  salePrice?: number | string | null;
+  salePrice?: number | string;
   className?: string;
   strikeColor?: string;
 };
@@ -17,21 +17,22 @@ const format = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDig
 
 export default function Price({ price, salePrice, className, strikeColor }: PriceProp) {
   const p = toNumber(price);
-  const s = salePrice != null ? toNumber(salePrice) : NaN;
+  const sale = salePrice !== undefined ? toNumber(salePrice) : undefined;
 
   if (!Number.isFinite(p)) {
-    // fallback to raw string
     return <span className={className}>{String(price)}</span>;
   }
 
-  if (Number.isFinite(s) && s < p) {
-    return (
-      <span className={className}>
-        <span style={{ textDecoration: 'line-through', color: strikeColor || '#6b7280', marginRight: 8 }}>{format(p)}</span>
-        <span style={{ fontWeight: 700, color: '#111827' }}>{format(s)}</span>
-      </span>
-    );
+  const showSale = sale !== undefined && Number.isFinite(sale) && Number(sale) < Number(p);
+
+  if (!showSale) {
+    return <span className={className}>{format(p)}</span>;
   }
 
-  return <span className={className}>{format(p)}</span>;
+  return (
+    <span className={className}>
+      <span className="line-through mr-2" style={strikeColor ? { color: strikeColor } : undefined}>{format(p)}</span>
+      <span>{format(Number(sale))}</span>
+    </span>
+  );
 }

@@ -4,6 +4,7 @@ import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '../app/supabase-client';
 import { useEffect, useState } from 'react';
+import { usePasswordVisibilityToggle } from '@/hooks/usePasswordVisibilityToggle';
 
 interface SupabaseAuthModalProps {
   isOpen: boolean;
@@ -13,9 +14,16 @@ interface SupabaseAuthModalProps {
 export function SignupModal({ isOpen, onClose }: SupabaseAuthModalProps) {
   //const supabase = createClient();
   const [mounted, setMounted] = useState(false);
+  const [redirectTo, setRedirectTo] = useState<string | undefined>(undefined);
+  usePasswordVisibilityToggle();
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    setRedirectTo(`${window.location.origin}/auth/callback`);
   }, []);
 
   useEffect(() => {
@@ -144,7 +152,7 @@ export function SignupModal({ isOpen, onClose }: SupabaseAuthModalProps) {
             },
           }}
           providers={['google', 'apple']}
-          redirectTo={`${window.location.origin}/auth/callback`}
+          redirectTo={redirectTo}
           view="sign_in"
           showLinks={true}
           localization={{

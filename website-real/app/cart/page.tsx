@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import Link from "next/link"
 // import StaggeredMenu from "../../components/StagerredMenu"
 import { motion } from "framer-motion"
@@ -10,53 +10,78 @@ import Image from "next/image"
 import Price from '@/components/Price'
 import { useCheckout } from "../../hooks/useCheckout"
 import { supabase } from "../supabase-client"
-import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import type { User } from "@supabase/supabase-js"
 
+type CountryCodeDefinition = {
+  code: string;
+  country: string; // ISO 3166-1 alpha-2
+  name: string;
+};
+
+type CountryCodeOption = CountryCodeDefinition & {
+  flag: string;
+  label: string;
+  value: string;
+};
+
+const getFlagEmoji = (isoCode: string): string => {
+  if (!isoCode || isoCode.length !== 2) return '';
+  const codePoints = isoCode
+    .toUpperCase()
+    .split('')
+    .map((char) => 0x1f1e6 + (char.charCodeAt(0) - 65));
+  return String.fromCodePoint(...codePoints);
+};
+
+const getDialCodeFromValue = (value: string): string => {
+  const [, dialCode] = value.split('|');
+  return dialCode ?? value;
+};
+
+const RAW_COUNTRY_CODES: CountryCodeDefinition[] = [
+  { code: "+1", country: "US", name: "United States" },
+  { code: "+1", country: "CA", name: "Canada" },
+  { code: "+44", country: "GB", name: "United Kingdom" },
+  { code: "+33", country: "FR", name: "France" },
+  { code: "+49", country: "DE", name: "Germany" },
+  { code: "+39", country: "IT", name: "Italy" },
+  { code: "+34", country: "ES", name: "Spain" },
+  { code: "+31", country: "NL", name: "Netherlands" },
+  { code: "+32", country: "BE", name: "Belgium" },
+  { code: "+41", country: "CH", name: "Switzerland" },
+  { code: "+43", country: "AT", name: "Austria" },
+  { code: "+45", country: "DK", name: "Denmark" },
+  { code: "+46", country: "SE", name: "Sweden" },
+  { code: "+47", country: "NO", name: "Norway" },
+  { code: "+358", country: "FI", name: "Finland" },
+  { code: "+91", country: "IN", name: "India" },
+  { code: "+86", country: "CN", name: "China" },
+  { code: "+81", country: "JP", name: "Japan" },
+  { code: "+82", country: "KR", name: "South Korea" },
+  { code: "+61", country: "AU", name: "Australia" },
+  { code: "+64", country: "NZ", name: "New Zealand" },
+  { code: "+55", country: "BR", name: "Brazil" },
+  { code: "+52", country: "MX", name: "Mexico" },
+  { code: "+27", country: "ZA", name: "South Africa" }
+];
+
+const COUNTRY_CODE_OPTIONS: CountryCodeOption[] = RAW_COUNTRY_CODES.map((entry) => {
+  const flag = getFlagEmoji(entry.country);
+  const value = `${entry.country}|${entry.code}`;
+  const label = `${flag ? `${flag} ` : ''}${entry.country} · ${entry.name} (${entry.code})`;
+  return { ...entry, flag, label, value };
+});
+
 export default function CartPage() {
   // const [menuOpen, setMenuOpen] = useState(false)
-  const [couponCode, setCouponCode] = useState("")
-  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number; type: 'percentage' | 'fixed' | 'shipping' } | null>(null)
-  const [couponError, setCouponError] = useState("")
-  const [couponLoading, setCouponLoading] = useState(false)
+  // Coupons and site-wide sale/discount logic removed per request
   const [showSignInModal, setShowSignInModal] = useState(false)
   const [showGuestCheckout, setShowGuestCheckout] = useState(false)
-  const [addressSuggestions, setAddressSuggestions] = useState<Array<{
-    street: string;
-    city: string;
-    state: string;
-    zipCode: string;
-  }>>([])
-  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false)
 
-  // Country codes for phone numbers
-  const countryCodes = [
-    { code: "+1", country: "US", name: "United States" },
-    { code: "+1", country: "CA", name: "Canada" },
-    { code: "+44", country: "GB", name: "United Kingdom" },
-    { code: "+33", country: "FR", name: "France" },
-    { code: "+49", country: "DE", name: "Germany" },
-    { code: "+39", country: "IT", name: "Italy" },
-    { code: "+34", country: "ES", name: "Spain" },
-    { code: "+31", country: "NL", name: "Netherlands" },
-    { code: "+32", country: "BE", name: "Belgium" },
-    { code: "+41", country: "CH", name: "Switzerland" },
-    { code: "+43", country: "AT", name: "Austria" },
-    { code: "+45", country: "DK", name: "Denmark" },
-    { code: "+46", country: "SE", name: "Sweden" },
-    { code: "+47", country: "NO", name: "Norway" },
-    { code: "+358", country: "FI", name: "Finland" },
-    { code: "+91", country: "IN", name: "India" },
-    { code: "+86", country: "CN", name: "China" },
-    { code: "+81", country: "JP", name: "Japan" },
-    { code: "+82", country: "KR", name: "South Korea" },
-    { code: "+61", country: "AU", name: "Australia" },
-    { code: "+64", country: "NZ", name: "New Zealand" },
-    { code: "+55", country: "BR", name: "Brazil" },
-    { code: "+52", country: "MX", name: "Mexico" },
-    { code: "+27", country: "ZA", name: "South Africa" }
-  ];
+  // Country codes for phone numbers (precomputed with flags and labels)
+  const countryCodes = COUNTRY_CODE_OPTIONS;
+  const defaultPhoneCountry = countryCodes[0]?.value ?? '';
   const [guestFormErrors, setGuestFormErrors] = useState({
     email: "",
     firstName: "",
@@ -72,7 +97,7 @@ export default function CartPage() {
     firstName: "",
     lastName: "",
     phone: "",
-    phoneCountryCode: "+1",
+    phoneCountryCode: defaultPhoneCountry,
     address: {
       street: "",
       city: "",
@@ -111,48 +136,9 @@ export default function CartPage() {
   }, [])
   const router = useRouter();
 
-  const getCartTotal = () => {
-    return items.reduce((total, item) => total + (item.price * item.quantity), 0);
-  };
+  const getCartTotal = () => items.reduce((total, item) => total + (Number(item.price) * item.quantity), 0);
 
-  // Coupon validation function
-  const validateCoupon = async (code: string) => {
-    setCouponLoading(true);
-    setCouponError("");
-    
-    // Simulate API call - replace with actual coupon validation logic
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-      
-      // Mock coupon codes for demonstration
-      const validCoupons = {
-        'SAVE10': { discount: 10, type: 'percentage' as const },
-        'WELCOME20': { discount: 20, type: 'percentage' as const },
-        'SAVE5': { discount: 5, type: 'fixed' as const },
-        'FREESHIP': { discount: 0, type: 'shipping' as const },
-        'STUDENT15': { discount: 15, type: 'percentage' as const },
-      };
-      
-      const coupon = validCoupons[code.toUpperCase() as keyof typeof validCoupons];
-      
-      if (coupon) {
-        setAppliedCoupon({ code: code.toUpperCase(), ...coupon });
-        setCouponCode("");
-        setCouponError("");
-      } else {
-        setCouponError("Invalid coupon code. Please try again.");
-      }
-    } catch{
-      setCouponError("Error validating coupon. Please try again.");
-    } finally {
-      setCouponLoading(false);
-    }
-  };
-
-  const removeCoupon = () => {
-    setAppliedCoupon(null);
-    setCouponError("");
-  };
+  // Coupon functionality removed per request
 
   const handleRemove = (productId: string) => {
     // `productId` may be a lineId (preferred) or a productId for backwards compatibility
@@ -184,187 +170,27 @@ export default function CartPage() {
     }
   };
 
-  // Effective subtotal (sale prices) and original subtotal (pre-sale prices)
-  const effectiveSubtotal = getCartTotal();
-  const originalSubtotal = items.reduce((sum, item) => {
-    const orig = (item as any).originalPrice ?? item.price;
-    return sum + (orig * item.quantity);
-  }, 0);
+  // Subtotal (no per-item sale/coupon applied)
+  const subtotal = getCartTotal();
+  // Shipping thresholds based on subtotal
+  const shipping = subtotal >= 20 ? 0 : 8.99;
+  const isPriorityShipping = subtotal >= 125;
+  const finalShipping = shipping;
+  const tax = subtotal * 0.08875; // NY tax rate
+  const total = subtotal + finalShipping + tax;
 
-  const blackFridaySavings = Math.max(0, originalSubtotal - effectiveSubtotal);
-
-  // subtotal here refers to the effective subtotal (sale prices, before coupon)
-  const subtotal = effectiveSubtotal;
-
-  // Apply coupon discount
-  let discount = 0;
-  let discountedSubtotal = subtotal;
-  if (appliedCoupon) {
-    if (appliedCoupon.type === 'percentage') {
-      discount = subtotal * (appliedCoupon.discount / 100);
-      discountedSubtotal = subtotal - discount;
-    } else if (appliedCoupon.type === 'fixed') {
-      discount = Math.min(appliedCoupon.discount, subtotal);
-      discountedSubtotal = subtotal - discount;
-    } else if (appliedCoupon.type === 'shipping') {
-      // shipping coupon doesn't change subtotal
-      discountedSubtotal = subtotal;
-    }
-  }
-
-  // Shipping rules are determined from discountedSubtotal (post-coupon) per earlier change
-  const shipping = discountedSubtotal >= 20 ? 0 : 8.99;
-  const isPriorityShipping = discountedSubtotal >= 125;
-  let freeShipping = shipping === 0;
-  if (appliedCoupon?.type === 'shipping') freeShipping = true;
-  const finalShipping = freeShipping ? 0 : shipping;
-
-  const tax = discountedSubtotal * 0.08875; // NY tax rate applied after discounts
-  const total = discountedSubtotal + finalShipping + tax;
-
-  // Calculate available offers to entice more purchases
-  const getAvailableOffers = () => {
-    const offers = [];
-    
-    // Free shipping offer
-    if (discountedSubtotal < 20 && discountedSubtotal > 0) {
-      const needed = 20 - discountedSubtotal;
-      offers.push({
-        type: 'shipping',
-        message: `Add $${needed.toFixed(2)} more for FREE shipping!`,
-        savings: 8.99,
-        threshold: 20,
-        current: discountedSubtotal
-      });
-    }
-
-    // Priority shipping offer
-    if (discountedSubtotal >= 20 && discountedSubtotal < 125) {
-      const needed = 125 - discountedSubtotal;
-      offers.push({
-        type: 'priority',
-        message: `Add $${needed.toFixed(2)} more for FREE priority shipping!`,
-        savings: 15.99,
-        threshold: 125,
-        current: discountedSubtotal
-      });
-    }
-    
-    // No other offers shown here; only shipping/priority messaging is displayed.
-    
-    return offers;
-  };
-
-  const availableOffers = getAvailableOffers();
-
-  // Address autocomplete function
-  const fetchAddressSuggestions = async (query: string) => {
-    if (query.length < 2) {
-      setAddressSuggestions([]);
-      setShowAddressSuggestions(false);
-      return;
-    }
-
-    try {
-      // Try to use the Places API first
-      try {
-        const response = await fetch(`/api/places?query=${encodeURIComponent(query)}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.suggestions && data.suggestions.length > 0) {
-            setAddressSuggestions(data.suggestions);
-            setShowAddressSuggestions(true);
-            return;
-          }
-        }
-      } catch (apiError) {
-        console.log('Places API not available, using fallback');
-      }
-
-      // Fallback to expanded mock address database
-      const mockAddressDatabase = [
-        // New York addresses
-        { street: "123 Main Street", city: "New York", state: "NY", zipCode: "10001" },
-        { street: "456 Broadway", city: "New York", state: "NY", zipCode: "10012" },
-        { street: "789 Fifth Avenue", city: "New York", state: "NY", zipCode: "10022" },
-        { street: "321 Park Avenue", city: "New York", state: "NY", zipCode: "10016" },
-        { street: "654 Wall Street", city: "New York", state: "NY", zipCode: "10005" },
-        { street: "987 Madison Avenue", city: "New York", state: "NY", zipCode: "10021" },
-        { street: "147 Central Park West", city: "New York", state: "NY", zipCode: "10023" },
-        { street: "258 West 14th Street", city: "New York", state: "NY", zipCode: "10011" },
-        { street: "369 East 76th Street", city: "New York", state: "NY", zipCode: "10021" },
-        { street: "741 Amsterdam Avenue", city: "New York", state: "NY", zipCode: "10025" },
-        
-        // Los Angeles addresses
-        { street: "1001 Wilshire Boulevard", city: "Los Angeles", state: "CA", zipCode: "90017" },
-        { street: "2020 Santa Monica Boulevard", city: "Los Angeles", state: "CA", zipCode: "90404" },
-        { street: "3030 Sunset Boulevard", city: "Los Angeles", state: "CA", zipCode: "90026" },
-        { street: "4040 Hollywood Boulevard", city: "Los Angeles", state: "CA", zipCode: "90028" },
-        { street: "5050 Melrose Avenue", city: "Los Angeles", state: "CA", zipCode: "90038" },
-        
-        // Chicago addresses
-        { street: "100 North Michigan Avenue", city: "Chicago", state: "IL", zipCode: "60601" },
-        { street: "200 South State Street", city: "Chicago", state: "IL", zipCode: "60604" },
-        { street: "300 West Roosevelt Road", city: "Chicago", state: "IL", zipCode: "60607" },
-        
-        // Miami addresses
-        { street: "1500 Ocean Drive", city: "Miami Beach", state: "FL", zipCode: "33139" },
-        { street: "2600 Biscayne Boulevard", city: "Miami", state: "FL", zipCode: "33137" },
-        
-        // Common street patterns that match any input
-        { street: `${query.charAt(0).toUpperCase() + query.slice(1)} Street`, city: "New York", state: "NY", zipCode: "10001" },
-        { street: `${query.charAt(0).toUpperCase() + query.slice(1)} Avenue`, city: "New York", state: "NY", zipCode: "10003" },
-        { street: `${query.charAt(0).toUpperCase() + query.slice(1)} Boulevard`, city: "Los Angeles", state: "CA", zipCode: "90210" },
-        { street: `${query.charAt(0).toUpperCase() + query.slice(1)} Drive`, city: "Chicago", state: "IL", zipCode: "60601" },
-        { street: `${query.charAt(0).toUpperCase() + query.slice(1)} Lane`, city: "Miami", state: "FL", zipCode: "33101" }
-      ];
-
-      // Smart filtering with multiple match criteria
-      const filteredSuggestions = mockAddressDatabase.filter(addr => {
-        const queryLower = query.toLowerCase();
-        return (
-          addr.street.toLowerCase().includes(queryLower) ||
-          addr.city.toLowerCase().includes(queryLower) ||
-          addr.state.toLowerCase().includes(queryLower) ||
-          addr.zipCode.includes(query) ||
-          // Partial word matching
-          addr.street.toLowerCase().split(' ').some(word => word.startsWith(queryLower)) ||
-          addr.city.toLowerCase().split(' ').some(word => word.startsWith(queryLower))
-        );
-      }).slice(0, 8); // Limit to 8 suggestions
-
-      setAddressSuggestions(filteredSuggestions);
-      setShowAddressSuggestions(filteredSuggestions.length > 0);
-
-    } catch (error) {
-      console.error('Error fetching address suggestions:', error);
-      setAddressSuggestions([]);
-      setShowAddressSuggestions(false);
-    }
-  };
-
-  const selectAddressSuggestion = (suggestion: { street: string; city: string; state: string; zipCode: string }) => {
-    setGuestData(prev => ({
-      ...prev,
-      address: {
-        ...prev.address,
-        street: suggestion.street,
-        city: suggestion.city,
-        state: suggestion.state,
-        zipCode: suggestion.zipCode
-      }
-    }));
-    setShowAddressSuggestions(false);
-    setAddressSuggestions([]);
-  };
+  // Available offers removed (no coupons/promos)
 
   const handleCheckout = async () => {
     if (items.length === 0) return;
 
     // Check if user is authenticated
     if (!isSignedIn && !showGuestCheckout) {
-      // Redirect to Supabase sign-in page
-      router.push('/signin')
+      // Redirect unauthenticated customers to sign-in and preserve intended destination
+      const redirectTarget = typeof window !== 'undefined'
+        ? `/signin?redirect=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}`
+        : '/signin';
+      router.push(redirectTarget);
       return;
     }
 
@@ -394,7 +220,7 @@ export default function CartPage() {
             email: guestData.email,
             firstName: guestData.firstName,
             lastName: guestData.lastName,
-            phone: guestData.phoneCountryCode + guestData.phone,
+            phone: getDialCodeFromValue(guestData.phoneCountryCode) + guestData.phone,
             address: guestData.address,
           },
         });
@@ -447,19 +273,19 @@ export default function CartPage() {
       case "email":
         return validateEmail(value);
       case "firstName":
-        return validateRequired(value, "First name");
+        return "";
       case "lastName":
-        return validateRequired(value, "Last name");
+        return "";
       case "phone":
         return validatePhone(value);
       case "address.street":
-        return validateRequired(value, "Street address");
+        return "";
       case "address.city":
-        return validateRequired(value, "City");
+        return "";
       case "address.state":
-        return validateRequired(value, "State");
+        return "";
       case "address.zipCode":
-        return validateZipCode(value);
+        return value.trim() ? validateZipCode(value) : "";
       default:
         return "";
     }
@@ -473,6 +299,19 @@ export default function CartPage() {
         ...prev,
         [errorKey]: ""
       }));
+    }
+
+    if (field === "phoneCountryCode" && typeof value === "string") {
+      const [iso] = value.split("|");
+      setGuestData(prev => ({
+        ...prev,
+        phoneCountryCode: value,
+        address: {
+          ...prev.address,
+          country: iso || prev.address.country
+        }
+      }));
+      return;
     }
 
     // Update the form data
@@ -651,7 +490,7 @@ export default function CartPage() {
                             )}
                           </div>
                           <p className="text-lg font-bold text-gray-900 mt-2">
-                            <Price price={item.originalPrice ?? item.price} salePrice={item.salePrice} />
+                            <Price price={item.price} />
                           </p>
                         </div>
                         
@@ -724,166 +563,22 @@ export default function CartPage() {
               >
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">Order Summary</h2>
                 
-                {/* Coupon Code Section */}
-                <div className="mb-6 p-4 bg-gray-50 rounded-xl">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-3">Promo Code</h3>
-                  
-                  {appliedCoupon ? (
-                    <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <div className="flex items-center">
-                        <svg className="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span className="text-sm font-medium text-green-700">
-                          {appliedCoupon.code} applied
-                        </span>
-                      </div>
-                      <button
-                        onClick={removeCoupon}
-                        className="text-green-600 hover:text-green-800 text-sm font-medium"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="flex space-x-2">
-                        <input
-                          type="text"
-                          value={couponCode}
-                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                          placeholder="Enter promo code"
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-sm"
-                          disabled={couponLoading}
-                        />
-                        <button
-                          onClick={() => validateCoupon(couponCode)}
-                          disabled={!couponCode.trim() || couponLoading}
-                          className="px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          {couponLoading ? (
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          ) : (
-                            'Apply'
-                          )}
-                        </button>
-                      </div>
-                      
-                      {couponError && (
-                        <p className="text-red-500 text-xs mt-1">{couponError}</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-                
-                {/* Available Offers Section */}
-                {availableOffers.length > 0 && (
-                  <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-4 mb-6">
-                    <h4 className="text-sm font-semibold text-purple-800 mb-3 flex items-center">
-                      <span className="mr-2">🎉</span>
-                      Available Offers - Save More!
-                    </h4>
-                    <div className="space-y-3">
-                      {availableOffers.map((offer, index) => (
-                        <div key={index} className="bg-white rounded-lg p-3 border border-purple-100">
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <p className="text-sm text-gray-700 font-medium">{offer.message}</p>
-                              <div className="mt-1 w-full bg-gray-200 rounded-full h-2">
-                                <div 
-                                  className="bg-gradient-to-r from-purple-400 to-blue-400 h-2 rounded-full transition-all duration-300"
-                                  style={{ width: `${(offer.current / offer.threshold) * 100}%` }}
-                                ></div>
-                              </div>
-                            </div>
-                            <div className="ml-3 text-right">
-                              <p className="text-xs text-gray-500">Save up to</p>
-                              <p className="text-sm font-bold text-green-600">${offer.savings.toFixed(2)}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
                 <div className="space-y-4">
                   <div className="flex justify-between text-gray-600">
-                    <span>Original Prices Subtotal</span>
-                    <span>${originalSubtotal.toFixed(2)}</span>
-                  </div>
-
-                  {blackFridaySavings > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span>Black Friday Savings</span>
-                      <span>-${blackFridaySavings.toFixed(2)}</span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between text-gray-600">
-                    <span>Sale Subtotal</span>
+                    <span>Subtotal</span>
                     <span>${subtotal.toFixed(2)}</span>
                   </div>
 
-                  {appliedCoupon && discount > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span>Discount ({appliedCoupon.code})</span>
-                      <span>-${discount.toFixed(2)}</span>
-                    </div>
-                  )}
-                  
                   <div className="flex justify-between text-gray-600">
                     <span>Shipping</span>
-                    <span>
-                      {finalShipping === 0 ? (
-                        appliedCoupon?.type === 'shipping' ? (
-                          <span className="text-green-600">FREE (Promo)</span>
-                        ) : isPriorityShipping ? (
-                          'FREE PRIORITY'
-                        ) : (
-                          'FREE'
-                        )
-                      ) : (
-                        `$${finalShipping.toFixed(2)}`
-                      )}
-                    </span>
+                    <span>{finalShipping === 0 ? 'FREE' : `$${finalShipping.toFixed(2)}`}</span>
                   </div>
-                  
-                  {finalShipping === 0 && isPriorityShipping && appliedCoupon?.type !== 'shipping' && (
-                    <p className="text-sm text-purple-600 font-medium">
-                      ⚡ Priority shipping included!
-                    </p>
-                  )}
-                  
-                  {finalShipping === 0 && !isPriorityShipping && appliedCoupon?.type !== 'shipping' && (
-                    <p className="text-sm text-green-600 font-medium">
-                      🎉 You qualify for free shipping!
-                    </p>
-                  )}
-                  
-                  {appliedCoupon?.type === 'shipping' && (
-                    <p className="text-sm text-green-600 font-medium">
-                      🎫 Free shipping from promo code!
-                    </p>
-                  )}
-                  
-                  {discountedSubtotal < 20 && discountedSubtotal > 0 && appliedCoupon?.type !== 'shipping' && (
-                    <p className="text-sm text-gray-500">
-                      Add ${(20 - discountedSubtotal).toFixed(2)} more for free shipping
-                    </p>
-                  )}
 
-                  {discountedSubtotal >= 20 && discountedSubtotal < 125 && appliedCoupon?.type !== 'shipping' && (
-                    <p className="text-sm text-purple-500">
-                      Add ${(125 - discountedSubtotal).toFixed(2)} more for priority shipping!
-                    </p>
-                  )}
-                  
                   <div className="flex justify-between text-gray-600">
                     <span>Tax</span>
                     <span>${tax.toFixed(2)}</span>
                   </div>
-                  
+
                   <div className="border-t border-gray-200 pt-4">
                     <div className="flex justify-between text-xl font-bold text-gray-900">
                       <span>Total</span>
@@ -977,9 +672,15 @@ export default function CartPage() {
                       {/* Contact Information */}
                       <div>
                         <h5 className="text-xs font-medium text-gray-700 mb-2">CONTACT INFORMATION</h5>
+                        <p className="text-xs text-gray-500 mb-3">Only your email is required. Names and phone are optional for express wallets.</p>
                         <div className="space-y-3">
                           <input
                             type="email"
+                            name="email"
+                            autoComplete="email"
+                            autoCorrect="off"
+                            autoCapitalize="none"
+                            spellCheck={false}
                             placeholder="Email address *"
                             value={guestData.email}
                             onChange={(e) => handleGuestInputChange("email", e.target.value)}
@@ -994,50 +695,64 @@ export default function CartPage() {
                           <div className="grid grid-cols-2 gap-3">
                             <input
                               type="text"
-                              placeholder="First name *"
+                              name="given-name"
+                              autoComplete="shipping given-name"
+                              autoCorrect="off"
+                              autoCapitalize="words"
+                              spellCheck={false}
+                              placeholder="First name"
                               value={guestData.firstName}
                               onChange={(e) => handleGuestInputChange("firstName", e.target.value)}
                               className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
                                 guestFormErrors.firstName ? 'border-red-500 bg-red-50' : 'border-gray-300'
                               }`}
-                              required
                             />
                             {guestFormErrors.firstName && (
                               <p className="text-red-500 text-xs mt-1">{guestFormErrors.firstName}</p>
                             )}
                             <input
                               type="text"
-                              placeholder="Last name *"
+                              name="family-name"
+                              autoComplete="shipping family-name"
+                              autoCorrect="off"
+                              autoCapitalize="words"
+                              spellCheck={false}
+                              placeholder="Last name"
                               value={guestData.lastName}
                               onChange={(e) => handleGuestInputChange("lastName", e.target.value)}
                               className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
                                 guestFormErrors.lastName ? 'border-red-500 bg-red-50' : 'border-gray-300'
                               }`}
-                              required
                             />
                             {guestFormErrors.lastName && (
                               <p className="text-red-500 text-xs mt-1">{guestFormErrors.lastName}</p>
                             )}
                           </div>
-                          <div className="flex space-x-2">
+                          <div className="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0">
                             <select
                               value={guestData.phoneCountryCode}
                               onChange={(e) => handleGuestInputChange("phoneCountryCode", e.target.value)}
-                              className="w-20 px-2 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white"
+                              className="w-full sm:w-[200px] px-2 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white"
                               title="Select country code"
                             >
                               {countryCodes.map((country) => (
-                                <option key={`${country.code}-${country.country}`} value={country.code}>
-                                  {country.code}
+                                <option key={`${country.code}-${country.country}`} value={country.value}>
+                                  {country.label}
                                 </option>
                               ))}
                             </select>
                             <input
                               type="tel"
+                              name="tel"
+                              autoComplete="off"
+                              autoCorrect="off"
+                              autoCapitalize="none"
+                              spellCheck={false}
+                              inputMode="tel"
                               placeholder="Phone number"
                               value={guestData.phone}
                               onChange={(e) => handleGuestInputChange("phone", e.target.value)}
-                              className={`flex-1 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                              className={`w-full sm:flex-1 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
                                 guestFormErrors.phone ? 'border-red-500 bg-red-50' : 'border-gray-300'
                               }`}
                             />
@@ -1051,48 +766,22 @@ export default function CartPage() {
                       {/* Shipping Address */}
                       <div>
                         <h5 className="text-xs font-medium text-gray-700 mb-2">SHIPPING ADDRESS</h5>
+                        <p className="text-xs text-gray-500 mb-3">Optional — digital wallets like Apple Pay or Link will provide this automatically during payment.</p>
                         <div className="space-y-3">
-                          <div className="relative">
-                            <input
-                              type="text"
-                              placeholder="Street address * (start typing for suggestions)"
-                              value={guestData.address.street}
-                              onChange={(e) => {
-                                handleGuestInputChange("address.street", e.target.value);
-                                fetchAddressSuggestions(e.target.value);
-                              }}
-                              onFocus={() => {
-                                if (guestData.address.street.length >= 3) {
-                                  fetchAddressSuggestions(guestData.address.street);
-                                }
-                              }}
-                              onBlur={() => {
-                                // Delay hiding suggestions to allow selection
-                                setTimeout(() => setShowAddressSuggestions(false), 200);
-                              }}
-                              className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
-                                guestFormErrors.street ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                              }`}
-                              required
-                            />
-                            {showAddressSuggestions && addressSuggestions.length > 0 && (
-                              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                                {addressSuggestions.map((suggestion, index) => (
-                                  <button
-                                    key={index}
-                                    type="button"
-                                    onClick={() => selectAddressSuggestion(suggestion)}
-                                    className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
-                                  >
-                                    <div className="font-medium">{suggestion.street}</div>
-                                    <div className="text-gray-500 text-xs">
-                                      {suggestion.city}, {suggestion.state} {suggestion.zipCode}
-                                    </div>
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                          <input
+                            type="text"
+                            name="street-address"
+                            autoComplete="off"
+                            autoCorrect="off"
+                            autoCapitalize="words"
+                            spellCheck={false}
+                            placeholder="Street address (optional)"
+                            value={guestData.address.street}
+                            onChange={(e) => handleGuestInputChange("address.street", e.target.value)}
+                            className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                              guestFormErrors.street ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                            }`}
+                          />
                           {guestFormErrors.street && (
                             <p className="text-red-500 text-xs mt-1">{guestFormErrors.street}</p>
                           )}
@@ -1100,13 +789,17 @@ export default function CartPage() {
                             <div>
                               <input
                                 type="text"
-                                placeholder="City *"
+                                name="address-level2"
+                                autoComplete="shipping address-level2"
+                                autoCorrect="off"
+                                autoCapitalize="words"
+                                spellCheck={false}
+                                placeholder="City"
                                 value={guestData.address.city}
                                 onChange={(e) => handleGuestInputChange("address.city", e.target.value)}
                                 className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
                                   guestFormErrors.city ? 'border-red-500 bg-red-50' : 'border-gray-300'
                                 }`}
-                                required
                               />
                               {guestFormErrors.city && (
                                 <p className="text-red-500 text-xs mt-1">{guestFormErrors.city}</p>
@@ -1115,13 +808,17 @@ export default function CartPage() {
                             <div>
                               <input
                                 type="text"
-                                placeholder="State *"
+                                name="address-level1"
+                                autoComplete="shipping address-level1"
+                                autoCorrect="off"
+                                autoCapitalize="characters"
+                                spellCheck={false}
+                                placeholder="State"
                                 value={guestData.address.state}
                                 onChange={(e) => handleGuestInputChange("address.state", e.target.value)}
                                 className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
                                   guestFormErrors.state ? 'border-red-500 bg-red-50' : 'border-gray-300'
                                 }`}
-                                required
                               />
                               {guestFormErrors.state && (
                                 <p className="text-red-500 text-xs mt-1">{guestFormErrors.state}</p>
@@ -1130,13 +827,19 @@ export default function CartPage() {
                             <div>
                               <input
                                 type="text"
-                                placeholder="ZIP *"
+                                name="postal-code"
+                                autoComplete="shipping postal-code"
+                                autoCorrect="off"
+                                autoCapitalize="none"
+                                spellCheck={false}
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                placeholder="ZIP / Postal code"
                                 value={guestData.address.zipCode}
                                 onChange={(e) => handleGuestInputChange("address.zipCode", e.target.value)}
                                 className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
                                   guestFormErrors.zipCode ? 'border-red-500 bg-red-50' : 'border-gray-300'
                                 }`}
-                                required
                               />
                               {guestFormErrors.zipCode && (
                                 <p className="text-red-500 text-xs mt-1">{guestFormErrors.zipCode}</p>

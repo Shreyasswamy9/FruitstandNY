@@ -6,7 +6,7 @@ import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
-import ColorPicker from '@/components/ColorPicker';
+import ColorPicker, { type ColorOption } from '@/components/ColorPicker';
 
 const feImages = [
   "/images/products/First Edition Tee/FE1.png",
@@ -16,6 +16,10 @@ const feImages = [
   "/images/products/First Edition Tee/FE5.png",
   "/images/products/First Edition Tee/FE6.png",
 ];
+
+type FirstEditionColorOption = ColorOption & {
+  images: string[];
+};
 
 const PRODUCT = {
   name: "FIRST EDITION T",
@@ -31,12 +35,12 @@ const PRODUCT = {
 };
 
 export default function FirstEditionTeePage() {
-  const colorOptions = [
+  const colorOptions = React.useMemo<FirstEditionColorOption[]>(() => [
     { name: 'White', slug: 'white', images: feImages, color: '#ffffff', border: '#e5e7eb' },
     { name: 'Black', slug: 'black', images: feImages, color: '#000000' },
-  ];
-  const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
-  const [selectedImage, setSelectedImage] = useState(selectedColor.images[0]);
+  ], []);
+  const [selectedColor, setSelectedColor] = useState<FirstEditionColorOption>(colorOptions[0]);
+  const [selectedImage, setSelectedImage] = useState<string>(colorOptions[0].images[0]);
   const [selectedSize, setSelectedSize] = useState(PRODUCT.sizes[2]);
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
@@ -49,6 +53,7 @@ export default function FirstEditionTeePage() {
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
+      color: selectedColor.name,
     });
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
@@ -79,11 +84,12 @@ export default function FirstEditionTeePage() {
           <div className="text-2xl font-semibold mb-6">${PRODUCT.price}</div>
           {/* Color Picker */}
           <ColorPicker
-            options={colorOptions as any}
+            options={colorOptions}
             selectedName={selectedColor.name}
             onSelect={(opt) => {
-              setSelectedColor(opt as any);
-              setSelectedImage((opt.images && opt.images[0]) || selectedImage);
+              const match = colorOptions.find(c => c.name === opt.name) ?? colorOptions[0];
+              setSelectedColor(match);
+              setSelectedImage(match.images[0]);
             }}
           />
           <div className="mb-4">
@@ -117,7 +123,7 @@ export default function FirstEditionTeePage() {
       <FrequentlyBoughtTogether
         products={boughtTogetherItems}
         onAddToCart={(item) => { addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: PRODUCT.sizes[2] }); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
-        onAddAllToCart={() => { boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, image: item.image, quantity: 1, size: PRODUCT.sizes[2] })); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
+        onAddAllToCart={() => { boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: PRODUCT.sizes[2] })); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
       />
 
       {/* Reviews */}

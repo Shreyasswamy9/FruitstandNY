@@ -100,8 +100,8 @@ export default function WasabiTeePage() {
 
       <FrequentlyBoughtTogether
         products={boughtTogetherItems}
-        onAddToCart={(item) => { addToCart({ productId: item.id, name: item.name, price: item.price, salePrice: (item as any).salePrice, image: item.image, quantity: 1, size: PRODUCT.sizes[2] }); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
-        onAddAllToCart={() => { boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, salePrice: (item as any).salePrice ? (item as any).salePrice * 0.85 : undefined, image: item.image, quantity: 1, size: PRODUCT.sizes[2] })); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
+        onAddToCart={(item) => { addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: PRODUCT.sizes[2] }); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
+        onAddAllToCart={() => { boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: PRODUCT.sizes[2] })); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
       />
 
       {/* Reviews */}

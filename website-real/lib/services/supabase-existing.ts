@@ -371,69 +371,6 @@ export class SupabaseOrderService {
     return data as Order;
   }
 
-  static async createOrder(orderData: {
-    user_id?: string;
-    stripe_payment_intent_id?: string;
-    stripe_checkout_session_id?: string;
-    status?: string;
-    payment_status?: string;
-    total_amount: number;
-    subtotal: number;
-    tax_amount?: number;
-    shipping_amount?: number;
-    discount_amount?: number;
-    shipping_name: string;
-    shipping_email: string;
-    shipping_phone?: string;
-    shipping_address_line1: string;
-    shipping_address_line2?: string;
-    shipping_city: string;
-    shipping_state: string;
-    shipping_postal_code: string;
-    shipping_country: string;
-    notes?: string;
-    items: Array<{
-      product_id: string;
-      variant_id?: string;
-      product_name: string;
-      product_image_url?: string;
-      variant_details?: {
-        size?: string;
-        color?: string;
-        [key: string]: string | undefined;
-      };
-      quantity: number;
-      unit_price: number;
-      total_price: number;
-    }>;
-  }) {
-    // Use admin client to bypass RLS for order creation
-    const { items, ...order } = orderData;
-
-    const { data: newOrder, error: orderError } = await supabaseAdmin
-      .from('orders')
-      .insert(order)
-      .select()
-      .single();
-
-    if (orderError) throw orderError;
-
-    // Create order items
-    const orderItems = items.map(item => ({
-      order_id: newOrder.id,
-      ...item
-    }));
-
-    const { data: newOrderItems, error: itemsError } = await supabaseAdmin
-      .from('order_items')
-      .insert(orderItems)
-      .select();
-
-    if (itemsError) throw itemsError;
-
-    return { ...newOrder, order_items: newOrderItems } as Order & { order_items: OrderItem[] };
-  }
-
   static async updateOrderStatus(id: string, status: string) {
     const { data, error } = await supabaseAdmin
       .from('orders')

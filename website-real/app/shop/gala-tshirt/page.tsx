@@ -89,6 +89,7 @@ export default function GalaTshirtPage() {
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
+      color: selectedColor.name,
     });
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
@@ -111,13 +112,13 @@ export default function GalaTshirtPage() {
   const boughtTogetherItems = getFBTForPage('gala-tshirt');
 
   const handleAddBoughtTogetherItem = (item: { id: string; name: string; price: number; image: string }) => {
-    addToCart({ productId: item.id, name: item.name, price: item.price, salePrice: (item as any).salePrice, image: item.image, quantity: 1, size: "M" });
+    addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: "M" });
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };
 
   const handleAddAllToCart = () => {
-    boughtTogetherItems.forEach(item => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, salePrice: (item as any).salePrice ? (item as any).salePrice * 0.85 : undefined, image: item.image, quantity: 1, size: "M" }));
+    boughtTogetherItems.forEach(item => addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: "M" }));
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };

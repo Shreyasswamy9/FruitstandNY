@@ -17,7 +17,6 @@ const denimHatImages = [
 const PRODUCT = {
   name: "Indigo Hat",
   price: 44,
-  salePrice: 25,
   description: "Classic indigo denim hat with a modern fit. Durable, stylish, and perfect for any season.",
 };
 
@@ -31,7 +30,6 @@ export default function DenimHatPage() {
       productId: "denim-hat",
       name: PRODUCT.name,
       price: PRODUCT.price,
-      salePrice: PRODUCT.salePrice,
       image: selectedImage,
       quantity: 1,
     });
@@ -58,7 +56,7 @@ export default function DenimHatPage() {
       addToCart({
         productId: item.id,
         name: item.name,
-        price: item.price * 0.85, // 15% discount
+        price: item.price,
         image: item.image,
         quantity: 1,
         size: "M", // Default size for bought together items
@@ -165,7 +163,7 @@ export default function DenimHatPage() {
         <p className="text-sm text-gray-600 mb-6">Photo shows the authentic denim wash you&apos;ll receive.</p>
         <p className="text-sm text-gray-600 mb-6">Adjustable strap ensures an easy, one-size fit.</p>
         <p className="text-lg text-gray-700 mb-4">{PRODUCT.description}</p>
-        <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} salePrice={PRODUCT.salePrice} /></div>
+        <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} /></div>
         <button
           className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2"
           onClick={handleAddToCart}

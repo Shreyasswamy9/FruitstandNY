@@ -22,7 +22,6 @@ const COLOR_DATA = [
 const PRODUCT = {
   name: "Retro Track Pants",
   price: 90,
-  salePrice: 57,
   description: "Inspired by classic New York athletic warm-ups, these track pants feature bold color blocking and a relaxed, vintage silhouette designed for movement and comfort. Each colorway pays homage to various motifs, with contrasting panels and an embroidered FRUITSTAND® logo.",
   details: [
     "100% Nylon shell",
@@ -45,7 +44,6 @@ export default function TrackPantsPage() {
       productId: `track-pants-${selectedColor.slug}`,
       name: `${PRODUCT.name} - ${selectedColor.name}`,
       price: PRODUCT.price,
-      salePrice: PRODUCT.salePrice,
       image: selectedColor.img,
       quantity: 1,
       size: selectedSize,
@@ -136,7 +134,7 @@ export default function TrackPantsPage() {
               </div>
             )}
           </div>
-          <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} salePrice={PRODUCT.salePrice} /></div>
+          <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} /></div>
           <button className={`bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2 ${!selectedSize ? 'opacity-50 cursor-not-allowed' : ''}`} onClick={handleAddToCart}>
             {!selectedSize ? 'Pick a size to add to cart' : 'Add to Cart'}
           </button>
@@ -151,7 +149,6 @@ export default function TrackPantsPage() {
             productId: product.id,
             name: product.name,
             price: product.price,
-            salePrice: (product as any).salePrice,
             image: product.image,
             quantity: 1,
             size: selectedSize,
@@ -164,8 +161,7 @@ export default function TrackPantsPage() {
             addToCart({
               productId: product.id,
               name: product.name,
-              price: product.price * 0.85, // 15% discount
-              salePrice: (product as any).salePrice ? (product as any).salePrice * 0.85 : undefined,
+              price: product.price,
               image: product.image,
               quantity: 1,
               size: selectedSize,

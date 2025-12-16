@@ -15,7 +15,6 @@ const ecruHatImages = [
 const PRODUCT = {
   name: "Ecru Hat",
   price: 44,
-  salePrice: 25,
   description: "Neutral ecru hat, versatile and stylish for any look.",
 };
 
@@ -29,7 +28,6 @@ export default function EcruHatPage() {
       productId: "ecru-hat",
       name: PRODUCT.name,
       price: PRODUCT.price,
-      salePrice: PRODUCT.salePrice,
       image: selectedImage,
       quantity: 1,
     });
@@ -46,7 +44,7 @@ export default function EcruHatPage() {
   };
 
   const handleAddAllToCart = () => {
-    boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price * 0.85, image: item.image, quantity: 1 }));
+    boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1 }));
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 1500);
   };
@@ -91,7 +89,7 @@ export default function EcruHatPage() {
         <div className="md:w-1/2 flex flex-col justify-start">
           <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
           <p className="text-lg text-gray-700 mb-4">{PRODUCT.description}</p>
-          <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} salePrice={PRODUCT.salePrice} /></div>
+          <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} /></div>
           <button className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2" onClick={handleAddToCart}>
             Add to Cart
           </button>
