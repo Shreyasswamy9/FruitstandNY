@@ -29,9 +29,15 @@ const PRODUCT = {
   sizes: ["XS", "S", "M", "L", "XL", "XXL", "XXXL"],
 };
 
+// Out of stock sizes for Mandarin Tee
+const OUT_OF_STOCK_SIZES = ["XS", "S"];
+
 export default function MandarinTeePage() {
   const [selectedImage, setSelectedImage] = useState(mandarinImages[0]);
-  const [selectedSize, setSelectedSize] = useState(PRODUCT.sizes[0]);
+  // Default to first available size (skip out of stock sizes)
+  const [selectedSize, setSelectedSize] = useState(
+    PRODUCT.sizes.find(size => !OUT_OF_STOCK_SIZES.includes(size)) || PRODUCT.sizes[0]
+  );
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
@@ -64,7 +70,7 @@ export default function MandarinTeePage() {
 
   const taskbarHeight = items.length > 0 && !showPopup ? 64 : 0;
 
-  
+
 
   return (
     <div style={{ height: '100vh', overflowY: 'auto' }}>
@@ -74,7 +80,7 @@ export default function MandarinTeePage() {
       >
         ← Go Back
       </span>
-  <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingTop: 120, paddingBottom: taskbarHeight }}>
+      <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingTop: 120, paddingBottom: taskbarHeight }}>
         <div className="flex w-full md:w-1/2 flex-col items-center gap-4">
           <div className="relative w-full max-w-sm md:max-w-full aspect-square rounded-xl overflow-hidden bg-white shadow-sm">
             <Image src={selectedImage} alt={PRODUCT.name} fill sizes="(max-width: 768px) 90vw, 420px" style={{ objectFit: "contain", background: "#fff" }} priority />
@@ -93,9 +99,31 @@ export default function MandarinTeePage() {
           <div className="mb-4">
             <p className="text-sm font-medium text-gray-700 mb-3">Size:</p>
             <div className="size-single-line">
-              {PRODUCT.sizes.map((size) => (
-                <button key={size} className={`size-button px-3 rounded-lg font-semibold border-2 transition-all ${selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'}`} onClick={() => setSelectedSize(size)} type="button">{size}</button>
-              ))}
+              {PRODUCT.sizes.map((size) => {
+                const isOutOfStock = OUT_OF_STOCK_SIZES.includes(size);
+                return (
+                  <button
+                    key={size}
+                    className={`size-button px-3 rounded-lg font-semibold border-2 transition-all ${isOutOfStock
+                        ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed line-through'
+                        : selectedSize === size
+                          ? 'border-black bg-black text-white'
+                          : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'
+                      }`}
+                    onClick={() => !isOutOfStock && setSelectedSize(size)}
+                    type="button"
+                    disabled={isOutOfStock}
+                    title={isOutOfStock ? 'Out of Stock' : ''}
+                  >
+                    {size}
+                  </button>
+                );
+              })}
+            </div>
+            {/* Low stock disclaimer for available sizes */}
+            <div className="mt-2 flex items-center gap-1.5">
+              <span className="inline-block w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
+              <span className="text-sm text-orange-600 font-medium">Few units remaining</span>
             </div>
             <div className="mt-2"><SizeGuide productSlug="mandarin-tee" imagePath="/images/size-guides/Size Guide/Mandarin Tee Table.png" /></div>
           </div>
