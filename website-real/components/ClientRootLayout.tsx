@@ -1,7 +1,8 @@
 "use client"
 
 import React, { createContext, useState, useEffect } from "react"
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from "next/navigation"
+import { ensurePosthog, capturePageview } from "../instrumentation.client"
 import LogoButton from "./LogoButton"
 import CartBar from "./CartBar"
 import StaggeredMenu from "./StagerredMenu"
@@ -18,12 +19,18 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
   const [hideLogo, setHideLogo] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const isShopRoute = pathname?.startsWith('/shop')
 
   // Ensure PostHog initializes on every client render
   useEffect(() => {
-    void import("../instrumentation.client")
+    ensurePosthog()
   }, [])
+
+  useEffect(() => {
+    const query = searchParams?.toString()
+    capturePageview(query ? `${pathname}?${query}` : pathname)
+  }, [pathname, searchParams])
 
   // Apply a global class to body for pages to react (e.g., hide category pills)
   useEffect(() => {

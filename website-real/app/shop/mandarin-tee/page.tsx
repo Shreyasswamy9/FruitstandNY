@@ -30,7 +30,7 @@ const PRODUCT = {
 };
 
 // Out of stock sizes for Mandarin Tee
-const OUT_OF_STOCK_SIZES = ["XS", "S"];
+const OUT_OF_STOCK_SIZES = ["XS", "S" , "XXXL"];
 
 export default function MandarinTeePage() {
   const [selectedImage, setSelectedImage] = useState(mandarinImages[0]);
