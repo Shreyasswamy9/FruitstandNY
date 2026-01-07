@@ -158,7 +158,7 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
 
     // Try to find existing order by stripe session ID
     try {
-      const existingOrder = await SupabaseOrderService.getOrderByStripeSession(session.id);
+      const existingOrder = await SupabaseOrderService.getOrderByStripeSession(session.id).catch(() => null);
       if (existingOrder) {
         // Update existing order with Stripe shipping data + payment status
         await SupabaseOrderService.updateOrderWithShipping(existingOrder.id, shippingData);
@@ -166,51 +166,20 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
         return;
       }
     } catch (err) {
-      // Not fatal — proceed to create order
-      console.log('No existing order found (or check failed), will attempt to create one.', err);
+      // Not fatal
     }
 
-    // If we reach here, no order exists: create order + order_items using metadata
-    const metadata = session.metadata ?? {};
-    const cart = safeJsonParse<OrderCartItem[]>(metadata.cart ?? '[]', []);
-    const shipping = Number(metadata.shipping ?? 0);
-    const tax = Number(metadata.tax ?? 0);
-    // Recalculate subtotal from cart to avoid trusting client-submitted metadata
-    const cartItems = Array.isArray(cart) ? cart : [];
-    const subtotal = cartItems.reduce((sum, item) => {
-      const price = Number(item.price ?? item.unitPrice ?? 0);
-      const qty = Number(item.quantity ?? item.qty ?? 1);
-      return sum + price * qty;
-    }, 0);
+    console.log('No existing order found, will attempt to sync/create one.');
 
-    const guestData = safeJsonParse<GuestPayload>(metadata.guest ?? '{}', {});
-    const customerData = safeJsonParse<CustomerPayload>(metadata.customer ?? '{}', {});
-    const orderNumber = (metadata.order_number as string) || generateOrderNumber();
-    const stripePaymentIntent = typeof session.payment_intent === 'string'
-      ? session.payment_intent
-      : session.payment_intent?.id ?? null;
+    // If we reach here, no order exists or update failed — sync using the session
+    const syncResult = await SupabaseOrderService.syncOrderFromStripeSession(session);
 
-    const createdOrder = await createOrderWithItems({
-      orderNumber,
-      subtotal,
-      tax,
-      shipping,
-      cartItems,
-      guestData,
-      customerData,
-      stripeSessionId: session.id,
-      stripePaymentIntent,
-      shippingAddress,
-      fallbackSession: session
-    });
-
-    if (!createdOrder) {
-      console.error('Webhook: Order creation aborted. See logs above for details.');
+    if (!syncResult) {
+      console.error('Webhook: Order sync failed.');
       return;
     }
 
-    console.log('Webhook: Order created in Supabase with id', createdOrder.id)
-
+    console.log('Webhook: Order synced in Supabase with id', syncResult.id)
     console.log('Webhook processed successfully');
 
   } catch (err: unknown) {
@@ -221,7 +190,7 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
 
 async function updateOrderPaymentStatus(paymentIntentId: string, status: 'paid' | 'failed') {
   try {
-    const order = await SupabaseOrderService.getOrderByPaymentIntent(paymentIntentId);
+    const order = await SupabaseOrderService.getOrderByPaymentIntent(paymentIntentId).catch(() => null);
     if (order) {
       await SupabaseOrderService.updatePaymentStatus(order.id, status);
       if (status === 'paid') {
