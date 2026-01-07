@@ -1,6 +1,57 @@
-// Updated Supabase services to match your existing schema
 import { supabase } from '@/app/supabase-client';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import Stripe from 'stripe';
+
+// Helper: safe JSON parse
+function safeJsonParse<T = unknown>(value: unknown, fallback: T): T {
+  try {
+    if (typeof value === 'string') return JSON.parse(value) as T
+    if (value === undefined || value === null) return fallback
+    return value as T
+  } catch {
+    return fallback
+  }
+}
+
+type OrderCartItem = {
+  id?: string
+  productId?: string
+  variantId?: string
+  name?: string
+  title?: string
+  image?: string
+  product?: { images?: string[] }
+  price?: number | string
+  unitPrice?: number | string
+  quantity?: number | string
+  qty?: number | string
+  size?: string
+  selectedSize?: string
+  color?: string
+};
+
+type GuestAddress = {
+  street?: string
+  street2?: string
+  city?: string
+  state?: string
+  zipCode?: string
+  country?: string
+};
+
+type GuestPayload = {
+  firstName?: string
+  lastName?: string
+  email?: string
+  phone?: string
+  address?: GuestAddress
+};
+
+type CustomerPayload = {
+  name?: string
+  email?: string
+  phone?: string
+};
 
 // Create service role client for admin operations
 // Fallback to regular client if service role key is not set (development mode)
@@ -427,7 +478,7 @@ export class SupabaseOrderService {
         order_items (*)
       `)
       .eq('stripe_checkout_session_id', stripeSessionId)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return data as Order;
@@ -441,9 +492,136 @@ export class SupabaseOrderService {
         order_items (*)
       `)
       .eq('stripe_payment_intent_id', paymentIntentId)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return data as Order;
+  }
+
+  static async syncOrderFromStripeSession(session: Stripe.Checkout.Session) {
+    console.log('Syncing order from Stripe session:', session.id);
+
+    if (session.payment_status !== 'paid') {
+      console.warn('Skipping sync because payment is not completed.', {
+        sessionId: session.id,
+        paymentStatus: session.payment_status,
+      });
+      return null;
+    }
+
+    // 1. Check if order already exists
+    try {
+      const { data: existingOrder } = await supabaseAdmin
+        .from('orders')
+        .select(`*, order_items (*)`)
+        .eq('stripe_checkout_session_id', session.id)
+        .maybeSingle();
+
+      if (existingOrder) {
+        console.log(`Order already exists for session ${session.id}: ${existingOrder.id}`);
+        return existingOrder;
+      }
+    } catch (err) {
+      console.log('Error checking for existing order (ignoring):', err);
+    }
+
+    // 2. Extract data from session
+    const customerDetails = session.customer_details;
+    const shippingDetails = (session as any).shipping_details?.address || customerDetails?.address;
+
+    const metadata = session.metadata ?? {};
+    const cart = safeJsonParse<OrderCartItem[]>(metadata.cart ?? '[]', []);
+    const guestData = safeJsonParse<GuestPayload>(metadata.guest ?? '{}', {});
+    const customerData = safeJsonParse<CustomerPayload>(metadata.customer ?? '{}', {});
+    const shippingAmount = Number(metadata.shipping ?? 0);
+    const taxAmount = Number(metadata.tax ?? 0);
+    const orderNumber = (metadata.order_number as string) || `ORD-${Date.now()}`;
+
+    // Recalculate subtotal
+    const cartItems = Array.isArray(cart) ? cart : [];
+    const subtotal = cartItems.reduce((sum, item) => {
+      const price = Number(item.price ?? item.unitPrice ?? 0);
+      const qty = Number(item.quantity ?? item.qty ?? 1);
+      return sum + price * qty;
+    }, 0);
+
+    const stripePaymentIntent = typeof session.payment_intent === 'string'
+      ? session.payment_intent
+      : session.payment_intent?.id ?? null;
+
+    // 3. Create Order
+    const orderPayload = {
+      user_id: null,
+      order_number: orderNumber,
+      status: 'confirmed',
+      payment_status: 'paid',
+      stripe_payment_intent_id: stripePaymentIntent,
+      stripe_checkout_session_id: session.id,
+      total_amount: subtotal + shippingAmount + taxAmount,
+      subtotal,
+      tax_amount: taxAmount,
+      shipping_amount: shippingAmount,
+      discount_amount: 0,
+      shipping_name: (guestData?.firstName && guestData?.lastName)
+        ? `${guestData.firstName} ${guestData.lastName}`
+        : (customerData?.name || customerDetails?.name || ''),
+      shipping_email: customerData?.email || customerDetails?.email || guestData?.email || '',
+      shipping_phone: guestData?.phone || customerData?.phone || customerDetails?.phone || '',
+      shipping_address_line1: shippingDetails?.line1 || guestData?.address?.street || '',
+      shipping_address_line2: shippingDetails?.line2 || guestData?.address?.street2 || '',
+      shipping_city: shippingDetails?.city || guestData?.address?.city || '',
+      shipping_state: shippingDetails?.state || guestData?.address?.state || '',
+      shipping_postal_code: shippingDetails?.postal_code || guestData?.address?.zipCode || '',
+      shipping_country: shippingDetails?.country || guestData?.address?.country || 'US',
+    };
+
+    const { data: newOrder, error: createErr } = await supabaseAdmin
+      .from('orders')
+      .insert(orderPayload)
+      .select()
+      .single();
+
+    if (createErr || !newOrder) {
+      console.error('Failed to create order in Supabase', createErr);
+      throw createErr || new Error('Failed to create order');
+    }
+
+    const createdOrder = newOrder as Order;
+
+    // 4. Create Order Items
+    if (cartItems.length > 0) {
+      const orderItemRows = cartItems.map((item) => {
+        const quantity = Number(item.quantity ?? item.qty ?? 1);
+        const unitPrice = Number(item.price ?? item.unitPrice ?? 0);
+        return {
+          order_id: createdOrder.id,
+          product_id: item.id ?? item.productId ?? null,
+          variant_id: item.variantId ?? null,
+          product_name: item.name ?? item.title ?? '',
+          product_image_url: item.image ?? item.product?.images?.[0] ?? null,
+          quantity,
+          unit_price: unitPrice,
+          total_price: unitPrice * quantity,
+          variant_details: {
+            size: item.size ?? item.selectedSize ?? null,
+            color: item.color ?? null,
+            price: unitPrice,
+            image: item.image ?? null
+          }
+        };
+      });
+
+      const { error: itemsErr } = await supabaseAdmin.from('order_items').insert(orderItemRows);
+
+      if (itemsErr) {
+        console.error('Failed to insert order items, rolling back order', itemsErr);
+        await supabaseAdmin.from('orders').delete().eq('id', createdOrder.id);
+        throw itemsErr;
+      }
+
+      console.log(`Inserted ${orderItemRows.length} order items for order ${createdOrder.id}`);
+    }
+
+    return createdOrder;
   }
 }
