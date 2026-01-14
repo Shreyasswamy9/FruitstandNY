@@ -9,7 +9,7 @@ export default function SignUpPage() {
   return (
     <main>
       <Suspense fallback={<div className="min-h-screen" />}>
-        <SupabaseAuth />
+        <SupabaseAuth mode="sign_up" />
       </Suspense>
     </main>
   );

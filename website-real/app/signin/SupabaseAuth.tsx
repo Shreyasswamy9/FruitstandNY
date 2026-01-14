@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '../supabase-client';
@@ -26,11 +27,18 @@ const appearance = {
   }
 };
 
-export default function SupabaseAuth() {
+type AuthMode = 'sign_in' | 'sign_up';
+
+interface SupabaseAuthProps {
+  mode?: AuthMode;
+}
+
+export default function SupabaseAuth({ mode = 'sign_in' }: SupabaseAuthProps) {
   usePasswordVisibilityToggle();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [redirectTo, setRedirectTo] = useState<string | undefined>(undefined);
+  const isSignUp = mode === 'sign_up';
 
   const rawRedirect = searchParams?.get('redirect') ?? null;
   const authCode = searchParams?.get('code') ?? null;
@@ -80,12 +88,58 @@ export default function SupabaseAuth() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const origin = window.location.origin;
-    const signinUrl = new URL('/signin', origin);
+    const basePath = mode === 'sign_up' ? '/signup' : '/signin';
+    const signinUrl = new URL(basePath, origin);
     if (safeRedirect) {
       signinUrl.searchParams.set('redirect', safeRedirect);
     }
     setRedirectTo(signinUrl.toString());
-  }, [safeRedirect]);
+  }, [mode, safeRedirect]);
+
+  const oppositeAuthHref = useMemo(() => {
+    const base = isSignUp ? '/signin' : '/signup';
+    if (!safeRedirect) return base;
+    const params = new URLSearchParams({ redirect: safeRedirect });
+    return `${base}?${params.toString()}`;
+  }, [isSignUp, safeRedirect]);
+
+  const copy = useMemo(() => {
+    if (isSignUp) {
+      return {
+        badge: 'Join FRUITSTAND®',
+        heading: (
+          <>
+            Create your
+            {' '}
+            <span className="font-semibold">account</span>
+          </>
+        ),
+        description:
+          'Unlock drops, track orders, and personalize your FRUITSTAND experience with a single login.',
+        bullets: [
+          'Access new releases before anyone else',
+          'Save your favorite fits for later',
+          'Faster checkout and order tracking'
+        ],
+      };
+    }
+
+    return {
+      badge: 'Secure Account Access',
+      heading: (
+        <>
+          Welcome <span className="font-semibold">back</span>
+        </>
+      ),
+      description:
+        'Sign in to manage orders, track shipments, and personalize your FRUITSTAND® experience.',
+      bullets: [
+        'Order history & tracking',
+        'Manage saved addresses',
+        'Exclusive promotions'
+      ],
+    };
+  }, [isSignUp]);
 
   return (
   <div className="min-h-screen bg-[#fbf6f0] text-gray-900 overflow-hidden relative">
@@ -103,18 +157,21 @@ export default function SupabaseAuth() {
             {/* Left branding / intro */}
             <div className="space-y-6">
               <span className="inline-block px-4 py-1.5 bg-gray-100 text-gray-700 rounded-full text-xs font-medium tracking-wide shadow-sm">
-                Secure Account Access
+                {copy.badge}
               </span>
               <h1 className="text-5xl md:text-6xl font-light leading-tight">
-                Welcome <span className="font-semibold">back</span>
+                {copy.heading}
               </h1>
               <p className="text-lg text-gray-600 max-w-md">
-                Sign in to manage orders, track shipments, and personalize your {<>FRUITSTAND<sup>®</sup></>} experience. Choose Google, Apple, or classic email authentication.
+                {copy.description}
               </p>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center gap-2"><span className="inline-block w-2 h-2 rounded-full bg-gray-400" /> Order history & tracking</li>
-                <li className="flex items-center gap-2"><span className="inline-block w-2 h-2 rounded-full bg-gray-400" /> Manage saved addresses</li>
-                <li className="flex items-center gap-2"><span className="inline-block w-2 h-2 rounded-full bg-gray-400" /> Exclusive promotions</li>
+                {copy.bullets.map((bullet) => (
+                  <li key={bullet} className="flex items-center gap-2">
+                    <span className="inline-block w-2 h-2 rounded-full bg-gray-400" />
+                    {bullet}
+                  </li>
+                ))}
               </ul>
             </div>
 
@@ -128,17 +185,41 @@ export default function SupabaseAuth() {
                   providers={['google','apple']}
                   socialLayout="horizontal"
                   redirectTo={redirectTo}
+                  showLinks={false}
+                  view={mode}
                   localization={{
                     variables: {
                       sign_in: {
                         email_label: 'Email',
                         password_label: 'Password'
+                      },
+                      sign_up: {
+                        email_label: 'Email',
+                        password_label: 'Password',
+                        button_label: 'Create account'
                       }
                     }
                   }}
                 />
+                <p className="mt-4 text-sm text-gray-600 text-center">
+                  {isSignUp ? (
+                    <>
+                      Already have an account?{' '}
+                      <Link href={oppositeAuthHref} className="font-semibold text-black underline-offset-2 hover:underline">
+                        Sign in
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      Don&apos;t have an account?{' '}
+                      <Link href={oppositeAuthHref} className="font-semibold text-black underline-offset-2 hover:underline">
+                        Sign up
+                      </Link>
+                    </>
+                  )}
+                </p>
                 <p className="mt-6 text-xs text-gray-500 leading-relaxed">
-                  By signing in you agree to our{' '}<a href="/terms-and-conditions" className="underline hover:text-gray-700">Terms</a>{' '}and{' '}<a href="/privacy-policy" className="underline hover:text-gray-700">Privacy Policy</a>.
+                  By continuing you agree to our{' '}<a href="/terms-and-conditions" className="underline hover:text-gray-700">Terms</a>{' '}and{' '}<a href="/privacy-policy" className="underline hover:text-gray-700">Privacy Policy</a>.
                 </p>
               </div>
             </div>

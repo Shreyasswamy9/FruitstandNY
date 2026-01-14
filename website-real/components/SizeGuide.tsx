@@ -57,16 +57,15 @@ export const SizeGuide: React.FC<SizeGuideProps> = ({
   return (
     <>
       <motion.button
-        whileHover={{ y: -2, boxShadow: '0 6px 16px rgba(0,0,0,0.15)' }}
-        whileTap={{ scale: 0.97 }}
+        whileHover={{ y: -1 }}
+        whileTap={{ scale: 0.98 }}
         onClick={() => setOpen(true)}
-        className={`group relative inline-flex items-center gap-2 px-4 py-2 rounded-full border border-black/20 bg-white text-sm font-medium tracking-wide shadow-sm hover:border-black transition-all ${className}`}
+        className={`group inline-flex items-center gap-1 px-0 py-1 bg-transparent text-sm font-semibold tracking-wide underline underline-offset-4 decoration-black/60 hover:decoration-black transition-colors ${className}`}
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={`size-guide-modal-${productSlug}`}
       >
         <span className="relative z-10">{buttonLabel}</span>
-        <span className="w-2 h-2 rounded-full bg-black/70 group-hover:bg-black transition-colors" />
       </motion.button>
 
       <AnimatePresence>

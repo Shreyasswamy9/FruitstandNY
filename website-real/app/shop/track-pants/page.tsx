@@ -62,7 +62,7 @@ export default function TrackPantsPage() {
   
 
   return (
-    <div style={{ height: '100vh', overflowY: 'auto' }}>
+    <div>
       {/* Go Back button */}
       <span
         onClick={(e) => {
@@ -175,7 +175,6 @@ export default function TrackPantsPage() {
       {/* Section 3: Customer Reviews */}
       <div
         style={{
-          minHeight: '100vh',
           scrollSnapAlign: 'start',
           display: 'flex',
           alignItems: 'center',

@@ -12,22 +12,6 @@ import Price from "../components/Price"
 
 export default function Home() {
   const { setHideLogo } = useContext(LogoVisibilityContext)
-  // Global style to ensure no white bars on mobile
-  // This will override html/body background, margin, and padding
-  // Set --app-vh CSS variable to fix mobile 100vh issues
-  useEffect(() => {
-    function setVhVar() {
-      const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty('--app-vh', `${vh}px`);
-    }
-    setVhVar();
-    window.addEventListener('resize', setVhVar);
-    window.addEventListener('orientationchange', setVhVar);
-    return () => {
-      window.removeEventListener('resize', setVhVar);
-      window.removeEventListener('orientationchange', setVhVar);
-    };
-  }, []);
 
   // Only show intro if not already played this session
   const [showMain, setShowMain] = useState(false);
@@ -363,53 +347,12 @@ export default function Home() {
 
   return (
     <>
-      <style global jsx>{`
-        html, body {
-          background: black !important;
-          margin: 0 !important;
-          padding: 0 !important;
-          height: calc(var(--app-vh) * 100) !important;
-          min-height: calc(var(--app-vh) * 100) !important;
-          width: 100vw !important;
-          overflow-x: hidden !important;
-          overscroll-behavior: none !important;
-        }
-        
-        /* Hide scrollbars for all elements */
-        * {
-          scrollbar-width: none; /* Firefox */
-          -ms-overflow-style: none; /* IE and Edge */
-        }
-        
-        /* Hide scrollbars for webkit browsers (Chrome, Safari, etc.) */
-        *::-webkit-scrollbar {
-          display: none;
-        }
-        
-        /* Ensure scrolling still works on the main container */
-        html, body, #__next {
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-        
-        html::-webkit-scrollbar,
-        body::-webkit-scrollbar,
-        #__next::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
       <div
         ref={mainContainerRef}
         style={{
           position: "relative",
-          minHeight: "calc(var(--app-vh) * 100)",
-          height: "calc(var(--app-vh) * 100)",
-          width: "100vw",
-          zIndex: 9999,
-          overflow: "hidden",
-          overflowY: "auto",
+          width: "100%",
           overflowX: "hidden",
-          contain: "paint layout size", // isolate top-level container for smoother paints
           background: "black",
           paddingTop: "env(safe-area-inset-top)",
           paddingBottom: "env(safe-area-inset-bottom)",
@@ -422,7 +365,7 @@ export default function Home() {
             top: 0,
             left: 0,
             width: "100vw",
-            height: "calc(var(--app-vh) * 100)",
+            height: "100dvh",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -517,7 +460,7 @@ export default function Home() {
           top: 0,
           left: 0,
           width: "100vw",
-          height: "calc(var(--app-vh) * 100)",
+          height: "100dvh",
           zIndex: 1,
           opacity: showMain ? 1 : 0,
           transition: "opacity 1.5s ease-in-out",
@@ -553,7 +496,7 @@ export default function Home() {
             position: "relative",
             zIndex: 2,
             width: "100vw",
-            height: "calc(var(--app-vh) * 100)",
+            height: "100dvh",
             objectFit: "cover",
             display: "block",
             margin: 0,
@@ -1035,59 +978,6 @@ export default function Home() {
                       </div>
                     </div>
                   ))}
-                </div>
-              </div>
-
-              {/* Brand Story Section */}
-              <div 
-                className="brand-story-container"
-                style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "clamp(24px, 6vw, 48px)",
-                alignItems: "center",
-                marginBottom: "clamp(48px, 8vw, 80px)",
-                padding: "clamp(24px, 6vw, 48px)",
-                borderRadius: "clamp(16px, 3vw, 24px)",
-                background: "linear-gradient(135deg, #fbf6f0 0%, #fdf5ec 100%)",
-              }}
-              >
-                <div>
-                  <h2 style={{
-                    fontSize: "clamp(1.8rem, 6vw, 2.8rem)",
-                    fontWeight: 700,
-                    marginBottom: "clamp(16px, 4vw, 24px)",
-                    color: "#111",
-                    lineHeight: 1.1,
-                    letterSpacing: "-0.02em",
-                  }}>
-                    Crafted for the Modern Individual
-                  </h2>
-                  <p style={{
-                    fontSize: "clamp(1rem, 2.5vw, 1.2rem)",
-                    lineHeight: 1.6,
-                    color: "#666",
-                    marginBottom: "clamp(20px, 5vw, 32px)",
-                  }}>
-                    Every piece in our collection is thoughtfully designed and carefully crafted to meet the demands of contemporary lifestyle while maintaining timeless appeal.
-                  </p>
-                  {/* Learn More button intentionally removed per design */}
-                </div>
-                <div style={{
-                  position: "relative",
-                  borderRadius: "20px",
-                  overflow: "hidden",
-                  paddingBottom: "120%",
-                }}>
-                  <Image
-                    src="/images/products/First Edition Tee/FE3.png"
-                    alt="Brand Story"
-                    fill
-                    unoptimized
-                    style={{
-                      objectFit: "cover",
-                    }}
-                  />
                 </div>
               </div>
 

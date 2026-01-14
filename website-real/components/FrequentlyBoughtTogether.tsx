@@ -19,7 +19,7 @@ interface FrequentlyBoughtTogetherProps {
 
 const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> = ({ products, onAddToCart, onAddAllToCart }) => {
   return (
-    <div style={{ minHeight: '100vh', scrollSnapAlign: 'start', display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
+    <div style={{ scrollSnapAlign: 'start', display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
       <div className="max-w-4xl mx-auto w-full">
         <h2 className="text-3xl font-bold text-center mb-8">Frequently Bought Together</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

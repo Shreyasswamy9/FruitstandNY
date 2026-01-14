@@ -60,7 +60,7 @@ export default function TrackTopPage() {
   const boughtTogetherItems: FBTProduct[] = getFBTForPage('track-top');
 
   return (
-    <div style={{ height: '100vh', overflowY: 'auto' }}>
+    <div>
       <span
         onClick={() => router.back()}
         style={{ position: 'fixed', top: 24, left: '50%', transform: 'translateX(-50%)', fontSize: 16, color: '#232323', cursor: 'pointer', fontWeight: 500, zIndex: 10005, background: 'rgba(255,255,255,0.9)', border: '1px solid #e0e0e0', borderRadius: '20px', padding: '8px 16px', textDecoration: 'none', backdropFilter: 'blur(10px)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', transition: 'all 0.2s ease', pointerEvents: 'auto' }}
@@ -147,7 +147,6 @@ export default function TrackTopPage() {
       {/* Section 3: Customer Reviews */}
       <div
         style={{
-          minHeight: '100vh',
           scrollSnapAlign: 'start',
           display: 'flex',
           alignItems: 'center',

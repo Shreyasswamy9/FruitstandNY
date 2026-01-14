@@ -54,7 +54,7 @@ export default function PorcelainHatPage() {
   
 
   return (
-    <div style={{ height: '100vh', overflowY: 'auto' }}>
+    <div>
       <span
         onClick={() => router.back()}
         style={{ position: 'fixed', top: 24, left: '50%', transform: 'translateX(-50%)', fontSize: 16, color: '#232323', cursor: 'pointer', fontWeight: 500, zIndex: 10005, background: 'rgba(255,255,255,0.9)', border: '1px solid #e0e0e0', borderRadius: '20px', padding: '8px 16px', textDecoration: 'none', backdropFilter: 'blur(10px)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', transition: 'all 0.2s ease', pointerEvents: 'auto' }}
@@ -103,7 +103,7 @@ export default function PorcelainHatPage() {
       />
 
       {/* Reviews */}
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
+      <div style={{ display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
         <div className="max-w-4xl mx-auto w-full">
           <CustomerReviews productId="porcelain-hat" />
         </div>

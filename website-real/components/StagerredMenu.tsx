@@ -536,7 +536,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
           style={{ WebkitBackdropFilter: 'blur(12px)', paddingBottom: 'calc(4.5rem + env(safe-area-inset-bottom, 0px))' }}
           aria-hidden={!open}
         >
-          <div className="sm-panel-inner flex-1 flex flex-col gap-5">
+          <div className="sm-panel-inner flex-1 flex flex-col gap-5 pt-6">
             {/* Authentication Section */}
             <div className="mb-8">
               {user ? (
@@ -573,23 +573,21 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                 </div>
               ) : (
                 <div className="flex flex-col gap-3 mb-6">
-                  <Link href="/signin" onClick={() => { if (openRef.current) toggleMenu(); }}>
-                    <button
-                      className="w-full py-2 px-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
-                      type="button"
-                      aria-label="Sign in to your account"
-                    >
-                      Sign In
-                    </button>
+                  <Link
+                    href="/signin"
+                    onClick={() => { if (openRef.current) toggleMenu(); }}
+                    className="w-full inline-flex items-center justify-center py-2 px-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+                    aria-label="Sign in to your account"
+                  >
+                    Sign In
                   </Link>
-                  <Link href="/signup" onClick={() => { if (openRef.current) toggleMenu(); }}>
-                    <button
-                      className="w-full py-2 px-4 border-2 border-black text-black rounded-lg hover:bg-gray-100 transition-colors"
-                      type="button"
-                      aria-label="Create a new account"
-                    >
-                      Sign Up
-                    </button>
+                  <Link
+                    href="/signup"
+                    onClick={() => { if (openRef.current) toggleMenu(); }}
+                    className="w-full inline-flex items-center justify-center py-2 px-4 border-2 border-black text-black rounded-lg hover:bg-gray-100 transition-colors"
+                    aria-label="Create a new account"
+                  >
+                    Sign Up
                   </Link>
                 </div>
               )}

@@ -9,7 +9,7 @@ export default function SignInPage() {
   return (
     <main>
       <Suspense fallback={<div className="min-h-screen" />}>
-        <SupabaseAuth />
+        <SupabaseAuth mode="sign_in" />
       </Suspense>
     </main>
   );

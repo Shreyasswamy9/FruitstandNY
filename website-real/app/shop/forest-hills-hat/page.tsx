@@ -95,7 +95,7 @@ export default function ForestHillsHatPage() {
         ← Go Back
       </span>
       {/* Section 1: Product Details */}
-      <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingBottom: taskbarHeight, minHeight: '100vh', paddingTop: 120 }}>
+      <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingBottom: taskbarHeight, paddingTop: 120 }}>
         {/* Images */}
         <div className="flex w-full md:w-1/2 flex-col items-center gap-4">
           <div className="relative w-full max-w-sm md:max-w-full aspect-square rounded-xl overflow-hidden bg-white shadow-sm">

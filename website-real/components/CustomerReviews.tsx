@@ -67,7 +67,7 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({ reviews: initialRevie
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
+    <div style={{ display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
       <div className="max-w-4xl mx-auto w-full">
         <h2 className="text-3xl font-bold text-center mb-6">Customer Reviews</h2>
 

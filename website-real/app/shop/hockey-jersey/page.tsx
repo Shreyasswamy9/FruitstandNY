@@ -116,7 +116,7 @@ export default function HockeyJerseyPage() {
   
 
   return (
-    <div style={{ height: '100vh', overflowY: 'auto' }}>
+    <div>
       {/* Go Back button - top center to avoid overlap with logo (left) and menu (right) */}
       <span
         onClick={(e) => {
@@ -168,7 +168,6 @@ export default function HockeyJerseyPage() {
         className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
         style={{
           paddingBottom: taskbarHeight,
-          minHeight: '100vh',
           paddingTop: 120
         }}
       >
@@ -280,7 +279,6 @@ export default function HockeyJerseyPage() {
       {/* Section 3: Customer Reviews */}
       <div
         style={{
-          minHeight: '100vh',
           display: 'flex',
           alignItems: 'center',
           background: '#fbf6f0'
