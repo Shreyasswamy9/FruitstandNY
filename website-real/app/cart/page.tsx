@@ -890,7 +890,7 @@ export default function CartPage() {
               <motion.div 
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 xl:sticky xl:top-6 xl:self-start"
+                className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 w-full xl:sticky xl:top-6"
               >
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">Order Summary</h2>
                 
