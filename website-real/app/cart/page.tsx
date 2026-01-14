@@ -1,14 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 // import StaggeredMenu from "../../components/StagerredMenu"
 import { motion } from "framer-motion"
 import { useCart } from "../../components/CartContext"
 import Image from "next/image"
 import Price from '@/components/Price'
-import { useCheckout } from "../../hooks/useCheckout"
+import { Elements, ExpressCheckoutElement, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js"
+import type { Appearance, StripeExpressCheckoutElementConfirmEvent } from "@stripe/stripe-js"
+import { stripePromise, useCheckout, type CheckoutItem, type CustomerCheckoutPayload, type GuestCheckoutPayload } from "../../hooks/useCheckout"
 import { supabase } from "../supabase-client"
 import { useRouter } from "next/navigation"
 import type { User } from "@supabase/supabase-js"
@@ -73,6 +75,159 @@ const COUNTRY_CODE_OPTIONS: CountryCodeOption[] = RAW_COUNTRY_CODES.map((entry) 
   return { ...entry, flag, label, value };
 });
 
+type PaymentSectionProps = {
+  total: number;
+  ensureReady: (options?: { allowGuestWithoutForm?: boolean }) => Promise<boolean>;
+  processing: boolean;
+  setProcessing: (value: boolean) => void;
+  message: string | null;
+  setMessage: (value: string | null) => void;
+  elementsReady: boolean;
+  setElementsReady: (ready: boolean) => void;
+};
+
+const PaymentSection: React.FC<PaymentSectionProps> = ({
+  total,
+  ensureReady,
+  processing,
+  setProcessing,
+  message,
+  setMessage,
+  elementsReady,
+  setElementsReady,
+}) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [showAdditionalMethods, setShowAdditionalMethods] = useState(false);
+
+  const confirmPayment = useCallback(
+    async (event?: StripeExpressCheckoutElementConfirmEvent) => {
+      const expressEvent = event as StripeExpressCheckoutElementConfirmEvent | undefined;
+      // Stripe fires onConfirm for express wallets prior to showing native UI; prevent default navigation if exposed.
+      (expressEvent as { preventDefault?: () => void } | undefined)?.preventDefault?.();
+
+      if (processing) {
+        return;
+      }
+
+      if (!stripe || !elements) {
+        setMessage('Payment form is still loading. Please try again in a moment.');
+        return;
+      }
+
+      const canProceed = await ensureReady(event ? { allowGuestWithoutForm: true } : undefined);
+      if (!canProceed) {
+        return;
+      }
+
+      setProcessing(true);
+      setMessage(null);
+
+      const returnUrl =
+        typeof window !== 'undefined'
+          ? `${window.location.origin}/order/complete`
+          : `${process.env.NEXT_PUBLIC_BASE_URL ?? ''}/order/complete`;
+
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: returnUrl,
+        },
+        redirect: 'if_required',
+      });
+
+      if (error) {
+        setMessage(error.message ?? 'We could not process your payment. Please try again.');
+      } else if (paymentIntent?.status === 'succeeded') {
+        setMessage('Payment approved. Redirecting…');
+      }
+
+      setProcessing(false);
+    },
+    [elements, ensureReady, processing, setMessage, setProcessing, stripe]
+  );
+
+  const revealAdditionalMethods = useCallback(() => {
+    setShowAdditionalMethods(true);
+    setMessage(null);
+    setElementsReady(false);
+  }, [setElementsReady, setMessage]);
+
+  const hideAdditionalMethods = useCallback(() => {
+    setShowAdditionalMethods(false);
+    setElementsReady(false);
+  }, [setElementsReady]);
+
+  return (
+    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 sm:p-6 space-y-6">
+      <div>
+        <h3 className="text-base font-semibold text-gray-900">Express checkout</h3>
+        <p className="text-xs text-gray-500 mt-1">Use Apple Pay, Google Pay, or Link for a faster payment.</p>
+        {/* Apple Pay renders only on eligible Apple devices in Safari, over HTTPS, with a verified domain on your Stripe dashboard. */}
+        <div className="mt-4">
+          <ExpressCheckoutElement
+            onReady={({ availablePaymentMethods }) => {
+              console.log('availablePaymentMethods', availablePaymentMethods);
+            }}
+            onConfirm={confirmPayment}
+            options={{
+              paymentMethods: {
+                applePay: 'auto',
+                googlePay: 'auto',
+                link: 'auto',
+                paypal: 'auto',
+                amazonPay: 'auto',
+              },
+              paymentMethodOrder: ['apple_pay', 'google_pay', 'link', 'paypal', 'amazon_pay'],
+            }}
+          />
+        </div>
+      </div>
+      <div className="flex items-center gap-3 text-gray-400 text-[11px] uppercase tracking-[0.35em]">
+        <span className="h-px bg-gray-200 flex-1" />
+        <span>— OR —</span>
+        <span className="h-px bg-gray-200 flex-1" />
+      </div>
+      {showAdditionalMethods ? (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold text-gray-800">More payment methods</h4>
+            <button
+              type="button"
+              onClick={hideAdditionalMethods}
+              className="text-xs text-gray-500 hover:text-gray-700"
+            >
+              Hide
+            </button>
+          </div>
+          <PaymentElement onReady={() => setElementsReady(true)} />
+          <button
+            type="button"
+            onClick={() => confirmPayment()}
+            disabled={processing || !elementsReady}
+            className="w-full py-4 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {processing ? 'Processing…' : `Pay $${total.toFixed(2)}`}
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={revealAdditionalMethods}
+          className="w-full py-3 border border-gray-300 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-100 transition-colors"
+        >
+          More payment methods
+        </button>
+      )}
+      {message && (
+        <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
+          {message}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function CartPage() {
   // const [menuOpen, setMenuOpen] = useState(false)
   // Coupons and site-wide sale/discount logic removed per request
@@ -110,7 +265,12 @@ export default function CartPage() {
     }
   })
   const { items, removeFromCart, clearCart, addToCart } = useCart();
-  const { redirectToCheckout, loading: checkoutLoading, error: checkoutError } = useCheckout();
+  const { createPaymentIntent, loading: intentLoading, error: checkoutError, setError: setCheckoutError } = useCheckout();
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
+  const [elementsReady, setElementsReady] = useState(false);
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [user, setUser] = React.useState<User | null>(null)
 
@@ -179,68 +339,82 @@ export default function CartPage() {
   const tax = subtotal * 0.08875; // NY tax rate
   const total = subtotal + finalShipping + tax;
 
-  // Available offers removed (no coupons/promos)
+  const appearance = useMemo<Appearance>(() => ({
+    theme: 'stripe',
+    variables: {
+      colorPrimary: '#111827',
+      colorText: '#111827',
+      borderRadius: '14px',
+      fontFamily: '"Inter", "Helvetica Neue", Helvetica, Arial, sans-serif',
+      spacingUnit: '6px',
+    },
+    rules: {
+      '.Input': { borderRadius: '12px', padding: '14px 12px' },
+      '.Block': { borderRadius: '14px' },
+      '.Tab': { borderRadius: '12px' },
+    },
+  }), []);
 
-  const handleCheckout = async () => {
-    if (items.length === 0) return;
+  const normalizedItems = useMemo<CheckoutItem[]>(() => (
+    items.map((item) => ({
+      productId: item.productId,
+      name: item.name,
+      price: Number(item.price ?? 0),
+      quantity: item.quantity,
+      image: item.image,
+      size: item.size,
+      color: item.color,
+    }))
+  ), [items]);
 
-    // Check if user is authenticated
-    if (!isSignedIn && !showGuestCheckout) {
-      // Redirect unauthenticated customers to sign-in and preserve intended destination
-      const redirectTarget = typeof window !== 'undefined'
-        ? `/signin?redirect=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}`
-        : '/signin';
-      router.push(redirectTarget);
+  const elementsOptions = useMemo(() => (
+    clientSecret ? { clientSecret, appearance } : undefined
+  ), [appearance, clientSecret]);
+
+  useEffect(() => {
+    if (!normalizedItems.length) {
+      setClientSecret(null);
+      setPaymentIntentId(null);
+      setElementsReady(false);
       return;
     }
 
-    // For guest checkout, validate essential info
-    if (showGuestCheckout) {
-      if (!validateGuestForm()) {
-        // Error messages are already set by validateGuestForm()
-        return;
-      }
-    }
+    let active = true;
 
-    // Check if user has completed their profile (you'll need to add this to your user model)
-    // For now, we'll assume all authenticated users can checkout
-    // if (!session?.user?.profileComplete) {
-    //   router.push("/account/complete-profile?redirect=cart");
-    //   return;
-    // }
+    (async () => {
+      try {
+        const result = await createPaymentIntent({
+          items: normalizedItems,
+          shipping: finalShipping,
+          tax,
+          paymentIntentId: paymentIntentId ?? undefined,
+        });
 
-    try {
-      if (showGuestCheckout) {
-        // Guest checkout with collected data
-        await redirectToCheckout({
-          items: items,
-          shipping: finalShipping,
-          tax: tax,
-          guestData: {
-            email: guestData.email,
-            firstName: guestData.firstName,
-            lastName: guestData.lastName,
-            phone: getDialCodeFromValue(guestData.phoneCountryCode) + guestData.phone,
-            address: guestData.address,
-          },
-        });
-      } else {
-        // Authenticated user checkout
-        await redirectToCheckout({
-          items: items,
-          shipping: finalShipping,
-          tax: tax,
-          customerData: user ? {
-            email: user.email || "",
-            name: user.user_metadata?.full_name || user.user_metadata?.name || "",
-            // Add more user data if available from session
-          } : undefined,
-        });
+        if (!active) return;
+        setClientSecret(result.clientSecret);
+        setPaymentIntentId(result.paymentIntentId);
+        setElementsReady(false);
+        setPaymentMessage(null);
+        setCheckoutError(null);
+      } catch (error) {
+        if (!active) return;
+        const message = error instanceof Error ? error.message : 'Unable to initialise payment.';
+        setPaymentMessage(message);
       }
-    } catch (error) {
-      console.error('Checkout failed:', error);
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [normalizedItems, finalShipping, tax, createPaymentIntent]);
+
+  useEffect(() => {
+    if (checkoutError) {
+      setPaymentMessage(checkoutError);
     }
-  };
+  }, [checkoutError]);
+
+  // Available offers removed (no coupons/promos)
 
   // Validation functions
   const validateEmail = (email: string): string => {
@@ -332,7 +506,7 @@ export default function CartPage() {
     }
   };
 
-  const validateGuestForm = (): boolean => {
+  const validateGuestForm = useCallback((): boolean => {
     const errors = {
       email: validateField("email", guestData.email),
       firstName: validateField("firstName", guestData.firstName),
@@ -346,17 +520,97 @@ export default function CartPage() {
 
     setGuestFormErrors(errors);
 
-    // Return true if no errors
     return !Object.values(errors).some(error => error !== "");
-  };
+  }, [guestData]);
 
-  const handleGuestCheckoutSubmit = async () => {
-    if (!validateGuestForm()) {
-      return; // Don't proceed if validation fails
+  const ensurePaymentIntentReady = useCallback(async (options?: { allowGuestWithoutForm?: boolean }): Promise<boolean> => {
+    const allowGuestWithoutForm = options?.allowGuestWithoutForm ?? false;
+    if (items.length === 0) {
+      setPaymentMessage('Your cart is empty.');
+      return false;
     }
 
-    // Proceed with checkout if validation passes
-    await handleCheckout();
+    if (!isSignedIn && !showGuestCheckout) {
+      if (!allowGuestWithoutForm) {
+        setShowSignInModal(false);
+        setShowGuestCheckout(true);
+        setPaymentMessage('Please complete your contact and shipping details to continue.');
+
+        if (typeof window !== 'undefined') {
+          const target = document.getElementById('guest-checkout');
+          target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        return false;
+      }
+    }
+
+    if (showGuestCheckout) {
+      const valid = validateGuestForm();
+      if (!valid) {
+        setPaymentMessage('Please correct the highlighted fields before paying.');
+        return false;
+      }
+    }
+
+    try {
+      const guestPayload: GuestCheckoutPayload | undefined = showGuestCheckout
+        ? {
+            email: guestData.email || undefined,
+            firstName: guestData.firstName || undefined,
+            lastName: guestData.lastName || undefined,
+            phone: guestData.phone
+              ? `${getDialCodeFromValue(guestData.phoneCountryCode)}${guestData.phone}`
+              : undefined,
+            address: {
+              street: guestData.address.street || undefined,
+              city: guestData.address.city || undefined,
+              state: guestData.address.state || undefined,
+              zipCode: guestData.address.zipCode || undefined,
+              country: guestData.address.country || 'US',
+            },
+          }
+        : undefined;
+
+      const customerPayload: CustomerCheckoutPayload | undefined = !showGuestCheckout && user
+        ? {
+            email: user.email || undefined,
+            name: user.user_metadata?.full_name || user.user_metadata?.name || undefined,
+            phone: user.user_metadata?.phone || undefined,
+          }
+        : undefined;
+
+      const result = await createPaymentIntent({
+        items: normalizedItems,
+        shipping: finalShipping,
+        tax,
+        paymentIntentId,
+        guestData: guestPayload,
+        customerData: customerPayload,
+      });
+
+      setClientSecret(result.clientSecret);
+      setPaymentIntentId(result.paymentIntentId);
+      setElementsReady(false);
+      setPaymentMessage(null);
+      setCheckoutError(null);
+      return true;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to prepare payment. Please try again.';
+      setPaymentMessage(message);
+      return false;
+    }
+  }, [items.length, isSignedIn, showGuestCheckout, validateGuestForm, guestData, user, createPaymentIntent, normalizedItems, finalShipping, tax, paymentIntentId, setCheckoutError, setShowGuestCheckout, setShowSignInModal]);
+
+  const handleGuestCheckoutSubmit = async () => {
+    const ready = await ensurePaymentIntentReady();
+    if (ready) {
+      setPaymentMessage(prev => prev ?? 'Scroll down to complete your payment.');
+      if (typeof window !== 'undefined') {
+        const target = document.getElementById('payment-section');
+        target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
   };
 
   const handleContinueAsGuest = () => {
@@ -436,7 +690,7 @@ export default function CartPage() {
                       <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-4 sm:space-y-0">
                         {/* Product Image - Clickable */}
                         {item.isBundle ? (
-                          <div className="relative w-20 h-20 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 transition-all duration-200">
+                          <div className="relative w-20 h-20 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-gray-100 shrink-0 transition-all duration-200">
                             <Image
                               src={item.image}
                               alt={item.name}
@@ -449,7 +703,7 @@ export default function CartPage() {
                         ) : (
                           <Link 
                             href={`/shop/${item.productId}`}
-                            className="relative w-20 h-20 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 hover:ring-2 hover:ring-black hover:ring-opacity-50 transition-all duration-200 cursor-pointer"
+                            className="relative w-20 h-20 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-gray-100 shrink-0 hover:ring-2 hover:ring-black hover:ring-opacity-50 transition-all duration-200 cursor-pointer"
                           >
                             <Image
                               src={item.image}
@@ -507,7 +761,7 @@ export default function CartPage() {
                               </svg>
                             </button>
                             
-                            <span className="text-lg font-semibold min-w-[2rem] text-center">
+                            <span className="text-lg font-semibold min-w-8 text-center">
                               {item.quantity}
                             </span>
                             
@@ -587,24 +841,31 @@ export default function CartPage() {
                   </div>
                 </div>
                 
-                <motion.button
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  transition={{ duration: 0.15 }}
-                  onClick={handleCheckout}
-                  disabled={items.length === 0 || checkoutLoading}
-                  className="w-full mt-8 py-4 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ willChange: "transform" }}
-                >
-                  {checkoutLoading ? (
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Processing...
-                    </div>
-                  ) : (
-                    'Proceed to Checkout'
-                  )}
-                </motion.button>
+                {intentLoading && !clientSecret ? (
+                  <div className="w-full mt-8 py-4 bg-gray-100 rounded-xl text-center text-sm text-gray-600 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500 mr-2"></div>
+                    Loading payment methods...
+                  </div>
+                ) : clientSecret && elementsOptions ? (
+                  <div id="payment-section" className="mt-8">
+                    <Elements stripe={stripePromise} options={elementsOptions} key={clientSecret}>
+                      <PaymentSection
+                        total={total}
+                        ensureReady={ensurePaymentIntentReady}
+                        processing={paymentProcessing}
+                        setProcessing={setPaymentProcessing}
+                        message={paymentMessage}
+                        setMessage={setPaymentMessage}
+                        elementsReady={elementsReady}
+                        setElementsReady={setElementsReady}
+                      />
+                    </Elements>
+                  </div>
+                ) : (
+                  <div className="w-full mt-8 py-4 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-800 text-center">
+                    Payment methods are not available. Please refresh the page or try again later.
+                  </div>
+                )}
                 
                 {!isSignedIn && !showGuestCheckout && (
                   <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
@@ -638,9 +899,9 @@ export default function CartPage() {
 
 
                 
-                {checkoutError && (
+                {paymentMessage && (!clientSecret || !elementsOptions) && (
                   <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-red-600 text-sm">{checkoutError}</p>
+                    <p className="text-red-600 text-sm">{paymentMessage}</p>
                   </div>
                 )}
                 
@@ -657,7 +918,7 @@ export default function CartPage() {
 
                 {/* Guest Checkout Form - Moved below Continue Shopping */}
                 {showGuestCheckout && (
-                  <div className="mt-6 p-4 bg-gray-50 rounded-xl">
+                  <div id="guest-checkout" className="mt-6 p-4 bg-gray-50 rounded-xl">
                     <div className="flex items-center justify-between mb-4">
                       <h4 className="text-sm font-semibold text-gray-800">Guest Checkout Information</h4>
                       <button
@@ -732,7 +993,7 @@ export default function CartPage() {
                             <select
                               value={guestData.phoneCountryCode}
                               onChange={(e) => handleGuestInputChange("phoneCountryCode", e.target.value)}
-                              className="w-full sm:w-[200px] px-2 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white"
+                              className="w-full sm:w-50 px-2 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white"
                               title="Select country code"
                             >
                               {countryCodes.map((country) => (
@@ -887,17 +1148,17 @@ export default function CartPage() {
                       whileTap={{ scale: 0.99 }}
                       transition={{ duration: 0.15 }}
                       onClick={handleGuestCheckoutSubmit}
-                      disabled={items.length === 0 || checkoutLoading}
+                      disabled={items.length === 0 || intentLoading || paymentProcessing}
                       className="w-full mt-6 py-4 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{ willChange: "transform" }}
                     >
-                      {checkoutLoading ? (
+                      {paymentProcessing ? (
                         <div className="flex items-center justify-center">
                           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                          Processing...
+                          Preparing payment...
                         </div>
                       ) : (
-                        'Complete Guest Checkout'
+                        'Review & Pay'
                       )}
                     </motion.button>
                   </div>

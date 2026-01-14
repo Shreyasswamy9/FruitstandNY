@@ -96,8 +96,7 @@ export async function POST(request: NextRequest) {
       case 'payment_intent.succeeded':
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
 
-        // Update payment status in existing order
-        await updateOrderPaymentStatus(paymentIntent.id, 'paid');
+        await handlePaymentIntentSucceeded(paymentIntent);
         break;
 
       case 'payment_intent.payment_failed':
@@ -188,6 +187,89 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
   }
 }
 
+async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {
+  try {
+    if (paymentIntent.status !== 'succeeded') {
+      return;
+    }
+
+    const metadata = paymentIntent.metadata ?? {};
+    const cartItems = safeJsonParse<OrderCartItem[]>(metadata.cart ?? '[]', []);
+    const guestData = safeJsonParse<GuestPayload>(metadata.guest ?? '{}', {});
+    const customerData = safeJsonParse<CustomerPayload>(metadata.customer ?? '{}', {});
+
+    const subtotalFromMetadata = Number(metadata.subtotal);
+    const subtotal = Number.isFinite(subtotalFromMetadata)
+      ? subtotalFromMetadata
+      : cartItems.reduce((sum, item) => {
+          const price = Number(item.price ?? item.unitPrice ?? 0);
+          const qty = Number(item.quantity ?? item.qty ?? 1);
+          return sum + price * qty;
+        }, 0);
+
+    const shippingAmount = Number.isFinite(Number(metadata.shipping))
+      ? Number(metadata.shipping)
+      : 0;
+    const taxAmount = Number.isFinite(Number(metadata.tax))
+      ? Number(metadata.tax)
+      : 0;
+
+    const shippingDetails = paymentIntent.shipping ?? null;
+    const shippingAddress = shippingDetails?.address;
+
+    const nameFromGuest = guestData?.firstName && guestData?.lastName
+      ? `${guestData.firstName} ${guestData.lastName}`
+      : undefined;
+
+    const shippingName = (shippingDetails?.name || customerData?.name || nameFromGuest || 'Guest').trim() || 'Guest';
+    const shippingEmail = customerData?.email || guestData?.email || paymentIntent.receipt_email || '';
+    const shippingPhone = shippingDetails?.phone || guestData?.phone || customerData?.phone || null;
+
+    const shippingPayload = {
+      shipping_name: shippingName,
+      shipping_email: shippingEmail,
+      shipping_phone: shippingPhone,
+      shipping_address_line1: shippingAddress?.line1 || guestData?.address?.street || '',
+      shipping_address_line2: shippingAddress?.line2 || guestData?.address?.street2 || '',
+      shipping_city: shippingAddress?.city || guestData?.address?.city || '',
+      shipping_state: shippingAddress?.state || guestData?.address?.state || '',
+      shipping_postal_code: shippingAddress?.postal_code || guestData?.address?.zipCode || '',
+      shipping_country: shippingAddress?.country || guestData?.address?.country || 'US',
+    };
+
+    const existingOrder = await SupabaseOrderService.getOrderByPaymentIntent(paymentIntent.id).catch(() => null);
+
+    if (existingOrder) {
+      await SupabaseOrderService.updateOrderWithShipping(existingOrder.id, {
+        ...shippingPayload,
+        payment_status: 'paid',
+        status: 'confirmed',
+      });
+      return;
+    }
+
+    const orderNumber = metadata.order_number || generateOrderNumber();
+
+    await createOrderFromPaymentIntent({
+      orderNumber,
+      subtotal,
+      tax: taxAmount,
+      shipping: shippingAmount,
+      cartItems,
+      guestData,
+      customerData,
+      paymentIntentId: paymentIntent.id,
+      shippingDetails,
+      shippingName,
+      shippingEmail,
+      shippingPhone,
+    });
+  } catch (error) {
+    console.error('Error handling payment_intent.succeeded:', error);
+    throw error;
+  }
+}
+
 async function updateOrderPaymentStatus(paymentIntentId: string, status: 'paid' | 'failed') {
   try {
     const order = await SupabaseOrderService.getOrderByPaymentIntent(paymentIntentId).catch(() => null);
@@ -215,6 +297,21 @@ type CreateOrderWithItemsParams = {
   stripePaymentIntent: string | null
   shippingAddress: Stripe.Address | null | undefined
   fallbackSession: Stripe.Checkout.Session
+}
+
+type CreateOrderFromPaymentIntentParams = {
+  orderNumber: string
+  subtotal: number
+  tax: number
+  shipping: number
+  cartItems: OrderCartItem[]
+  guestData: GuestPayload
+  customerData: CustomerPayload
+  paymentIntentId: string
+  shippingDetails: Stripe.PaymentIntent.Shipping | null
+  shippingName: string
+  shippingEmail: string
+  shippingPhone: string | null
 }
 
 async function createOrderWithItems(params: CreateOrderWithItemsParams): Promise<{ id: string | number } | null> {
@@ -315,6 +412,110 @@ async function createOrderWithItems(params: CreateOrderWithItemsParams): Promise
     }
 
     console.log(`Webhook: Inserted ${orderItemRows.length} order items for order ${createdOrder.id}`)
+  }
+
+  return createdOrder
+}
+
+async function createOrderFromPaymentIntent(params: CreateOrderFromPaymentIntentParams): Promise<{ id: string | number } | null> {
+  const {
+    orderNumber,
+    subtotal,
+    tax,
+    shipping,
+    cartItems,
+    guestData,
+    customerData,
+    paymentIntentId,
+    shippingDetails,
+    shippingName,
+    shippingEmail,
+    shippingPhone,
+  } = params
+
+  const supabaseAdmin = await getSupabaseAdminClient()
+  if (!supabaseAdmin) {
+    console.error('Webhook: Cannot create order (payment intent) because Supabase admin credentials are missing')
+    return null
+  }
+
+  const address = shippingDetails?.address
+
+  const orderPayload = {
+    user_id: null,
+    order_number: orderNumber,
+    status: 'confirmed' as const,
+    payment_status: 'paid' as const,
+    stripe_payment_intent_id: paymentIntentId,
+    stripe_checkout_session_id: null as string | null,
+    total_amount: subtotal + shipping + tax,
+    subtotal,
+    tax_amount: tax,
+    shipping_amount: shipping,
+    discount_amount: 0,
+    shipping_name: shippingName,
+    shipping_email: shippingEmail,
+    shipping_phone: shippingPhone,
+    shipping_address_line1: address?.line1 || guestData?.address?.street || '',
+    shipping_address_line2: address?.line2 || guestData?.address?.street2 || '',
+    shipping_city: address?.city || guestData?.address?.city || '',
+    shipping_state: address?.state || guestData?.address?.state || '',
+    shipping_postal_code: address?.postal_code || guestData?.address?.zipCode || '',
+    shipping_country: address?.country || guestData?.address?.country || 'US',
+  }
+
+  const { data: newOrder, error: createErr } = await supabaseAdmin
+    .from('orders')
+    .insert(orderPayload)
+    .select()
+    .single()
+
+  if (createErr || !newOrder) {
+    console.error('Webhook: Failed to create order from PaymentIntent in Supabase', createErr)
+    return null
+  }
+
+  const createdOrder = newOrder as { id: string | number }
+
+  if (cartItems.length > 0) {
+    const orderItemRows = cartItems.map((item) => {
+      const quantity = Number(item.quantity ?? item.qty ?? 1)
+      const unitPrice = Number(item.price ?? item.unitPrice ?? 0)
+      return {
+        order_id: createdOrder.id,
+        product_id: item.id ?? item.productId ?? null,
+        variant_id: item.variantId ?? null,
+        product_name: item.name ?? item.title ?? '',
+        product_image_url: item.image ?? item.product?.images?.[0] ?? null,
+        quantity,
+        unit_price: unitPrice,
+        total_price: unitPrice * quantity,
+        variant_details: {
+          size: item.size ?? item.selectedSize ?? null,
+          color: item.color ?? null,
+          price: unitPrice,
+          image: item.image ?? null
+        }
+      }
+    })
+
+    const { error: itemsErr } = await supabaseAdmin.from('order_items').insert(orderItemRows)
+
+    if (itemsErr) {
+      console.error('Webhook: Failed to insert order items for payment intent order, rolling back order', itemsErr)
+      const { error: cleanupErr } = await supabaseAdmin
+        .from('orders')
+        .delete()
+        .eq('id', createdOrder.id)
+
+      if (cleanupErr) {
+        console.error('Webhook: Failed to roll back payment intent order after item insertion error', cleanupErr)
+      }
+
+      throw new Error('Supabase order_items insert failed for payment intent order')
+    }
+
+    console.log(`Webhook: Inserted ${orderItemRows.length} order items for payment intent order ${createdOrder.id}`)
   }
 
   return createdOrder

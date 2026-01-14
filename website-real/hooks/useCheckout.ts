@@ -1,137 +1,108 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { supabase } from '@/app/supabase-client';
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+export const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
-interface CheckoutItem {
-  productId: string;
+export type CheckoutItem = {
+  productId?: string;
   name: string;
   price: number;
-  image?: string;
   quantity: number;
+  image?: string;
   size?: string;
   color?: string;
-}
+};
 
-interface UseCheckoutProps {
+export type GuestCheckoutPayload = {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  address?: {
+    street?: string;
+    street2?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+  };
+};
+
+export type CustomerCheckoutPayload = {
+  email?: string;
+  name?: string;
+  phone?: string;
+};
+
+export type CreatePaymentIntentArgs = {
   items: CheckoutItem[];
   shipping: number;
   tax: number;
-  guestData?: {
-    email: string;
-    firstName: string;
-    lastName: string;
-    phone?: string;
-    address: {
-      street: string;
-      city: string;
-      state: string;
-      zipCode: string;
-      country: string;
-    };
-  };
-  customerData?: {
-    email: string;
-    name: string;
-    phone?: string;
-    address?: {
-      street: string;
-      city: string;
-      state: string;
-      zipCode: string;
-      country: string;
-    };
-  };
-}
+  paymentIntentId?: string | null;
+  guestData?: GuestCheckoutPayload;
+  customerData?: CustomerCheckoutPayload;
+};
+
+export type CreatePaymentIntentResult = {
+  clientSecret: string;
+  paymentIntentId: string;
+  orderNumber?: string;
+};
 
 export const useCheckout = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const redirectToCheckout = async ({ items, shipping, tax, guestData, customerData }: UseCheckoutProps) => {
+  const createPaymentIntent = useCallback(async (args: CreatePaymentIntentArgs): Promise<CreatePaymentIntentResult> => {
     try {
       setLoading(true);
       setError(null);
 
-      console.log('Starting checkout with data:', { items, shipping, tax, guestData, customerData });
-
-      // Get auth token if user is logged in
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('Checkout: Session check', {
-        hasSession: !!session,
-        hasAccessToken: !!session?.access_token,
-        userId: session?.user?.id,
-        userEmail: session?.user?.email
-      });
 
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
 
       if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`;
-        console.log('Checkout: User is authenticated, sending auth token for user:', session.user?.id);
-      } else {
-        console.log('Checkout: Guest user, no auth token');
+        headers.Authorization = `Bearer ${session.access_token}`;
       }
 
-      const response = await fetch('/api/checkout', {
+      const response = await fetch('/api/payment-intent', {
         method: 'POST',
         headers,
-        body: JSON.stringify({
-          items,
-          shipping,
-          tax,
-          guestData,
-          customerData,
-        }),
+        body: JSON.stringify(args),
       });
-
-      console.log('Checkout API response status:', response.status);
-      console.log('Checkout API response ok:', response.ok);
 
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Checkout API error response:', errorData);
-
-        // Show user-friendly error message
-        const errorMessage = errorData.error || `Network response was not ok: ${response.status}`;
-        throw new Error(errorMessage);
+        const payload = await response.json().catch(() => ({}));
+        const message = typeof payload?.error === 'string'
+          ? payload.error
+          : 'Unable to initialise payment. Please try again.';
+        setError(message);
+        throw new Error(message);
       }
 
-      const responseData = await response.json();
-      console.log('Checkout API response data:', responseData);
-
-      const { sessionId } = responseData;
-
-      const stripe = await stripePromise;
-
-      if (!stripe) {
-        throw new Error('Stripe failed to load');
+      const data = (await response.json()) as CreatePaymentIntentResult;
+      if (!data?.clientSecret || !data?.paymentIntentId) {
+        throw new Error('Incomplete payment intent response from server.');
       }
 
-      console.log('Redirecting to Stripe with sessionId:', sessionId);
-
-      const { error } = await stripe.redirectToCheckout({
-        sessionId,
-      });
-
-      if (error) {
-        console.error('Stripe redirect error:', error);
-        throw new Error(error.message);
-      }
+      return data;
     } catch (err) {
-      console.error('Full checkout error:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const message = err instanceof Error ? err.message : 'Unexpected error creating payment intent.';
+      setError(message);
+      throw err instanceof Error ? err : new Error(message);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return {
-    redirectToCheckout,
+    createPaymentIntent,
     loading,
     error,
-  };
+    setError,
+  } as const;
 };
