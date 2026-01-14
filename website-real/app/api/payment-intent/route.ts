@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { generateOrderNumber } from '@/lib/orderNumbers';
+import { cleanupCartMetadata, serializeCartItems } from '@/lib/stripeCartMetadata';
 
 interface CheckoutItemPayload {
   productId?: string;
@@ -90,16 +91,17 @@ export async function POST(request: NextRequest) {
       ? `${guestData.firstName} ${guestData.lastName}`
       : customerData?.name;
 
-    const orderNumber = generateOrderNumber();
-    const metadata = {
-      order_number: orderNumber,
-      cart: JSON.stringify(items || []),
+    const baseMetadata = {
       subtotal: String(subtotal),
       shipping: String(shipping),
       tax: String(tax),
       guest: JSON.stringify(guestData || {}),
       customer: JSON.stringify(customerData || {}),
     } satisfies Stripe.MetadataParam;
+
+    const cartMetadata = serializeCartItems(items);
+    const generatedOrderNumber = generateOrderNumber();
+    let orderNumber = generatedOrderNumber;
 
     let paymentIntent: Stripe.PaymentIntent;
     const { paymentIntentId } = payload;
@@ -113,9 +115,15 @@ export async function POST(request: NextRequest) {
         // Continue with creation if retrieval fails
       }
 
+      orderNumber = existingIntent?.metadata?.order_number || generatedOrderNumber;
+
+      const cleanupMetadata = cleanupCartMetadata(existingIntent?.metadata);
+
       const intentMetadata = {
-        ...metadata,
-        order_number: existingIntent?.metadata?.order_number || metadata.order_number,
+        ...cleanupMetadata,
+        order_number: orderNumber,
+        ...baseMetadata,
+        ...cartMetadata,
       } satisfies Stripe.MetadataParam;
 
       const shippingDetails = buildStripeShipping(contactName, guestData);
@@ -132,6 +140,12 @@ export async function POST(request: NextRequest) {
         paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
       }
     } else {
+      const metadata = {
+        order_number: orderNumber,
+        ...baseMetadata,
+        ...cartMetadata,
+      } satisfies Stripe.MetadataParam;
+
       const createParams: Stripe.PaymentIntentCreateParams = {
         amount: amountInCents,
         currency: 'usd',
@@ -158,7 +172,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
-      orderNumber: paymentIntent.metadata?.order_number ?? metadata.order_number,
+      orderNumber: paymentIntent.metadata?.order_number ?? orderNumber,
     });
   } catch (error) {
     console.error('Payment intent creation failed:', error);

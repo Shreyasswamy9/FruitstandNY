@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 // import StaggeredMenu from "../../components/StagerredMenu"
 import { motion } from "framer-motion"
-import { useCart } from "../../components/CartContext"
+import { useCart, type CartItem } from "../../components/CartContext"
 import Image from "next/image"
 import Price from '@/components/Price'
 import { Elements, ExpressCheckoutElement, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js"
@@ -77,6 +77,7 @@ const COUNTRY_CODE_OPTIONS: CountryCodeOption[] = RAW_COUNTRY_CODES.map((entry) 
 
 type PaymentSectionProps = {
   total: number;
+  items: CartItem[];
   ensureReady: (options?: { allowGuestWithoutForm?: boolean }) => Promise<boolean>;
   processing: boolean;
   setProcessing: (value: boolean) => void;
@@ -88,6 +89,7 @@ type PaymentSectionProps = {
 
 const PaymentSection: React.FC<PaymentSectionProps> = ({
   total,
+  items,
   ensureReady,
   processing,
   setProcessing,
@@ -99,6 +101,11 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
   const stripe = useStripe();
   const elements = useElements();
   const [showAdditionalMethods, setShowAdditionalMethods] = useState(false);
+  const itemCount = useMemo(
+    () => items.reduce((sum, item) => sum + item.quantity, 0),
+    [items]
+  );
+  const previewItems = useMemo(() => items.slice(0, 3), [items]);
 
   const confirmPayment = useCallback(
     async (event?: StripeExpressCheckoutElementConfirmEvent) => {
@@ -159,71 +166,106 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
   }, [setElementsReady]);
 
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 sm:p-6 space-y-6">
-      <div>
-        <h3 className="text-base font-semibold text-gray-900">Express checkout</h3>
-        <p className="text-xs text-gray-500 mt-1">Use Apple Pay, Google Pay, or Link for a faster payment.</p>
-        {/* Apple Pay renders only on eligible Apple devices in Safari, over HTTPS, with a verified domain on your Stripe dashboard. */}
-        <div className="mt-4">
-          <ExpressCheckoutElement
-            onReady={({ availablePaymentMethods }) => {
-              console.log('availablePaymentMethods', availablePaymentMethods);
-            }}
-            onConfirm={confirmPayment}
-            options={{
-              paymentMethods: {
-                applePay: 'auto',
-                googlePay: 'auto',
-                link: 'auto',
-                paypal: 'auto',
-                amazonPay: 'auto',
-              },
-              paymentMethodOrder: ['apple_pay', 'google_pay', 'link', 'paypal', 'amazon_pay'],
-            }}
-          />
+    <div className="space-y-5">
+      <div className="rounded-3xl bg-[#f7ede0] text-gray-900 p-5 shadow-lg border border-white/60">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.35em] text-gray-700/70">Total due today</p>
+            <p className="mt-2 text-3xl font-semibold text-gray-900">${total.toFixed(2)}</p>
+            <p className="mt-2 text-xs text-gray-700/70">
+              {itemCount} item{itemCount !== 1 ? 's' : ''} • includes tax & shipping
+            </p>
+          </div>
+          <div className="flex -space-x-4">
+            {previewItems.map((item) => (
+              <div
+                key={item.lineId ?? item.productId}
+                className="relative h-12 w-12 rounded-xl border border-white/70 overflow-hidden bg-white/60 backdrop-blur"
+              >
+                {item.image ? (
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    className="object-cover"
+                    sizes="48px"
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center text-[10px] text-gray-700/80">
+                    {item.name.slice(0, 2).toUpperCase()}
+                  </div>
+                )}
+                <span className="absolute -bottom-1 -right-1 rounded-full bg-white px-1 text-[10px] font-semibold text-gray-900">
+                  ×{item.quantity}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-      <div className="flex items-center gap-3 text-gray-400 text-[11px] uppercase tracking-[0.35em]">
-        <span className="h-px bg-gray-200 flex-1" />
-        <span>— OR —</span>
-        <span className="h-px bg-gray-200 flex-1" />
-      </div>
-      {showAdditionalMethods ? (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold text-gray-800">More payment methods</h4>
+
+      <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 space-y-6 shadow-sm">
+        <div>
+          <h3 className="text-base font-semibold text-gray-900">Express checkout</h3>
+          <p className="text-xs text-gray-500 mt-1">Use Apple Pay, Google Pay, Link, PayPal, or Amazon Pay for a faster payment.</p>
+          <div className="mt-4">
+            <ExpressCheckoutElement
+              onConfirm={confirmPayment}
+              options={{
+                paymentMethods: {
+                  applePay: 'auto',
+                  googlePay: 'auto',
+                  link: 'auto',
+                  paypal: 'auto',
+                  amazonPay: 'auto',
+                },
+                paymentMethodOrder: ['apple_pay', 'google_pay', 'link', 'paypal', 'amazon_pay'],
+              }}
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-3 text-gray-300 text-[11px] uppercase tracking-[0.35em]">
+          <span className="h-px bg-gray-200 flex-1" />
+          <span>— OR —</span>
+          <span className="h-px bg-gray-200 flex-1" />
+        </div>
+        {showAdditionalMethods ? (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-gray-800">More payment methods</h4>
+              <button
+                type="button"
+                onClick={hideAdditionalMethods}
+                className="text-xs text-gray-500 hover:text-gray-700"
+              >
+                Hide
+              </button>
+            </div>
+            <PaymentElement onReady={() => setElementsReady(true)} />
             <button
               type="button"
-              onClick={hideAdditionalMethods}
-              className="text-xs text-gray-500 hover:text-gray-700"
+              onClick={() => confirmPayment()}
+              disabled={processing || !elementsReady}
+              className="w-full py-4 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Hide
+              {processing ? 'Processing…' : `Pay $${total.toFixed(2)}`}
             </button>
           </div>
-          <PaymentElement onReady={() => setElementsReady(true)} />
+        ) : (
           <button
             type="button"
-            onClick={() => confirmPayment()}
-            disabled={processing || !elementsReady}
-            className="w-full py-4 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={revealAdditionalMethods}
+            className="w-full py-3 border border-gray-300 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-100 transition-colors"
           >
-            {processing ? 'Processing…' : `Pay $${total.toFixed(2)}`}
+            More payment methods
           </button>
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={revealAdditionalMethods}
-          className="w-full py-3 border border-gray-300 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-100 transition-colors"
-        >
-          More payment methods
-        </button>
-      )}
-      {message && (
-        <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
-          {message}
-        </div>
-      )}
+        )}
+        {message && (
+          <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
+            {message}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -619,18 +661,18 @@ export default function CartPage() {
   };
 
   return (
-  <div className="min-h-screen bg-[#fbf6f0]">
+    <div className="min-h-screen bg-[#fbf6f0]">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b pt-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6 text-center">
-          <motion.h1 
-            initial={{ opacity: 0, y: -20 }}
+      <div className="bg-white border-b pt-16 pb-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 text-center">
+          <motion.h1
+            initial={{ opacity: 0, y: -16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-3xl font-bold text-gray-900 text-center"
+            className="text-2xl sm:text-3xl font-bold text-gray-900 text-center"
           >
             Shopping Cart
           </motion.h1>
-          <p className="text-gray-600 mt-2 mx-auto">
+          <p className="text-gray-600 mt-1 mx-auto">
             {items.length === 0 ? "Your cart is empty" : `${items.length} item${items.length !== 1 ? 's' : ''} in your cart`}
           </p>
         </div>
@@ -667,7 +709,7 @@ export default function CartPage() {
         ) : (
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8">
             {/* Cart Items */}
-            <div className="xl:col-span-2">
+            <div className="order-2 xl:order-1 xl:col-span-2">
               <motion.div 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -808,12 +850,47 @@ export default function CartPage() {
               </motion.div>
             </div>
 
-            {/* Order Summary */}
-            <div className="xl:col-span-1">
+            {/* Express Checkout + Summary */}
+            <div className="order-1 xl:order-2 xl:col-span-1 flex flex-col gap-6">
+              {intentLoading && !clientSecret ? (
+                <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-sm flex items-center justify-center text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-gray-500"></div>
+                    <span>Loading payment methods…</span>
+                  </div>
+                </div>
+              ) : clientSecret && elementsOptions ? (
+                <div id="payment-section">
+                  <Elements stripe={stripePromise} options={elementsOptions} key={clientSecret}>
+                    <PaymentSection
+                      total={total}
+                      items={items}
+                      ensureReady={ensurePaymentIntentReady}
+                      processing={paymentProcessing}
+                      setProcessing={setPaymentProcessing}
+                      message={paymentMessage}
+                      setMessage={setPaymentMessage}
+                      elementsReady={elementsReady}
+                      setElementsReady={setElementsReady}
+                    />
+                  </Elements>
+                </div>
+              ) : (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-5 sm:p-6 text-sm text-yellow-800">
+                  Payment methods are not available. Please refresh the page or try again later.
+                </div>
+              )}
+
+              {paymentMessage && (!clientSecret || !elementsOptions) && (
+                <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-sm text-red-600">
+                  {paymentMessage}
+                </div>
+              )}
+
               <motion.div 
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 sticky top-8"
+                className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 xl:sticky xl:top-6 xl:self-start"
               >
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">Order Summary</h2>
                 
@@ -840,33 +917,7 @@ export default function CartPage() {
                     </div>
                   </div>
                 </div>
-                
-                {intentLoading && !clientSecret ? (
-                  <div className="w-full mt-8 py-4 bg-gray-100 rounded-xl text-center text-sm text-gray-600 flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500 mr-2"></div>
-                    Loading payment methods...
-                  </div>
-                ) : clientSecret && elementsOptions ? (
-                  <div id="payment-section" className="mt-8">
-                    <Elements stripe={stripePromise} options={elementsOptions} key={clientSecret}>
-                      <PaymentSection
-                        total={total}
-                        ensureReady={ensurePaymentIntentReady}
-                        processing={paymentProcessing}
-                        setProcessing={setPaymentProcessing}
-                        message={paymentMessage}
-                        setMessage={setPaymentMessage}
-                        elementsReady={elementsReady}
-                        setElementsReady={setElementsReady}
-                      />
-                    </Elements>
-                  </div>
-                ) : (
-                  <div className="w-full mt-8 py-4 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-800 text-center">
-                    Payment methods are not available. Please refresh the page or try again later.
-                  </div>
-                )}
-                
+
                 {!isSignedIn && !showGuestCheckout && (
                   <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
                     <div className="flex items-start space-x-3">
@@ -898,13 +949,6 @@ export default function CartPage() {
                 )}
 
 
-                
-                {paymentMessage && (!clientSecret || !elementsOptions) && (
-                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-red-600 text-sm">{paymentMessage}</p>
-                  </div>
-                )}
-                
                 <motion.a
                   href="/shop"
                   whileHover={{ scale: 1.01 }}

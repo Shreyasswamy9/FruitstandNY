@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { SupabaseOrderService } from '@/lib/services/supabase-existing'
 import { generateOrderNumber } from '@/lib/orderNumbers'
+import { readCartMetadata } from '@/lib/stripeCartMetadata'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
@@ -194,7 +195,8 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
     }
 
     const metadata = paymentIntent.metadata ?? {};
-    const cartItems = safeJsonParse<OrderCartItem[]>(metadata.cart ?? '[]', []);
+    const cartJson = readCartMetadata(metadata) ?? '[]';
+    const cartItems = safeJsonParse<OrderCartItem[]>(cartJson, []);
     const guestData = safeJsonParse<GuestPayload>(metadata.guest ?? '{}', {});
     const customerData = safeJsonParse<CustomerPayload>(metadata.customer ?? '{}', {});
 

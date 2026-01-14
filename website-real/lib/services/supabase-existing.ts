@@ -1,4 +1,5 @@
 import { supabase } from '@/app/supabase-client';
+import { readCartMetadata } from '@/lib/stripeCartMetadata';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 
@@ -530,7 +531,8 @@ export class SupabaseOrderService {
     const shippingDetails = (session as any).shipping_details?.address || customerDetails?.address;
 
     const metadata = session.metadata ?? {};
-    const cart = safeJsonParse<OrderCartItem[]>(metadata.cart ?? '[]', []);
+    const cartJson = readCartMetadata(metadata) ?? '[]';
+    const cart = safeJsonParse<OrderCartItem[]>(cartJson, []);
     const guestData = safeJsonParse<GuestPayload>(metadata.guest ?? '{}', {});
     const customerData = safeJsonParse<CustomerPayload>(metadata.customer ?? '{}', {});
     const shippingAmount = Number(metadata.shipping ?? 0);

@@ -5,6 +5,7 @@ import SizeGuide from "@/components/SizeGuide";
 import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import Price from '@/components/Price';
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 import ColorPicker from '@/components/ColorPicker';
@@ -232,23 +233,23 @@ export default function TracksuitPage() {
           <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-2">
             <span className="text-sm text-gray-500 mr-2">Prefer pieces?</span>
             <div className="flex gap-2">
-              <a
+              <Link
                 href="/shop/track-top"
                 className="inline-flex items-center px-3 py-1.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-800 hover:bg-gray-100 transition-colors"
                 aria-label="Buy the track jacket"
                 title="Buy the track jacket"
               >
                 Jacket
-              </a>
+              </Link>
 
-              <a
+              <Link
                 href="/shop/track-pants"
                 className="inline-flex items-center px-3 py-1.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-800 hover:bg-gray-100 transition-colors"
                 aria-label="Buy the track pants"
                 title="Buy the track pants"
               >
                 Pants
-              </a>
+              </Link>
             </div>
           </div>
           {PRODUCT.details && (
