@@ -1,12 +1,12 @@
 "use client";
-import Image from "next/image";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import SizeGuide from "@/components/SizeGuide";
 import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
-import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
 import ColorPicker, { type ColorOption } from '@/components/ColorPicker';
+import ProductImageGallery from "@/components/ProductImageGallery";
+import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 
 const feImages = [
   "/images/products/First Edition Tee/FE1.png",
@@ -44,7 +44,15 @@ export default function FirstEditionTeePage() {
   const [selectedSize, setSelectedSize] = useState(PRODUCT.sizes[2]);
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
-  const router = useRouter();
+
+  const handleSelectColor = useCallback((option: FirstEditionColorOption, ctx?: { image?: string }) => {
+    setSelectedColor(option);
+    setSelectedImage(prev => ctx?.image ?? option.images?.[0] ?? prev);
+  }, []);
+
+  const handleImageChange = useCallback((image: string) => {
+    setSelectedImage(image);
+  }, []);
   const handleAddToCart = () => {
     addToCart({
       productId: "first-edition-tee",
@@ -65,20 +73,17 @@ export default function FirstEditionTeePage() {
 
   return (
     <div>
-      <span onClick={() => router.back()} style={{ position: 'fixed', top: 24, left: '50%', transform: 'translateX(-50%)', fontSize: 16, color: '#232323', cursor: 'pointer', fontWeight: 500, zIndex: 10005, background: 'rgba(255,255,255,0.9)', border: '1px solid #e0e0e0', borderRadius: '20px', padding: '8px 16px', textDecoration: 'none', backdropFilter: 'blur(10px)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', transition: 'all 0.2s ease', pointerEvents: 'auto' }}>← Go Back</span>
+      <ProductPageBrandHeader />
       <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingTop: 120, paddingBottom: taskbarHeight }}>
-        <div className="flex w-full md:w-1/2 flex-col items-center gap-4">
-          <div className="relative w-full max-w-sm md:max-w-full aspect-square rounded-xl overflow-hidden bg-white shadow-sm">
-            <Image src={selectedImage} alt={PRODUCT.name} fill sizes="(max-width: 768px) 90vw, 420px" style={{ objectFit: "contain", background: "#fff" }} priority />
-          </div>
-          <div className="flex gap-2 justify-center">
-            {selectedColor.images.map((img) => (
-              <button key={img} onClick={() => setSelectedImage(img)} className={`relative w-16 h-16 rounded border ${selectedImage === img ? "ring-2 ring-black" : ""}`}>
-                <Image src={img} alt={PRODUCT.name} fill style={{ objectFit: "contain", background: "#fff" }} />
-              </button>
-            ))}
-          </div>
-        </div>
+        <ProductImageGallery
+          productName={PRODUCT.name}
+          options={colorOptions}
+          selectedOption={selectedColor}
+          selectedImage={selectedImage}
+          onOptionChange={(option, ctx) => handleSelectColor(option as FirstEditionColorOption, ctx)}
+          onImageChange={handleImageChange}
+          className="md:w-1/2"
+        />
         <div className="md:w-1/2 flex flex-col justify-start">
           <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
           <div className="text-2xl font-semibold mb-6">${PRODUCT.price}</div>
@@ -88,8 +93,7 @@ export default function FirstEditionTeePage() {
             selectedName={selectedColor.name}
             onSelect={(opt) => {
               const match = colorOptions.find(c => c.name === opt.name) ?? colorOptions[0];
-              setSelectedColor(match);
-              setSelectedImage(match.images[0]);
+              handleSelectColor(match);
             }}
           />
           <div className="mb-4">

@@ -179,6 +179,7 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
   }, [variantGroups, representativeByName]);
   // Store touch state for each product card
   const touchState = useRef<{ [key: number]: { start: number; moved: boolean } }>({});
+  const lastNavigationRef = useRef(0); // suppress duplicate click navigation after touch events
   // Track which product is showing hover image on mobile
   const [mobileHover, setMobileHover] = useState<number | null>(null);
   const formatPrice = (p: string) => {
@@ -362,6 +363,7 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
                 const touchTime = state ? Date.now() - state.start : 0;
                 if (state && !state.moved && touchTime < 250) {
                   router.push(getProductLink());
+                  lastNavigationRef.current = Date.now();
                 } else {
                   setMobileHover(null);
                 }
@@ -375,9 +377,10 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
               }
             }}
             onClick={() => {
-              if (!isMobile) {
-                router.push(getProductLink());
+              if (Date.now() - lastNavigationRef.current < 350) {
+                return;
               }
+              router.push(getProductLink());
             }}
             role="button"
             tabIndex={0}

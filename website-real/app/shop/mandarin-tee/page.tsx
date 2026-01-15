@@ -1,11 +1,11 @@
 "use client";
-import Image from "next/image";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import SizeGuide from "@/components/SizeGuide";
 import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
+import ProductImageGallery from "@/components/ProductImageGallery";
 
 const mandarinImages = [
   "/images/products/Mandarin Tee/Mandarin Tee.png",
@@ -34,6 +34,7 @@ const OUT_OF_STOCK_SIZES = ["XS", "S" , "XXXL"];
 
 export default function MandarinTeePage() {
   const [selectedImage, setSelectedImage] = useState(mandarinImages[0]);
+  const galleryOption = useMemo(() => ({ name: PRODUCT.name, slug: "default", images: mandarinImages }), []);
   // Default to first available size (skip out of stock sizes)
   const [selectedSize, setSelectedSize] = useState(
     PRODUCT.sizes.find(size => !OUT_OF_STOCK_SIZES.includes(size)) || PRODUCT.sizes[0]
@@ -81,18 +82,15 @@ export default function MandarinTeePage() {
         ← Go Back
       </span>
       <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingTop: 120, paddingBottom: taskbarHeight }}>
-        <div className="flex w-full md:w-1/2 flex-col items-center gap-4">
-          <div className="relative w-full max-w-sm md:max-w-full aspect-square rounded-xl overflow-hidden bg-white shadow-sm">
-            <Image src={selectedImage} alt={PRODUCT.name} fill sizes="(max-width: 768px) 90vw, 420px" style={{ objectFit: "contain", background: "#fff" }} priority />
-          </div>
-          <div className="flex gap-2 justify-center">
-            {mandarinImages.map((img) => (
-              <button key={img} onClick={() => setSelectedImage(img)} className={`relative w-16 h-16 rounded border ${selectedImage === img ? "ring-2 ring-black" : ""}`}>
-                <Image src={img} alt={PRODUCT.name} fill style={{ objectFit: "contain", background: "#fff" }} />
-              </button>
-            ))}
-          </div>
-        </div>
+        <ProductImageGallery
+          productName={PRODUCT.name}
+          options={[galleryOption]}
+          selectedOption={galleryOption}
+          selectedImage={selectedImage}
+          onImageChange={setSelectedImage}
+          className="md:w-1/2"
+          frameBackground="#ffffff"
+        />
         <div className="md:w-1/2 flex flex-col justify-start">
           <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
           <div className="text-2xl font-semibold mb-6">${PRODUCT.price.toFixed(2)}</div>

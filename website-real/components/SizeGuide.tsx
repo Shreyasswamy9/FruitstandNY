@@ -77,7 +77,7 @@ export const SizeGuide: React.FC<SizeGuideProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[10010] flex items-center justify-center p-6 backdrop-blur-sm"
+            className="fixed inset-0 z-10010 flex items-center justify-center p-6 backdrop-blur-sm"
             style={{ background: 'rgba(0,0,0,0.55)' }}
             onClick={() => setOpen(false)}
           >
@@ -86,7 +86,7 @@ export const SizeGuide: React.FC<SizeGuideProps> = ({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-              className="relative w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border border-black/10 bg-gradient-to-b from-white to-neutral-50"
+              className="relative w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border border-black/10 bg-linear-to-b from-white to-neutral-50"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="absolute top-3 right-3 z-20">
@@ -98,7 +98,7 @@ export const SizeGuide: React.FC<SizeGuideProps> = ({
                   Close ✕
                 </button>
               </div>
-              <div className="relative w-full h-[520px]">
+              <div className="relative w-full h-130">
                 {!imageError ? (
                   <Image
                     src={candidatePaths[Math.min(activeSrcIndex, candidatePaths.length - 1)]}

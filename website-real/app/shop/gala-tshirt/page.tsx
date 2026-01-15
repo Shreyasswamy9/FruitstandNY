@@ -1,41 +1,13 @@
 "use client";
-import Image from "next/image";
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, useCallback } from "react";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
 import BundleSheet from '@/components/BundleSheet'
 import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ColorPicker from '@/components/ColorPicker';
-
-// Color-specific image sets (kept explicit for clarity and to avoid client fs access)
-const COLOR_IMAGE_MAP: Record<string, string[]> = {
-  'broadway-noir': [
-    '/images/products/gala-tshirt/broadwaynoir/GN4.png',
-    '/images/products/gala-tshirt/broadwaynoir/GN5.png'
-  ],
-  'sutton-place-snow': [
-    '/images/products/gala-tshirt/suttonplacesnow/GN6.png',
-    '/images/products/gala-tshirt/suttonplacesnow/GN11.png'
-  ],
-  'grasshopper': [
-    '/images/products/gala-tshirt/Grasshopper/GN3.png',
-    '/images/products/gala-tshirt/Grasshopper/GN8.png'
-  ],
-  'frosted-lemonade': [
-    '/images/products/gala-tshirt/frostedlemonade/GN9.png',
-    '/images/products/gala-tshirt/frostedlemonade/GN10.png'
-  ],
-  'ruby-red': [
-    '/images/products/gala-tshirt/ruby red/GN.png',
-    '/images/products/gala-tshirt/ruby red/GN7.png'
-  ],
-  'italian-ice': [
-    '/images/products/gala-tshirt/italianice/GN1.png',
-    '/images/products/gala-tshirt/italianice/GN2.png'
-  ]
-};
+import ProductImageGallery from "@/components/ProductImageGallery";
+import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 
 const PRODUCT = {
   name: "Gala Tee",
@@ -77,8 +49,24 @@ export default function GalaTshirtPage() {
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
   const [bundleOpen, setBundleOpen] = useState(false);
-  const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+
+  const updateUrlForColor = useCallback((slug?: string) => {
+    if (typeof window === 'undefined') return;
+    const basePath = window.location.pathname.split('?')[0];
+    const query = slug ? `?color=${slug}` : '';
+    window.history.replaceState(null, '', `${basePath}${query}`);
+  }, []);
+
+  const handleSelectColor = useCallback((option: GalaColorOption, ctx?: { image?: string }) => {
+    setSelectedColor(option);
+    setSelectedImage(prev => ctx?.image ?? option.images?.[0] ?? prev);
+    updateUrlForColor(option.slug);
+  }, [updateUrlForColor]);
+
+  const handleImageChange = useCallback((image: string) => {
+    setSelectedImage(image);
+  }, []);
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
@@ -100,14 +88,12 @@ export default function GalaTshirtPage() {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     const colorSlug = params.get('color');
-    if (colorSlug) {
-      const found = GALA_COLOR_OPTIONS.find(c => c.slug === colorSlug);
-      if (found) {
-        setSelectedColor(found);
-        setSelectedImage(found.images[0]);
-      }
+    if (!colorSlug) return;
+    const found = GALA_COLOR_OPTIONS.find(c => c.slug === colorSlug);
+    if (found && found.slug !== selectedColor.slug) {
+      handleSelectColor(found);
     }
-  }, []);
+  }, [handleSelectColor, selectedColor.slug]);
 
   const boughtTogetherItems = getFBTForPage('gala-tshirt');
 
@@ -129,38 +115,19 @@ export default function GalaTshirtPage() {
 
   return (
     <div>
-      <span
-        onClick={(e) => { e.preventDefault(); e.stopPropagation(); try { router.back(); } catch { window.history.back(); } }}
-        style={{ position: 'fixed', top: 24, left: '50%', transform: 'translateX(-50%)', fontSize: 16, color: '#232323', cursor: 'pointer', fontWeight: 500, zIndex: 10005, userSelect: 'none', background: 'rgba(255, 255, 255, 0.9)', border: '1px solid #e0e0e0', borderRadius: '20px', padding: '8px 16px', textDecoration: 'none', backdropFilter: 'blur(10px)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', transition: 'all 0.2s ease', pointerEvents: 'auto' }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 1)'; e.currentTarget.style.transform = 'translateX(-50%) translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)'; e.currentTarget.style.transform = 'translateX(-50%) translateY(0px)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'; }}
-      >
-        ← Go Back
-      </span>
+      <ProductPageBrandHeader />
 
   <div className="flex flex-col md:flex-row items-start gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingBottom: taskbarHeight, paddingTop: 120 }}>
         {/* Images */}
-        <div className="flex w-full md:w-1/2 flex-col items-center gap-4 shrink-0">
-          <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-[#fbf6f0] shadow-sm shrink-0">
-            <Image
-              src={selectedImage}
-              alt={PRODUCT.name}
-              fill
-              className="object-contain bg-[#fbf6f0]"
-            />
-          </div>
-          <div className="flex gap-2 justify-center">
-            {COLOR_IMAGE_MAP[selectedColor.slug].map((img) => (
-              <button
-                key={img}
-                onClick={() => setSelectedImage(img)}
-                className={`relative w-16 h-16 rounded overflow-hidden border border-gray-200 bg-[#fbf6f0] ${selectedImage === img ? 'ring-2 ring-black' : ''}`}
-              >
-                <Image src={img} alt="" fill className="object-contain bg-[#fbf6f0]" />
-              </button>
-            ))}
-          </div>
-        </div>
+        <ProductImageGallery
+          productName={PRODUCT.name}
+          options={GALA_COLOR_OPTIONS}
+          selectedOption={selectedColor}
+          selectedImage={selectedImage}
+          onOptionChange={(option, ctx) => handleSelectColor(option as GalaColorOption, ctx)}
+          onImageChange={handleImageChange}
+          className="md:w-1/2 shrink-0"
+        />
 
         {/* Product Info */}
         <div className="md:w-1/2 flex flex-col justify-start">
@@ -170,9 +137,7 @@ export default function GalaTshirtPage() {
             options={GALA_COLOR_OPTIONS as any}
             selectedName={selectedColor.name}
             onSelect={(opt) => {
-              setSelectedColor(opt as any);
-              setSelectedImage((opt.images && opt.images[0]) || selectedImage);
-              if (typeof window !== 'undefined' && opt.slug) window.history.replaceState(null, '', `/shop/gala-tshirt?color=${opt.slug}`);
+              handleSelectColor(opt as GalaColorOption);
             }}
           />
 

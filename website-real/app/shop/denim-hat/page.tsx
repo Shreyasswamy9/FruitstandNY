@@ -1,11 +1,11 @@
 "use client";
-import Image from "next/image";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import Price from '@/components/Price';
-import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
+import ProductImageGallery from "@/components/ProductImageGallery";
+import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 
 const denimHatImages = [
   "/images/products/denim-hat/Denim Hat.png",
@@ -22,9 +22,9 @@ const PRODUCT = {
 
 export default function DenimHatPage() {
   const [selectedImage, setSelectedImage] = useState(denimHatImages[0]);
+  const galleryOption = useMemo(() => ({ name: PRODUCT.name, slug: "default", images: denimHatImages }), []);
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
-  const router = useRouter();
   const handleAddToCart = () => {
     addToCart({
       productId: "denim-hat",
@@ -76,53 +76,7 @@ export default function DenimHatPage() {
 
   return (
     <div>
-      {/* Go Back button - top center to avoid overlap with logo (left) and menu (right) */}
-      <span
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          console.log('Go back button clicked');
-          try {
-            router.back();
-          } catch (err) {
-            console.log('Router.back failed, using window.history.back', err);
-            window.history.back();
-          }
-        }}
-        style={{
-          position: 'fixed',
-          top: 24,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          fontSize: 16,
-          color: '#232323',
-          cursor: 'pointer',
-          fontWeight: 500,
-          zIndex: 10005,
-          userSelect: 'none',
-          background: 'rgba(255, 255, 255, 0.9)',
-          border: '1px solid #e0e0e0',
-          borderRadius: '20px',
-          padding: '8px 16px',
-          textDecoration: 'none',
-          backdropFilter: 'blur(10px)',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-          transition: 'all 0.2s ease',
-          pointerEvents: 'auto',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'rgba(255, 255, 255, 1)';
-          e.currentTarget.style.transform = 'translateX(-50%) translateY(-2px)';
-          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)';
-          e.currentTarget.style.transform = 'translateX(-50%) translateY(0px)';
-          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
-        }}
-      >
-        ← Go Back
-      </span>
+      <ProductPageBrandHeader />
       
       {/* Section 1: Product Details */}
       <div
@@ -133,44 +87,30 @@ export default function DenimHatPage() {
         }}
       >
         {/* Images */}
-        <div className="flex w-full md:w-1/2 flex-col items-center gap-4">
-          <div className="relative w-full max-w-sm md:max-w-full aspect-square rounded-xl overflow-hidden bg-white shadow-sm">
-            <Image
-              src={selectedImage}
-              alt={PRODUCT.name}
-              fill
-              sizes="(max-width: 768px) 90vw, 420px"
-              style={{ objectFit: "contain", background: "#fff" }}
-              priority
-            />
-          </div>
-          <div className="flex gap-2 justify-center">
-          {denimHatImages.map((img) => (
-            <button
-              key={img}
-              onClick={() => setSelectedImage(img)}
-              className={`relative w-16 h-16 rounded border ${selectedImage === img ? "ring-2 ring-black" : ""}`}
-            >
-              <Image src={img} alt="Denim Hat" fill style={{ objectFit: "contain", background: "#fff" }} />
-            </button>
-          ))}
-          </div>
-        </div>
+        <ProductImageGallery
+          productName={PRODUCT.name}
+          options={[galleryOption]}
+          selectedOption={galleryOption}
+          selectedImage={selectedImage}
+          onImageChange={setSelectedImage}
+          className="md:w-1/2"
+          frameBackground="#ffffff"
+        />
         {/* Product Info */}
         <div className="md:w-1/2 flex flex-col justify-start">
-  <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
-        <p className="text-sm text-gray-600 mb-6">Photo shows the authentic denim wash you&apos;ll receive.</p>
-        <p className="text-sm text-gray-600 mb-6">Adjustable strap ensures an easy, one-size fit.</p>
-        <p className="text-lg text-gray-700 mb-4">{PRODUCT.description}</p>
-        <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} /></div>
-        <button
-          className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2"
-          onClick={handleAddToCart}
-        >
-          Add to Cart
-        </button>
-        {/* Buy Now button removed as requested */}
-      </div>
+          <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
+          <p className="text-sm text-gray-600 mb-6">Photo shows the authentic denim wash you&apos;ll receive.</p>
+          <p className="text-sm text-gray-600 mb-6">Adjustable strap ensures an easy, one-size fit.</p>
+          <p className="text-lg text-gray-700 mb-4">{PRODUCT.description}</p>
+          <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} /></div>
+          <button
+            className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2"
+            onClick={handleAddToCart}
+          >
+            Add to Cart
+          </button>
+          {/* Buy Now button removed as requested */}
+        </div>
       </div>
 
       <FrequentlyBoughtTogether

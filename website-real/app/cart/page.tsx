@@ -75,6 +75,18 @@ const COUNTRY_CODE_OPTIONS: CountryCodeOption[] = RAW_COUNTRY_CODES.map((entry) 
   return { ...entry, flag, label, value };
 });
 
+const EXPRESS_CHECKOUT_CACHE_KEY = 'fsny-express-checkout-details';
+
+type ExpressCheckoutSnapshot = {
+  guest?: GuestCheckoutPayload;
+  shippingRate?: {
+    id: string;
+    amount: number;
+    displayName: string;
+  };
+  expressPaymentType?: string;
+};
+
 type PaymentSectionProps = {
   total: number;
   items: CartItem[];
@@ -85,6 +97,8 @@ type PaymentSectionProps = {
   setMessage: (value: string | null) => void;
   elementsReady: boolean;
   setElementsReady: (ready: boolean) => void;
+  requiresDetails: boolean;
+  onRequireDetails: () => void;
 };
 
 const PaymentSection: React.FC<PaymentSectionProps> = ({
@@ -97,6 +111,8 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
   setMessage,
   elementsReady,
   setElementsReady,
+  requiresDetails,
+  onRequireDetails,
 }) => {
   const stripe = useStripe();
   const elements = useElements();
@@ -112,6 +128,55 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
       const expressEvent = event as StripeExpressCheckoutElementConfirmEvent | undefined;
       // Stripe fires onConfirm for express wallets prior to showing native UI; prevent default navigation if exposed.
       (expressEvent as { preventDefault?: () => void } | undefined)?.preventDefault?.();
+
+      if (expressEvent && typeof window !== 'undefined') {
+        const { billingDetails, shippingAddress, shippingRate, expressPaymentType } = expressEvent;
+
+        const resolvedAddress = shippingAddress?.address ?? billingDetails?.address;
+        const nameParts = (billingDetails?.name ?? '')
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean);
+        const [firstNameRaw, ...restNameParts] = nameParts;
+
+        const guestFromExpress: GuestCheckoutPayload | undefined = billingDetails || resolvedAddress
+          ? {
+              email: billingDetails?.email || undefined,
+              firstName: firstNameRaw || undefined,
+              lastName: restNameParts.length > 0 ? restNameParts.join(' ') : undefined,
+              phone: billingDetails?.phone || undefined,
+              address: resolvedAddress
+                ? {
+                    street: resolvedAddress.line1 || undefined,
+                    street2: resolvedAddress.line2 ?? undefined,
+                    city: resolvedAddress.city || undefined,
+                    state: resolvedAddress.state || undefined,
+                    zipCode: resolvedAddress.postal_code || undefined,
+                    country: resolvedAddress.country || undefined,
+                  }
+                : undefined,
+            }
+          : undefined;
+
+        const snapshot: ExpressCheckoutSnapshot = {
+          guest: guestFromExpress,
+          shippingRate: shippingRate
+            ? {
+                id: shippingRate.id,
+                amount: shippingRate.amount,
+                displayName: shippingRate.displayName,
+              }
+            : undefined,
+          expressPaymentType,
+        };
+
+        // Shipping address may be partially redacted during address selection; Stripe returns the full address after confirm per their docs.
+        try {
+          window.sessionStorage.setItem(EXPRESS_CHECKOUT_CACHE_KEY, JSON.stringify(snapshot));
+        } catch (storageError) {
+          console.error('Unable to cache express checkout details', storageError);
+        }
+      }
 
       if (processing) {
         return;
@@ -156,9 +221,14 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
 
   const revealAdditionalMethods = useCallback(() => {
     setShowAdditionalMethods(true);
-    setMessage(null);
+    if (requiresDetails) {
+      onRequireDetails();
+      setMessage('Enter your contact details below before completing payment.');
+    } else {
+      setMessage(null);
+    }
     setElementsReady(false);
-  }, [setElementsReady, setMessage]);
+  }, [onRequireDetails, requiresDetails, setElementsReady, setMessage]);
 
   const hideAdditionalMethods = useCallback(() => {
     setShowAdditionalMethods(false);
@@ -219,6 +289,17 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
                   paypal: 'auto',
                   amazonPay: 'auto',
                 },
+                emailRequired: true,
+                phoneNumberRequired: true,
+                shippingAddressRequired: true,
+                allowedShippingCountries: ['US'],
+                shippingRates: [
+                  {
+                    id: 'fsny-free-shipping',
+                    amount: 0,
+                    displayName: 'Free shipping',
+                  },
+                ],
                 paymentMethodOrder: ['apple_pay', 'google_pay', 'link', 'paypal', 'amazon_pay'],
               }}
             />
@@ -572,6 +653,16 @@ export default function CartPage() {
       return false;
     }
 
+    let expressSnapshot: ExpressCheckoutSnapshot | null = null;
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = window.sessionStorage.getItem(EXPRESS_CHECKOUT_CACHE_KEY);
+        expressSnapshot = stored ? (JSON.parse(stored) as ExpressCheckoutSnapshot) : null;
+      } catch (storageError) {
+        console.error('Unable to read express checkout cache', storageError);
+      }
+    }
+
     if (!isSignedIn && !showGuestCheckout) {
       if (!allowGuestWithoutForm) {
         setShowSignInModal(false);
@@ -596,23 +687,26 @@ export default function CartPage() {
     }
 
     try {
-      const guestPayload: GuestCheckoutPayload | undefined = showGuestCheckout
-        ? {
-            email: guestData.email || undefined,
-            firstName: guestData.firstName || undefined,
-            lastName: guestData.lastName || undefined,
-            phone: guestData.phone
-              ? `${getDialCodeFromValue(guestData.phoneCountryCode)}${guestData.phone}`
-              : undefined,
-            address: {
-              street: guestData.address.street || undefined,
-              city: guestData.address.city || undefined,
-              state: guestData.address.state || undefined,
-              zipCode: guestData.address.zipCode || undefined,
-              country: guestData.address.country || 'US',
-            },
-          }
-        : undefined;
+      let guestPayload: GuestCheckoutPayload | undefined;
+      if (showGuestCheckout) {
+        guestPayload = {
+          email: guestData.email || undefined,
+          firstName: guestData.firstName || undefined,
+          lastName: guestData.lastName || undefined,
+          phone: guestData.phone
+            ? `${getDialCodeFromValue(guestData.phoneCountryCode)}${guestData.phone}`
+            : undefined,
+          address: {
+            street: guestData.address.street || undefined,
+            city: guestData.address.city || undefined,
+            state: guestData.address.state || undefined,
+            zipCode: guestData.address.zipCode || undefined,
+            country: guestData.address.country || 'US',
+          },
+        };
+      } else if (!isSignedIn && expressSnapshot?.guest) {
+        guestPayload = expressSnapshot.guest;
+      }
 
       const customerPayload: CustomerCheckoutPayload | undefined = !showGuestCheckout && user
         ? {
@@ -636,6 +730,9 @@ export default function CartPage() {
       setElementsReady(false);
       setPaymentMessage(null);
       setCheckoutError(null);
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.removeItem(EXPRESS_CHECKOUT_CACHE_KEY);
+      }
       return true;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to prepare payment. Please try again.';
@@ -656,8 +753,23 @@ export default function CartPage() {
   };
 
   const handleContinueAsGuest = () => {
-    setShowGuestCheckout(true);
+    ensureGuestDetailsVisible();
+  };
+
+  const ensureGuestDetailsVisible = () => {
+    if (isSignedIn) {
+      return;
+    }
+
     setShowSignInModal(false);
+    setShowGuestCheckout(prev => (prev ? prev : true));
+
+    if (typeof window !== 'undefined') {
+      requestAnimationFrame(() => {
+        const target = document.getElementById('guest-checkout');
+        target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
   };
 
   return (
@@ -872,6 +984,8 @@ export default function CartPage() {
                       setMessage={setPaymentMessage}
                       elementsReady={elementsReady}
                       setElementsReady={setElementsReady}
+                      requiresDetails={!isSignedIn}
+                      onRequireDetails={ensureGuestDetailsVisible}
                     />
                   </Elements>
                 </div>

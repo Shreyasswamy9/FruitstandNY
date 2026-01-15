@@ -11,15 +11,14 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#fbf6f0' }}>
-
       {/* Category Navigation */}
       <div
         className="shop-category-nav pb-12 px-4 sm:px-6 lg:px-8"
         style={{
           position: 'relative',
           pointerEvents: 'none',
-          // Push pills below the fixed 92px logo (top 14px + height 92px + extra spacing)
-          paddingTop: '130px',
+          // Push pills below navbar brand mark (logo height + breathing room)
+          paddingTop: '120px',
           // Ensure pills sit above logo so clicks go to buttons even if bounding boxes overlap
           zIndex: 60
         }}

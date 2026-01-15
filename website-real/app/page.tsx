@@ -66,8 +66,7 @@ export default function Home() {
       
       // Mobile-specific immediate interaction handling
       if (isMobile) {
-        const startVideoOnInteraction = async (e: Event) => {
-          e.preventDefault()
+        const startVideoOnInteraction = async () => {
           try {
             video.muted = true
             video.controls = false
@@ -83,7 +82,7 @@ export default function Home() {
         }
         
         // Add multiple interaction listeners for mobile
-        document.addEventListener('touchstart', startVideoOnInteraction, { once: true, passive: false })
+        document.addEventListener('touchstart', startVideoOnInteraction, { once: true, passive: true })
         document.addEventListener('click', startVideoOnInteraction, { once: true })
         document.addEventListener('scroll', startVideoOnInteraction, { once: true, passive: true })
         

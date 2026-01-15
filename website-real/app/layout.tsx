@@ -29,6 +29,11 @@ export const metadata: Metadata = {
     "Discover the latest collection from FRUITSTAND®. Premium clothing and accessories for the modern lifestyle.",
   keywords: "FRUITSTAND, clothing, fashion, new collection, 2025",
   authors: [{ name: "FRUITSTAND®" }],
+  icons: {
+    icon: "/images/newlogo.png",
+    shortcut: "/images/newlogo.png",
+    apple: "/images/newlogo.png",
+  },
 }
 
 export const viewport = {

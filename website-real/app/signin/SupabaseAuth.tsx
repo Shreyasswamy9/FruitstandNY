@@ -145,7 +145,7 @@ export default function SupabaseAuth({ mode = 'sign_in' }: SupabaseAuthProps) {
   <div className="min-h-screen bg-[#fbf6f0] text-gray-900 overflow-hidden relative">
       {/* Subtle light decorative background */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-white" />
+        <div className="absolute inset-0 bg-linear-to-br from-white via-white to-white" />
         <div className="absolute -top-24 -left-24 w-72 h-72 bg-pink-200/40 rounded-full blur-3xl" />
         <div className="absolute top-1/3 -right-32 w-80 h-80 bg-blue-200/40 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-purple-200/30 rounded-full blur-3xl" />
@@ -177,7 +177,7 @@ export default function SupabaseAuth({ mode = 'sign_in' }: SupabaseAuthProps) {
 
             {/* Auth card */}
             <div className="relative">
-              <div className="absolute -inset-1 bg-gradient-to-tr from-gray-200 via-gray-100 to-white rounded-3xl blur-sm" aria-hidden="true" />
+              <div className="absolute -inset-1 bg-linear-to-tr from-gray-200 via-gray-100 to-white rounded-3xl blur-sm" aria-hidden="true" />
               <div className="relative bg-white rounded-3xl shadow-[0_4px_24px_-4px_rgba(0,0,0,0.08),0_2px_8px_-2px_rgba(0,0,0,0.06)] border border-gray-200 p-6 md:p-10">
                 <Auth
                   supabaseClient={supabase}

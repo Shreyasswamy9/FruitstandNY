@@ -194,7 +194,7 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
             animate={{ opacity: 0.5 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[11000] bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-11000 bg-black/70 backdrop-blur-sm"
             onClick={onClose}
           />
 
@@ -205,10 +205,10 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
             exit={{ y: 300 }}
             transition={{ type: 'spring', stiffness: 320, damping: 30 }}
             role="dialog" aria-modal="true" aria-label="Bundle deals"
-            className="fixed inset-x-0 bottom-0 z-[11001] max-h-[75vh] bg-white rounded-t-[28px] shadow-2xl flex flex-col border border-black/5 overflow-y-auto"
+            className="fixed inset-x-0 bottom-0 z-11001 max-h-[75vh] bg-white rounded-t-[28px] shadow-2xl flex flex-col border border-black/5 overflow-y-auto"
           >
             {/* Header */}
-            <div className="sticky top-0 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70 border-b border-gray-100 rounded-t-[28px]">
+            <div className="sticky top-0 bg-white/90 backdrop-blur supports-backdrop-filter:bg-white/70 border-b border-gray-100 rounded-t-[28px]">
               <div className="px-5 pt-4 pb-3">
                 <div className="flex items-center justify-between">
                   <div>

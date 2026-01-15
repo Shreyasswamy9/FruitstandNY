@@ -1,11 +1,11 @@
 "use client";
-import Image from "next/image";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import Price from '@/components/Price';
 import { useRouter } from "next/navigation";
 import { useCart } from "../../../components/CartContext";
+import ProductImageGallery from "@/components/ProductImageGallery";
 
 const empireHatImages = [
   "/images/products/empire-hat/Apple Hat.png",
@@ -33,6 +33,7 @@ const PRODUCT = {
 
 export default function EmpireHatPage() {
   const [selectedImage, setSelectedImage] = useState(empireHatImages[0]);
+  const galleryOption = useMemo(() => ({ name: PRODUCT.name, slug: "default", images: empireHatImages }), []);
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
@@ -144,29 +145,15 @@ export default function EmpireHatPage() {
         }}
       >
         {/* Images */}
-        <div className="flex w-full md:w-1/2 flex-col items-center gap-4">
-          <div className="relative w-full max-w-sm md:max-w-full aspect-square rounded-xl overflow-hidden bg-white shadow-sm">
-            <Image
-              src={selectedImage}
-              alt={PRODUCT.name}
-              fill
-              sizes="(max-width: 768px) 90vw, 420px"
-              style={{ objectFit: "contain", background: "#fff" }}
-              priority
-            />
-          </div>
-          <div className="flex gap-2 justify-center">
-          {empireHatImages.map((img) => (
-            <button
-              key={img}
-              onClick={() => setSelectedImage(img)}
-              className={`relative w-16 h-16 rounded border ${selectedImage === img ? "ring-2 ring-black" : ""}`}
-            >
-              <Image src={img} alt="Empire Cordury hat" fill style={{ objectFit: "contain", background: "#fff" }} />
-            </button>
-          ))}
-          </div>
-        </div>
+        <ProductImageGallery
+          productName={PRODUCT.name}
+          options={[galleryOption]}
+          selectedOption={galleryOption}
+          selectedImage={selectedImage}
+          onImageChange={setSelectedImage}
+          className="md:w-1/2"
+          frameBackground="#ffffff"
+        />
         {/* Product Info */}
         <div className="md:w-1/2 flex flex-col justify-start">
   <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>

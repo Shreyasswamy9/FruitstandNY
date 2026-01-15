@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { supabase } from '@/app/supabase-client';
 
 function SuccessContent() {
   const [loading, setLoading] = useState(true);
@@ -15,22 +16,65 @@ function SuccessContent() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    const sid = params.get('session_id');
-    const fromAccountCreation = params.get('from') === 'account-creation';
-    setSessionId(sid);
-    if (sid) {
-      if (!fromAccountCreation) {
-        router.push(`/success/create-account?session_id=${sid}`);
+
+    let isActive = true;
+
+    const evaluateCheckoutFlow = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const sid = params.get('session_id');
+      const fromAccountCreation = params.get('from') === 'account-creation';
+
+      if (!isActive) {
         return;
       }
+
+      setSessionId(sid);
+
+      if (!sid) {
+        setLoading(false);
+        return;
+      }
+
+      if (!fromAccountCreation) {
+        try {
+          const { data, error } = await supabase.auth.getSession();
+
+          if (!isActive) {
+            return;
+          }
+
+          if (error) {
+            console.error('Unable to verify Supabase session:', error);
+          }
+
+          const hasActiveSession = Boolean(data?.session);
+
+          if (!hasActiveSession) {
+            router.push(`/success/create-account?session_id=${sid}`);
+            return;
+          }
+        } catch (sessionError) {
+          if (!isActive) {
+            return;
+          }
+
+          console.error('Supabase session check failed:', sessionError);
+          router.push(`/success/create-account?session_id=${sid}`);
+          return;
+        }
+      }
+
       setShouldFetchOrder(true);
       localStorage.removeItem('cart');
       window.dispatchEvent(new Event('cartCleared'));
       setLoading(false);
-    } else {
-      setLoading(false);
-    }
+    };
+
+    evaluateCheckoutFlow();
+
+    return () => {
+      isActive = false;
+    };
   }, [router]);
 
   useEffect(() => {
@@ -77,7 +121,7 @@ function SuccessContent() {
 
   if (loading) {
     return (
-  <div className="min-h-screen bg-[#fbf6f0] flex items-center justify-center">
+      <div className="min-h-screen bg-[#fbf6f0] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
           <p className="text-gray-600">Processing your order...</p>
@@ -87,7 +131,7 @@ function SuccessContent() {
   }
 
   return (
-  <div className="min-h-screen bg-[#fbf6f0] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#fbf6f0] flex items-center justify-center px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -145,7 +189,7 @@ function SuccessContent() {
 
 export default function SuccessPage() {
   return (
-  <Suspense fallback={<div className="min-h-screen bg-[#fbf6f0] flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#fbf6f0] flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div></div>}>
       <SuccessContent />
     </Suspense>
   );

@@ -1,13 +1,13 @@
 "use client";
-import Image from "next/image";
-import React, { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
 import BundleSheet from '@/components/BundleSheet'
 import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ColorPicker, { type ColorOption } from '@/components/ColorPicker';
+import ProductImageGallery from "@/components/ProductImageGallery";
+import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 
 // Fuji Long Sleeve color image map (multiple images per color for gallery)
 // Slugs: arboretum, hudson-blue, redbird, broadway-noir
@@ -70,8 +70,24 @@ export default function FujiTshirtPage() {
   const { addToCart, items } = useCart();
   const [showPopup, setShowPopup] = useState(false);
   const [bundleOpen, setBundleOpen] = useState(false);
-  const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+
+  const updateUrlForColor = useCallback((slug?: string) => {
+    if (typeof window === 'undefined') return;
+    const basePath = window.location.pathname.split('?')[0];
+    const query = slug ? `?color=${slug}` : '';
+    window.history.replaceState(null, '', `${basePath}${query}`);
+  }, []);
+
+  const handleSelectColor = useCallback((option: FujiColorOption, ctx?: { image?: string }) => {
+    setSelectedColor(option);
+    setSelectedImage(prev => ctx?.image ?? option.images?.[0] ?? prev);
+    updateUrlForColor(option.slug);
+  }, [updateUrlForColor]);
+
+  const handleImageChange = useCallback((image: string) => {
+    setSelectedImage(image);
+  }, []);
   
   // useSearchParams can cause build-time suspense issues; read from window.location in an effect instead
 
@@ -98,11 +114,10 @@ export default function FujiTshirtPage() {
     if (!colorSlugParam || !isFujiColorSlug(colorSlugParam)) return;
     const colorSlug = colorSlugParam;
     const found = colorOptions.find(c => c.slug === colorSlug);
-    if (found) {
-      setSelectedColor(found);
-      setSelectedImage(found.images[0]);
+    if (found && found.slug !== selectedColor.slug) {
+      handleSelectColor(found);
     }
-  }, [colorOptions]);
+  }, [colorOptions, handleSelectColor, selectedColor.slug]);
 
   const boughtTogetherItems = getFBTForPage('fuji-tshirt');
 
@@ -124,29 +139,19 @@ export default function FujiTshirtPage() {
 
   return (
     <div>
-      <span
-        onClick={(e) => { e.preventDefault(); e.stopPropagation(); try { router.back(); } catch { window.history.back(); } }}
-        style={{ position: 'fixed', top: 24, left: '50%', transform: 'translateX(-50%)', fontSize: 16, color: '#232323', cursor: 'pointer', fontWeight: 500, zIndex: 10005, userSelect: 'none', background: 'rgba(255, 255, 255, 0.9)', border: '1px solid #e0e0e0', borderRadius: '20px', padding: '8px 16px', textDecoration: 'none', backdropFilter: 'blur(10px)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', transition: 'all 0.2s ease', pointerEvents: 'auto' }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 1)'; e.currentTarget.style.transform = 'translateX(-50%) translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)'; e.currentTarget.style.transform = 'translateX(-50%) translateY(0px)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'; }}
-      >
-        ← Go Back
-      </span>
+      <ProductPageBrandHeader />
 
   <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingBottom: taskbarHeight, paddingTop: 120 }}>
         {/* Images */}
-        <div className="flex w-full md:w-1/2 flex-col items-center gap-4">
-          <div className="relative w-full max-w-sm md:max-w-full aspect-square rounded-xl overflow-hidden bg-white shadow-sm">
-            <Image src={selectedImage} alt={PRODUCT.name} style={{ objectFit: "contain", background: "#fff" }} fill sizes="(max-width: 768px) 90vw, 420px" priority />
-          </div>
-          <div className="flex gap-2 justify-center">
-            {selectedColor.images.map((img) => (
-              <button key={img} onClick={() => setSelectedImage(img)} className={`relative w-16 h-16 rounded border ${selectedImage === img ? 'ring-2 ring-black' : ''}`}>
-                <Image src={img} alt={`${PRODUCT.name} - ${selectedColor.name}`} fill style={{ objectFit: 'contain', background: '#fff' }} />
-              </button>
-            ))}
-          </div>
-        </div>
+        <ProductImageGallery
+          productName={PRODUCT.name}
+          options={colorOptions}
+          selectedOption={selectedColor}
+          selectedImage={selectedImage}
+          onOptionChange={(option, ctx) => handleSelectColor(option as FujiColorOption, ctx)}
+          onImageChange={handleImageChange}
+          className="md:w-1/2"
+        />
 
         {/* Product Info */}
         <div className="md:w-1/2 flex flex-col justify-start">
@@ -158,11 +163,7 @@ export default function FujiTshirtPage() {
               selectedName={selectedColor.name}
               onSelect={(opt) => {
                 const match = colorOptions.find(c => c.name === opt.name) ?? colorOptions[0];
-                setSelectedColor(match);
-                setSelectedImage(match.images[0]);
-                if (typeof window !== 'undefined' && match.slug) {
-                  window.history.replaceState(null, '', `/shop/fuji-tshirt?color=${match.slug}`);
-                }
+                handleSelectColor(match);
               }}
             />
           </div>

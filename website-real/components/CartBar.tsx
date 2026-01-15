@@ -119,7 +119,7 @@ export default function CartBar() {
       )}
       {showCartBar && !isCartPage && !(isHomePage && hideLogo) && (
         <div
-          className="fixed left-0 right-0 bottom-0 z-[10002] text-white px-3 md:px-6 flex items-center justify-between"
+          className="fixed left-0 right-0 bottom-0 z-10002 text-white px-3 md:px-6 flex items-center justify-between"
           style={{ 
             background: 'rgba(0,0,0,0.92)',
             backdropFilter: 'saturate(140%) blur(8px)',
