@@ -26,7 +26,7 @@ function SuccessContent() {
       const sid = params.get('session_id');
       const pid = params.get('payment_intent');
       const fromAccountCreation = params.get('from') === 'account-creation';
-      const orderNumberParam = params.get('order_number');
+      const orderNumberParam = params.get('order_number') ?? params.get('orderNumber');
 
       if (!isActive) {
         return;
@@ -174,11 +174,11 @@ function SuccessContent() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </motion.div>
-        <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-2xl font-bold text-gray-900 mb-4">
-          Payment Successful!
+        <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-2xl font-bold text-gray-900 mb-3">
+          Thank you for your order!
         </motion.h1>
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-gray-600 mb-6">
-          Thank you for your order. We&apos;ve received your payment and will process your order shortly.
+          We&apos;ve received your payment and are getting everything ready. Keep your order number handy for any questions.
         </motion.p>
         {(sessionId || paymentIntentId || initialOrderNumber || orderDetails?.orderNumber) && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="bg-gray-50 rounded-lg p-4 mb-6">
