@@ -94,7 +94,7 @@ export default function FujiTshirtPage() {
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
-      productId: "fuji-full-sleeve",
+      productId: "1dcbfbda-626c-49fb-858e-c50050b4b726",
       name: PRODUCT.name,
       price: PRODUCT.price,
       image: selectedImage,
@@ -210,7 +210,7 @@ export default function FujiTshirtPage() {
       {/* Reviews */}
       <div style={{ display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
         <div className="max-w-4xl mx-auto w-full">
-          <CustomerReviews productId="fuji-full-sleeve" />
+          <CustomerReviews productId="1dcbfbda-626c-49fb-858e-c50050b4b726" />
         </div>
       </div>
 

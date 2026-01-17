@@ -56,7 +56,7 @@ export default function FirstEditionTeePage() {
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
-      productId: "first-edition-tee",
+      productId: "149da285-d6ae-4c37-bf76-376ad50363f8",
       name: PRODUCT.name,
       price: PRODUCT.price,
       image: selectedImage,
@@ -138,7 +138,7 @@ export default function FirstEditionTeePage() {
       {/* Reviews */}
       <div style={{ display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
         <div className="max-w-4xl mx-auto w-full">
-          <CustomerReviews productId="first-edition-tee" />
+          <CustomerReviews productId="149da285-d6ae-4c37-bf76-376ad50363f8" />
         </div>
       </div>
 

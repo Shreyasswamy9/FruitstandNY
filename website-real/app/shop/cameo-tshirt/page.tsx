@@ -75,7 +75,7 @@ export default function CameoTshirtPage() {
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
-      productId: "cameo-tshirt",
+      productId: "1ad5fc4b-898d-4e86-ada6-c4787ba20add",
       name: PRODUCT.name,
       price: PRODUCT.price,
       image: selectedImage,
@@ -188,7 +188,7 @@ export default function CameoTshirtPage() {
       {/* Reviews */}
       <div style={{ display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
         <div className="max-w-4xl mx-auto w-full">
-          <CustomerReviews productId="cameo-tshirt" />
+          <CustomerReviews productId="1ad5fc4b-898d-4e86-ada6-c4787ba20add" />
         </div>
       </div>
 

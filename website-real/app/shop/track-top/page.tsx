@@ -67,7 +67,7 @@ export default function TrackTopPage() {
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
-      productId: `track-top-${selectedColor.slug}`,
+      productId: "91c47e89-efd4-4961-aadf-d4f7bf6e13b7",
       name: `${PRODUCT.name} - ${selectedColor.name}`,
       price: PRODUCT.price,
       image: selectedImage,

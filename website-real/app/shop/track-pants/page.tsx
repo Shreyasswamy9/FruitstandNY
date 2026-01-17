@@ -65,7 +65,7 @@ export default function TrackPantsPage() {
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
-      productId: `track-pants-${selectedColor.slug}`,
+      productId: "859d396c-0cd7-4d62-9a95-135ce8efbb82",
       name: `${PRODUCT.name} - ${selectedColor.name}`,
       price: PRODUCT.price,
       image: selectedImage,
@@ -179,7 +179,7 @@ export default function TrackPantsPage() {
         className="py-12 px-4"
       >
         <div className="max-w-4xl mx-auto w-full">
-          <CustomerReviews productId="track-pants" />
+          <CustomerReviews productId="859d396c-0cd7-4d62-9a95-135ce8efbb82" />
         </div>
       </div>
 

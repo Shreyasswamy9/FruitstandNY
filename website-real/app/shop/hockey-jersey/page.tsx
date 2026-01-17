@@ -74,7 +74,7 @@ export default function HockeyJerseyPage() {
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
-      productId: "hockey-jersey",
+      productId: "e1e3790d-d37e-4327-a14e-53bad7745ec8",
       name: PRODUCT.name,
       price: PRODUCT.price,
       image: selectedImage,
@@ -189,7 +189,7 @@ export default function HockeyJerseyPage() {
         className="py-12 px-4"
       >
         <div className="max-w-4xl mx-auto w-full">
-          <CustomerReviews productId="hockey-jersey" />
+          <CustomerReviews productId="e1e3790d-d37e-4327-a14e-53bad7745ec8" />
         </div>
       </div>
 

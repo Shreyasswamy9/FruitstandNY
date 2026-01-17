@@ -1,13 +1,13 @@
 "use client";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useCart } from "../../../components/CartContext";
-import FrequentlyBoughtTogether, { FBTProduct, getFBTForPage } from "@/components/FrequentlyBoughtTogether";
-import Price from '@/components/Price';
+import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import CustomerReviews from "@/components/CustomerReviews";
 import ProductImageGallery from "@/components/ProductImageGallery";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
+import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 
-const greenHatImages = [
+const FOREST_HILLS_IMAGES = [
   "/images/products/Forest Hills Hat/Green Hat.png",
   "/images/products/Forest Hills Hat/G1.png",
   "/images/products/Forest Hills Hat/G2.png",
@@ -18,45 +18,78 @@ const greenHatImages = [
 const PRODUCT = {
   name: "Forest Hills Hat",
   price: 46,
-  description: "Crafted from premium cotton. Designed in NYC, worn everywhere.",
+  description: "Lime green cotton twill with tonal Fruitstand embroidery front and back.",
   details: [
-    "Lime green color 6-panel camp hat.",
-    "Adjustable size, one size fits most.",
-    "Detailed embroidery on front and back.",
-    "Flexible brim.",
+    "6-panel camp silhouette",
+    "Lime green crown with matching under-brim",
+    "Detailed embroidery on front and back",
+    "Adjustable strap, one size fits most",
     "Made in Fujian, China",
   ],
 };
 
 export default function ForestHillsHatPage() {
-  const [selectedImage, setSelectedImage] = useState(greenHatImages[0]);
-  const galleryOption = useMemo(() => ({ name: PRODUCT.name, slug: "default", images: greenHatImages }), []);
-  const { addToCart, items } = useCart();
-  const [showPopup, setShowPopup] = useState(false);
-  const handleAddToCart = () => {
+  const galleryOption = useMemo(
+    () => ({ name: PRODUCT.name, slug: "default", images: FOREST_HILLS_IMAGES }),
+    []
+  );
+  const [selectedImage, setSelectedImage] = useState(FOREST_HILLS_IMAGES[0]);
+  const sizeOptions = useMemo<PurchaseSizeOption[]>(
+    () => [{ value: "ONE_SIZE", label: "One Size" }],
+    []
+  );
+  const [selectedSize, setSelectedSize] = useState<string>(() => sizeOptions[0]?.value ?? "");
+  const { addToCart } = useCart();
+
+  const handleAddToCart = useCallback(() => {
+    if (!selectedSize) return;
     addToCart({
-      productId: "forest-hills-hat",
+      productId: "8d1d5080-2106-420d-b7ea-babc2fba5457",
       name: PRODUCT.name,
       price: PRODUCT.price,
       image: selectedImage,
       quantity: 1,
+      size: selectedSize,
     });
-    setShowPopup(true);
-    setTimeout(() => setShowPopup(false), 1500);
-  };
+  }, [addToCart, selectedImage, selectedSize]);
 
-  // Height of the taskbar (matches py-3 + px-2, but add extra for safety)
-  const taskbarHeight = items.length > 0 && !showPopup ? 64 : 0;
+  const boughtTogetherItems = getFBTForPage("forest-hills-hat");
 
-  // FBT data (centralized)
-  const boughtTogetherItems: FBTProduct[] = getFBTForPage('forest-hills-hat');
-  // (reviews are loaded dynamically via CustomerReviews)
+  const handleAddBoughtTogetherItem = useCallback(
+    (product: { id: string; name: string; price: number; image: string }) => {
+      addToCart({
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        quantity: 1,
+        size: "M",
+      });
+    },
+    [addToCart]
+  );
+
+  const handleAddAllToCart = useCallback(() => {
+    boughtTogetherItems.forEach((product) => {
+      addToCart({
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        quantity: 1,
+        size: "M",
+      });
+    });
+  }, [addToCart, boughtTogetherItems]);
+
   return (
     <div>
       <ProductPageBrandHeader />
-      {/* Section 1: Product Details */}
-      <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingBottom: taskbarHeight, paddingTop: 120 }}>
-        {/* Images */}
+
+      <div
+        className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
+        style={{ paddingTop: 96, paddingBottom: "calc(var(--purchase-bar-height, 280px) + 24px)" }}
+      >
         <ProductImageGallery
           productName={PRODUCT.name}
           options={[galleryOption]}
@@ -66,63 +99,44 @@ export default function ForestHillsHatPage() {
           className="md:w-1/2"
           frameBackground="#ffffff"
         />
-        {/* Product Info */}
+
         <div className="md:w-1/2 flex flex-col justify-start">
-          <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
-          <p className="text-lg text-gray-700 mb-4">{PRODUCT.description}</p>
-          {PRODUCT.details && PRODUCT.details.length > 0 && (
-            <ul className="list-disc list-inside text-sm text-gray-700 mb-6">
-              {PRODUCT.details.map((d, idx) => (
-                <li key={idx} className="mb-1">{d}</li>
-              ))}
-            </ul>
-          )}
-          <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} /></div>
-          <button className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2" onClick={handleAddToCart}>
-            Add to Cart
-          </button>
+          <h1 className="text-3xl font-bold mb-3">{PRODUCT.name}</h1>
+          <p className="text-lg text-gray-700 leading-relaxed mb-4">{PRODUCT.description}</p>
+          {PRODUCT.details?.length ? (
+            <div className="mb-6">
+              <span className="text-xs uppercase tracking-[0.2em] text-gray-500">Details</span>
+              <ul className="mt-2 list-disc list-inside text-gray-700 text-sm sm:text-base space-y-1">
+                {PRODUCT.details.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          <div className="text-2xl font-semibold">${PRODUCT.price.toFixed(2)}</div>
         </div>
       </div>
-      {/* Section 2: Frequently Bought Together */}
+
       <FrequentlyBoughtTogether
         products={boughtTogetherItems}
-        onAddToCart={(product) => {
-          addToCart({
-            productId: product.id,
-            name: product.name,
-            price: product.price,
-            image: product.image,
-            quantity: 1,
-          });
-          setShowPopup(true);
-          setTimeout(() => setShowPopup(false), 1500);
-        }}
-        onAddAllToCart={(products) => {
-          products.forEach(product => {
-            addToCart({
-              productId: product.id,
-              name: product.name,
-              price: product.price,
-              image: product.image,
-              quantity: 1,
-            });
-          });
-          setShowPopup(true);
-          setTimeout(() => setShowPopup(false), 1500);
-        }}
-        />
-        {/* Section 3: Customer Reviews */}
-        <CustomerReviews productId="forest-hills-hat" />
-      {/* Minimalistic cart taskbar at bottom if cart has items */}
-      {items.length > 0 && !showPopup && (
-        <div className="fixed left-0 right-0 bottom-0 z-50 bg-black text-white px-2 py-3 md:px-4 md:py-4 flex items-center justify-between" style={{ borderTopLeftRadius: 16, borderTopRightRadius: 16, boxShadow: '0 4px 24px 0 rgba(0,0,0,0.18)', borderBottom: 'none' }}>
-          <span className="font-medium text-sm md:text-base">Cart</span>
-          <div className="flex items-center gap-2 md:gap-3">
-            <span className="inline-block bg-white text-black rounded px-2 py-1 md:px-3 font-bold text-sm md:text-base">{items.reduce((sum, i) => sum + i.quantity, 0)}</span>
-            <a href="/cart" className="ml-1 md:ml-2 px-3 py-2 md:px-4 md:py-2 bg-white text-black rounded font-semibold hover:bg-gray-200 text-xs md:text-base" style={{ textDecoration: 'none' }}>Head to Cart</a>
-          </div>
+        onAddToCart={handleAddBoughtTogetherItem}
+        onAddAllToCart={handleAddAllToCart}
+      />
+
+      <div style={{ background: "#fbf6f0" }} className="py-12 px-4">
+        <div className="max-w-4xl mx-auto w-full">
+          <CustomerReviews productId="8d1d5080-2106-420d-b7ea-babc2fba5457" />
         </div>
-      )}
+      </div>
+
+      <ProductPurchaseBar
+        price={PRODUCT.price}
+        summaryLabel="Forest green"
+        sizeOptions={sizeOptions}
+        selectedSize={selectedSize}
+        onSelectSize={setSelectedSize}
+        onAddToCart={handleAddToCart}
+      />
     </div>
   );
 }

@@ -103,7 +103,7 @@ export default function TracksuitPage() {
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
-      productId: "tracksuit",
+      productId: "0f5810c1-abec-4e70-a077-33c839b4de2b",
       name: PRODUCT.name,
       price: PRODUCT.price,
       image: selectedImage,
@@ -235,7 +235,7 @@ export default function TracksuitPage() {
         <div className="max-w-4xl mx-auto w-full">
           <h2 className="text-3xl font-bold text-center mb-8">Customer Reviews</h2>
           <div>
-            <CustomerReviews productId="tracksuit" />
+            <CustomerReviews productId="0f5810c1-abec-4e70-a077-33c839b4de2b" />
           </div>
         </div>
       </div>

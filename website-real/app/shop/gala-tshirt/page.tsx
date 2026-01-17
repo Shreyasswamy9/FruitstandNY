@@ -71,7 +71,7 @@ export default function GalaTshirtPage() {
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
-      productId: "gala-tshirt",
+      productId: "16eab132-c3a5-4b1c-88b5-1a82cbcd90de",
       name: PRODUCT.name,
       price: PRODUCT.price,
       image: selectedImage,
@@ -185,7 +185,7 @@ export default function GalaTshirtPage() {
       {/* Reviews */}
       <div style={{ display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
         <div className="max-w-4xl mx-auto w-full">
-          <CustomerReviews productId="gala-tshirt" />
+          <CustomerReviews productId="16eab132-c3a5-4b1c-88b5-1a82cbcd90de" />
         </div>
       </div>
 

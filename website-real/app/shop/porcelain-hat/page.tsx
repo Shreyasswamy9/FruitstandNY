@@ -1,68 +1,91 @@
 "use client";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
+import { useCart } from "../../../components/CartContext";
 import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
-import Price from '@/components/Price';
-import { useRouter } from "next/navigation";
-import { useCart } from "../../../components/CartContext";
 import ProductImageGallery from "@/components/ProductImageGallery";
+import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
+import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 
-const porcelainHatImages = [
+const PORCELAIN_HAT_IMAGES = [
   "/images/products/Porcelain Hat/Fruitscale Hat.png",
   "/images/products/Porcelain Hat/FS2.png",
 ];
 
 const PRODUCT = {
-  name: "Porcelain Hat",
+  name: "Porcelain FS Cap",
   price: 44,
-  description: "Crisp porcelain white hat, clean look for any outfit.",
+  description: "Crisp porcelain white cap finished with tonal Fruitstand embroidery.",
+  details: [
+    "Structured 6-panel silhouette",
+    "Adjustable strap with brushed metal closure",
+    "Embroidered front and back hits",
+    "One size fits most",
+  ],
 };
 
 export default function PorcelainHatPage() {
-  const [selectedImage, setSelectedImage] = useState(porcelainHatImages[0]);
-  const galleryOption = useMemo(() => ({ name: PRODUCT.name, slug: "default", images: porcelainHatImages }), []);
-  const { addToCart, items } = useCart();
-  const [showPopup, setShowPopup] = useState(false);
-  const router = useRouter();
-  const handleAddToCart = () => {
+  const galleryOption = useMemo(
+    () => ({ name: PRODUCT.name, slug: "default", images: PORCELAIN_HAT_IMAGES }),
+    []
+  );
+  const [selectedImage, setSelectedImage] = useState(PORCELAIN_HAT_IMAGES[0]);
+  const sizeOptions = useMemo<PurchaseSizeOption[]>(
+    () => [{ value: "ONE_SIZE", label: "One Size" }],
+    []
+  );
+  const [selectedSize, setSelectedSize] = useState<string>(() => sizeOptions[0]?.value ?? "");
+  const { addToCart } = useCart();
+
+  const handleAddToCart = useCallback(() => {
+    if (!selectedSize) return;
     addToCart({
-      productId: "porcelain-hat",
+      productId: "bca735d7-f575-4ef3-9ff7-28966205618b",
       name: PRODUCT.name,
       price: PRODUCT.price,
       image: selectedImage,
       quantity: 1,
+      size: selectedSize,
     });
-    setShowPopup(true);
-    setTimeout(() => setShowPopup(false), 1500);
-  };
+  }, [addToCart, selectedImage, selectedSize]);
 
-  const boughtTogetherItems = getFBTForPage('porcelain-hat');
+  const boughtTogetherItems = getFBTForPage("porcelain-hat");
 
-  const handleAddBoughtTogetherItem = (item: { id: string; name: string; price: number; image: string }) => {
-    addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1 });
-    setShowPopup(true);
-    setTimeout(() => setShowPopup(false), 1500);
-  };
+  const handleAddBoughtTogetherItem = useCallback(
+    (item: { id: string; name: string; price: number; image: string }) => {
+      addToCart({
+        productId: item.id,
+        name: item.name,
+        price: item.price,
+        image: item.image,
+        quantity: 1,
+        size: "M",
+      });
+    },
+    [addToCart]
+  );
 
-  const handleAddAllToCart = () => {
-    boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1 }));
-    setShowPopup(true);
-    setTimeout(() => setShowPopup(false), 1500);
-  };
-
-  const taskbarHeight = items.length > 0 && !showPopup ? 64 : 0;
-
-  
+  const handleAddAllToCart = useCallback(() => {
+    boughtTogetherItems.forEach((item) => {
+      addToCart({
+        productId: item.id,
+        name: item.name,
+        price: item.price,
+        image: item.image,
+        quantity: 1,
+        size: "M",
+      });
+    });
+  }, [addToCart, boughtTogetherItems]);
 
   return (
     <div>
-      <span
-        onClick={() => router.back()}
-        style={{ position: 'fixed', top: 24, left: '50%', transform: 'translateX(-50%)', fontSize: 16, color: '#232323', cursor: 'pointer', fontWeight: 500, zIndex: 10005, background: 'rgba(255,255,255,0.9)', border: '1px solid #e0e0e0', borderRadius: '20px', padding: '8px 16px', textDecoration: 'none', backdropFilter: 'blur(10px)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', transition: 'all 0.2s ease', pointerEvents: 'auto' }}
+      <ProductPageBrandHeader />
+
+      <div
+        className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
+        style={{ paddingTop: 96, paddingBottom: "calc(var(--purchase-bar-height, 280px) + 24px)" }}
       >
-        ← Go Back
-      </span>
-      <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingTop: 120, paddingBottom: taskbarHeight }}>
         <ProductImageGallery
           productName={PRODUCT.name}
           options={[galleryOption]}
@@ -72,13 +95,21 @@ export default function PorcelainHatPage() {
           className="md:w-1/2"
           frameBackground="#ffffff"
         />
+
         <div className="md:w-1/2 flex flex-col justify-start">
-          <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
-          <p className="text-lg text-gray-700 mb-4">{PRODUCT.description}</p>
-          <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} /></div>
-          <button className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2" onClick={handleAddToCart}>
-            Add to Cart
-          </button>
+          <h1 className="text-3xl font-bold mb-3">{PRODUCT.name}</h1>
+          <p className="text-lg text-gray-700 leading-relaxed mb-4">{PRODUCT.description}</p>
+          {PRODUCT.details?.length ? (
+            <div className="mb-6">
+              <span className="text-xs uppercase tracking-[0.2em] text-gray-500">Details</span>
+              <ul className="mt-2 list-disc list-inside text-gray-700 text-sm sm:text-base space-y-1">
+                {PRODUCT.details.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          <div className="text-2xl font-semibold">${PRODUCT.price.toFixed(2)}</div>
         </div>
       </div>
 
@@ -88,23 +119,20 @@ export default function PorcelainHatPage() {
         onAddAllToCart={handleAddAllToCart}
       />
 
-      {/* Reviews */}
-      <div style={{ display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
+      <div style={{ display: "flex", alignItems: "center", background: "#fbf6f0" }} className="py-12 px-4">
         <div className="max-w-4xl mx-auto w-full">
-          <CustomerReviews productId="porcelain-hat" />
+          <CustomerReviews productId="bca735d7-f575-4ef3-9ff7-28966205618b" />
         </div>
       </div>
 
-      {/* Minimalistic cart taskbar at bottom if cart has items */}
-      {items.length > 0 && !showPopup && (
-        <div className="fixed left-0 right-0 bottom-0 z-50 bg-black text-white px-2 py-3 md:px-4 md:py-4 flex items-center justify-between" style={{ borderTopLeftRadius: 16, borderTopRightRadius: 16, boxShadow: '0 4px 24px 0 rgba(0,0,0,0.18)', borderBottom: 'none' }}>
-          <span className="font-medium text-sm md:text-base">Cart</span>
-          <div className="flex items-center gap-2 md:gap-3">
-            <span className="inline-block bg-white text-black rounded px-2 py-1 md:px-3 font-bold text-sm md:text-base">{items.reduce((sum, i) => sum + i.quantity, 0)}</span>
-            <a href="/cart" className="ml-1 md:ml-2 px-3 py-2 md:px-4 md:py-2 bg-white text-black rounded font-semibold hover:bg-gray-200 text-xs md:text-base" style={{ textDecoration: 'none' }}>Head to Cart</a>
-          </div>
-        </div>
-      )}
+      <ProductPurchaseBar
+        price={PRODUCT.price}
+        sizeOptions={sizeOptions}
+        selectedSize={selectedSize}
+        onSelectSize={setSelectedSize}
+        onAddToCart={handleAddToCart}
+        summaryLabel="Adjustable fit"
+      />
     </div>
   );
 }

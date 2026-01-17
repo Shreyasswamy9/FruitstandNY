@@ -37,7 +37,7 @@ export default function WasabiTeePage() {
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
-      productId: "wasabi-tee",
+      productId: "51977ef7-ae8f-486f-9dd7-7620e3b6e70a",
       name: PRODUCT.name,
       price: PRODUCT.price,
       image: selectedImage,
@@ -103,7 +103,7 @@ export default function WasabiTeePage() {
       {/* Reviews */}
       <div style={{ display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
         <div className="max-w-4xl mx-auto w-full">
-          <CustomerReviews productId="wasabi-tee" />
+          <CustomerReviews productId="51977ef7-ae8f-486f-9dd7-7620e3b6e70a" />
         </div>
       </div>
 

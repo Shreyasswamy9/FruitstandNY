@@ -71,7 +71,7 @@ export default function MutsuTshirtPage() {
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
-      productId: "mutsu-tshirt",
+      productId: "21da7031-a510-4ea0-add3-1dce02fee867",
       name: PRODUCT.name,
       price: PRODUCT.price,
       image: selectedImage,
@@ -185,7 +185,7 @@ export default function MutsuTshirtPage() {
       {/* Reviews */}
       <div style={{ display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
         <div className="max-w-4xl mx-auto w-full">
-          <CustomerReviews productId="mutsu-tshirt" />
+          <CustomerReviews productId="21da7031-a510-4ea0-add3-1dce02fee867" />
         </div>
       </div>
 
