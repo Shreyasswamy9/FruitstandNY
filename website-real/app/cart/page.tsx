@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 // import StaggeredMenu from "../../components/StagerredMenu"
 import { motion } from "framer-motion"
@@ -390,6 +390,7 @@ export default function CartPage() {
   const { items, removeFromCart, clearCart, addToCart } = useCart();
   const { createPaymentIntent, loading: intentLoading, error: checkoutError, setError: setCheckoutError } = useCheckout();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const clientSecretRef = useRef<string | null>(null);
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
@@ -499,6 +500,7 @@ export default function CartPage() {
       setClientSecret(null);
       setPaymentIntentId(null);
       setElementsReady(false);
+      clientSecretRef.current = null;
       return;
     }
 
@@ -514,9 +516,12 @@ export default function CartPage() {
         });
 
         if (!active) return;
+        const secretChanged = result.clientSecret !== clientSecretRef.current;
+        clientSecretRef.current = result.clientSecret;
         setClientSecret(result.clientSecret);
         setPaymentIntentId(result.paymentIntentId);
-        setElementsReady(false);
+        // Avoid disabling the checkout button when the Stripe element stays mounted.
+        setElementsReady(!secretChanged);
         setPaymentMessage(null);
         setCheckoutError(null);
       } catch (error) {
@@ -725,9 +730,12 @@ export default function CartPage() {
         customerData: customerPayload,
       });
 
+      const secretChanged = result.clientSecret !== clientSecretRef.current;
+      clientSecretRef.current = result.clientSecret;
       setClientSecret(result.clientSecret);
       setPaymentIntentId(result.paymentIntentId);
-      setElementsReady(false);
+      // Re-enable payment immediately if we're reusing the same client secret.
+      setElementsReady(!secretChanged);
       setPaymentMessage(null);
       setCheckoutError(null);
       if (typeof window !== 'undefined') {

@@ -8,6 +8,7 @@ import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/Frequently
 import ColorPicker from '@/components/ColorPicker';
 import ProductImageGallery from "@/components/ProductImageGallery";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
+import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 
 // Per-color image map (multiple images per color)
 const MUTSU_COLOR_IMAGE_MAP: Record<string, string[]> = {
@@ -44,8 +45,7 @@ export default function MutsuTshirtPage() {
   ], []);
   const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
   const [selectedImage, setSelectedImage] = useState(colorOptions[0].images[0]);
-  const { addToCart, items } = useCart();
-  const [showPopup, setShowPopup] = useState(false);
+  const { addToCart } = useCart();
   const [bundleOpen, setBundleOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
 
@@ -79,8 +79,6 @@ export default function MutsuTshirtPage() {
       size: selectedSize,
       color: selectedColor.name,
     });
-    setShowPopup(true);
-    setTimeout(() => setShowPopup(false), 1500);
   };
 
   useEffect(() => {
@@ -97,18 +95,27 @@ export default function MutsuTshirtPage() {
   const boughtTogetherItems = getFBTForPage('mutsu-tshirt');
 
   const handleAddBoughtTogetherItem = (item: { id: string; name: string; price: number; image: string }) => {
-    addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: "M" });
-    setShowPopup(true);
-    setTimeout(() => setShowPopup(false), 1500);
+    addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: selectedSize ?? "M" });
   };
 
   const handleAddAllToCart = () => {
-    boughtTogetherItems.forEach(item => addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: "M" }));
-    setShowPopup(true);
-    setTimeout(() => setShowPopup(false), 1500);
+    const fallbackSize = selectedSize ?? "M";
+    boughtTogetherItems.forEach(item => addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: fallbackSize }));
   };
 
-  const taskbarHeight = items.length > 0 && !showPopup ? 64 : 0;
+  const sizeOptions: PurchaseSizeOption[] = useMemo(
+    () => ["XS", "S", "M", "L", "XL", "XXL", "XXXL"].map((size) => ({ value: size, label: size })),
+    []
+  );
+
+  const purchaseColorOptions: PurchaseColorOption[] = useMemo(
+    () => colorOptions.map((option) => ({
+      value: option.slug,
+      label: option.name,
+      swatch: option.color,
+    })),
+    [colorOptions]
+  );
 
 
 
@@ -116,7 +123,10 @@ export default function MutsuTshirtPage() {
     <div>
       <ProductPageBrandHeader />
 
-      <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingBottom: taskbarHeight, paddingTop: 120 }}>
+      <div
+        className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
+        style={{ paddingTop: 96, paddingBottom: "calc(var(--purchase-bar-height, 280px) + 24px)" }}
+      >
         {/* Images */}
         <ProductImageGallery
           productName={PRODUCT.name}
@@ -137,17 +147,6 @@ export default function MutsuTshirtPage() {
             selectedName={selectedColor.name}
             onSelect={(opt) => handleSelectColor(opt as typeof colorOptions[number])}
           />
-
-          {/* Size Selection */}
-          <div style={{ marginBottom: 18 }}>
-            <p className="text-sm font-medium text-gray-700 mb-3">Size:</p>
-            <div className="size-single-line">
-              {["XS", "S", "M", "L", "XL", "XXL", "XXXL"].map((size) => (
-                <button key={size} className={`size-button px-3 rounded-lg font-semibold border-2 transition-all ${selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'}`} onClick={() => setSelectedSize(size)} type="button">{size}</button>
-              ))}
-            </div>
-            <div className="mt-2"><SizeGuide productSlug="mutsu-tshirt" imagePath="/images/size-guides/Size Guide/Mutsu Table.png" /></div>
-          </div>
 
           <div className="mb-4 space-y-4">
             <p className="text-lg text-gray-700 leading-relaxed">{PRODUCT.description}</p>
@@ -174,9 +173,6 @@ export default function MutsuTshirtPage() {
             )}
           </div>
           <div className="text-2xl font-semibold mb-6">${PRODUCT.price.toFixed(2)}</div>
-          <button className={`bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2 ${!selectedSize ? 'opacity-50 cursor-not-allowed' : ''}`} onClick={handleAddToCart} disabled={!selectedSize}>
-            {!selectedSize ? 'Pick a size to add to cart' : 'Add to Cart'}
-          </button>
         </div>
       </div>
 
@@ -193,18 +189,26 @@ export default function MutsuTshirtPage() {
         </div>
       </div>
 
-      {/* Minimalistic cart taskbar at bottom if cart has items */}
-      {items.length > 0 && !showPopup && (
-        <div className="fixed left-0 right-0 bottom-0 z-50 bg-black text-white px-2 py-3 md:px-4 md:py-4 flex items-center justify-between" style={{ borderTopLeftRadius: 16, borderTopRightRadius: 16, boxShadow: '0 4px 24px 0 rgba(0,0,0,0.18)', borderBottom: 'none' }}>
-          <span className="font-medium text-sm md:text-base">Cart</span>
-          <div className="flex items-center gap-2 md:gap-3">
-            <span className="inline-block bg-white text-black rounded px-2 py-1 md:px-3 font-bold text-sm md:text-base">{items.reduce((sum, i) => sum + i.quantity, 0)}</span>
-            <a href="/cart" className="ml-1 md:ml-2 px-3 py-2 md:px-4 md:py-2 bg-white text-black rounded font-semibold hover:bg-gray-200 text-xs md:text-base" style={{ textDecoration: 'none' }}>Head to Cart</a>
-          </div>
-        </div>
-      )}
       {/* Bundle sheet modal: opens when CTA is clicked */}
       <BundleSheet open={bundleOpen} onClose={() => setBundleOpen(false)} initialTab="custom" />
+
+      <ProductPurchaseBar
+        price={PRODUCT.price}
+        summaryLabel={selectedColor.name}
+        sizeOptions={sizeOptions}
+        selectedSize={selectedSize}
+        onSelectSize={setSelectedSize}
+        colorOptions={purchaseColorOptions}
+        selectedColor={selectedColor.slug}
+        onSelectColor={(value) => {
+          const next = colorOptions.find((option) => option.slug === value);
+          if (next) {
+            handleSelectColor(next);
+          }
+        }}
+        onAddToCart={handleAddToCart}
+        sizeGuideTrigger={<SizeGuide productSlug="mutsu-tshirt" imagePath="/images/size-guides/Size Guide/Mutsu Table.png" />}
+      />
     </div>
   );
 }

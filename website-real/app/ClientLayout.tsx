@@ -52,8 +52,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       <style jsx global>{`
         .custom-staggered-menu .staggered-menu-header {
           pointer-events: auto !important;
-          position: relative !important;
+          position: absolute !important;
           z-index: 10003 !important;
+          top: 10px !important;
+          padding: 0 18px !important;
         }
 
         .custom-staggered-menu .sm-toggle {

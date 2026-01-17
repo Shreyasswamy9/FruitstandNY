@@ -4,7 +4,6 @@ import React, { createContext, useState, useEffect } from "react"
 import { usePathname, useSearchParams } from "next/navigation"
 import { ensurePosthog, capturePageview } from "../instrumentation.client"
 import LogoButton from "./LogoButton"
-import CartBar from "./CartBar"
 import StaggeredMenu from "./StagerredMenu"
 import SiteFooter from "./SiteFooter"
 
@@ -20,7 +19,6 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const isShopRoute = pathname?.startsWith('/shop')
 
   // Ensure PostHog initializes on every client render
   useEffect(() => {
@@ -61,12 +59,6 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
       
       {children}
       <SiteFooter />
-      {/* Bottom spacer on shop/product pages so CartBar doesn't cover content */}
-      {isShopRoute && (
-        <div aria-hidden className="h-28 md:h-24" />
-      )}
-      
-      <CartBar />
       
       {/* Global StaggeredMenu - appears on all pages */}
       <div 
@@ -112,8 +104,16 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
       <style jsx global>{`
         .custom-staggered-menu .staggered-menu-header {
           pointer-events: auto !important;
-          position: relative !important;
+          position: absolute !important;
+          top: 40px !important;
+          right: 18px !important;
+          left: auto !important;
           z-index: 10003 !important;
+          padding: 0 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: flex-end !important;
+          width: auto !important;
         }
 
         .custom-staggered-menu .sm-toggle {

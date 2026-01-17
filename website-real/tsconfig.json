@@ -38,6 +38,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
+    "supabasetest",
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [

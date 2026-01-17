@@ -7,6 +7,8 @@ import { readCartMetadata } from '@/lib/stripeCartMetadata'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
+export const runtime = 'nodejs'
+
 // Helper: safe JSON parse
 function safeJsonParse<T = unknown>(value: unknown, fallback: T): T {
   try {
@@ -60,7 +62,6 @@ type CustomerPayload = {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.text();
     const signature = request.headers.get('stripe-signature');
 
     if (!signature) {
@@ -70,11 +71,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const bodyBuffer = Buffer.from(await request.arrayBuffer());
+
     let event: Stripe.Event;
 
     try {
       event = stripe.webhooks.constructEvent(
-        body,
+        bodyBuffer,
         signature,
         process.env.STRIPE_WEBHOOK_SECRET!
       );

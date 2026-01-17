@@ -1,11 +1,12 @@
 "use client";
 import React, { useMemo, useState } from "react";
-import SizeGuide from "@/components/SizeGuide";
 import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import { useCart } from "../../../components/CartContext";
 import ProductImageGallery from "@/components/ProductImageGallery";
+import ProductPurchaseBar, { PurchaseSizeOption } from "@/components/ProductPurchaseBar";
+import SizeGuide from "@/components/SizeGuide";
 
 const wasabiImages = [
   "/images/products/Wasabi Tee/Wabasabi 1.png",
@@ -31,10 +32,10 @@ const PRODUCT = {
 export default function WasabiTeePage() {
   const [selectedImage, setSelectedImage] = useState(wasabiImages[0]);
   const galleryOption = useMemo(() => ({ name: PRODUCT.name, slug: "default", images: wasabiImages }), []);
-  const [selectedSize, setSelectedSize] = useState(PRODUCT.sizes[2]);
-  const { addToCart, items } = useCart();
-  const [showPopup, setShowPopup] = useState(false);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const { addToCart } = useCart();
   const handleAddToCart = () => {
+    if (!selectedSize) return;
     addToCart({
       productId: "wasabi-tee",
       name: PRODUCT.name,
@@ -43,18 +44,22 @@ export default function WasabiTeePage() {
       quantity: 1,
       size: selectedSize,
     });
-    setShowPopup(true);
-    setTimeout(() => setShowPopup(false), 1500);
   };
 
   const boughtTogetherItems = getFBTForPage('wasabi-tee');
 
-  const taskbarHeight = items.length > 0 && !showPopup ? 64 : 0;
+  const sizeOptions: PurchaseSizeOption[] = PRODUCT.sizes.map((size) => ({
+    value: size,
+    label: size,
+  }));
 
   return (
     <div>
       <ProductPageBrandHeader />
-      <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingTop: 120, paddingBottom: taskbarHeight }}>
+      <div
+        className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
+        style={{ paddingTop: 96, paddingBottom: "calc(var(--purchase-bar-height, 280px) + 24px)" }}
+      >
         <ProductImageGallery
           productName={PRODUCT.name}
           options={[galleryOption]}
@@ -67,16 +72,6 @@ export default function WasabiTeePage() {
         <div className="md:w-1/2 flex flex-col justify-start">
           <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
           <div className="text-2xl font-semibold mb-6">${PRODUCT.price.toFixed(2)}</div>
-          <div className="mb-4">
-            <p className="text-sm font-medium text-gray-700 mb-3">Size:</p>
-            <div className="size-single-line">
-              {PRODUCT.sizes.map((size) => (
-                <button key={size} className={`size-button px-3 rounded-lg font-semibold border-2 transition-all ${selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'}`} onClick={() => setSelectedSize(size)} type="button">{size}</button>
-              ))}
-            </div>
-            <div className="mt-2"><SizeGuide productSlug="wasabi-tee" imagePath="/images/size-guides/Size Guide/Wabasabi Tee Table.png" /></div>
-          </div>
-
           <div className="mb-4 space-y-4">
             <p className="text-lg text-gray-700 leading-relaxed">{PRODUCT.description}</p>
             {PRODUCT.details && (
@@ -90,15 +85,19 @@ export default function WasabiTeePage() {
               </div>
             )}
           </div>
-
-          <button className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2" onClick={handleAddToCart}>Add to Cart</button>
         </div>
       </div>
 
       <FrequentlyBoughtTogether
         products={boughtTogetherItems}
-        onAddToCart={(item) => { addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: PRODUCT.sizes[2] }); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
-        onAddAllToCart={() => { boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: PRODUCT.sizes[2] })); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
+        onAddToCart={(item) => {
+          const defaultSize = selectedSize ?? PRODUCT.sizes[2];
+          addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: defaultSize });
+        }}
+        onAddAllToCart={() => {
+          const defaultSize = selectedSize ?? PRODUCT.sizes[2];
+          boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: defaultSize }));
+        }}
       />
 
       {/* Reviews */}
@@ -107,6 +106,16 @@ export default function WasabiTeePage() {
           <CustomerReviews productId="wasabi-tee" />
         </div>
       </div>
+
+      <ProductPurchaseBar
+        price={PRODUCT.price}
+        summaryLabel="Fruitstand"
+        sizeOptions={sizeOptions}
+        selectedSize={selectedSize}
+        onSelectSize={setSelectedSize}
+        onAddToCart={handleAddToCart}
+        sizeGuideTrigger={<SizeGuide productSlug="wasabi-tee" imagePath="/images/size-guides/Size Guide/Wabasabi Tee Table.png" />}
+      />
 
     </div>
   );

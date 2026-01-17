@@ -9,9 +9,11 @@ import { supabase } from '@/app/supabase-client';
 function SuccessContent() {
   const [loading, setLoading] = useState(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
   const [orderDetails, setOrderDetails] = useState<{ orderNumber: string; totalAmount: number; status: string } | null>(null);
   const [detailsError, setDetailsError] = useState<string | null>(null);
   const [shouldFetchOrder, setShouldFetchOrder] = useState(false);
+  const [initialOrderNumber, setInitialOrderNumber] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -22,52 +24,68 @@ function SuccessContent() {
     const evaluateCheckoutFlow = async () => {
       const params = new URLSearchParams(window.location.search);
       const sid = params.get('session_id');
+      const pid = params.get('payment_intent');
       const fromAccountCreation = params.get('from') === 'account-creation';
+      const orderNumberParam = params.get('order_number');
 
       if (!isActive) {
         return;
       }
 
       setSessionId(sid);
+      setPaymentIntentId(pid);
+      if (orderNumberParam) {
+        setInitialOrderNumber(orderNumberParam);
+      }
 
-      if (!sid) {
+      if (!sid && !pid) {
         setLoading(false);
         return;
       }
 
-      if (!fromAccountCreation) {
-        try {
-          const { data, error } = await supabase.auth.getSession();
+      if (sid) {
+        if (!fromAccountCreation) {
+          try {
+            const { data, error } = await supabase.auth.getSession();
 
-          if (!isActive) {
-            return;
-          }
+            if (!isActive) {
+              return;
+            }
 
-          if (error) {
-            console.error('Unable to verify Supabase session:', error);
-          }
+            if (error) {
+              console.error('Unable to verify Supabase session:', error);
+            }
 
-          const hasActiveSession = Boolean(data?.session);
+            const hasActiveSession = Boolean(data?.session);
 
-          if (!hasActiveSession) {
+            if (!hasActiveSession) {
+              router.push(`/success/create-account?session_id=${sid}`);
+              return;
+            }
+          } catch (sessionError) {
+            if (!isActive) {
+              return;
+            }
+
+            console.error('Supabase session check failed:', sessionError);
             router.push(`/success/create-account?session_id=${sid}`);
             return;
           }
-        } catch (sessionError) {
-          if (!isActive) {
-            return;
-          }
-
-          console.error('Supabase session check failed:', sessionError);
-          router.push(`/success/create-account?session_id=${sid}`);
-          return;
         }
+
+        setShouldFetchOrder(true);
+        localStorage.removeItem('cart');
+        window.dispatchEvent(new Event('cartCleared'));
+        setLoading(false);
+        return;
       }
 
-      setShouldFetchOrder(true);
-      localStorage.removeItem('cart');
-      window.dispatchEvent(new Event('cartCleared'));
-      setLoading(false);
+      if (pid) {
+        setShouldFetchOrder(true);
+        localStorage.removeItem('cart');
+        window.dispatchEvent(new Event('cartCleared'));
+        setLoading(false);
+      }
     };
 
     evaluateCheckoutFlow();
@@ -78,13 +96,17 @@ function SuccessContent() {
   }, [router]);
 
   useEffect(() => {
-    if (!shouldFetchOrder || !sessionId) return;
+    if (!shouldFetchOrder) return;
+    if (!sessionId && !paymentIntentId) return;
     let isActive = true;
 
     const loadOrder = async () => {
       try {
         setDetailsError(null);
-        const response = await fetch(`/api/orders/by-session?session_id=${encodeURIComponent(sessionId)}`);
+        const endpoint = sessionId
+          ? `/api/orders/by-session?session_id=${encodeURIComponent(sessionId)}`
+          : `/api/orders/by-payment-intent?payment_intent=${encodeURIComponent(paymentIntentId!)}`;
+        const response = await fetch(endpoint);
         if (!isActive) return;
         if (!response.ok) {
           const payload = await response.json().catch(() => ({}));
@@ -117,7 +139,7 @@ function SuccessContent() {
     return () => {
       isActive = false;
     };
-  }, [sessionId, shouldFetchOrder]);
+  }, [sessionId, paymentIntentId, shouldFetchOrder]);
 
   if (loading) {
     return (
@@ -158,11 +180,11 @@ function SuccessContent() {
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-gray-600 mb-6">
           Thank you for your order. We&apos;ve received your payment and will process your order shortly.
         </motion.p>
-        {sessionId && (
+        {(sessionId || paymentIntentId || initialOrderNumber || orderDetails?.orderNumber) && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="bg-gray-50 rounded-lg p-4 mb-6">
             <p className="text-sm text-gray-500 mb-1">Order Number</p>
             <p className="text-sm font-mono text-gray-900 break-all">
-              {orderDetails?.orderNumber ?? sessionId}
+              {orderDetails?.orderNumber ?? initialOrderNumber ?? sessionId ?? paymentIntentId}
             </p>
           </motion.div>
         )}

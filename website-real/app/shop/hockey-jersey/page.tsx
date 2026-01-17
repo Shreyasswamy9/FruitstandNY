@@ -1,14 +1,14 @@
 "use client";
 
 export const dynamic = 'force-dynamic'
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import SizeGuide from "@/components/SizeGuide";
 import Price from '@/components/Price';
 import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import { useCart } from "@/components/CartContext";
 import ProductImageGallery from "@/components/ProductImageGallery";
-import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
+import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 
 const HOCKEY_JERSEY_IMAGE_SET = [
   "/images/products/hockey Jersey/JN.png",
@@ -44,8 +44,7 @@ export default function HockeyJerseyPage() {
   const colorOptions = HOCKEY_JERSEY_VARIANTS;
   const [selectedColor, setSelectedColor] = useState<HockeyJerseyVariant>(colorOptions[0]);
   const [selectedImage, setSelectedImage] = useState(colorOptions[0].images[0]);
-  const { addToCart, items } = useCart();
-  const [showPopup, setShowPopup] = useState(false);
+  const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const handleSelectColor = useCallback((option: HockeyJerseyVariant, ctx?: { image?: string }) => {
     setSelectedColor(option);
@@ -72,7 +71,6 @@ export default function HockeyJerseyPage() {
     }
   }, [colorOptions, handleSelectColor, selectedColor.slug]);
 
-  // Show popup and keep it visible
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
@@ -84,26 +82,24 @@ export default function HockeyJerseyPage() {
       size: selectedSize,
       color: selectedColor.name,
     });
-    setShowPopup(true);
-    setTimeout(() => setShowPopup(false), 1500);
   };
 
   // Handle adding items from "Frequently Bought Together" section
   const handleAddBoughtTogetherItem = (item: { id: string; name: string; price: number; image: string }) => {
+    const fallbackSize = selectedSize ?? "M";
     addToCart({
       productId: item.id,
       name: item.name,
       price: item.price,
       image: item.image,
       quantity: 1,
-      size: "M", // Default size for bought together items
+      size: fallbackSize,
     });
-    setShowPopup(true);
-    setTimeout(() => setShowPopup(false), 1500);
   };
 
   // Handle adding all items from "Frequently Bought Together" section
   const handleAddAllToCart = () => {
+    const fallbackSize = selectedSize ?? "M";
     boughtTogetherItems.forEach(item => {
       addToCart({
         productId: item.id,
@@ -111,31 +107,34 @@ export default function HockeyJerseyPage() {
         price: item.price,
         image: item.image,
         quantity: 1,
-        size: "M", // Default size for bought together items
+        size: fallbackSize,
       });
     });
-    setShowPopup(true);
-    setTimeout(() => setShowPopup(false), 1500);
   };
-
-  // Height of the taskbar (matches py-3 + px-2, but add extra for safety)
-  const taskbarHeight = items.length > 0 && !showPopup ? 64 : 0;
 
   // Sample data for "bought together" items
   const boughtTogetherItems = getFBTForPage('hockey-jersey');
+
+  const sizeOptionsForBar: PurchaseSizeOption[] = useMemo(
+    () => sizeOptions.map((size) => ({ value: size, label: size })),
+    []
+  );
+
+  const purchaseColorOptions: PurchaseColorOption[] = useMemo(
+    () => colorOptions.map((option) => ({ value: option.slug, label: option.name, swatch: option.color })),
+    [colorOptions]
+  );
 
   
 
   return (
     <div>
-      <ProductPageBrandHeader />
-      
       {/* Section 1: Product Details */}
       <div
         className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
         style={{
-          paddingBottom: taskbarHeight,
-          paddingTop: 120
+          paddingTop: 96,
+          paddingBottom: "calc(var(--purchase-bar-height, 280px) + 24px)"
         }}
       >
         {/* Images */}
@@ -153,52 +152,11 @@ export default function HockeyJerseyPage() {
         {/* Product Info */}
         <div className="md:w-1/2 flex flex-col justify-start">
           <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
-          {/* Color Picker */}
-          <div className="flex gap-3 mb-4 px-1" style={{ overflowX: 'auto', marginBottom: 24, paddingTop: 8, paddingBottom: 8, minHeight: 48 }}>
-            {colorOptions.map((opt) => (
-              <button
-                key={opt.name}
-                aria-label={opt.name}
-                onClick={() => handleSelectColor(opt)}
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: '50%',
-                  background: opt.color,
-                  border: selectedColor.name === opt.name ? '2px solid #232323' : (opt.border || '2px solid #fff'),
-                  boxShadow: selectedColor.name === opt.name ? '0 0 0 2px #232323' : '0 1px 4px 0 rgba(0,0,0,0.07)',
-                  display: 'inline-block',
-                  cursor: 'pointer',
-                  marginRight: 4,
-                }}
-              />
-            ))}
-          </div>
-          {/* Size Selection */}
-          <div style={{ marginBottom: 18 }}>
-            <p className="text-sm font-medium text-gray-700 mb-3">Size:</p>
-            <div className="size-single-line">
-              {sizeOptions.map((size) => (
-                <button
-                  key={size}
-                  className={`size-button px-3 rounded-lg font-semibold border-2 transition-all ${
-                    selectedSize === size
-                      ? 'border-black bg-black text-white'
-                      : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setSelectedSize(size)}
-                  type="button"
-                >
-                  {size}
-                </button>
-              ))}
-            </div>
-            <div className="mt-2"><SizeGuide productSlug="hockey-jersey" imagePath="/images/size-guides/Size Guide/Hockey Jersey Table.png" /></div>
-          </div>
-          <div className="mb-4">
+          <div className="mb-4 space-y-4">
+            <p className="text-sm font-medium text-gray-600">Pick your size using the floating bar below.</p>
             <p className="text-lg text-gray-700 leading-relaxed">{PRODUCT.description}</p>
             {PRODUCT.details && (
-              <div className="mt-3">
+              <div>
                 <span className="text-xs uppercase tracking-[0.2em] text-gray-500">Details</span>
                 <ul className="mt-2 list-disc list-inside text-gray-700 text-sm sm:text-base space-y-1">
                   {PRODUCT.details.map((item) => (
@@ -208,15 +166,10 @@ export default function HockeyJerseyPage() {
               </div>
             )}
           </div>
+          <div className="mb-4">
+            <SizeGuide productSlug="hockey-jersey" imagePath="/images/size-guides/Size Guide/Hockey Jersey Table.png" />
+          </div>
           <div className="text-2xl font-semibold mb-6"><Price price={PRODUCT.price} /></div>
-          <button
-            className={`bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2 ${!selectedSize ? 'opacity-50 cursor-not-allowed' : ''}`}
-            onClick={handleAddToCart}
-            disabled={!selectedSize}
-          >
-            {!selectedSize ? 'Pick a size to add to cart' : 'Add to Cart'}
-          </button>
-          {/* Buy Now button removed as requested */}
         </div>
       </div>
 
@@ -240,27 +193,23 @@ export default function HockeyJerseyPage() {
         </div>
       </div>
 
-      {/* No add to cart popup or animation */}
-
-      {/* Minimalistic cart taskbar at bottom if cart has items */}
-      {items.length > 0 && !showPopup && (
-        <div
-          className="fixed left-0 right-0 bottom-0 z-50 bg-black text-white px-2 py-3 md:px-4 md:py-4 flex items-center justify-between"
-          style={{ borderTopLeftRadius: 16, borderTopRightRadius: 16, boxShadow: '0 4px 24px 0 rgba(0,0,0,0.18)', borderBottom: 'none' }}
-        >
-          <span className="font-medium text-sm md:text-base">Cart</span>
-          <div className="flex items-center gap-2 md:gap-3">
-            <span className="inline-block bg-white text-black rounded px-2 py-1 md:px-3 font-bold text-sm md:text-base">{items.reduce((sum, i) => sum + i.quantity, 0)}</span>
-            <a
-              href="/cart"
-              className="ml-1 md:ml-2 px-3 py-2 md:px-4 md:py-2 bg-white text-black rounded font-semibold hover:bg-gray-200 text-xs md:text-base"
-              style={{ textDecoration: 'none' }}
-            >
-              Head to Cart
-            </a>
-          </div>
-        </div>
-      )}
+      <ProductPurchaseBar
+        price={PRODUCT.price}
+        summaryLabel={selectedColor.name}
+        sizeOptions={sizeOptionsForBar}
+        selectedSize={selectedSize}
+        onSelectSize={setSelectedSize}
+        colorOptions={purchaseColorOptions}
+        selectedColor={selectedColor.slug}
+        onSelectColor={(value) => {
+          const next = colorOptions.find((option) => option.slug === value as HockeyJerseyVariant['slug']);
+          if (next) {
+            handleSelectColor(next);
+          }
+        }}
+        onAddToCart={handleAddToCart}
+        sizeGuideTrigger={<SizeGuide productSlug="hockey-jersey" imagePath="/images/size-guides/Size Guide/Hockey Jersey Table.png" />}
+      />
     </div>
   );
 }

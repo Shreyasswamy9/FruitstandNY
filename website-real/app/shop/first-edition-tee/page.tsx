@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import SizeGuide from "@/components/SizeGuide";
 import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
@@ -7,6 +7,7 @@ import { useCart } from "../../../components/CartContext";
 import ColorPicker, { type ColorOption } from '@/components/ColorPicker';
 import ProductImageGallery from "@/components/ProductImageGallery";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
+import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 
 const feImages = [
   "/images/products/First Edition Tee/FE1.png",
@@ -41,9 +42,8 @@ export default function FirstEditionTeePage() {
   ], []);
   const [selectedColor, setSelectedColor] = useState<FirstEditionColorOption>(colorOptions[0]);
   const [selectedImage, setSelectedImage] = useState<string>(colorOptions[0].images[0]);
-  const [selectedSize, setSelectedSize] = useState(PRODUCT.sizes[2]);
-  const { addToCart, items } = useCart();
-  const [showPopup, setShowPopup] = useState(false);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const { addToCart } = useCart();
 
   const handleSelectColor = useCallback((option: FirstEditionColorOption, ctx?: { image?: string }) => {
     setSelectedColor(option);
@@ -54,6 +54,7 @@ export default function FirstEditionTeePage() {
     setSelectedImage(image);
   }, []);
   const handleAddToCart = () => {
+    if (!selectedSize) return;
     addToCart({
       productId: "first-edition-tee",
       name: PRODUCT.name,
@@ -63,18 +64,27 @@ export default function FirstEditionTeePage() {
       size: selectedSize,
       color: selectedColor.name,
     });
-    setShowPopup(true);
-    setTimeout(() => setShowPopup(false), 1500);
   };
 
   const boughtTogetherItems = getFBTForPage('first-edition-tee');
 
-  const taskbarHeight = items.length > 0 && !showPopup ? 64 : 0;
+  const sizeOptions: PurchaseSizeOption[] = useMemo(
+    () => PRODUCT.sizes.map((size) => ({ value: size, label: size })),
+    []
+  );
+
+  const purchaseColorOptions: PurchaseColorOption[] = useMemo(
+    () => colorOptions.map((option) => ({ value: option.slug ?? option.name, label: option.name, swatch: option.color })),
+    [colorOptions]
+  );
 
   return (
     <div>
       <ProductPageBrandHeader />
-      <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4" style={{ paddingTop: 120, paddingBottom: taskbarHeight }}>
+      <div
+        className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
+        style={{ paddingTop: 96, paddingBottom: "calc(var(--purchase-bar-height, 280px) + 24px)" }}
+      >
         <ProductImageGallery
           productName={PRODUCT.name}
           options={colorOptions}
@@ -96,16 +106,6 @@ export default function FirstEditionTeePage() {
               handleSelectColor(match);
             }}
           />
-          <div className="mb-4">
-            <p className="text-sm font-medium text-gray-700 mb-3">Size:</p>
-            <div className="size-single-line">
-              {PRODUCT.sizes.map((size) => (
-                <button key={size} className={`size-button px-3 rounded-lg font-semibold border-2 transition-all ${selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-black hover:border-gray-400 hover:bg-gray-50'}`} onClick={() => setSelectedSize(size)} type="button">{size}</button>
-              ))}
-            </div>
-            <div className="mt-2"><SizeGuide productSlug="first-edition-tee" imagePath="/images/size-guides/Size Guide/First Edition Tee Table.png" /></div>
-          </div>
-
           <div className="mb-4 space-y-4">
             <p className="text-lg text-gray-700 leading-relaxed">{PRODUCT.description}</p>
             {PRODUCT.details && (
@@ -120,14 +120,19 @@ export default function FirstEditionTeePage() {
             )}
           </div>
 
-          <button className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 mb-2" onClick={handleAddToCart}>Add to Cart</button>
         </div>
       </div>
 
       <FrequentlyBoughtTogether
         products={boughtTogetherItems}
-        onAddToCart={(item) => { addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: PRODUCT.sizes[2] }); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
-        onAddAllToCart={() => { boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: PRODUCT.sizes[2] })); setShowPopup(true); setTimeout(() => setShowPopup(false), 1500); }}
+        onAddToCart={(item) => {
+          const fallbackSize = selectedSize ?? PRODUCT.sizes[2];
+          addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: fallbackSize });
+        }}
+        onAddAllToCart={() => {
+          const fallbackSize = selectedSize ?? PRODUCT.sizes[2];
+          boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: fallbackSize }));
+        }}
       />
 
       {/* Reviews */}
@@ -137,6 +142,23 @@ export default function FirstEditionTeePage() {
         </div>
       </div>
 
+      <ProductPurchaseBar
+        price={PRODUCT.price}
+        summaryLabel={selectedColor.name}
+        sizeOptions={sizeOptions}
+        selectedSize={selectedSize}
+        onSelectSize={setSelectedSize}
+        colorOptions={purchaseColorOptions}
+        selectedColor={selectedColor.slug ?? selectedColor.name}
+        onSelectColor={(value) => {
+          const next = colorOptions.find((option) => (option.slug ?? option.name) === value);
+          if (next) {
+            handleSelectColor(next);
+          }
+        }}
+        onAddToCart={handleAddToCart}
+        sizeGuideTrigger={<SizeGuide productSlug="first-edition-tee" imagePath="/images/size-guides/Size Guide/First Edition Tee Table.png" />}
+      />
     </div>
   );
 }
