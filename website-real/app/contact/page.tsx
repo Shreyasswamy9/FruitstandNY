@@ -8,6 +8,7 @@ import TicketForm from "./components/TicketForm"
 import TicketList from "./components/TicketList"
 import type { TicketFormData } from "./types"
 import type { UploadResult } from "@/lib/storage"
+import ProductPageBrandHeader from "@/components/ProductPageBrandHeader"
 
 export default function ContactPage() {
   const router = useRouter()
@@ -95,58 +96,60 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fbf6f0] text-gray-900 overflow-x-hidden">
-      {/* Animated Background */}
-      <div className="fixed inset-0 opacity-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-teal-50"></div>
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
-        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
-        <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-teal-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-4000"></div>
-      </div>
+    <>
+      <ProductPageBrandHeader />
+      <div className="min-h-screen bg-[#fbf6f0] text-gray-900 overflow-x-hidden">
+        {/* Animated Background */}
+        <div className="fixed inset-0 opacity-10">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-teal-50"></div>
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-teal-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-4000"></div>
+        </div>
 
-      {/* Hero Section */}
-      <div className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="relative z-10 max-w-6xl mx-auto text-center">
-          <div className="mb-8">
-            <span className="inline-block px-4 py-2 bg-gray-100 backdrop-blur-sm rounded-full text-sm font-medium text-gray-600 mb-6">
-              Professional Support System
-            </span>
-          </div>
-          <h1 className="text-6xl md:text-8xl font-extralight tracking-wider mb-8 text-gray-900 leading-tight">
-            Submit a<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600">
-              Ticket
-            </span>
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-600 mb-12 font-light max-w-3xl mx-auto leading-relaxed">
-            Get organized support through our ticket system. Submit your issue, track progress, and communicate directly with our support team.
-          </p>
-          
-          {/* Tab Navigation */}
-          <div className="flex flex-wrap justify-center gap-4 mb-16">
-            <button
-              onClick={() => { setActiveTab('submit'); setPendingScroll('submit') }}
-              className={`px-8 py-3 rounded-full font-medium transition-all duration-300 transform hover:scale-105 ${
-                activeTab === 'submit'
-                  ? 'bg-gray-900 text-white'
-                  : 'border border-gray-300 text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              Submit Ticket
-            </button>
-            <button
-              onClick={() => { setActiveTab('track'); setPendingScroll('track') }}
-              className={`px-8 py-3 rounded-full font-medium transition-all duration-300 transform hover:scale-105 ${
-                activeTab === 'track'
-                  ? 'bg-gray-900 text-white'
-                  : 'border border-gray-300 text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              Track Tickets
-            </button>
+        {/* Hero Section */}
+        <div className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
+          <div className="relative z-10 max-w-6xl mx-auto text-center">
+            <div className="mb-8">
+              <span className="inline-block px-4 py-2 bg-gray-100 backdrop-blur-sm rounded-full text-sm font-medium text-gray-600 mb-6">
+                Professional Support System
+              </span>
+            </div>
+            <h1 className="text-6xl md:text-8xl font-extralight tracking-wider mb-8 text-gray-900 leading-tight">
+              Submit a<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600">
+                Ticket
+              </span>
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-600 mb-12 font-light max-w-3xl mx-auto leading-relaxed">
+              Get organized support through our ticket system. Submit your issue, track progress, and communicate directly with our support team.
+            </p>
+            
+            {/* Tab Navigation */}
+            <div className="flex flex-wrap justify-center gap-4 mb-16">
+              <button
+                onClick={() => { setActiveTab('submit'); setPendingScroll('submit') }}
+                className={`px-8 py-3 rounded-full font-medium transition-all duration-300 transform hover:scale-105 ${
+                  activeTab === 'submit'
+                    ? 'bg-gray-900 text-white'
+                    : 'border border-gray-300 text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                Submit Ticket
+              </button>
+              <button
+                onClick={() => { setActiveTab('track'); setPendingScroll('track') }}
+                className={`px-8 py-3 rounded-full font-medium transition-all duration-300 transform hover:scale-105 ${
+                  activeTab === 'track'
+                    ? 'bg-gray-900 text-white'
+                    : 'border border-gray-300 text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                Track Tickets
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Ticket System Content */}
       <div className="py-20 px-4 sm:px-6 lg:px-8">
@@ -318,5 +321,6 @@ export default function ContactPage() {
 
       
     </div>
+    </>
   )
 }

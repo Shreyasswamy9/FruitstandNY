@@ -3,7 +3,6 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
 import BundleSheet from '@/components/BundleSheet'
-import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ColorPicker from '@/components/ColorPicker';
 import ProductImageGallery from "@/components/ProductImageGallery";
@@ -125,7 +124,7 @@ export default function MutsuTshirtPage() {
 
       <div
         className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
-        style={{ paddingTop: 96, paddingBottom: "calc(var(--purchase-bar-height, 280px) + 24px)" }}
+        style={{ paddingTop: 96, paddingBottom: 64 }}
       >
         {/* Images */}
         <ProductImageGallery
@@ -181,13 +180,6 @@ export default function MutsuTshirtPage() {
         onAddToCart={handleAddBoughtTogetherItem}
         onAddAllToCart={handleAddAllToCart}
       />
-
-      {/* Reviews */}
-      <div style={{ display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
-        <div className="max-w-4xl mx-auto w-full">
-          <CustomerReviews productId="21da7031-a510-4ea0-add3-1dce02fee867" />
-        </div>
-      </div>
 
       {/* Bundle sheet modal: opens when CTA is clicked */}
       <BundleSheet open={bundleOpen} onClose={() => setBundleOpen(false)} initialTab="custom" />

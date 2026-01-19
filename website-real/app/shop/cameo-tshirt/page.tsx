@@ -3,7 +3,6 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
 import BundleSheet from '@/components/BundleSheet'
-import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ColorPicker, { type ColorOption } from '@/components/ColorPicker';
 import ProductImageGallery from "@/components/ProductImageGallery";
@@ -124,10 +123,10 @@ export default function CameoTshirtPage() {
     <div>
       <ProductPageBrandHeader />
 
-  <div
-    className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
-    style={{ paddingTop: 96, paddingBottom: "calc(var(--purchase-bar-height, 280px) + 24px)" }}
-  >
+      <div
+        className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
+        style={{ paddingTop: 96, paddingBottom: 64 }}
+      >
         {/* Images */}
         <ProductImageGallery
           productName={PRODUCT.name}
@@ -184,13 +183,6 @@ export default function CameoTshirtPage() {
         onAddToCart={handleAddBoughtTogetherItem}
         onAddAllToCart={handleAddAllToCart}
       />
-
-      {/* Reviews */}
-      <div style={{ display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
-        <div className="max-w-4xl mx-auto w-full">
-          <CustomerReviews productId="1ad5fc4b-898d-4e86-ada6-c4787ba20add" />
-        </div>
-      </div>
 
       {/* Bundle sheet modal: opens when CTA is clicked */}
       <BundleSheet open={bundleOpen} onClose={() => setBundleOpen(false)} initialTab="custom" />

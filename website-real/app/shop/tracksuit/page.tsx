@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import SizeGuide from "@/components/SizeGuide";
-import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import Price from '@/components/Price';
 import Link from "next/link";
@@ -129,9 +128,6 @@ export default function TracksuitPage() {
     })),
     []
   );
-
-  // Customer reviews are loaded via the centralized CustomerReviews component (Supabase-backed)
-
   return (
     <div>
       <ProductPageBrandHeader />
@@ -141,7 +137,7 @@ export default function TracksuitPage() {
         className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
         style={{
           paddingTop: 96,
-          paddingBottom: "calc(var(--purchase-bar-height, 280px) + 24px)",
+          paddingBottom: 64,
         }}
       >
         {/* Images */}
@@ -222,23 +218,6 @@ export default function TracksuitPage() {
           boughtTogetherItems.forEach(item => addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: fallbackSize }));
         }}
       />
-
-      {/* Section 3: Customer Reviews */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          background: '#fbf6f0'
-        }}
-        className="py-12 px-4"
-      >
-        <div className="max-w-4xl mx-auto w-full">
-          <h2 className="text-3xl font-bold text-center mb-8">Customer Reviews</h2>
-          <div>
-            <CustomerReviews productId="0f5810c1-abec-4e70-a077-33c839b4de2b" />
-          </div>
-        </div>
-      </div>
 
       <ProductPurchaseBar
         price={PRODUCT.price}

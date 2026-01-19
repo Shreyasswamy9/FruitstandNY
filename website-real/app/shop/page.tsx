@@ -4,13 +4,16 @@ import { motion } from "framer-motion"
 import { useState } from "react"
 import ProductsGrid from "../../components/ProductsGridHome"
 import BundleSheet from "../../components/BundleSheet"
+import ProductPageBrandHeader from "../../components/ProductPageBrandHeader"
 
 export default function ShopPage() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [bundleOpen, setBundleOpen] = useState(false)
 
   return (
-    <div className="min-h-screen" style={{ background: '#fbf6f0' }}>
+    <>
+      <ProductPageBrandHeader />
+      <div className="min-h-screen" style={{ background: '#fbf6f0', textTransform: 'uppercase' }}>
       {/* Category Navigation */}
       <div
         className="shop-category-nav pb-12 px-4 sm:px-6 lg:px-8"
@@ -104,7 +107,11 @@ export default function ShopPage() {
         className="pb-16"
         style={{ position: 'relative', zIndex: 1 }}
       >
-        <ProductsGrid categoryFilter={activeCategory} showBackgroundVideo={false} />
+        <ProductsGrid
+          categoryFilter={activeCategory}
+          showBackgroundVideo={false}
+          collapseVariantsByName={false}
+        />
       </motion.div>
 
       {/* Category Pills Styling */}
@@ -198,5 +205,6 @@ export default function ShopPage() {
       {/* Bundle Sheet */}
       <BundleSheet open={bundleOpen} onClose={() => setBundleOpen(false)} />
     </div>
+    </>
   )
 }

@@ -1,5 +1,6 @@
 import { supabase } from '@/app/supabase-client';
 import { readCartMetadata } from '@/lib/stripeCartMetadata';
+import { generateOrderNumber } from '@/lib/orderNumbers';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 
@@ -537,7 +538,7 @@ export class SupabaseOrderService {
     const customerData = safeJsonParse<CustomerPayload>(metadata.customer ?? '{}', {});
     const shippingAmount = Number(metadata.shipping ?? 0);
     const taxAmount = Number(metadata.tax ?? 0);
-    const orderNumber = (metadata.order_number as string) || `ORD-${Date.now()}`;
+    const orderNumber = (metadata.order_number as string) || generateOrderNumber();
 
     // Recalculate subtotal
     const cartItems = Array.isArray(cart) ? cart : [];

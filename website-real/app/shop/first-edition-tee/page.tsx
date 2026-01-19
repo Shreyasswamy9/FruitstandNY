@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useCallback, useMemo } from "react";
 import SizeGuide from "@/components/SizeGuide";
-import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import { useCart } from "../../../components/CartContext";
 import ColorPicker, { type ColorOption } from '@/components/ColorPicker';
@@ -83,7 +82,7 @@ export default function FirstEditionTeePage() {
       <ProductPageBrandHeader />
       <div
         className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
-        style={{ paddingTop: 96, paddingBottom: "calc(var(--purchase-bar-height, 280px) + 24px)" }}
+        style={{ paddingTop: 96, paddingBottom: 64 }}
       >
         <ProductImageGallery
           productName={PRODUCT.name}
@@ -134,13 +133,6 @@ export default function FirstEditionTeePage() {
           boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: fallbackSize }));
         }}
       />
-
-      {/* Reviews */}
-      <div style={{ display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
-        <div className="max-w-4xl mx-auto w-full">
-          <CustomerReviews productId="149da285-d6ae-4c37-bf76-376ad50363f8" />
-        </div>
-      </div>
 
       <ProductPurchaseBar
         price={PRODUCT.price}

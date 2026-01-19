@@ -88,13 +88,10 @@ export default function SupabaseAuth({ mode = 'sign_in' }: SupabaseAuthProps) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const origin = window.location.origin;
-    const basePath = mode === 'sign_up' ? '/signup' : '/signin';
-    const signinUrl = new URL(basePath, origin);
-    if (safeRedirect) {
-      signinUrl.searchParams.set('redirect', safeRedirect);
-    }
-    setRedirectTo(signinUrl.toString());
-  }, [mode, safeRedirect]);
+    const callbackUrl = new URL('/auth/callback', origin);
+    callbackUrl.searchParams.set('redirect', safeRedirect);
+    setRedirectTo(callbackUrl.toString());
+  }, [safeRedirect]);
 
   const oppositeAuthHref = useMemo(() => {
     const base = isSignUp ? '/signin' : '/signup';

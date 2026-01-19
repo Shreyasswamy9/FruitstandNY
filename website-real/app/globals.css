@@ -420,3 +420,8 @@ html, body {
 .bundle-sheet-scroll {
   -webkit-overflow-scrolling: touch;
 }
+
+body.product-page-uppercase,
+body.product-page-uppercase * {
+  text-transform: uppercase !important;
+}

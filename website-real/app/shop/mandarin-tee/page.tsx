@@ -1,7 +1,6 @@
 "use client";
 import React, { useCallback, useMemo, useState } from "react";
 import SizeGuide from "@/components/SizeGuide";
-import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import { useCart } from "../../../components/CartContext";
 import ProductImageGallery from "@/components/ProductImageGallery";
@@ -110,7 +109,7 @@ export default function MandarinTeePage() {
 
       <div
         className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
-        style={{ paddingTop: 96, paddingBottom: "calc(var(--purchase-bar-height, 280px) + 24px)" }}
+        style={{ paddingTop: 96, paddingBottom: 64 }}
       >
         <ProductImageGallery
           productName={PRODUCT.name}
@@ -148,12 +147,6 @@ export default function MandarinTeePage() {
         onAddToCart={handleAddBoughtTogetherItem}
         onAddAllToCart={handleAddAllToCart}
       />
-
-      <div style={{ display: "flex", alignItems: "center", background: "#fbf6f0" }} className="py-12 px-4">
-        <div className="max-w-4xl mx-auto w-full">
-          <CustomerReviews productId="f47a07e4-6470-49b2-ace6-a60e70ee3737" />
-        </div>
-      </div>
 
       <ProductPurchaseBar
         price={PRODUCT.price}

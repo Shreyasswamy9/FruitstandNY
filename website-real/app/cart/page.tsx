@@ -76,6 +76,8 @@ const COUNTRY_CODE_OPTIONS: CountryCodeOption[] = RAW_COUNTRY_CODES.map((entry) 
 });
 
 const EXPRESS_CHECKOUT_CACHE_KEY = 'fsny-express-checkout-details';
+const ORDER_NUMBER_STORAGE_KEY = 'latestOrderNumber';
+const GUEST_DETAILS_ERROR_MESSAGE = 'Please correct the highlighted fields before paying.';
 
 type ExpressCheckoutSnapshot = {
   guest?: GuestCheckoutPayload;
@@ -90,15 +92,17 @@ type ExpressCheckoutSnapshot = {
 type PaymentSectionProps = {
   total: number;
   items: CartItem[];
-  ensureReady: (options?: { allowGuestWithoutForm?: boolean }) => Promise<boolean>;
+  ensureReady: (options?: { allowGuestWithoutForm?: boolean; skipIntentRefresh?: boolean }) => Promise<boolean>;
   processing: boolean;
   setProcessing: (value: boolean) => void;
   message: string | null;
-  setMessage: (value: string | null) => void;
+  setMessage: React.Dispatch<React.SetStateAction<string | null>>;
   elementsReady: boolean;
   setElementsReady: (ready: boolean) => void;
   requiresDetails: boolean;
   onRequireDetails: () => void;
+  resolveOrderNumber: () => string | null;
+  autoRevealTrigger: number;
 };
 
 const PaymentSection: React.FC<PaymentSectionProps> = ({
@@ -113,6 +117,8 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
   setElementsReady,
   requiresDetails,
   onRequireDetails,
+  resolveOrderNumber,
+  autoRevealTrigger,
 }) => {
   const stripe = useStripe();
   const elements = useElements();
@@ -195,10 +201,32 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
       setProcessing(true);
       setMessage(null);
 
-      const returnUrl =
+      const baseReturnUrl =
         typeof window !== 'undefined'
           ? `${window.location.origin}/order/complete`
           : `${process.env.NEXT_PUBLIC_BASE_URL ?? ''}/order/complete`;
+
+      const activeOrderNumber = resolveOrderNumber();
+      let returnUrl = baseReturnUrl;
+
+      if (activeOrderNumber && /^\d{6}$/.test(activeOrderNumber)) {
+        if (typeof window !== 'undefined') {
+          try {
+            window.sessionStorage.setItem(ORDER_NUMBER_STORAGE_KEY, activeOrderNumber);
+          } catch (error) {
+            console.warn('Unable to persist order number to session storage', error);
+          }
+        }
+
+        try {
+          const composed = new URL(baseReturnUrl);
+          composed.searchParams.set('order_number', activeOrderNumber);
+          returnUrl = composed.toString();
+        } catch {
+          const separator = baseReturnUrl.includes('?') ? '&' : '?';
+          returnUrl = `${baseReturnUrl}${separator}order_number=${encodeURIComponent(activeOrderNumber)}`;
+        }
+      }
 
       const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
@@ -216,24 +244,43 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
 
       setProcessing(false);
     },
-    [elements, ensureReady, processing, setMessage, setProcessing, stripe]
+    [elements, ensureReady, processing, resolveOrderNumber, setMessage, setProcessing, stripe]
+  );
+
+  const openAdditionalMethods = useCallback(
+    (options?: { fromAuto?: boolean }) => {
+      setShowAdditionalMethods(true);
+      if (options?.fromAuto) {
+        setMessage((current) => (current === GUEST_DETAILS_ERROR_MESSAGE ? null : current));
+      } else if (requiresDetails) {
+        onRequireDetails();
+        setMessage('Enter your contact details below before completing payment.');
+      } else {
+        setMessage(null);
+      }
+      setElementsReady(false);
+    },
+    [onRequireDetails, requiresDetails, setElementsReady, setMessage]
   );
 
   const revealAdditionalMethods = useCallback(() => {
-    setShowAdditionalMethods(true);
-    if (requiresDetails) {
-      onRequireDetails();
-      setMessage('Enter your contact details below before completing payment.');
-    } else {
-      setMessage(null);
-    }
-    setElementsReady(false);
-  }, [onRequireDetails, requiresDetails, setElementsReady, setMessage]);
+    openAdditionalMethods();
+  }, [openAdditionalMethods]);
 
   const hideAdditionalMethods = useCallback(() => {
     setShowAdditionalMethods(false);
     setElementsReady(false);
   }, [setElementsReady]);
+
+  useEffect(() => {
+    if (autoRevealTrigger <= 0 || showAdditionalMethods) {
+      if (autoRevealTrigger > 0) {
+        setMessage((current) => (current === GUEST_DETAILS_ERROR_MESSAGE ? null : current));
+      }
+      return;
+    }
+    openAdditionalMethods({ fromAuto: true });
+  }, [autoRevealTrigger, openAdditionalMethods, setMessage, showAdditionalMethods]);
 
   return (
     <div className="space-y-5">
@@ -391,12 +438,14 @@ export default function CartPage() {
   const { createPaymentIntent, loading: intentLoading, error: checkoutError, setError: setCheckoutError } = useCheckout();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const clientSecretRef = useRef<string | null>(null);
+  const orderNumberRef = useRef<string | null>(null);
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
   const [elementsReady, setElementsReady] = useState(false);
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [user, setUser] = React.useState<User | null>(null)
+  const [paymentRevealTick, setPaymentRevealTick] = useState(0);
 
   useEffect(() => {
     let mounted = true
@@ -419,6 +468,35 @@ export default function CartPage() {
     }
   }, [])
   const router = useRouter();
+
+  const resolveOrderNumber = useCallback((): string | null => {
+    if (orderNumberRef.current) {
+      return orderNumberRef.current;
+    }
+    if (typeof window === 'undefined') {
+      return null;
+    }
+    try {
+      return window.sessionStorage.getItem(ORDER_NUMBER_STORAGE_KEY);
+    } catch (error) {
+      console.warn('Unable to read order number from session storage', error);
+      return null;
+    }
+  }, []);
+
+  const rememberOrderNumber = useCallback((value?: string | null) => {
+    if (!value || !/^\d{6}$/.test(value)) {
+      return;
+    }
+    orderNumberRef.current = value;
+    if (typeof window !== 'undefined') {
+      try {
+        window.sessionStorage.setItem(ORDER_NUMBER_STORAGE_KEY, value);
+      } catch (error) {
+        console.warn('Unable to persist order number to session storage', error);
+      }
+    }
+  }, []);
 
   const getCartTotal = () => items.reduce((total, item) => total + (Number(item.price) * item.quantity), 0);
 
@@ -520,6 +598,7 @@ export default function CartPage() {
         clientSecretRef.current = result.clientSecret;
         setClientSecret(result.clientSecret);
         setPaymentIntentId(result.paymentIntentId);
+        rememberOrderNumber(result.orderNumber);
         // Avoid disabling the checkout button when the Stripe element stays mounted.
         setElementsReady(!secretChanged);
         setPaymentMessage(null);
@@ -534,7 +613,7 @@ export default function CartPage() {
     return () => {
       active = false;
     };
-  }, [normalizedItems, finalShipping, tax, createPaymentIntent]);
+  }, [normalizedItems, finalShipping, tax, createPaymentIntent, rememberOrderNumber]);
 
   useEffect(() => {
     if (checkoutError) {
@@ -597,10 +676,16 @@ export default function CartPage() {
     // Clear error for this field when user starts typing
     if (typeof value === "string") {
       const errorKey = field.includes(".") ? field.split(".")[1] : field;
-      setGuestFormErrors(prev => ({
-        ...prev,
-        [errorKey]: ""
-      }));
+      setGuestFormErrors(prev => {
+        if (!(errorKey in prev)) {
+          return prev;
+        }
+        const nextErrors = { ...prev, [errorKey]: "" };
+        if (paymentMessage === GUEST_DETAILS_ERROR_MESSAGE && Object.values(nextErrors).every(error => !error)) {
+          setPaymentMessage(null);
+        }
+        return nextErrors;
+      });
     }
 
     if (field === "phoneCountryCode" && typeof value === "string") {
@@ -651,8 +736,9 @@ export default function CartPage() {
     return !Object.values(errors).some(error => error !== "");
   }, [guestData]);
 
-  const ensurePaymentIntentReady = useCallback(async (options?: { allowGuestWithoutForm?: boolean }): Promise<boolean> => {
+  const ensurePaymentIntentReady = useCallback(async (options?: { allowGuestWithoutForm?: boolean; skipIntentRefresh?: boolean }): Promise<boolean> => {
     const allowGuestWithoutForm = options?.allowGuestWithoutForm ?? false;
+    const skipIntentRefresh = options?.skipIntentRefresh ?? false;
     if (items.length === 0) {
       setPaymentMessage('Your cart is empty.');
       return false;
@@ -686,9 +772,14 @@ export default function CartPage() {
     if (showGuestCheckout) {
       const valid = validateGuestForm();
       if (!valid) {
-        setPaymentMessage('Please correct the highlighted fields before paying.');
+        setPaymentMessage(GUEST_DETAILS_ERROR_MESSAGE);
         return false;
       }
+    }
+
+    if (skipIntentRefresh) {
+      setPaymentMessage(null);
+      return true;
     }
 
     try {
@@ -734,6 +825,7 @@ export default function CartPage() {
       clientSecretRef.current = result.clientSecret;
       setClientSecret(result.clientSecret);
       setPaymentIntentId(result.paymentIntentId);
+      rememberOrderNumber(result.orderNumber);
       // Re-enable payment immediately if we're reusing the same client secret.
       setElementsReady(!secretChanged);
       setPaymentMessage(null);
@@ -747,12 +839,13 @@ export default function CartPage() {
       setPaymentMessage(message);
       return false;
     }
-  }, [items.length, isSignedIn, showGuestCheckout, validateGuestForm, guestData, user, createPaymentIntent, normalizedItems, finalShipping, tax, paymentIntentId, setCheckoutError, setShowGuestCheckout, setShowSignInModal]);
+  }, [items.length, isSignedIn, showGuestCheckout, validateGuestForm, guestData, user, createPaymentIntent, normalizedItems, finalShipping, tax, paymentIntentId, setCheckoutError, setShowGuestCheckout, setShowSignInModal, rememberOrderNumber]);
 
   const handleGuestCheckoutSubmit = async () => {
-    const ready = await ensurePaymentIntentReady();
+    const ready = await ensurePaymentIntentReady({ skipIntentRefresh: true });
     if (ready) {
-      setPaymentMessage(prev => prev ?? 'Scroll down to complete your payment.');
+      setPaymentMessage(null);
+      setPaymentRevealTick(prev => prev + 1);
       if (typeof window !== 'undefined') {
         const target = document.getElementById('payment-section');
         target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -994,6 +1087,8 @@ export default function CartPage() {
                       setElementsReady={setElementsReady}
                       requiresDetails={!isSignedIn}
                       onRequireDetails={ensureGuestDetailsVisible}
+                      resolveOrderNumber={resolveOrderNumber}
+                      autoRevealTrigger={paymentRevealTick}
                     />
                   </Elements>
                 </div>

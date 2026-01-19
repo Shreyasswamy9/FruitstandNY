@@ -9,6 +9,7 @@ import BundleSheet from "../components/BundleSheet"
 import { SignupModal } from "../components/SIgnUpModal"
 import { useScrollTrigger } from "../hooks/useScrollTrigger"
 import Price from "../components/Price"
+import ProductPageBrandHeader from "../components/ProductPageBrandHeader"
 
 export default function Home() {
   const { setHideLogo } = useContext(LogoVisibilityContext)
@@ -346,6 +347,7 @@ export default function Home() {
 
   return (
     <>
+      <ProductPageBrandHeader />
       <div
         ref={mainContainerRef}
         style={{
@@ -448,7 +450,7 @@ export default function Home() {
               maxWidth: "90vw",
             }}
           >
-            New York Streetwear
+            New York
           </p>
         </div>
       )}

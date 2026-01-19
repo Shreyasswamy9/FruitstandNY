@@ -51,8 +51,8 @@ export const products: Product[] = [
   { id: 1044, name: "Fuji Long Sleeve", price: "$80", image: "/images/products/fuji-tshirt/Broadwaynoir/F3.png", hoverImage: "/images/products/fuji-tshirt/Broadwaynoir/F7.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
   // New additions: Wasabi Tee and First Edition Tee
   { id: 1071, name: "Wabisabi™ Scheffel Hall Pears Tee", price: "$45", image: "/images/products/Wasabi Tee/Wabasabi 1.png", hoverImage: "/images/products/Wasabi Tee/Wabasabi 2.png", category: "Tops", variantSlug: "wasabi-tee" },
-  { id: 1072, name: "First Edition Tee", price: "$45", image: "/images/products/First Edition Tee/FE1.png", hoverImage: "/images/products/First Edition Tee/FE2.png", category: "Tops", variantColor: "White", variantSlug: "first-edition-tee" },
-  { id: 1073, name: "First Edition Tee", price: "$45", image: "/images/products/First Edition Tee/FE1.png", hoverImage: "/images/products/First Edition Tee/FE2.png", category: "Tops", variantColor: "Black", variantSlug: "first-edition-tee" },
+  { id: 1072, name: "First Edition Tee", price: "$45", image: "/images/products/First Edition Tee/FE1.png", hoverImage: "/images/products/First Edition Tee/FE2.png", category: "Tops", variantColor: "White", variantSlug: "white" },
+  { id: 1073, name: "First Edition Tee", price: "$45", image: "/images/products/First Edition Tee/FE3.png", hoverImage: "/images/products/First Edition Tee/FE4.png", category: "Tops", variantColor: "Black", variantSlug: "black" },
 
   // Forest Hills Hat (Green)
   { id: 3001, name: "Forest Hills Hat", price: "$46", image: "/images/products/Forest Hills Hat/Green Hat.png", hoverImage: "/images/products/Forest Hills Hat/G1.png", category: "Hats" },
@@ -91,12 +91,139 @@ export const products: Product[] = [
   { id: 6007, name: "Retro Track Jacket", price: "$110", image: "/images/products/Track Top/YORKVILLE BLACK AND WHITE COOKIES/J5.png", hoverImage: "/images/products/tracksuits/YORKVILLE BLACK AND WHITE COOKIES/TS1.png", category: "Tracksuits", variantColor: "Yorkville Black and White Cookies", variantSlug: "yorkville-black-and-white-cookies" },
 ];
 
+const stableShuffleKey = (product: Product): number => {
+  const base = typeof product.id === 'number' ? product.id : Number.parseInt(String(product.id).replace(/[^0-9-]/g, ''), 10) || 0;
+  const mixed = Math.imul(base ^ 0x45d9f3b, 0x45d9f3b);
+  const furtherMixed = Math.imul(mixed ^ (mixed >>> 13), 0x45d9f3b);
+  return (furtherMixed ^ (furtherMixed >>> 16)) >>> 0;
+};
+
+const roundRobinByProductName = (items: Product[]): Product[] => {
+  if (!items.length) return [];
+
+  const grouped = items.reduce((map, product) => {
+    const name = product.name;
+    const queue = map.get(name);
+    if (queue) {
+      queue.push(product);
+    } else {
+      map.set(name, [product]);
+    }
+    return map;
+  }, new Map<string, Product[]>());
+
+  grouped.forEach(queue => {
+    queue.sort((a, b) => stableShuffleKey(a) - stableShuffleKey(b));
+  });
+
+  const nameOrder = Array.from(grouped.keys());
+  const result: Product[] = [];
+  let index = 0;
+
+  while (nameOrder.length) {
+    if (index >= nameOrder.length) index = 0;
+    const currentName = nameOrder[index];
+    const queue = grouped.get(currentName);
+
+    if (!queue || !queue.length) {
+      grouped.delete(currentName);
+      nameOrder.splice(index, 1);
+      continue;
+    }
+
+    result.push(queue.shift()!);
+
+    if (!queue.length) {
+      grouped.delete(currentName);
+      nameOrder.splice(index, 1);
+      continue;
+    }
+
+    index++;
+  }
+
+  return result;
+};
+
+const aestheticallyShuffleProducts = (items: Product[]): Product[] => {
+  if (!items.length) return [];
+
+  const byCategory = items.reduce((acc, product) => {
+    const key = product.category ?? "Misc";
+    (acc[key] ||= []).push(product);
+    return acc;
+  }, {} as Record<string, Product[]>);
+
+  const hats = roundRobinByProductName([...(byCategory["Hats"] ?? [])]);
+  delete byCategory["Hats"];
+
+  const sequences = Object.entries(byCategory).reduce((acc, [category, list]) => {
+    acc[category] = roundRobinByProductName([...list]);
+    return acc;
+  }, {} as Record<string, Product[]>);
+
+  const rotationTemplate = [
+    "Tracksuits",
+    "Tops",
+    "Tracksuits",
+    "Tops",
+    "Jerseys",
+    "Tops",
+    "Tracksuits",
+    "Tops",
+  ];
+  const dynamicRotation = Array.from(new Set([...rotationTemplate, ...Object.keys(sequences)]));
+
+  const blended: Product[] = [];
+  let rotationIndex = 0;
+  let lastCategory: string | undefined;
+
+  const hasInventory = () => Object.values(sequences).some(queue => queue.length);
+
+  while (hasInventory()) {
+    let chosenCategory: string | undefined;
+
+    for (let attempt = 0; attempt < dynamicRotation.length; attempt++) {
+      const candidate = dynamicRotation[(rotationIndex + attempt) % dynamicRotation.length];
+      const queue = sequences[candidate];
+      if (!queue || !queue.length) continue;
+      if (candidate === lastCategory) continue;
+
+      chosenCategory = candidate;
+      rotationIndex = (rotationIndex + attempt + 1) % dynamicRotation.length;
+      break;
+    }
+
+    if (!chosenCategory) {
+      const fallback = Object.keys(sequences).find(category => sequences[category]?.length);
+      if (!fallback) break;
+      chosenCategory = fallback;
+      const fallbackIndex = dynamicRotation.indexOf(fallback);
+      rotationIndex = fallbackIndex === -1 ? 0 : (fallbackIndex + 1) % dynamicRotation.length;
+    }
+
+    const queue = sequences[chosenCategory];
+    const item = queue?.shift();
+    if (item) {
+      blended.push(item);
+      lastCategory = chosenCategory;
+    }
+
+    if (!queue?.length) {
+      delete sequences[chosenCategory];
+    }
+  }
+
+  return [...blended, ...hats];
+};
+
 interface ProductsGridProps {
   categoryFilter?: string | null;
   showBackgroundVideo?: boolean; // render the fixed background video (home only)
+  collapseVariantsByName?: boolean;
 }
 
-export default function ProductsGrid({ categoryFilter, showBackgroundVideo = true }: ProductsGridProps = {}) {
+export default function ProductsGrid({ categoryFilter, showBackgroundVideo = true, collapseVariantsByName = true }: ProductsGridProps = {}) {
   const router = useRouter();
   const [hovered, setHovered] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(true);
@@ -104,6 +231,7 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
   // Track swatch selection per product name (id of the chosen variant)
   const [selectedVariantByName, setSelectedVariantByName] = useState<Record<string, number>>({});
   const CARD_RADIUS = 7; // subtle curvature for grid cards
+  const collapseVariants = collapseVariantsByName;
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
@@ -142,6 +270,10 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
   const [representativeByName, setRepresentativeByName] = useState<Record<string, number>>({});
 
   useEffect(() => {
+    if (!collapseVariants) {
+      setRepresentativeByName({});
+      return;
+    }
     if (typeof window === 'undefined') return;
     const nextMap: Record<string, number> = {};
     Object.entries(variantGroups).forEach(([name, group]) => {
@@ -159,24 +291,32 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
       sessionStorage.setItem(key, String(chosen.id));
     });
     setRepresentativeByName(nextMap);
-  }, [variantGroups]);
+  }, [collapseVariants, variantGroups]);
 
   const displayProducts: Product[] = useMemo(() => {
-    // Get one representative per product name
+    const sortWithHatsLast = (items: Product[]) => items.slice().sort((a, b) => {
+      const isHatA = a?.category === "Hats";
+      const isHatB = b?.category === "Hats";
+      if (isHatA === isHatB) return 0;
+      return isHatA ? 1 : -1;
+    });
+
+    if (!collapseVariants) {
+      if (!categoryFilter) {
+        return aestheticallyShuffleProducts(filteredProducts);
+      }
+      return sortWithHatsLast(filteredProducts);
+    }
+
     const reps = Object.entries(variantGroups).map(([name, group]) => {
       if (!group.length) return group[0];
       if (group.length === 1) return group[0];
       const repId = representativeByName[name];
       return group.find(item => item.id === repId) || group[0];
     });
-    // Sort so that hats always come last
-    return reps.sort((a, b) => {
-      const isHatA = a?.category === "Hats";
-      const isHatB = b?.category === "Hats";
-      if (isHatA === isHatB) return 0;
-      return isHatA ? 1 : -1;
-    });
-  }, [variantGroups, representativeByName]);
+
+    return sortWithHatsLast(reps);
+  }, [collapseVariants, filteredProducts, variantGroups, representativeByName]);
   // Store touch state for each product card
   const touchState = useRef<{ [key: number]: { start: number; moved: boolean } }>({});
   const lastNavigationRef = useRef(0); // suppress duplicate click navigation after touch events
@@ -278,9 +418,9 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
       {displayProducts.map((product, idx) => {
     const isActive = isMobile ? mobileHover === product.id : hovered === product.id;
         // All variants for this product name (for swatches)
-        const variants = variantGroups[product.name] || [product];
+        const variants = collapseVariants ? (variantGroups[product.name] || [product]) : [product];
         const chosenId = selectedVariantByName[product.name];
-        const activeVariant = chosenId ? (variants.find(v => v.id === chosenId) || product) : product;
+        const activeVariant = collapseVariants && chosenId ? (variants.find(v => v.id === chosenId) || product) : product;
         // Custom link mapping for named PDPs
         const getProductLink = () => {
           const basePathMap: Record<string, string> = {
@@ -431,56 +571,73 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
                 marginTop: isMobile ? 10 : 12,
               }}>
                 <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%' }}>
                     <h3 style={{
                       fontSize: isMobile ? '1.02rem' : '1.12rem',
                       fontWeight: 600,
                       color: '#0f172a',
                       margin: 0,
                       lineHeight: 1.25,
-                      letterSpacing: '0.005em',
+                      letterSpacing: '0.02em',
                       fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
-                      display: 'flex',
-                      alignItems: 'center'
+                      width: '100%',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
                     }}>{product.name}</h3>
-                    {/* Color swatches for products with color variants */}
-                    {variants.length > 1 && variants.some(v => !!v.variantColor) && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} aria-label={`Available colors for ${product.name}`}>
-                        {variants.map((v) => (
-                          v.variantColor ? (
-                            <button
-                              key={v.id}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setSelectedVariantByName(prev => ({ ...prev, [product.name]: v.id }));
-                                if (typeof window !== 'undefined') {
-                                  try { sessionStorage.setItem(`rep_variant_${product.name}`, String(v.id)); } catch {}
-                                }
-                              }}
-                              onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                              onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                              title={v.variantColor}
-                              aria-label={v.variantColor}
-                              style={{
-                                width: isMobile ? 20 : 22,
-                                height: isMobile ? 20 : 22,
-                                borderRadius: '999px',
-                                background: COLOR_HEX[v.variantColor] || '#e5e7eb',
-                                border: (COLOR_HEX[v.variantColor] || '').toLowerCase() === '#ffffff' ? '1px solid #d1d5db' : '1px solid rgba(0,0,0,0.1)',
-                                boxShadow: selectedVariantByName[product.name] === v.id ? '0 0 0 2px #111' : '0 2px 4px rgba(0,0,0,0.12)',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                padding: 0,
-                                cursor: 'pointer'
-                              }}
-                            />
-                          ) : null
-                        ))}
-                      </div>
-                    )}
+                    <span style={{
+                      fontSize: isMobile ? '0.78rem' : '0.86rem',
+                      fontWeight: 500,
+                      color: '#6b7280',
+                      margin: 0,
+                      lineHeight: 1.2,
+                      letterSpacing: '0.12em',
+                      width: '100%',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      minHeight: isMobile ? '0.95rem' : '1rem',
+                    }}>
+                      {!collapseVariants && activeVariant.variantColor ? activeVariant.variantColor : '\u00A0'}
+                    </span>
                   </div>
+                  {/* Color swatches for products with color variants */}
+                  {collapseVariants && variants.length > 1 && variants.some(v => !!v.variantColor) && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} aria-label={`Available colors for ${product.name}`}>
+                      {variants.map((v) => (
+                        v.variantColor ? (
+                          <button
+                            key={v.id}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setSelectedVariantByName(prev => ({ ...prev, [product.name]: v.id }));
+                              if (typeof window !== 'undefined') {
+                                try { sessionStorage.setItem(`rep_variant_${product.name}`, String(v.id)); } catch {}
+                              }
+                            }}
+                            onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                            onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                            title={v.variantColor}
+                            aria-label={v.variantColor}
+                            style={{
+                              width: isMobile ? 20 : 22,
+                              height: isMobile ? 20 : 22,
+                              borderRadius: '999px',
+                              background: COLOR_HEX[v.variantColor] || '#e5e7eb',
+                              border: (COLOR_HEX[v.variantColor] || '').toLowerCase() === '#ffffff' ? '1px solid #d1d5db' : '1px solid rgba(0,0,0,0.1)',
+                              boxShadow: selectedVariantByName[product.name] === v.id ? '0 0 0 2px #111' : '0 2px 4px rgba(0,0,0,0.12)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              padding: 0,
+                              cursor: 'pointer'
+                            }}
+                          />
+                        ) : null
+                      ))}
+                    </div>
+                  )}
                   <p style={{
                     color: '#111827',
                     fontWeight: 500,

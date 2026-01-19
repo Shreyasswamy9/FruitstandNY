@@ -4,7 +4,6 @@ export const dynamic = 'force-dynamic'
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import SizeGuide from "@/components/SizeGuide";
 import Price from '@/components/Price';
-import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import { useCart } from "@/components/CartContext";
 import ProductImageGallery from "@/components/ProductImageGallery";
@@ -134,7 +133,7 @@ export default function HockeyJerseyPage() {
         className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
         style={{
           paddingTop: 96,
-          paddingBottom: "calc(var(--purchase-bar-height, 280px) + 24px)"
+          paddingBottom: 64
         }}
       >
         {/* Images */}
@@ -178,20 +177,6 @@ export default function HockeyJerseyPage() {
         onAddToCart={handleAddBoughtTogetherItem}
         onAddAllToCart={handleAddAllToCart}
       />
-
-      {/* Section 3: Customer Reviews */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          background: '#fbf6f0'
-        }}
-        className="py-12 px-4"
-      >
-        <div className="max-w-4xl mx-auto w-full">
-          <CustomerReviews productId="e1e3790d-d37e-4327-a14e-53bad7745ec8" />
-        </div>
-      </div>
 
       <ProductPurchaseBar
         price={PRODUCT.price}

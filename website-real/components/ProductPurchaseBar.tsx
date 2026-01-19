@@ -237,7 +237,7 @@ export default function ProductPurchaseBar({
               </div>
 
               <div className="flex flex-wrap items-stretch gap-2 sm:flex-nowrap">
-                {colorOptions?.length ? (
+                {colorOptions?.length && colorOptions.length > 1 ? (
                   <div className="relative min-w-[44%] flex-1 sm:min-w-[200px]">
                     <label className="sr-only" htmlFor="purchase-color-select">
                       Select color

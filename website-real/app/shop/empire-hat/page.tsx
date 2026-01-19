@@ -1,7 +1,6 @@
 "use client";
 import React, { useCallback, useMemo, useState } from "react";
 import { useCart } from "../../../components/CartContext";
-import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductImageGallery from "@/components/ProductImageGallery";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
@@ -89,7 +88,7 @@ export default function EmpireHatPage() {
 
       <div
         className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
-        style={{ paddingTop: 96, paddingBottom: "calc(var(--purchase-bar-height, 280px) + 24px)" }}
+        style={{ paddingTop: 96, paddingBottom: 64 }}
       >
         <ProductImageGallery
           productName={PRODUCT.name}
@@ -123,12 +122,6 @@ export default function EmpireHatPage() {
         onAddToCart={handleAddBoughtTogetherItem}
         onAddAllToCart={handleAddAllToCart}
       />
-
-      <div style={{ display: "flex", alignItems: "center", background: "#fbf6f0" }} className="py-12 px-4">
-        <div className="max-w-4xl mx-auto w-full">
-          <CustomerReviews productId="98da26f5-be40-4f35-a8ad-b26dd9ae01f9" />
-        </div>
-      </div>
 
       <ProductPurchaseBar
         price={PRODUCT.price}

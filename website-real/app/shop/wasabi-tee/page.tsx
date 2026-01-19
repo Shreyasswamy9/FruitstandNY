@@ -1,6 +1,5 @@
 "use client";
 import React, { useMemo, useState } from "react";
-import CustomerReviews from "@/components/CustomerReviews";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import { useCart } from "../../../components/CartContext";
@@ -58,7 +57,7 @@ export default function WasabiTeePage() {
       <ProductPageBrandHeader />
       <div
         className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
-        style={{ paddingTop: 96, paddingBottom: "calc(var(--purchase-bar-height, 280px) + 24px)" }}
+        style={{ paddingTop: 96, paddingBottom: 64 }}
       >
         <ProductImageGallery
           productName={PRODUCT.name}
@@ -99,13 +98,6 @@ export default function WasabiTeePage() {
           boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: defaultSize }));
         }}
       />
-
-      {/* Reviews */}
-      <div style={{ display: 'flex', alignItems: 'center', background: '#fbf6f0' }} className="py-12 px-4">
-        <div className="max-w-4xl mx-auto w-full">
-          <CustomerReviews productId="51977ef7-ae8f-486f-9dd7-7620e3b6e70a" />
-        </div>
-      </div>
 
       <ProductPurchaseBar
         price={PRODUCT.price}

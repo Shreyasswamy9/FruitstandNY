@@ -2,7 +2,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useCart } from "../../../components/CartContext";
 import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
-import CustomerReviews from "@/components/CustomerReviews";
 import ProductImageGallery from "@/components/ProductImageGallery";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
@@ -88,7 +87,7 @@ export default function ForestHillsHatPage() {
 
       <div
         className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
-        style={{ paddingTop: 96, paddingBottom: "calc(var(--purchase-bar-height, 280px) + 24px)" }}
+        style={{ paddingTop: 96, paddingBottom: 64 }}
       >
         <ProductImageGallery
           productName={PRODUCT.name}
@@ -122,12 +121,6 @@ export default function ForestHillsHatPage() {
         onAddToCart={handleAddBoughtTogetherItem}
         onAddAllToCart={handleAddAllToCart}
       />
-
-      <div style={{ background: "#fbf6f0" }} className="py-12 px-4">
-        <div className="max-w-4xl mx-auto w-full">
-          <CustomerReviews productId="8d1d5080-2106-420d-b7ea-babc2fba5457" />
-        </div>
-      </div>
 
       <ProductPurchaseBar
         price={PRODUCT.price}

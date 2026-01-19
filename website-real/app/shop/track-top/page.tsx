@@ -1,7 +1,6 @@
 "use client";
 import FrequentlyBoughtTogether, { FBTProduct, getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import SizeGuide from "@/components/SizeGuide";
-import CustomerReviews from "@/components/CustomerReviews";
 import Price from '@/components/Price';
 import React, { useState, useCallback, useMemo } from "react";
 import { useCart } from "../../../components/CartContext";
@@ -99,7 +98,7 @@ export default function TrackTopPage() {
       <ProductPageBrandHeader />
       <div
         className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
-        style={{ paddingTop: 96, paddingBottom: "calc(var(--purchase-bar-height, 280px) + 24px)" }}
+        style={{ paddingTop: 96, paddingBottom: 64 }}
       >
         <ProductImageGallery
           productName={PRODUCT.name}
@@ -167,21 +166,6 @@ export default function TrackTopPage() {
           });
         }}
       />
-      {/* Section 3: Customer Reviews */}
-      <div
-        style={{
-          scrollSnapAlign: 'start',
-          display: 'flex',
-          alignItems: 'center',
-          background: '#fbf6f0'
-        }}
-        className="py-12 px-4"
-      >
-        <div className="max-w-4xl mx-auto w-full">
-          <CustomerReviews productId="track-top" />
-        </div>
-      </div>
-
       <ProductPurchaseBar
         price={PRODUCT.price}
         summaryLabel={selectedColor.name}

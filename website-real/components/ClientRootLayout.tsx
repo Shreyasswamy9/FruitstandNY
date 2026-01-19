@@ -49,6 +49,22 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
     }
   }, [pathname, menuOpen])
 
+  useEffect(() => {
+    if (typeof document === "undefined") {
+      return
+    }
+    const body = document.body
+    const shouldUppercase = pathname?.startsWith("/shop") ?? false
+    if (shouldUppercase) {
+      body.classList.add("product-page-uppercase")
+    } else {
+      body.classList.remove("product-page-uppercase")
+    }
+    return () => {
+      body.classList.remove("product-page-uppercase")
+    }
+  }, [pathname])
+
   // Hide logo on certain routes (cart) to avoid visual overlap with page headers
   // Note: logo visibility is now controlled by context only. Keep logo visible on all routes by default.
   

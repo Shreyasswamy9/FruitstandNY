@@ -1,10 +1,11 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { supabase } from '@/app/supabase-client';
+import { useCart } from '@/components/CartContext';
 
 function SuccessContent() {
   const [loading, setLoading] = useState(true);
@@ -14,7 +15,9 @@ function SuccessContent() {
   const [detailsError, setDetailsError] = useState<string | null>(null);
   const [shouldFetchOrder, setShouldFetchOrder] = useState(false);
   const [initialOrderNumber, setInitialOrderNumber] = useState<string | null>(null);
+  const hasClearedCart = useRef(false);
   const router = useRouter();
+  const { clearCart } = useCart();
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -34,7 +37,7 @@ function SuccessContent() {
 
       setSessionId(sid);
       setPaymentIntentId(pid);
-      if (orderNumberParam) {
+      if (orderNumberParam && /^\d{6}$/.test(orderNumberParam)) {
         setInitialOrderNumber(orderNumberParam);
       }
 
@@ -141,6 +144,30 @@ function SuccessContent() {
     };
   }, [sessionId, paymentIntentId, shouldFetchOrder]);
 
+  useEffect(() => {
+    if (initialOrderNumber) {
+      return;
+    }
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const stored = window.sessionStorage.getItem('latestOrderNumber');
+    if (stored) {
+      if (/^\d{6}$/.test(stored)) {
+        setInitialOrderNumber(stored);
+      }
+      window.sessionStorage.removeItem('latestOrderNumber');
+    }
+  }, [initialOrderNumber]);
+
+  useEffect(() => {
+    if (hasClearedCart.current) {
+      return;
+    }
+    clearCart();
+    hasClearedCart.current = true;
+  }, [clearCart]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#fbf6f0] flex items-center justify-center">
@@ -151,6 +178,10 @@ function SuccessContent() {
       </div>
     );
   }
+
+  const resolvedOrderNumber = [orderDetails?.orderNumber, initialOrderNumber].find(
+    (value): value is string => typeof value === 'string' && /^\d{6}$/.test(value)
+  ) ?? null;
 
   return (
     <div className="min-h-screen bg-[#fbf6f0] flex items-center justify-center px-4">
@@ -180,13 +211,16 @@ function SuccessContent() {
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-gray-600 mb-6">
           We&apos;ve received your payment and are getting everything ready. Keep your order number handy for any questions.
         </motion.p>
-        {(sessionId || paymentIntentId || initialOrderNumber || orderDetails?.orderNumber) && (
+        {resolvedOrderNumber && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="bg-gray-50 rounded-lg p-4 mb-6">
             <p className="text-sm text-gray-500 mb-1">Order Number</p>
-            <p className="text-sm font-mono text-gray-900 break-all">
-              {orderDetails?.orderNumber ?? initialOrderNumber ?? sessionId ?? paymentIntentId}
-            </p>
+            <p className="text-sm font-mono text-gray-900 break-all">{resolvedOrderNumber}</p>
           </motion.div>
+        )}
+        {!resolvedOrderNumber && (
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="text-xs text-gray-500 mb-6">
+            Your order number will appear here once the payment confirmation completes. We&apos;ll also email it to you.
+          </motion.p>
         )}
         {detailsError && (
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }} className="text-xs text-red-500 mb-4">
