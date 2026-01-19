@@ -54,7 +54,7 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
       return
     }
     const body = document.body
-    const shouldUppercase = pathname?.startsWith("/shop") ?? false
+    const shouldUppercase = pathname ? pathname === '/' || pathname.startsWith('/shop') : false
     if (shouldUppercase) {
       body.classList.add("product-page-uppercase")
     } else {

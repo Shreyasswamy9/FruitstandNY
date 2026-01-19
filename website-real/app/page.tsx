@@ -232,13 +232,11 @@ export default function Home() {
   const titleRef = useRef<HTMLHeadingElement>(null)
   const subtitleRef = useRef<HTMLParagraphElement>(null)
   const logoRef = useRef<HTMLDivElement>(null)
-  const mainContainerRef = useRef<HTMLDivElement>(null)
 
   // Use scroll trigger hook to show modal after user scrolls
   const { isTriggered } = useScrollTrigger({ 
     threshold: 600, // Show modal after scrolling 600px
-    delay: 3000,    // Wait 3 seconds after scroll threshold
-    containerRef: mainContainerRef
+    delay: 3000     // Wait 3 seconds after scroll threshold
   })
 
   // Handle scroll trigger to show modal
@@ -349,7 +347,6 @@ export default function Home() {
     <>
       <ProductPageBrandHeader />
       <div
-        ref={mainContainerRef}
         style={{
           position: "relative",
           width: "100%",
