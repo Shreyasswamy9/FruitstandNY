@@ -409,10 +409,10 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
           gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, minmax(0, 1fr))',
           gridAutoRows: 'auto',
           gridAutoFlow: 'row dense',
-          overflowX: 'auto',
           alignItems: 'start',
           background: 'transparent',
-          justifyContent : 'center',
+          justifyContent: 'center',
+          boxSizing: 'border-box',
         }}
       >
       {displayProducts.map((product, idx) => {
