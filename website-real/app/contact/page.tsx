@@ -72,14 +72,6 @@ const supportChannels = [
     href: "mailto:support@fruitstandny.com",
     id: "email-support",
   },
-  {
-    icon: MessageCircle,
-    heading: "Chat with us",
-    description: "Live chat is staffed Monday to Friday from 9:30a to 6:30p EST.",
-    meta: "Start a conversation",
-    href: "#live-chat",
-    id: "live-chat",
-  },
 ]
 
 const socialLinks = [
@@ -103,7 +95,7 @@ export default function ContactPage() {
             Support Hub
           </span>
           <h1 className="text-4xl font-black uppercase tracking-[0.24em] sm:text-5xl md:text-6xl">
-            Fruitstand | How can we help?
+           How can we help?
           </h1>
           <p className="mt-6 max-w-2xl text-sm uppercase tracking-[0.16em] text-white/70">
             Navigate answers, policies, and direct support tailored to every Fruitstand drop.
@@ -201,7 +193,7 @@ export default function ContactPage() {
       <section id="support" className="px-6 pb-20 sm:px-10">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-sm font-semibold uppercase tracking-[0.28em] text-[#181818]">Get support</h2>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="mt-6 grid gap-4">
             {supportChannels.map((channel) => {
               const Icon = channel.icon
               return (
