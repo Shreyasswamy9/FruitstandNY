@@ -331,7 +331,7 @@ export default function Home() {
               maxWidth: "90vw",
             }}
           >
-            New York Streetwear
+            New York
           </p>
         </div>
       )}
