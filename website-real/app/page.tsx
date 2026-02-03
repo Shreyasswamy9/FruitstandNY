@@ -1,12 +1,13 @@
 "use client"
 
 import { animate } from "animejs"
-import { useRef, useEffect, useState } from "react"
+import { useRef, useEffect, useState, useContext } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader"
 import SignupPromoModal from "@/components/SignupPromoModal"
+import { LogoVisibilityContext } from "@/components/ClientRootLayout"
 
 interface EditorialPhoto {
   id: string
@@ -57,6 +58,7 @@ export default function Home() {
   const [isHydrated, setIsHydrated] = useState(false)
   const [showSignupPromo, setShowSignupPromo] = useState(false)
   const [showMain, setShowMain] = useState(true)
+  const { setHideLogo } = useContext(LogoVisibilityContext)
   const [currentLangIndex, setCurrentLangIndex] = useState(0)
   const [showLangFlip, setShowLangFlip] = useState(false)
 
@@ -105,6 +107,11 @@ export default function Home() {
     window.addEventListener("introReset", handleIntroReset)
     return () => window.removeEventListener("introReset", handleIntroReset)
   }, [isHydrated])
+
+  // Hide logo and cart bar during intro
+  useEffect(() => {
+    setHideLogo(!showMain)
+  }, [showMain, setHideLogo])
 
   // Language flip animation
   useEffect(() => {

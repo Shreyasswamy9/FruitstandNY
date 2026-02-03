@@ -485,7 +485,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
         </div>
 
         <header
-          className="staggered-menu-header absolute top-0 left-0 w-full flex items-center justify-end p-[2em] bg-transparent pointer-events-none z-50"
+          className="staggered-menu-header absolute top-0 left-0 w-full flex items-center justify-end pt-[2.5em] pr-[2em] pb-[2em] pl-[2em] bg-transparent pointer-events-none z-50"
           aria-label="Main navigation header"
         >
 

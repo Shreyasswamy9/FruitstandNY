@@ -27,7 +27,7 @@ export default function LogoButton() {
       onClick={handleLogoClick}
       style={{
         position: 'fixed',
-  top: '4px',
+  top: '-5px',
         left: '9px',
         zIndex: 10010,
         display: 'inline-flex',
