@@ -6,6 +6,7 @@ import { motion } from "framer-motion"
 import { useCart, type CartItem } from "../../components/CartContext"
 import Image from "next/image"
 import Price from '@/components/Price'
+import ProductPageBrandHeader from "@/components/ProductPageBrandHeader"
 import { Elements, ExpressCheckoutElement, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js"
 import type { Appearance, StripeExpressCheckoutElementConfirmEvent } from "@stripe/stripe-js"
 import { stripePromise, useCheckout, useStripeCheckout, type CheckoutItem, type CustomerCheckoutPayload } from "../../hooks/useCheckout"
@@ -423,19 +424,22 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-[#fbf6f0]">
+      <ProductPageBrandHeader />
       {/* Header */}
-      <div className="bg-white border-b pt-16 pb-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 text-center">
-          <motion.h1
+      <div className="border-b bg-[#fbf6f0] pt-24 pb-8 sm:pt-32 sm:pb-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
             initial={{ opacity: 0, y: -16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-2xl sm:text-3xl font-bold text-gray-900 text-center"
+            className="text-center"
           >
-            Shopping Cart
-          </motion.h1>
-          <p className="text-gray-600 mt-1 mx-auto">
-            {items.length === 0 ? "Your cart is empty" : `${items.length} item${items.length !== 1 ? 's' : ''} in your cart`}
-          </p>
+            <h1 className="text-xl sm:text-2xl font-bold text-[#181818] uppercase tracking-[0.08em]">
+              Shopping Cart
+            </h1>
+            <p className="text-xs sm:text-sm text-[#6f6f6f] mt-2 uppercase tracking-[0.06em]">
+              {items.length === 0 ? "Your cart is empty" : `${items.length} item${items.length !== 1 ? 's' : ''} in your cart`}
+            </p>
+          </motion.div>
         </div>
       </div>
 

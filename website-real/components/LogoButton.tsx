@@ -10,10 +10,12 @@ export default function LogoButton() {
   if (hideLogo) return null
   const logoSize = 120
   
-  // On click, clear introPlayed so rotator plays again
+  // On click, clear introPlayed so intro plays again
   const handleLogoClick = () => {
     if (typeof window !== 'undefined') {
       window.sessionStorage.removeItem('introPlayed');
+      // Dispatch a custom event to notify the homepage
+      window.dispatchEvent(new Event('introReset'));
     }
   };
   

@@ -1,9 +1,10 @@
 "use client"
 
+import { animate } from "animejs"
 import { useRef, useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronLeft, ChevronRight, Instagram, Twitter, Facebook } from "lucide-react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader"
 import SignupPromoModal from "@/components/SignupPromoModal"
 
@@ -55,11 +56,125 @@ export default function Home() {
   const carouselRef = useRef<HTMLDivElement>(null)
   const [isHydrated, setIsHydrated] = useState(false)
   const [showSignupPromo, setShowSignupPromo] = useState(false)
+  const [showMain, setShowMain] = useState(true)
+  const [currentLangIndex, setCurrentLangIndex] = useState(0)
+  const [showLangFlip, setShowLangFlip] = useState(false)
 
-  // Handle hydration
+  const titleRef = useRef<HTMLHeadingElement>(null)
+  const subtitleRef = useRef<HTMLParagraphElement>(null)
+  const logoRef = useRef<HTMLDivElement>(null)
+  const introTriggeredRef = useRef(false)
+
+  const fruitstandTranslations = [
+    "FRUITSTAND",
+    "水果摊",
+    "Frutaria",
+    "Frutería",
+    "फलस्टैंड",
+    "Stall de fruits",
+    "Obststand",
+    "Fruttivendolo",
+    "フルーツスタンド",
+    "فروٹ اسٹینڈ",
+  ]
+
+  // Handle hydration and intro - only on first load
   useEffect(() => {
     setIsHydrated(true)
+    if (typeof window !== "undefined") {
+      const introPlayed = !!window.sessionStorage.getItem("introPlayed")
+      if (!introPlayed) {
+        setShowMain(false)
+        setShowLangFlip(true)
+        introTriggeredRef.current = true
+      }
+    }
   }, [])
+
+  // Watch for intro replay (when logo is clicked)
+  useEffect(() => {
+    const handleIntroReset = () => {
+      if (isHydrated) {
+        setShowMain(false)
+        setShowLangFlip(true)
+        setCurrentLangIndex(0)
+        introTriggeredRef.current = true
+      }
+    }
+
+    window.addEventListener("introReset", handleIntroReset)
+    return () => window.removeEventListener("introReset", handleIntroReset)
+  }, [isHydrated])
+
+  // Language flip animation
+  useEffect(() => {
+    if (titleRef.current && showLangFlip) {
+      let flipCount = 0
+      const maxFlips = fruitstandTranslations.length * 2
+      const langFlipInterval = setInterval(() => {
+        setCurrentLangIndex((prev) => (prev + 1) % fruitstandTranslations.length)
+        flipCount++
+        if (flipCount >= maxFlips) {
+          clearInterval(langFlipInterval)
+          setShowLangFlip(false)
+          // Immediately start the fade-in animation after language flipping
+          if (logoRef.current) {
+            animate(logoRef.current, {
+              opacity: [0, 1],
+              scale: [0.8, 1],
+              duration: 600,
+              easing: "easeOutQuart",
+              delay: 0,
+            })
+          }
+          // Fade in subtitle after logo
+          const subtitleId = setTimeout(() => {
+            if (subtitleRef.current) {
+              animate(subtitleRef.current, {
+                opacity: [0, 1],
+                translateY: [20, 0],
+                duration: 1000,
+                easing: "easeOutQuart",
+              })
+            }
+          }, 600)
+
+          // Auto transition to main content
+          const toMainId = setTimeout(() => {
+            if (logoRef.current) {
+              animate(logoRef.current, {
+                opacity: [1, 0],
+                scale: [1, 1.1],
+                duration: 800,
+                easing: "easeInQuart",
+              })
+            }
+            if (subtitleRef.current) {
+              animate(subtitleRef.current, {
+                opacity: [1, 0],
+                translateY: [0, -20],
+                duration: 800,
+                easing: "easeInQuart",
+              })
+            }
+            const showId = setTimeout(() => {
+              setShowMain(true)
+              if (typeof window !== "undefined") {
+                window.sessionStorage.setItem("introPlayed", "1")
+              }
+            }, 800)
+            return () => clearTimeout(showId)
+          }, 2000)
+
+          return () => {
+            clearTimeout(subtitleId)
+            clearTimeout(toMainId as unknown as number)
+          }
+        }
+      }, 100)
+      return () => clearInterval(langFlipInterval)
+    }
+  }, [fruitstandTranslations.length, showLangFlip])
 
   useEffect(() => {
     if (!isHydrated || typeof window === "undefined") return
@@ -116,6 +231,104 @@ export default function Home() {
   return (
     <>
       <SignupPromoModal isOpen={showSignupPromo} onClose={() => setShowSignupPromo(false)} />
+      
+      {/* Intro Screen */}
+      {(!isHydrated || !showMain) && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100dvh",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 10001,
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
+            willChange: "opacity, transform",
+            paddingTop: "env(safe-area-inset-top)",
+            paddingBottom: "env(safe-area-inset-bottom)",
+            overflow: "hidden",
+          }}
+        >
+          <Image
+            src="/images/black-plain-concrete-textured.jpg"
+            alt="Intro background"
+            fill
+            priority
+            style={{
+              objectFit: "cover",
+              zIndex: -1,
+              pointerEvents: "none",
+              userSelect: "none",
+            }}
+            sizes="100vw"
+            quality={70}
+          />
+          <div
+            ref={logoRef}
+            style={{
+              opacity: isHydrated && showLangFlip ? 1 : 0,
+              transform: "scale(0.8) translateZ(0)",
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
+              willChange: "transform, opacity",
+            }}
+          >
+            <h1
+              ref={titleRef}
+              style={{
+                fontSize: "clamp(2rem, 8vw, 4rem)",
+                fontWeight: "400",
+                letterSpacing: "clamp(0.1em, 2vw, 0.3em)",
+                textTransform: "uppercase",
+                margin: "0 0 clamp(20px, 5vw, 40px) 0",
+                color: "#fff",
+                textAlign: "center",
+                transition: "none",
+                display: "flex",
+                justifyContent: "center",
+                fontFamily: "Arial, Helvetica, sans-serif",
+                backfaceVisibility: "hidden",
+                WebkitBackfaceVisibility: "hidden",
+                padding: "0 clamp(10px, 3vw, 20px)",
+                maxWidth: "90vw",
+                wordWrap: "break-word",
+              }}
+            >
+              {fruitstandTranslations[currentLangIndex]}
+            </h1>
+          </div>
+
+          {/* Minimal subtitle */}
+          <p
+            ref={subtitleRef}
+            style={{
+              fontSize: "clamp(0.8rem, 3vw, 1rem)",
+              color: "rgba(255, 255, 255, 0.6)",
+              textAlign: "center",
+              opacity: 0,
+              transform: "translate3d(0, 20px, 0)",
+              fontWeight: "300",
+              letterSpacing: "clamp(0.1em, 2vw, 0.2em)",
+              margin: 0,
+              textTransform: "uppercase",
+              fontFamily: "Arial, sans-serif",
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
+              willChange: "transform, opacity",
+              padding: "0 clamp(10px, 3vw, 20px)",
+              maxWidth: "90vw",
+            }}
+          >
+            New York Streetwear
+          </p>
+        </div>
+      )}
+
       <ProductPageBrandHeader />
       <div className="w-full bg-[#fbf6f0]">
         {/* Hero Video Section - Sized to accommodate carousel */}
@@ -144,14 +357,14 @@ export default function Home() {
           <div className="relative mx-auto w-full max-w-[520px] md:max-w-6xl">
             <div
               ref={carouselRef}
-              className="flex justify-center gap-3 overflow-x-auto px-6 pb-5 md:gap-6 md:px-8 lg:px-12 scrollbar-hide snap-x snap-mandatory"
-              style={{ scrollBehavior: "smooth" }}
+              className="flex gap-3 overflow-x-auto px-6 pb-5 md:gap-6 md:overflow-visible md:px-0 lg:gap-8 scrollbar-hide snap-x snap-center scroll-smooth md:justify-center"
+              style={{ scrollBehavior: "smooth", scrollPaddingInline: "var(--scroll-padding)" }}
             >
               {newItems.map((item) => (
                 <Link
                   key={item.id}
                   href={item.link}
-                  className="carousel-card group flex shrink-0 snap-start flex-col overflow-hidden rounded-[22px] border border-[#dcd2c6] bg-gradient-to-b from-[#f7f0e6] to-white shadow-[0_20px_34px_rgba(24,24,24,0.08)] transition-transform duration-300 hover:-translate-y-[6px]"
+                  className="carousel-card group flex shrink-0 snap-center flex-col overflow-hidden rounded-[22px] border border-[#dcd2c6] bg-gradient-to-b from-[#f7f0e6] to-white shadow-[0_20px_34px_rgba(24,24,24,0.08)] transition-transform duration-300 hover:-translate-y-[6px]"
                 >
                   <div className="relative aspect-[3/4] w-full bg-[#f5efe4]">
                     <Image
@@ -169,7 +382,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => scrollCarousel("left")}
-              className="absolute left-2 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#d0c3b3] bg-white text-[#181818] shadow-[0_18px_34px_rgba(24,24,24,0.12)] transition hover:bg-[#f8f1e6]"
+              className="absolute left-2 top-1/2 z-10 md:hidden flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#d0c3b3] bg-white text-[#181818] shadow-[0_18px_34px_rgba(24,24,24,0.12)] transition hover:bg-[#f8f1e6]"
               aria-label="Scroll left"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -177,7 +390,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => scrollCarousel("right")}
-              className="absolute right-2 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#d0c3b3] bg-white text-[#181818] shadow-[0_18px_34px_rgba(24,24,24,0.12)] transition hover:bg-[#f8f1e6]"
+              className="absolute right-2 top-1/2 z-10 md:hidden flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#d0c3b3] bg-white text-[#181818] shadow-[0_18px_34px_rgba(24,24,24,0.12)] transition hover:bg-[#f8f1e6]"
               aria-label="Scroll right"
             >
               <ChevronRight className="h-4 w-4" />
@@ -217,116 +430,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="border-t border-[#181818]/10 bg-white/60 backdrop-blur px-4 md:px-8 py-12">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-              {/* Column 1: Brand */}
-              <div>
-                <h3 className="text-lg font-semibold uppercase tracking-[0.22em] text-[#181818] mb-4">
-                  FRUITSTAND®
-                </h3>
-                <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#6f6f6f] max-w-xs">
-                  New York–based fashion collective dedicated to timeless design and community.
-                </p>
-              </div>
-
-              {/* Column 2: Quick Links */}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#181818] mb-3">
-                    Shop
-                  </p>
-                  <ul className="space-y-2">
-                    <li>
-                      <Link href="/shop" className="text-xs text-[#6f6f6f] hover:text-[#181818] transition">
-                        All Products
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/shop" className="text-xs text-[#6f6f6f] hover:text-[#181818] transition">
-                        New Arrivals
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#181818] mb-3">
-                    Support
-                  </p>
-                  <ul className="space-y-2">
-                    <li>
-                      <Link href="/contact" className="text-xs text-[#6f6f6f] hover:text-[#181818] transition">
-                        Contact
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/faq" className="text-xs text-[#6f6f6f] hover:text-[#181818] transition">
-                        FAQ
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#181818] mb-3">
-                    Legal
-                  </p>
-                  <ul className="space-y-2">
-                    <li>
-                      <Link href="/privacy-policy" className="text-xs text-[#6f6f6f] hover:text-[#181818] transition">
-                        Privacy
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/terms-and-conditions" className="text-xs text-[#6f6f6f] hover:text-[#181818] transition">
-                        Terms
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer Bottom */}
-            <div className="border-t border-[#181818]/10 pt-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#6f6f6f]">
-                © 2026 FRUITSTAND®. All rights reserved.
-              </p>
-
-              {/* Social Links */}
-              <div className="flex items-center gap-4">
-                <a
-                  href="https://www.instagram.com/fruitstandny"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#181818]/10 bg-white hover:border-[#181818]/30 hover:bg-[#f5eee4] transition"
-                  aria-label="Instagram"
-                >
-                  <Instagram className="h-4 w-4 text-[#181818]" />
-                </a>
-                <a
-                  href="https://x.com/fruitstandny"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#181818]/10 bg-white hover:border-[#181818]/30 hover:bg-[#f5eee4] transition"
-                  aria-label="Twitter"
-                >
-                  <Twitter className="h-4 w-4 text-[#181818]" />
-                </a>
-                <a
-                  href="https://www.facebook.com/fruitstandny"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#181818]/10 bg-white hover:border-[#181818]/30 hover:bg-[#f5eee4] transition"
-                  aria-label="Facebook"
-                >
-                  <Facebook className="h-4 w-4 text-[#181818]" />
-                </a>
-              </div>
-            </div>
-          </div>
-        </footer>
-
         {/* Scrollbar Hide Styles */}
         <style>{`
           .carousel-card {
@@ -343,9 +446,14 @@ export default function Home() {
           }
           @media (min-width: 768px) {
             .carousel-card {
-              flex-basis: 18rem;
-              max-width: 18rem;
+              flex: 0 0 auto;
+              max-width: none;
               width: 18rem;
+            }
+          }
+          @media (min-width: 1024px) {
+            .carousel-card {
+              width: 20rem;
             }
           }
           .scrollbar-hide {
