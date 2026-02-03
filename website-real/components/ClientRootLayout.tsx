@@ -116,7 +116,6 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
           ]}
           socialItems={[
             { label: "Instagram", link: "https://www.instagram.com/fruitstandny/" },
-            { label: "X", link: "https://x.com/FruitStandNY" },
             { label: "Facebook", link: "https://www.facebook.com/FRUITSTANDNY" }
           ]}
           displaySocials={true}

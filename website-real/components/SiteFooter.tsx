@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { Instagram, Twitter, Facebook } from "lucide-react"
+import { Instagram, Facebook } from "lucide-react"
 
 export default function SiteFooter() {
   const currentYear = new Date().getFullYear()
@@ -43,15 +43,6 @@ export default function SiteFooter() {
               rel="noopener noreferrer"
             >
               <Instagram className="w-6 h-6" />
-            </a>
-            <a
-              href="https://x.com/fruitstandny"
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-              aria-label="Twitter"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Twitter className="w-6 h-6" />
             </a>
             <a
               href="https://www.facebook.com/fruitstandny"
