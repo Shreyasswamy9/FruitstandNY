@@ -1,128 +1,46 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
-// import StaggeredMenu from "../../components/StagerredMenu"
 import { motion } from "framer-motion"
 import { useCart, type CartItem } from "../../components/CartContext"
 import Image from "next/image"
 import Price from '@/components/Price'
 import { Elements, ExpressCheckoutElement, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js"
 import type { Appearance, StripeExpressCheckoutElementConfirmEvent } from "@stripe/stripe-js"
-import { stripePromise, useCheckout, type CheckoutItem, type CustomerCheckoutPayload, type GuestCheckoutPayload } from "../../hooks/useCheckout"
+import { stripePromise, useCheckout, useStripeCheckout, type CheckoutItem, type CustomerCheckoutPayload } from "../../hooks/useCheckout"
 import { supabase } from "../supabase-client"
 import { useRouter } from "next/navigation"
 import type { User } from "@supabase/supabase-js"
 
-type CountryCodeDefinition = {
-  code: string;
-  country: string; // ISO 3166-1 alpha-2
-  name: string;
-};
-
-type CountryCodeOption = CountryCodeDefinition & {
-  flag: string;
-  label: string;
-  value: string;
-};
-
-const getFlagEmoji = (isoCode: string): string => {
-  if (!isoCode || isoCode.length !== 2) return '';
-  const codePoints = isoCode
-    .toUpperCase()
-    .split('')
-    .map((char) => 0x1f1e6 + (char.charCodeAt(0) - 65));
-  return String.fromCodePoint(...codePoints);
-};
-
-const getDialCodeFromValue = (value: string): string => {
-  const [, dialCode] = value.split('|');
-  return dialCode ?? value;
-};
-
-const RAW_COUNTRY_CODES: CountryCodeDefinition[] = [
-  { code: "+1", country: "US", name: "United States" },
-  { code: "+1", country: "CA", name: "Canada" },
-  { code: "+44", country: "GB", name: "United Kingdom" },
-  { code: "+33", country: "FR", name: "France" },
-  { code: "+49", country: "DE", name: "Germany" },
-  { code: "+39", country: "IT", name: "Italy" },
-  { code: "+34", country: "ES", name: "Spain" },
-  { code: "+31", country: "NL", name: "Netherlands" },
-  { code: "+32", country: "BE", name: "Belgium" },
-  { code: "+41", country: "CH", name: "Switzerland" },
-  { code: "+43", country: "AT", name: "Austria" },
-  { code: "+45", country: "DK", name: "Denmark" },
-  { code: "+46", country: "SE", name: "Sweden" },
-  { code: "+47", country: "NO", name: "Norway" },
-  { code: "+358", country: "FI", name: "Finland" },
-  { code: "+91", country: "IN", name: "India" },
-  { code: "+86", country: "CN", name: "China" },
-  { code: "+81", country: "JP", name: "Japan" },
-  { code: "+82", country: "KR", name: "South Korea" },
-  { code: "+61", country: "AU", name: "Australia" },
-  { code: "+64", country: "NZ", name: "New Zealand" },
-  { code: "+55", country: "BR", name: "Brazil" },
-  { code: "+52", country: "MX", name: "Mexico" },
-  { code: "+27", country: "ZA", name: "South Africa" }
-];
-
-const COUNTRY_CODE_OPTIONS: CountryCodeOption[] = RAW_COUNTRY_CODES.map((entry) => {
-  const flag = getFlagEmoji(entry.country);
-  const value = `${entry.country}|${entry.code}`;
-  const label = `${flag ? `${flag} ` : ''}${entry.country} · ${entry.name} (${entry.code})`;
-  return { ...entry, flag, label, value };
-});
-
-const EXPRESS_CHECKOUT_CACHE_KEY = 'fsny-express-checkout-details';
 const ORDER_NUMBER_STORAGE_KEY = 'latestOrderNumber';
-const GUEST_DETAILS_ERROR_MESSAGE = 'Please correct the highlighted fields before paying.';
 
-type ExpressCheckoutSnapshot = {
-  guest?: GuestCheckoutPayload;
-  shippingRate?: {
-    id: string;
-    amount: number;
-    displayName: string;
-  };
-  expressPaymentType?: string;
-};
-
+// Simplified Payment Section for logged-in users only
 type PaymentSectionProps = {
   total: number;
   items: CartItem[];
-  ensureReady: (options?: { allowGuestWithoutForm?: boolean; skipIntentRefresh?: boolean }) => Promise<boolean>;
   processing: boolean;
   setProcessing: (value: boolean) => void;
   message: string | null;
   setMessage: React.Dispatch<React.SetStateAction<string | null>>;
   elementsReady: boolean;
   setElementsReady: (ready: boolean) => void;
-  requiresDetails: boolean;
-  onRequireDetails: () => void;
-  resolveOrderNumber: () => string | null;
-  autoRevealTrigger: number;
+  orderNumber: string | null;
 };
 
 const PaymentSection: React.FC<PaymentSectionProps> = ({
   total,
   items,
-  ensureReady,
   processing,
   setProcessing,
   message,
   setMessage,
   elementsReady,
   setElementsReady,
-  requiresDetails,
-  onRequireDetails,
-  resolveOrderNumber,
-  autoRevealTrigger,
+  orderNumber,
 }) => {
   const stripe = useStripe();
   const elements = useElements();
-  const [showAdditionalMethods, setShowAdditionalMethods] = useState(false);
   const itemCount = useMemo(
     () => items.reduce((sum, item) => sum + item.quantity, 0),
     [items]
@@ -132,57 +50,7 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
   const confirmPayment = useCallback(
     async (event?: StripeExpressCheckoutElementConfirmEvent) => {
       const expressEvent = event as StripeExpressCheckoutElementConfirmEvent | undefined;
-      // Stripe fires onConfirm for express wallets prior to showing native UI; prevent default navigation if exposed.
       (expressEvent as { preventDefault?: () => void } | undefined)?.preventDefault?.();
-
-      if (expressEvent && typeof window !== 'undefined') {
-        const { billingDetails, shippingAddress, shippingRate, expressPaymentType } = expressEvent;
-
-        const resolvedAddress = shippingAddress?.address ?? billingDetails?.address;
-        const nameParts = (billingDetails?.name ?? '')
-          .trim()
-          .split(/\s+/)
-          .filter(Boolean);
-        const [firstNameRaw, ...restNameParts] = nameParts;
-
-        const guestFromExpress: GuestCheckoutPayload | undefined = billingDetails || resolvedAddress
-          ? {
-              email: billingDetails?.email || undefined,
-              firstName: firstNameRaw || undefined,
-              lastName: restNameParts.length > 0 ? restNameParts.join(' ') : undefined,
-              phone: billingDetails?.phone || undefined,
-              address: resolvedAddress
-                ? {
-                    street: resolvedAddress.line1 || undefined,
-                    street2: resolvedAddress.line2 ?? undefined,
-                    city: resolvedAddress.city || undefined,
-                    state: resolvedAddress.state || undefined,
-                    zipCode: resolvedAddress.postal_code || undefined,
-                    country: resolvedAddress.country || undefined,
-                  }
-                : undefined,
-            }
-          : undefined;
-
-        const snapshot: ExpressCheckoutSnapshot = {
-          guest: guestFromExpress,
-          shippingRate: shippingRate
-            ? {
-                id: shippingRate.id,
-                amount: shippingRate.amount,
-                displayName: shippingRate.displayName,
-              }
-            : undefined,
-          expressPaymentType,
-        };
-
-        // Shipping address may be partially redacted during address selection; Stripe returns the full address after confirm per their docs.
-        try {
-          window.sessionStorage.setItem(EXPRESS_CHECKOUT_CACHE_KEY, JSON.stringify(snapshot));
-        } catch (storageError) {
-          console.error('Unable to cache express checkout details', storageError);
-        }
-      }
 
       if (processing) {
         return;
@@ -190,11 +58,6 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
 
       if (!stripe || !elements) {
         setMessage('Payment form is still loading. Please try again in a moment.');
-        return;
-      }
-
-      const canProceed = await ensureReady(event ? { allowGuestWithoutForm: true } : undefined);
-      if (!canProceed) {
         return;
       }
 
@@ -206,13 +69,12 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
           ? `${window.location.origin}/order/complete`
           : `${process.env.NEXT_PUBLIC_BASE_URL ?? ''}/order/complete`;
 
-      const activeOrderNumber = resolveOrderNumber();
       let returnUrl = baseReturnUrl;
 
-      if (activeOrderNumber && /^\d{6}$/.test(activeOrderNumber)) {
+      if (orderNumber && /^\d{6}$/.test(orderNumber)) {
         if (typeof window !== 'undefined') {
           try {
-            window.sessionStorage.setItem(ORDER_NUMBER_STORAGE_KEY, activeOrderNumber);
+            window.sessionStorage.setItem(ORDER_NUMBER_STORAGE_KEY, orderNumber);
           } catch (error) {
             console.warn('Unable to persist order number to session storage', error);
           }
@@ -220,11 +82,11 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
 
         try {
           const composed = new URL(baseReturnUrl);
-          composed.searchParams.set('order_number', activeOrderNumber);
+          composed.searchParams.set('order_number', orderNumber);
           returnUrl = composed.toString();
         } catch {
           const separator = baseReturnUrl.includes('?') ? '&' : '?';
-          returnUrl = `${baseReturnUrl}${separator}order_number=${encodeURIComponent(activeOrderNumber)}`;
+          returnUrl = `${baseReturnUrl}${separator}order_number=${encodeURIComponent(orderNumber)}`;
         }
       }
 
@@ -244,43 +106,8 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
 
       setProcessing(false);
     },
-    [elements, ensureReady, processing, resolveOrderNumber, setMessage, setProcessing, stripe]
+    [elements, processing, orderNumber, setMessage, setProcessing, stripe]
   );
-
-  const openAdditionalMethods = useCallback(
-    (options?: { fromAuto?: boolean }) => {
-      setShowAdditionalMethods(true);
-      if (options?.fromAuto) {
-        setMessage((current) => (current === GUEST_DETAILS_ERROR_MESSAGE ? null : current));
-      } else if (requiresDetails) {
-        onRequireDetails();
-        setMessage('Enter your contact details below before completing payment.');
-      } else {
-        setMessage(null);
-      }
-      setElementsReady(false);
-    },
-    [onRequireDetails, requiresDetails, setElementsReady, setMessage]
-  );
-
-  const revealAdditionalMethods = useCallback(() => {
-    openAdditionalMethods();
-  }, [openAdditionalMethods]);
-
-  const hideAdditionalMethods = useCallback(() => {
-    setShowAdditionalMethods(false);
-    setElementsReady(false);
-  }, [setElementsReady]);
-
-  useEffect(() => {
-    if (autoRevealTrigger <= 0 || showAdditionalMethods) {
-      if (autoRevealTrigger > 0) {
-        setMessage((current) => (current === GUEST_DETAILS_ERROR_MESSAGE ? null : current));
-      }
-      return;
-    }
-    openAdditionalMethods({ fromAuto: true });
-  }, [autoRevealTrigger, openAdditionalMethods, setMessage, showAdditionalMethods]);
 
   return (
     <div className="space-y-5">
@@ -324,7 +151,7 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
       <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 space-y-6 shadow-sm">
         <div>
           <h3 className="text-base font-semibold text-gray-900">Express checkout</h3>
-          <p className="text-xs text-gray-500 mt-1">Use Apple Pay, Google Pay, Link, PayPal, or Amazon Pay for a faster payment.</p>
+          <p className="text-xs text-gray-500 mt-1">Pay with Apple Pay, Google Pay, Amazon Pay, or Link for faster checkout.</p>
           <div className="mt-4">
             <ExpressCheckoutElement
               onConfirm={confirmPayment}
@@ -332,9 +159,8 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
                 paymentMethods: {
                   applePay: 'auto',
                   googlePay: 'auto',
-                  link: 'auto',
-                  paypal: 'auto',
                   amazonPay: 'auto',
+                  link: 'auto',
                 },
                 emailRequired: true,
                 phoneNumberRequired: true,
@@ -347,47 +173,29 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
                     displayName: 'Free shipping',
                   },
                 ],
-                paymentMethodOrder: ['apple_pay', 'google_pay', 'link', 'paypal', 'amazon_pay'],
+                paymentMethodOrder: ['apple_pay', 'google_pay', 'amazon_pay', 'link'],
               }}
             />
           </div>
         </div>
+        
         <div className="flex items-center gap-3 text-gray-300 text-[11px] uppercase tracking-[0.35em]">
           <span className="h-px bg-gray-200 flex-1" />
           <span>— OR —</span>
           <span className="h-px bg-gray-200 flex-1" />
         </div>
-        {showAdditionalMethods ? (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-semibold text-gray-800">More payment methods</h4>
-              <button
-                type="button"
-                onClick={hideAdditionalMethods}
-                className="text-xs text-gray-500 hover:text-gray-700"
-              >
-                Hide
-              </button>
-            </div>
-            <PaymentElement onReady={() => setElementsReady(true)} />
-            <button
-              type="button"
-              onClick={() => confirmPayment()}
-              disabled={processing || !elementsReady}
-              className="w-full py-4 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {processing ? 'Processing…' : `Pay $${total.toFixed(2)}`}
-            </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={revealAdditionalMethods}
-            className="w-full py-3 border border-gray-300 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-100 transition-colors"
+
+        <div>
+          <h4 className="text-sm font-semibold text-gray-800 mb-3">Other payment methods</h4>
+          <p className="text-xs text-gray-600 mb-4">Card, bank transfer, and other payment options</p>
+          <Link
+            href="/cart/checkout-redirect"
+            className="w-full py-4 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors text-center block"
           >
-            More payment methods
-          </button>
-        )}
+            Continue to payment →
+          </Link>
+        </div>
+
         {message && (
           <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
             {message}
@@ -399,43 +207,9 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
 };
 
 export default function CartPage() {
-  // const [menuOpen, setMenuOpen] = useState(false)
-  // Coupons and site-wide sale/discount logic removed per request
-  const [showSignInModal, setShowSignInModal] = useState(false)
-  const [showGuestCheckout, setShowGuestCheckout] = useState(false)
-
-  // Country codes for phone numbers (precomputed with flags and labels)
-  const countryCodes = COUNTRY_CODE_OPTIONS;
-  const defaultPhoneCountry = countryCodes[0]?.value ?? '';
-  const [guestFormErrors, setGuestFormErrors] = useState({
-    email: "",
-    firstName: "",
-    lastName: "",
-    phone: "",
-    street: "",
-    city: "",
-    state: "",
-    zipCode: ""
-  })
-  const [guestData, setGuestData] = useState({
-    email: "",
-    firstName: "",
-    lastName: "",
-    phone: "",
-    phoneCountryCode: defaultPhoneCountry,
-    address: {
-      street: "",
-      city: "",
-      state: "",
-      zipCode: "",
-      country: "US"
-    },
-    marketing: {
-      emailUpdates: true
-    }
-  })
-  const { items, removeFromCart, clearCart, addToCart } = useCart();
+  const { items, removeFromCart, clearCart, setLineQuantity } = useCart();
   const { createPaymentIntent, loading: intentLoading, error: checkoutError, setError: setCheckoutError } = useCheckout();
+  const { createCheckoutSession, loading: sessionLoading } = useStripeCheckout();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const clientSecretRef = useRef<string | null>(null);
   const orderNumberRef = useRef<string | null>(null);
@@ -444,9 +218,11 @@ export default function CartPage() {
   const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
   const [elementsReady, setElementsReady] = useState(false);
   const [isSignedIn, setIsSignedIn] = useState(false)
-  const [user, setUser] = React.useState<User | null>(null)
-  const [paymentRevealTick, setPaymentRevealTick] = useState(0);
+  const [user, setUser] = useState<User | null>(null);
+  const [showPaymentSection, setShowPaymentSection] = useState(false);
+  const router = useRouter();
 
+  // Check auth state
   useEffect(() => {
     let mounted = true
     ;(async () => {
@@ -467,7 +243,6 @@ export default function CartPage() {
       listener.subscription.unsubscribe()
     }
   }, [])
-  const router = useRouter();
 
   const resolveOrderNumber = useCallback((): string | null => {
     if (orderNumberRef.current) {
@@ -500,10 +275,7 @@ export default function CartPage() {
 
   const getCartTotal = () => items.reduce((total, item) => total + (Number(item.price) * item.quantity), 0);
 
-  // Coupon functionality removed per request
-
   const handleRemove = (productId: string) => {
-    // `productId` may be a lineId (preferred) or a productId for backwards compatibility
     const item = items.find(i => i.lineId === productId) || items.find(i => i.productId === productId);
     const label = item ? `${item.name}${item.size ? ' — ' + item.size : ''}` : 'this item';
     if (typeof window === 'undefined' || window.confirm(`Remove ${label} from your cart?`)) {
@@ -525,21 +297,18 @@ export default function CartPage() {
 
     const item = items.find(i => i.lineId === id) || items.find(i => i.productId === id);
     if (item) {
-      // Remove the specific line first (use its lineId if available)
-      removeFromCart(item.lineId ?? item.productId);
-      // Add it back with new quantity
-      addToCart({ ...item, quantity: newQuantity });
+      setLineQuantity(item.lineId ?? item.productId, newQuantity);
     }
   };
 
-  // Subtotal (no per-item sale/coupon applied)
+  // Calculate totals
   const subtotal = getCartTotal();
-  // Shipping thresholds based on subtotal
-  const shipping = subtotal >= 20 ? 0 : 8.99;
-  const isPriorityShipping = subtotal >= 125;
-  const finalShipping = shipping;
-  const tax = subtotal * 0.08875; // NY tax rate
-  const total = subtotal + finalShipping + tax;
+  const shipping = subtotal >= 120 ? 0 : 8.99;
+  
+  // Tax will be calculated at checkout based on shipping address
+  // Don't include tax in cart total to avoid showing incorrect amount
+  const tax = 0; // Tax calculated at checkout
+  const total = subtotal + shipping; // Total before tax
 
   const appearance = useMemo<Appearance>(() => ({
     theme: 'stripe',
@@ -573,6 +342,7 @@ export default function CartPage() {
     clientSecret ? { clientSecret, appearance } : undefined
   ), [appearance, clientSecret]);
 
+  // Create payment intent for both logged-in users and guests (for express payments)
   useEffect(() => {
     if (!normalizedItems.length) {
       setClientSecret(null);
@@ -586,11 +356,20 @@ export default function CartPage() {
 
     (async () => {
       try {
+        const customerPayload: CustomerCheckoutPayload | undefined = user
+          ? {
+              email: user.email || undefined,
+              name: user.user_metadata?.full_name || user.user_metadata?.name || undefined,
+              phone: user.user_metadata?.phone || undefined,
+            }
+          : undefined;
+
         const result = await createPaymentIntent({
           items: normalizedItems,
-          shipping: finalShipping,
+          shipping,
           tax,
           paymentIntentId: paymentIntentId ?? undefined,
+          customerData: customerPayload,
         });
 
         if (!active) return;
@@ -599,7 +378,6 @@ export default function CartPage() {
         setClientSecret(result.clientSecret);
         setPaymentIntentId(result.paymentIntentId);
         rememberOrderNumber(result.orderNumber);
-        // Avoid disabling the checkout button when the Stripe element stays mounted.
         setElementsReady(!secretChanged);
         setPaymentMessage(null);
         setCheckoutError(null);
@@ -613,7 +391,7 @@ export default function CartPage() {
     return () => {
       active = false;
     };
-  }, [normalizedItems, finalShipping, tax, createPaymentIntent, rememberOrderNumber]);
+  }, [normalizedItems, shipping, tax, createPaymentIntent, user, rememberOrderNumber, setCheckoutError, paymentIntentId]);
 
   useEffect(() => {
     if (checkoutError) {
@@ -621,257 +399,27 @@ export default function CartPage() {
     }
   }, [checkoutError]);
 
-  // Available offers removed (no coupons/promos)
-
-  // Validation functions
-  const validateEmail = (email: string): string => {
-    if (!email) return "Email is required";
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) return "Please enter a valid email address";
-    return "";
-  };
-
-  const validateZipCode = (zipCode: string): string => {
-    if (!zipCode) return "ZIP code is required";
-    const zipRegex = /^\d{5}(-\d{4})?$/;
-    if (!zipRegex.test(zipCode)) return "Please enter a valid ZIP code (e.g., 12345 or 12345-6789)";
-    return "";
-  };
-
-  const validatePhone = (phone: string): string => {
-    // Phone is optional and we no longer enforce a strict phone number format for guest checkout.
-    // Return an empty string to indicate no validation error.
-    return "";
-  };
-
-  const validateRequired = (value: string, fieldName: string): string => {
-    if (!value || value.trim() === "") return `${fieldName} is required`;
-    return "";
-  };
-
-  const validateField = (field: string, value: string): string => {
-    switch (field) {
-      case "email":
-        return validateEmail(value);
-      case "firstName":
-        return "";
-      case "lastName":
-        return "";
-      case "phone":
-        return validatePhone(value);
-      case "address.street":
-        return "";
-      case "address.city":
-        return "";
-      case "address.state":
-        return "";
-      case "address.zipCode":
-        return value.trim() ? validateZipCode(value) : "";
-      default:
-        return "";
-    }
-  };
-
-  const handleGuestInputChange = (field: string, value: string | boolean) => {
-    // Clear error for this field when user starts typing
-    if (typeof value === "string") {
-      const errorKey = field.includes(".") ? field.split(".")[1] : field;
-      setGuestFormErrors(prev => {
-        if (!(errorKey in prev)) {
-          return prev;
-        }
-        const nextErrors = { ...prev, [errorKey]: "" };
-        if (paymentMessage === GUEST_DETAILS_ERROR_MESSAGE && Object.values(nextErrors).every(error => !error)) {
-          setPaymentMessage(null);
-        }
-        return nextErrors;
-      });
-    }
-
-    if (field === "phoneCountryCode" && typeof value === "string") {
-      const [iso] = value.split("|");
-      setGuestData(prev => ({
-        ...prev,
-        phoneCountryCode: value,
-        address: {
-          ...prev.address,
-          country: iso || prev.address.country
-        }
-      }));
-      return;
-    }
-
-    // Update the form data
-    if (field.includes(".")) {
-      const [parent, child] = field.split(".");
-      setGuestData(prev => ({
-        ...prev,
-        [parent]: {
-          ...(prev[parent as keyof typeof guestData] as object),
-          [child]: value
-        }
-      }));
-    } else {
-      setGuestData(prev => ({
-        ...prev,
-        [field]: value
-      }));
-    }
-  };
-
-  const validateGuestForm = useCallback((): boolean => {
-    const errors = {
-      email: validateField("email", guestData.email),
-      firstName: validateField("firstName", guestData.firstName),
-      lastName: validateField("lastName", guestData.lastName),
-      phone: validateField("phone", guestData.phone),
-      street: validateField("address.street", guestData.address.street),
-      city: validateField("address.city", guestData.address.city),
-      state: validateField("address.state", guestData.address.state),
-      zipCode: validateField("address.zipCode", guestData.address.zipCode)
-    };
-
-    setGuestFormErrors(errors);
-
-    return !Object.values(errors).some(error => error !== "");
-  }, [guestData]);
-
-  const ensurePaymentIntentReady = useCallback(async (options?: { allowGuestWithoutForm?: boolean; skipIntentRefresh?: boolean }): Promise<boolean> => {
-    const allowGuestWithoutForm = options?.allowGuestWithoutForm ?? false;
-    const skipIntentRefresh = options?.skipIntentRefresh ?? false;
-    if (items.length === 0) {
-      setPaymentMessage('Your cart is empty.');
-      return false;
-    }
-
-    let expressSnapshot: ExpressCheckoutSnapshot | null = null;
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = window.sessionStorage.getItem(EXPRESS_CHECKOUT_CACHE_KEY);
-        expressSnapshot = stored ? (JSON.parse(stored) as ExpressCheckoutSnapshot) : null;
-      } catch (storageError) {
-        console.error('Unable to read express checkout cache', storageError);
-      }
-    }
-
-    if (!isSignedIn && !showGuestCheckout) {
-      if (!allowGuestWithoutForm) {
-        setShowSignInModal(false);
-        setShowGuestCheckout(true);
-        setPaymentMessage('Please complete your contact and shipping details to continue.');
-
-        if (typeof window !== 'undefined') {
-          const target = document.getElementById('guest-checkout');
-          target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        return false;
-      }
-    }
-
-    if (showGuestCheckout) {
-      const valid = validateGuestForm();
-      if (!valid) {
-        setPaymentMessage(GUEST_DETAILS_ERROR_MESSAGE);
-        return false;
-      }
-    }
-
-    if (skipIntentRefresh) {
-      setPaymentMessage(null);
-      return true;
-    }
+  // Handle guest checkout with Stripe Checkout
+  const handleGuestCheckout = useCallback(async () => {
+    if (sessionLoading || normalizedItems.length === 0) return;
 
     try {
-      let guestPayload: GuestCheckoutPayload | undefined;
-      if (showGuestCheckout) {
-        guestPayload = {
-          email: guestData.email || undefined,
-          firstName: guestData.firstName || undefined,
-          lastName: guestData.lastName || undefined,
-          phone: guestData.phone
-            ? `${getDialCodeFromValue(guestData.phoneCountryCode)}${guestData.phone}`
-            : undefined,
-          address: {
-            street: guestData.address.street || undefined,
-            city: guestData.address.city || undefined,
-            state: guestData.address.state || undefined,
-            zipCode: guestData.address.zipCode || undefined,
-            country: guestData.address.country || 'US',
-          },
-        };
-      } else if (!isSignedIn && expressSnapshot?.guest) {
-        guestPayload = expressSnapshot.guest;
-      }
-
-      const customerPayload: CustomerCheckoutPayload | undefined = !showGuestCheckout && user
-        ? {
-            email: user.email || undefined,
-            name: user.user_metadata?.full_name || user.user_metadata?.name || undefined,
-            phone: user.user_metadata?.phone || undefined,
-          }
-        : undefined;
-
-      const result = await createPaymentIntent({
+      setPaymentMessage(null);
+      const result = await createCheckoutSession({
         items: normalizedItems,
-        shipping: finalShipping,
+        shipping,
         tax,
-        paymentIntentId,
-        guestData: guestPayload,
-        customerData: customerPayload,
       });
 
-      const secretChanged = result.clientSecret !== clientSecretRef.current;
-      clientSecretRef.current = result.clientSecret;
-      setClientSecret(result.clientSecret);
-      setPaymentIntentId(result.paymentIntentId);
-      rememberOrderNumber(result.orderNumber);
-      // Re-enable payment immediately if we're reusing the same client secret.
-      setElementsReady(!secretChanged);
-      setPaymentMessage(null);
-      setCheckoutError(null);
-      if (typeof window !== 'undefined') {
-        window.sessionStorage.removeItem(EXPRESS_CHECKOUT_CACHE_KEY);
+      if (result.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = result.url;
       }
-      return true;
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unable to prepare payment. Please try again.';
+      const message = error instanceof Error ? error.message : 'Unable to start checkout.';
       setPaymentMessage(message);
-      return false;
     }
-  }, [items.length, isSignedIn, showGuestCheckout, validateGuestForm, guestData, user, createPaymentIntent, normalizedItems, finalShipping, tax, paymentIntentId, setCheckoutError, setShowGuestCheckout, setShowSignInModal, rememberOrderNumber]);
-
-  const handleGuestCheckoutSubmit = async () => {
-    const ready = await ensurePaymentIntentReady({ skipIntentRefresh: true });
-    if (ready) {
-      setPaymentMessage(null);
-      setPaymentRevealTick(prev => prev + 1);
-      if (typeof window !== 'undefined') {
-        const target = document.getElementById('payment-section');
-        target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }
-  };
-
-  const handleContinueAsGuest = () => {
-    ensureGuestDetailsVisible();
-  };
-
-  const ensureGuestDetailsVisible = () => {
-    if (isSignedIn) {
-      return;
-    }
-
-    setShowSignInModal(false);
-    setShowGuestCheckout(prev => (prev ? prev : true));
-
-    if (typeof window !== 'undefined') {
-      requestAnimationFrame(() => {
-        const target = document.getElementById('guest-checkout');
-        target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-    }
-  };
+  }, [createCheckoutSession, normalizedItems, sessionLoading, shipping, tax]);
 
   return (
     <div className="min-h-screen bg-[#fbf6f0]">
@@ -905,7 +453,7 @@ export default function CartPage() {
             </div>
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Your cart is empty</h2>
             <p className="text-gray-600 mb-8 max-w-md mx-auto">
-              Looks like you haven`t added any items to your cart yet. Start shopping to fill it up!
+              Looks like you haven`&apos;`t added any items to your cart yet. Start shopping to fill it up!
             </p>
             <motion.a
               href="/shop"
@@ -940,10 +488,8 @@ export default function CartPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05, duration: 0.3 }}
                       className="p-4 sm:p-6 hover:bg-gray-50 transition-colors"
-                      style={{ willChange: "transform", backfaceVisibility: "hidden" }}
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-4 sm:space-y-0">
-                        {/* Product Image - Clickable */}
                         {item.isBundle ? (
                           <div className="relative w-20 h-20 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-gray-100 shrink-0 transition-all duration-200">
                             <Image
@@ -970,7 +516,6 @@ export default function CartPage() {
                           </Link>
                         )}
                         
-                        {/* Product Details - Full width on mobile */}
                         <div className="flex-1 min-w-0">
                           {item.isBundle ? (
                             <div className="block">
@@ -1003,9 +548,7 @@ export default function CartPage() {
                           </p>
                         </div>
                         
-                        {/* Mobile: Quantity and actions in a row */}
                         <div className="flex items-center justify-between sm:flex-col sm:items-end sm:space-y-4">
-                          {/* Quantity Controls */}
                           <div className="flex items-center space-x-2 sm:space-x-3">
                             <button
                               onClick={() => updateQuantity(item.lineId ?? item.productId, item.quantity - 1)}
@@ -1030,7 +573,6 @@ export default function CartPage() {
                             </button>
                           </div>
                           
-                          {/* Item Total and Remove - Mobile: side by side, Desktop: stacked */}
                           <div className="flex items-center space-x-3 sm:flex-col sm:space-x-0 sm:space-y-2 sm:items-end">
                             <p className="text-lg font-bold text-gray-900">
                               ${(item.price * item.quantity).toFixed(2)}
@@ -1051,7 +593,6 @@ export default function CartPage() {
                   ))}
                 </div>
                 
-                {/* Clear Cart Button */}
                 <div className="p-4 sm:p-6 border-t border-gray-200">
                   <button
                     onClick={handleClearCart}
@@ -1063,51 +604,252 @@ export default function CartPage() {
               </motion.div>
             </div>
 
-            {/* Express Checkout + Summary */}
+            {/* Checkout Section */}
             <div className="order-1 xl:order-2 xl:col-span-1 flex flex-col gap-6">
-              {intentLoading && !clientSecret ? (
-                <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-sm flex items-center justify-center text-sm text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-gray-500"></div>
-                    <span>Loading payment methods…</span>
+              {/* Total Box */}
+              <div className="rounded-3xl bg-[#f7ede0] text-gray-900 p-5 shadow-lg border border-white/60">
+                <p className="text-[11px] uppercase tracking-[0.35em] text-gray-700/70">Estimated total</p>
+                <p className="mt-2 text-3xl font-semibold text-gray-900">${total.toFixed(2)}</p>
+                <p className="mt-2 text-xs text-gray-700/70">
+                  {items.reduce((sum, item) => sum + item.quantity, 0)} item{items.reduce((sum, item) => sum + item.quantity, 0) !== 1 ? 's' : ''} • plus tax (calculated at checkout)
+                </p>
+                {/* Free Shipping Progress */}
+                {subtotal >= 120 ? (
+                  <div className="mt-3 pt-3 border-t border-gray-300/50">
+                    <div className="flex items-center gap-2 text-green-700">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-xs font-semibold">You unlocked free shipping! 🎉</span>
+                    </div>
                   </div>
-                </div>
-              ) : clientSecret && elementsOptions ? (
-                <div id="payment-section">
-                  <Elements stripe={stripePromise} options={elementsOptions} key={clientSecret}>
-                    <PaymentSection
-                      total={total}
-                      items={items}
-                      ensureReady={ensurePaymentIntentReady}
-                      processing={paymentProcessing}
-                      setProcessing={setPaymentProcessing}
-                      message={paymentMessage}
-                      setMessage={setPaymentMessage}
-                      elementsReady={elementsReady}
-                      setElementsReady={setElementsReady}
-                      requiresDetails={!isSignedIn}
-                      onRequireDetails={ensureGuestDetailsVisible}
-                      resolveOrderNumber={resolveOrderNumber}
-                      autoRevealTrigger={paymentRevealTick}
-                    />
-                  </Elements>
-                </div>
-              ) : (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-5 sm:p-6 text-sm text-yellow-800">
-                  Payment methods are not available. Please refresh the page or try again later.
-                </div>
+                ) : (
+                  <div className="mt-3 pt-3 border-t border-gray-300/50">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-xs text-gray-700">Free shipping at $120</span>
+                      <span className="text-xs font-semibold text-gray-900">${(120 - subtotal).toFixed(2)} to go</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                      <div 
+                        className="bg-gradient-to-r from-gray-700 to-gray-900 h-1.5 rounded-full transition-all duration-500"
+                        style={{ width: `${Math.min((subtotal / 120) * 100, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Account Benefits Card - Only show for non-signed-in users */}
+              {!isSignedIn && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="rounded-xl bg-gradient-to-br from-[#f7ede0] to-[#efe5d5] p-3 shadow-sm border border-white/40"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      <h3 className="text-xs font-semibold text-gray-900">Get order tracking & faster checkout</h3>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => router.push('/signup?redirect=/cart')}
+                      className="flex-1 py-2 bg-black text-white text-xs font-semibold rounded-lg hover:bg-gray-800 transition-colors"
+                    >
+                      Sign Up
+                    </button>
+                    <button
+                      onClick={() => router.push('/signin?redirect=/cart')}
+                      className="flex-1 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      Sign In
+                    </button>
+                  </div>
+                </motion.div>
               )}
 
-              {paymentMessage && (!clientSecret || !elementsOptions) && (
-                <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-sm text-red-600">
-                  {paymentMessage}
-                </div>
-              )}
+              {!showPaymentSection ? (
+                /* Express Checkout - Initial View */
+                <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 space-y-4 shadow-sm">
+                  <div>
+                    <h3 className="text-base font-semibold text-gray-900">Express checkout</h3>
+                    <p className="text-xs text-gray-500 mt-1">Pay with Apple Pay, Google Pay, Amazon Pay, or Link.</p>
+                  </div>
 
+                  {isSignedIn && clientSecret && elementsOptions ? (
+                    <div id="express-section">
+                      <Elements stripe={stripePromise} options={elementsOptions} key={clientSecret}>
+                        <div className="space-y-4">
+                          <ExpressCheckoutElement
+                            onConfirm={async (event?: StripeExpressCheckoutElementConfirmEvent) => {
+                              const stripe = useStripe();
+                              const elements = useElements();
+                              // Call confirmPayment from PaymentSection logic
+                              // This will be handled by the existing logic
+                            }}
+                            options={{
+                              paymentMethods: {
+                                applePay: 'auto',
+                                googlePay: 'auto',
+                                amazonPay: 'auto',
+                                link: 'auto',
+                              },
+                              emailRequired: true,
+                              phoneNumberRequired: true,
+                              shippingAddressRequired: true,
+                              allowedShippingCountries: ['US'],
+                              shippingRates: [
+                                {
+                                  id: 'fsny-free-shipping',
+                                  amount: 0,
+                                  displayName: 'Free shipping',
+                                },
+                              ],
+                              paymentMethodOrder: ['apple_pay', 'google_pay', 'amazon_pay', 'link'],
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPaymentSection(true)}
+                            className="w-full py-3 border border-gray-300 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+                          >
+                            Other payment methods
+                          </button>
+                        </div>
+                      </Elements>
+                    </div>
+                  ) : !isSignedIn ? (
+                    /* Guest - Show express pay buttons */
+                    clientSecret && elementsOptions ? (
+                      <div id="express-section-guest">
+                        <Elements stripe={stripePromise} options={elementsOptions} key={clientSecret}>
+                          <div className="space-y-4">
+                          <ExpressCheckoutElement
+                            onConfirm={async (event?: StripeExpressCheckoutElementConfirmEvent) => {
+                              // Express checkout will handle the payment
+                            }}
+                            options={{
+                              paymentMethods: {
+                                applePay: 'auto',
+                                googlePay: 'auto',
+                                amazonPay: 'auto',
+                                link: 'auto',
+                              },
+                              emailRequired: true,
+                              phoneNumberRequired: true,
+                              shippingAddressRequired: true,
+                              allowedShippingCountries: ['US'],
+                              shippingRates: [
+                                {
+                                  id: 'fsny-free-shipping',
+                                  amount: 0,
+                                  displayName: 'Free shipping',
+                                },
+                              ],
+                              paymentMethodOrder: ['apple_pay', 'google_pay', 'amazon_pay', 'link'],
+                            }}
+                          />
+                            <button
+                              type="button"
+                              onClick={handleGuestCheckout}
+                              disabled={sessionLoading || items.length === 0}
+                              className="w-full py-3 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {sessionLoading ? (
+                                <div className="flex items-center justify-center">
+                                  <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-white mr-2"></div>
+                                  Loading...
+                                </div>
+                              ) : (
+                                `Checkout — $${total.toFixed(2)}`
+                              )}
+                            </button>
+                          </div>
+                        </Elements>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <button
+                          type="button"
+                          onClick={handleGuestCheckout}
+                          disabled={sessionLoading || items.length === 0}
+                          className="w-full py-4 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {sessionLoading ? (
+                            <div className="flex items-center justify-center">
+                              <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-white mr-2"></div>
+                              Loading...
+                            </div>
+                          ) : (
+                            `Checkout — $${total.toFixed(2)}`
+                          )}
+                        </button>
+                        <button
+                          onClick={() => router.push('/signin?redirect=/cart')}
+                          className="w-full py-3 border border-gray-300 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+                        >
+                          Sign In for Express Pay
+                        </button>
+                      </div>
+                    )
+                  ) : (
+                    <div className="flex items-center justify-center text-sm text-gray-600">
+                      <div className="flex items-center gap-2">
+                        <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-gray-500"></div>
+                        <span>Loading...</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {paymentMessage && (
+                    <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
+                      {paymentMessage}
+                    </div>
+                  )}
+                </div>
+              ) : isSignedIn ? (
+                /* Full Payment Section - For logged-in users only */
+                clientSecret && elementsOptions ? (
+                  <div id="payment-section">
+                    <Elements stripe={stripePromise} options={elementsOptions} key={clientSecret}>
+                      <PaymentSection
+                        total={total}
+                        items={items}
+                        processing={paymentProcessing}
+                        setProcessing={setPaymentProcessing}
+                        message={paymentMessage}
+                        setMessage={setPaymentMessage}
+                        elementsReady={elementsReady}
+                        setElementsReady={setElementsReady}
+                        orderNumber={resolveOrderNumber()}
+                      />
+                    </Elements>
+                    <button
+                      type="button"
+                      onClick={() => setShowPaymentSection(false)}
+                      className="mt-4 w-full py-3 border border-gray-300 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+                    >
+                      Back to express checkout
+                    </button>
+                  </div>
+                ) : (
+                  <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-sm flex items-center justify-center text-sm text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-gray-500"></div>
+                      <span>Loading payment methods…</span>
+                    </div>
+                  </div>
+                )
+              ) : null}
               <motion.div 
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 w-full xl:sticky xl:top-6"
+                className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 w-full"
               >
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">Order Summary</h2>
                 
@@ -1118,13 +860,20 @@ export default function CartPage() {
                   </div>
 
                   <div className="flex justify-between text-gray-600">
-                    <span>Shipping</span>
-                    <span>{finalShipping === 0 ? 'FREE' : `$${finalShipping.toFixed(2)}`}</span>
+                    <div className="flex flex-col">
+                      <span>Shipping</span>
+                      {shipping === 0 ? (
+                        <span className="text-xs text-green-600 mt-0.5">Free shipping (cart over $120)</span>
+                      ) : subtotal < 120 ? (
+                        <span className="text-xs text-gray-500 mt-0.5">${(120 - subtotal).toFixed(2)} away from free shipping</span>
+                      ) : null}
+                    </div>
+                    <span className="font-medium">{shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}</span>
                   </div>
 
                   <div className="flex justify-between text-gray-600">
                     <span>Tax</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span className="text-sm italic">Calculated at checkout</span>
                   </div>
 
                   <div className="border-t border-gray-200 pt-4">
@@ -1132,300 +881,19 @@ export default function CartPage() {
                       <span>Total</span>
                       <span>${total.toFixed(2)}</span>
                     </div>
+                    <p className="text-xs text-gray-500 mt-1">Tax will be added at checkout</p>
                   </div>
                 </div>
-
-                {!isSignedIn && !showGuestCheckout && (
-                  <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-                    <div className="flex items-start space-x-3">
-                      <svg className="w-5 h-5 text-blue-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <div className="flex-1">
-                        <h4 className="text-sm font-semibold text-blue-800 mb-1">Sign In or Continue as Guest</h4>
-                        <p className="text-xs text-blue-700 mb-3">
-                          Sign in for faster checkout and exclusive offers, or continue as a guest.
-                        </p>
-                        <div className="flex flex-col space-y-2">
-                          <button
-                            onClick={() => router.push('/signin')}
-                            className="w-full px-4 py- bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                              Sign In for Faster Checkout
-                            </button>
-                          <button
-                            onClick={handleContinueAsGuest}
-                            className="px-4 py-2 border border-blue-300 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-50 transition-colors"
-                          >
-                            Continue as Guest
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
 
                 <motion.a
                   href="/shop"
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
-                  transition={{ duration: 0.15 }}
-                  className="w-full mt-4 py-4 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-center block"
-                  style={{ willChange: "transform" }}
+                  className="w-full mt-6 py-4 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-center block"
                 >
-                  Return to Store
+                  Continue Shopping
                 </motion.a>
-
-                {/* Guest Checkout Form - Moved below Continue Shopping */}
-                {showGuestCheckout && (
-                  <div id="guest-checkout" className="mt-6 p-4 bg-gray-50 rounded-xl">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-sm font-semibold text-gray-800">Guest Checkout Information</h4>
-                      <button
-                        onClick={() => setShowGuestCheckout(false)}
-                        className="text-gray-500 hover:text-gray-700 text-sm"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      {/* Contact Information */}
-                      <div>
-                        <h5 className="text-xs font-medium text-gray-700 mb-2">CONTACT INFORMATION</h5>
-                        <p className="text-xs text-gray-500 mb-3">Only your email is required. Names and phone are optional for express wallets.</p>
-                        <div className="space-y-3">
-                          <input
-                            type="email"
-                            name="email"
-                            autoComplete="email"
-                            autoCorrect="off"
-                            autoCapitalize="none"
-                            spellCheck={false}
-                            placeholder="Email address *"
-                            value={guestData.email}
-                            onChange={(e) => handleGuestInputChange("email", e.target.value)}
-                            className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
-                              guestFormErrors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                            }`}
-                            required
-                          />
-                          {guestFormErrors.email && (
-                            <p className="text-red-500 text-xs mt-1">{guestFormErrors.email}</p>
-                          )}
-                          <div className="grid grid-cols-2 gap-3">
-                            <input
-                              type="text"
-                              name="given-name"
-                              autoComplete="shipping given-name"
-                              autoCorrect="off"
-                              autoCapitalize="words"
-                              spellCheck={false}
-                              placeholder="First name"
-                              value={guestData.firstName}
-                              onChange={(e) => handleGuestInputChange("firstName", e.target.value)}
-                              className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
-                                guestFormErrors.firstName ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                              }`}
-                            />
-                            {guestFormErrors.firstName && (
-                              <p className="text-red-500 text-xs mt-1">{guestFormErrors.firstName}</p>
-                            )}
-                            <input
-                              type="text"
-                              name="family-name"
-                              autoComplete="shipping family-name"
-                              autoCorrect="off"
-                              autoCapitalize="words"
-                              spellCheck={false}
-                              placeholder="Last name"
-                              value={guestData.lastName}
-                              onChange={(e) => handleGuestInputChange("lastName", e.target.value)}
-                              className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
-                                guestFormErrors.lastName ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                              }`}
-                            />
-                            {guestFormErrors.lastName && (
-                              <p className="text-red-500 text-xs mt-1">{guestFormErrors.lastName}</p>
-                            )}
-                          </div>
-                          <div className="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0">
-                            <select
-                              value={guestData.phoneCountryCode}
-                              onChange={(e) => handleGuestInputChange("phoneCountryCode", e.target.value)}
-                              className="w-full sm:w-50 px-2 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white"
-                              title="Select country code"
-                            >
-                              {countryCodes.map((country) => (
-                                <option key={`${country.code}-${country.country}`} value={country.value}>
-                                  {country.label}
-                                </option>
-                              ))}
-                            </select>
-                            <input
-                              type="tel"
-                              name="tel"
-                              autoComplete="off"
-                              autoCorrect="off"
-                              autoCapitalize="none"
-                              spellCheck={false}
-                              inputMode="tel"
-                              placeholder="Phone number"
-                              value={guestData.phone}
-                              onChange={(e) => handleGuestInputChange("phone", e.target.value)}
-                              className={`w-full sm:flex-1 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
-                                guestFormErrors.phone ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                              }`}
-                            />
-                          </div>
-                          {guestFormErrors.phone && (
-                            <p className="text-red-500 text-xs mt-1">{guestFormErrors.phone}</p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Shipping Address */}
-                      <div>
-                        <h5 className="text-xs font-medium text-gray-700 mb-2">SHIPPING ADDRESS</h5>
-                        <p className="text-xs text-gray-500 mb-3">Optional — digital wallets like Apple Pay or Link will provide this automatically during payment.</p>
-                        <div className="space-y-3">
-                          <input
-                            type="text"
-                            name="street-address"
-                            autoComplete="off"
-                            autoCorrect="off"
-                            autoCapitalize="words"
-                            spellCheck={false}
-                            placeholder="Street address (optional)"
-                            value={guestData.address.street}
-                            onChange={(e) => handleGuestInputChange("address.street", e.target.value)}
-                            className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
-                              guestFormErrors.street ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                            }`}
-                          />
-                          {guestFormErrors.street && (
-                            <p className="text-red-500 text-xs mt-1">{guestFormErrors.street}</p>
-                          )}
-                          <div className="grid grid-cols-3 gap-3">
-                            <div>
-                              <input
-                                type="text"
-                                name="address-level2"
-                                autoComplete="shipping address-level2"
-                                autoCorrect="off"
-                                autoCapitalize="words"
-                                spellCheck={false}
-                                placeholder="City"
-                                value={guestData.address.city}
-                                onChange={(e) => handleGuestInputChange("address.city", e.target.value)}
-                                className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
-                                  guestFormErrors.city ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                                }`}
-                              />
-                              {guestFormErrors.city && (
-                                <p className="text-red-500 text-xs mt-1">{guestFormErrors.city}</p>
-                              )}
-                            </div>
-                            <div>
-                              <input
-                                type="text"
-                                name="address-level1"
-                                autoComplete="shipping address-level1"
-                                autoCorrect="off"
-                                autoCapitalize="characters"
-                                spellCheck={false}
-                                placeholder="State"
-                                value={guestData.address.state}
-                                onChange={(e) => handleGuestInputChange("address.state", e.target.value)}
-                                className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
-                                  guestFormErrors.state ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                                }`}
-                              />
-                              {guestFormErrors.state && (
-                                <p className="text-red-500 text-xs mt-1">{guestFormErrors.state}</p>
-                              )}
-                            </div>
-                            <div>
-                              <input
-                                type="text"
-                                name="postal-code"
-                                autoComplete="shipping postal-code"
-                                autoCorrect="off"
-                                autoCapitalize="none"
-                                spellCheck={false}
-                                inputMode="numeric"
-                                pattern="[0-9]*"
-                                placeholder="ZIP / Postal code"
-                                value={guestData.address.zipCode}
-                                onChange={(e) => handleGuestInputChange("address.zipCode", e.target.value)}
-                                className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
-                                  guestFormErrors.zipCode ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                                }`}
-                              />
-                              {guestFormErrors.zipCode && (
-                                <p className="text-red-500 text-xs mt-1">{guestFormErrors.zipCode}</p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Marketing Preferences */}
-                      <div className="pt-3 border-t border-gray-200">
-                        <div className="space-y-2">
-                          <label className="flex items-start">
-                            <input
-                              type="checkbox"
-                              checked={guestData.marketing.emailUpdates}
-                              onChange={(e) => handleGuestInputChange("marketing.emailUpdates", e.target.checked)}
-                              className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black mt-0.5"
-                            />
-                            <span className="ml-2 text-xs text-gray-600">
-                              Email me about new products and exclusive offers
-                            </span>
-                          </label>
-                          {/* analytics consent removed per request */}
-                        </div>
-                      </div>
-
-                      <div className="pt-3 border-t border-gray-200">
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs text-gray-500">
-                            Want faster checkout next time?
-                          </p>
-                            <button 
-                            onClick={() => router.push('/signup')}
-                            className="text-xs text-blue-600 hover:text-blue-700 font-medium">
-                              Create Account
-                            </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Complete Guest Checkout Button */}
-                    <motion.button
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
-                      transition={{ duration: 0.15 }}
-                      onClick={handleGuestCheckoutSubmit}
-                      disabled={items.length === 0 || intentLoading || paymentProcessing}
-                      className="w-full mt-6 py-4 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      style={{ willChange: "transform" }}
-                    >
-                      {paymentProcessing ? (
-                        <div className="flex items-center justify-center">
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                          Preparing payment...
-                        </div>
-                      ) : (
-                        'Review & Pay'
-                      )}
-                    </motion.button>
-                  </div>
-                )}
                 
-                {/* Security Badges */}
                 <div className="mt-8 pt-6 border-t border-gray-200">
                   <p className="text-xs text-gray-500 text-center mb-4">Secure checkout guaranteed</p>
                   <div className="flex justify-center space-x-4 opacity-60">
@@ -1438,7 +906,6 @@ export default function CartPage() {
           </div>
         )}
       </div>
-
     </div>
   )
 }

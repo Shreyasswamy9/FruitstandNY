@@ -8,7 +8,23 @@ import ProductPageBrandHeader from "../../components/ProductPageBrandHeader"
 
 export default function ShopPage() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
-  const [bundleOpen, setBundleOpen] = useState(false)
+  const [bundleSheetConfig, setBundleSheetConfig] = useState<{
+    open: boolean;
+    tab: 'curated' | 'custom';
+    selectedId: string | null;
+  }>({ open: false, tab: 'curated', selectedId: null })
+
+  const openBundleSheet = (options?: { tab?: 'curated' | 'custom'; selectedId?: string | null }) => {
+    setBundleSheetConfig({
+      open: true,
+      tab: options?.tab ?? 'curated',
+      selectedId: options?.selectedId ?? null,
+    })
+  }
+
+  const closeBundleSheet = () => {
+    setBundleSheetConfig(prev => ({ ...prev, open: false }))
+  }
 
   return (
     <>
@@ -85,7 +101,7 @@ export default function ShopPage() {
       <div className="px-4 sm:px-6 lg:px-8 -mt-6 mb-3" style={{ position: 'relative', zIndex: 2 }}>
         <div className="max-w-4xl mx-auto">
           <button
-            onClick={() => setBundleOpen(true)}
+            onClick={() => openBundleSheet({ tab: 'curated', selectedId: null })}
             className="glass-banner w-full relative rounded-2xl p-3 sm:p-4 font-semibold active:scale-[0.99]"
             aria-label="Pick a bundle or build your own"
           >
@@ -111,6 +127,10 @@ export default function ShopPage() {
           categoryFilter={activeCategory}
           showBackgroundVideo={false}
           collapseVariantsByName={false}
+          onRequestBundleSheet={(options) => openBundleSheet({
+            tab: options?.initialTab ?? 'custom',
+            selectedId: options?.selectedId ?? null,
+          })}
         />
       </motion.div>
 
@@ -203,7 +223,12 @@ export default function ShopPage() {
         }
       `}</style>
       {/* Bundle Sheet */}
-      <BundleSheet open={bundleOpen} onClose={() => setBundleOpen(false)} />
+      <BundleSheet
+        open={bundleSheetConfig.open}
+        onClose={closeBundleSheet}
+        initialTab={bundleSheetConfig.tab}
+        initialSelectedId={bundleSheetConfig.selectedId}
+      />
     </div>
     </>
   )

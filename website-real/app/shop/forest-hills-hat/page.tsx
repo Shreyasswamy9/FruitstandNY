@@ -1,8 +1,7 @@
 "use client";
 import React, { useCallback, useMemo, useState } from "react";
 import { useCart } from "../../../components/CartContext";
-import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
-import ProductImageGallery from "@/components/ProductImageGallery";
+import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 
@@ -54,77 +53,79 @@ export default function ForestHillsHatPage() {
 
   const boughtTogetherItems = getFBTForPage("forest-hills-hat");
 
-  const handleAddBoughtTogetherItem = useCallback(
-    (product: { id: string; name: string; price: number; image: string }) => {
-      addToCart({
-        productId: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-        quantity: 1,
-        size: "M",
-      });
-    },
-    [addToCart]
-  );
-
-  const handleAddAllToCart = useCallback(() => {
-    boughtTogetherItems.forEach((product) => {
-      addToCart({
-        productId: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-        quantity: 1,
-        size: "M",
-      });
-    });
-  }, [addToCart, boughtTogetherItems]);
-
   return (
     <div>
       <ProductPageBrandHeader />
 
-      <div
-        className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
-        style={{ paddingTop: 96, paddingBottom: 64 }}
-      >
-        <ProductImageGallery
-          productName={PRODUCT.name}
-          options={[galleryOption]}
-          selectedOption={galleryOption}
-          selectedImage={selectedImage}
-          onImageChange={setSelectedImage}
-          className="md:w-1/2"
-          frameBackground="#ffffff"
-        />
+      <main className="bg-[#fbf5ed] pb-[210px] pt-12">
+        {/* HERO SECTION - Top 75% */}
+        <div className="mx-auto w-full max-w-[400px] px-6 text-center" style={{ minHeight: '75vh' }}>
+          {/* IMAGE */}
+          <div className="relative mx-auto aspect-[4/5] w-full">
+            <img
+              src={selectedImage}
+              alt={PRODUCT.name}
+              className="h-full w-full object-contain"
+            />
+          </div>
 
-        <div className="md:w-1/2 flex flex-col justify-start">
-          <h1 className="text-3xl font-bold mb-3">{PRODUCT.name}</h1>
-          <p className="text-lg text-gray-700 leading-relaxed mb-4">{PRODUCT.description}</p>
-          {PRODUCT.details?.length ? (
-            <div className="mb-6">
-              <span className="text-xs uppercase tracking-[0.2em] text-gray-500">Details</span>
-              <ul className="mt-2 list-disc list-inside text-gray-700 text-sm sm:text-base space-y-1">
-                {PRODUCT.details.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-          <div className="text-2xl font-semibold">${PRODUCT.price.toFixed(2)}</div>
+          {/* TITLE / PRICE / COLORWAY - Single Line */}
+          <div className="mt-8 flex flex-col items-center">
+            <h1 className="text-[22px] font-black uppercase tracking-[0.08em] leading-tight text-[#1d1c19]">
+              Forest Hills Hat
+            </h1>
+
+            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+          </div>
         </div>
-      </div>
 
-      <FrequentlyBoughtTogether
-        products={boughtTogetherItems}
-        onAddToCart={handleAddBoughtTogetherItem}
-        onAddAllToCart={handleAddAllToCart}
-      />
+        {/* DESCRIPTION SECTION */}
+        <div className="mx-auto w-full max-w-[400px] px-6 text-center">
+          <p className="px-1 text-[14px] leading-relaxed text-[#3d372f]">
+            {PRODUCT.description}
+          </p>
+        </div>
+
+        {/* DETAILS SECTION */}
+        <div className="mx-auto w-full max-w-[400px] px-6 text-left">
+          <div className="mt-8">
+            <p className="text-base font-semibold text-[#1d1c19]">Details</p>
+            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-[#1d1c19]">
+              {PRODUCT.details.map((detail) => (
+                <li key={detail}>{detail}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* YOU MAY ALSO LIKE SECTION */}
+        <div className="mx-auto w-full max-w-[400px] px-6 text-center">
+          <div className="mt-12">
+            <p className="text-[22px] font-black uppercase tracking-[0.32em] text-[#1d1c19]">
+              You May Also Like
+            </p>
+            <div className="mt-6 grid w-full grid-cols-2 gap-x-5 gap-y-10 text-left">
+              {boughtTogetherItems.map((product) => (
+                <div key={`${product.name}-${product.image}`} className="flex flex-col">
+                  <div className="relative aspect-[4/5] w-full overflow-hidden border border-[#1d1c19] bg-white">
+                    <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+                  </div>
+                  <p className="mt-4 text-[11px] font-black uppercase tracking-[0.34em] text-[#1d1c19]">
+                    {product.name}
+                  </p>
+                  <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.34em] text-[#1d1c19]">
+                    ${product.price}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </main>
 
       <ProductPurchaseBar
         price={PRODUCT.price}
-        summaryLabel="Forest green"
+        summaryLabel="LIME GREEN"
         sizeOptions={sizeOptions}
         selectedSize={selectedSize}
         onSelectSize={setSelectedSize}

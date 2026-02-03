@@ -106,3 +106,63 @@ export const useCheckout = () => {
     setError,
   } as const;
 };
+
+export type CreateCheckoutSessionArgs = {
+  items: CheckoutItem[];
+  shipping: number;
+  tax: number;
+};
+
+export type CreateCheckoutSessionResult = {
+  sessionId: string;
+  url: string;
+};
+
+export const useStripeCheckout = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const createCheckoutSession = useCallback(async (args: CreateCheckoutSessionArgs): Promise<CreateCheckoutSessionResult> => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(args),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        const message = typeof payload?.error === 'string'
+          ? payload.error
+          : 'Unable to start checkout. Please try again.';
+        setError(message);
+        throw new Error(message);
+      }
+
+      const data = (await response.json()) as CreateCheckoutSessionResult;
+      if (!data?.sessionId || !data?.url) {
+        throw new Error('Incomplete checkout session response from server.');
+      }
+
+      return data;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unexpected error creating checkout session.';
+      setError(message);
+      throw err instanceof Error ? err : new Error(message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return {
+    createCheckoutSession,
+    loading,
+    error,
+    setError,
+  } as const;
+};

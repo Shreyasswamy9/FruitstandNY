@@ -1,11 +1,10 @@
 "use client";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import Image from "next/image";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
-import BundleSheet from '@/components/BundleSheet'
-import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
-import ColorPicker, { type ColorOption } from '@/components/ColorPicker';
-import ProductImageGallery from "@/components/ProductImageGallery";
+import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
+import { type ColorOption } from '@/components/ColorPicker';
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 
@@ -49,21 +48,17 @@ export default function CameoTshirtPage() {
   const [selectedColor, setSelectedColor] = useState<CameoColorOption>(colorOptions[0]);
   const [selectedImage, setSelectedImage] = useState<string>(colorOptions[0].images[0]);
   const { addToCart } = useCart();
-  const [bundleOpen, setBundleOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
-
-  const updateUrlForColor = useCallback((slug?: string) => {
-    if (typeof window === 'undefined') return;
-    const basePath = window.location.pathname.split('?')[0];
-    const query = slug ? `?color=${slug}` : '';
-    window.history.replaceState(null, '', `${basePath}${query}`);
-  }, []);
 
   const handleSelectColor = useCallback((option: CameoColorOption, ctx?: { image?: string }) => {
     setSelectedColor(option);
     setSelectedImage(prev => ctx?.image ?? option.images?.[0] ?? prev);
-    updateUrlForColor(option.slug);
-  }, [updateUrlForColor]);
+    if (typeof window !== 'undefined') {
+      const basePath = window.location.pathname.split('?')[0];
+      const query = option.slug ? `?color=${option.slug}` : '';
+      window.history.replaceState(null, '', `${basePath}${query}`);
+    }
+  }, []);
 
   const handleImageChange = useCallback((image: string) => {
     setSelectedImage(image);
@@ -98,98 +93,134 @@ export default function CameoTshirtPage() {
 
   const boughtTogetherItems = getFBTForPage('cameo-tshirt');
 
-  const handleAddBoughtTogetherItem = (item: { id: string; name: string; price: number; image: string }) => {
-    addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: selectedSize ?? "M" });
-  };
-
-  const handleAddAllToCart = () => {
-    const fallbackSize = selectedSize ?? "M";
-    boughtTogetherItems.forEach(item => addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: fallbackSize }));
-  };
-
   const sizeOptions: PurchaseSizeOption[] = useMemo(
     () => ["XS", "S", "M", "L", "XL", "XXL", "XXXL"].map((size) => ({ value: size, label: size })),
     []
   );
 
   const purchaseColorOptions: PurchaseColorOption[] = useMemo(
-    () => colorOptions.map((option) => ({ value: option.slug, label: option.name, swatch: option.color })),
+    () => colorOptions.map((option) => ({ value: option.slug, label: option.name, swatch: option.color, border: option.border })),
     [colorOptions]
   );
-
-  
 
   return (
     <div>
       <ProductPageBrandHeader />
 
-      <div
-        className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
-        style={{ paddingTop: 96, paddingBottom: 64 }}
-      >
-        {/* Images */}
-        <ProductImageGallery
-          productName={PRODUCT.name}
-          options={colorOptions}
-          selectedOption={selectedColor}
-          selectedImage={selectedImage}
-          onOptionChange={(option, ctx) => handleSelectColor(option as CameoColorOption, ctx)}
-          onImageChange={handleImageChange}
-          className="md:w-1/2"
-        />
-
-        {/* Product Info */}
-        <div className="md:w-1/2 flex flex-col justify-start">
-          <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
-          {/* Color Picker */}
-          <ColorPicker
-            options={colorOptions}
-            selectedName={selectedColor.name}
-            onSelect={(opt) => {
-              const match = colorOptions.find(c => c.name === opt.name) ?? colorOptions[0];
-              handleSelectColor(match);
-            }}
-          />
-
-          <div className="mb-4 space-y-4">
-            <p className="text-lg text-gray-700 leading-relaxed">{PRODUCT.description}</p>
-            {/* Bundle CTA: open bundle sheet on custom tab */}
-            <div className="mt-2 flex items-center gap-3">
-              <span className="text-sm text-gray-500">Want to bundle this tee?</span>
-              <button
-                onClick={() => setBundleOpen(true)}
-                className="inline-flex items-center px-3 py-1.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-800 hover:bg-gray-100 transition-colors"
-              >
-                Build a Custom Bundle
-              </button>
-            </div>
-            {PRODUCT.details && (
-              <div>
-                <span className="text-xs uppercase tracking-[0.2em] text-gray-500">Details</span>
-                <ul className="mt-2 list-disc list-inside text-gray-700 text-sm sm:text-base space-y-1">
-                  {PRODUCT.details.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+      <main className="bg-[#fbf5ed] pb-[210px] pt-12">
+        {/* HERO SECTION - Top 75% */}
+        <div className="mx-auto w-full max-w-[400px] px-6 text-center" style={{ minHeight: '75vh' }}>
+          {/* IMAGE */}
+          <div className="relative mx-auto aspect-[4/5] w-full">
+            <Image
+              src={selectedImage}
+              alt={`${selectedColor.name} ${PRODUCT.name}`}
+              fill
+              sizes="(max-width: 768px) 92vw, 400px"
+              className="object-contain"
+              priority
+            />
           </div>
-          <div className="text-2xl font-semibold mb-6">${PRODUCT.price}</div>
+
+          {/* TITLE / PRICE - Single Line */}
+          <div className="mt-8 flex flex-col items-center">
+            <h1 className="text-[22px] font-black uppercase tracking-[0.08em] leading-tight text-[#1d1c19]">
+              Cameo Tee - {selectedColor.name}
+            </h1>
+
+            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+          </div>
+
+          {/* SWATCHES */}
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+            {colorOptions.map((option) => {
+              const isActive = option.slug === selectedColor.slug;
+
+              return (
+                <button
+                  key={option.slug}
+                  type="button"
+                  onClick={() => handleSelectColor(option)}
+                  aria-label={option.name}
+                  className={[
+                    "appearance-none bg-transparent [-webkit-tap-highlight-color:transparent]",
+                    "h-7 w-7 rounded-full overflow-hidden p-[2px]",
+                    "transition-transform duration-150 hover:-translate-y-[1px]",
+                    "focus:outline-none focus:ring-2 focus:ring-[#1d1c19]/35",
+                    isActive ? "ring-2 ring-[#1d1c19]" : "ring-1 ring-[#cfc2b3]",
+                  ].join(" ")}
+                >
+                  <span
+                    aria-hidden
+                    className="block h-full w-full rounded-full"
+                    style={{
+                      backgroundColor: option.color,
+                      border: option.border ? `1px solid ${option.border}` : undefined,
+                    }}
+                  />
+                </button>
+              );
+            })}
+          </div>
+
+          {/* SIZE GUIDE */}
+          <div className="mt-4 text-[12px] font-semibold uppercase tracking-[0.34em] text-[#1d1c19]">
+            <SizeGuide
+              productSlug="cameo-tshirt"
+              imagePath="/images/size-guides/Size Guide/Cameo Table.png"
+              buttonLabel="SIZE GUIDE"
+              className="text-[12px] font-semibold uppercase tracking-[0.34em]"
+            />
+          </div>
         </div>
-      </div>
 
-      <FrequentlyBoughtTogether
-        products={boughtTogetherItems}
-        onAddToCart={handleAddBoughtTogetherItem}
-        onAddAllToCart={handleAddAllToCart}
-      />
+        {/* DESCRIPTION SECTION */}
+        <div className="mx-auto w-full max-w-[400px] px-6 text-center">
+          <p className="px-1 text-[14px] leading-relaxed text-[#3d372f]">
+            {PRODUCT.description}
+          </p>
+        </div>
 
-      {/* Bundle sheet modal: opens when CTA is clicked */}
-      <BundleSheet open={bundleOpen} onClose={() => setBundleOpen(false)} initialTab="custom" />
+        {/* DETAILS SECTION */}
+        <div className="mx-auto w-full max-w-[400px] px-6 text-left">
+          <div className="mt-8">
+            <p className="text-base font-semibold text-[#1d1c19]">Details</p>
+            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-[#1d1c19]">
+              {PRODUCT.details.map((detail) => (
+                <li key={detail}>{detail}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* YOU MAY ALSO LIKE SECTION */}
+        <div className="mx-auto w-full max-w-[400px] px-6 text-center">
+          <div className="mt-12">
+            <p className="text-[22px] font-black uppercase tracking-[0.32em] text-[#1d1c19]">
+              You May Also Like
+            </p>
+            <div className="mt-6 grid w-full grid-cols-2 gap-x-5 gap-y-10 text-left">
+              {boughtTogetherItems.map((product) => (
+                <div key={`${product.name}-${product.image}`} className="flex flex-col">
+                  <div className="relative aspect-[4/5] w-full overflow-hidden border border-[#1d1c19] bg-white">
+                    <Image src={product.image} alt={product.name} fill className="object-cover" sizes="200px" />
+                  </div>
+                  <p className="mt-4 text-[11px] font-black uppercase tracking-[0.34em] text-[#1d1c19]">
+                    {product.name}
+                  </p>
+                  <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.34em] text-[#1d1c19]">
+                    ${product.price}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </main>
 
       <ProductPurchaseBar
         price={PRODUCT.price}
-        summaryLabel={selectedColor.name}
+        summaryLabel={selectedColor.name.toUpperCase()}
         sizeOptions={sizeOptions}
         selectedSize={selectedSize}
         onSelectSize={setSelectedSize}

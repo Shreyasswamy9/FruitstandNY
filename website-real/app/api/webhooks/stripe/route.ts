@@ -9,6 +9,19 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 export const runtime = 'nodejs'
 
+// Tax calculation helper - NY-based business
+function calculateCorrectTax(subtotal: number, shippingState?: string | null): number {
+  const TAX_RATES: Record<string, number> = {
+    'NY': 0.08875, // New York state tax rate
+    // Add other state rates as needed
+    // For now, only NY has tax since that's where the business is located
+  };
+  
+  // Only charge tax if shipping to NY (where we have nexus)
+  const rate = (shippingState && TAX_RATES[shippingState]) ? TAX_RATES[shippingState] : 0;
+  return Math.round(subtotal * rate * 100) / 100;
+}
+
 // Helper: safe JSON parse
 function safeJsonParse<T = unknown>(value: unknown, fallback: T): T {
   try {
@@ -254,11 +267,15 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
     }
 
     const orderNumber = metadata.order_number || generateOrderNumber();
+    
+    // Recalculate tax based on actual shipping state (NY-based business)
+    const shippingState = shippingDetails?.address?.state || guestData?.address?.state;
+    const correctTax = calculateCorrectTax(subtotal, shippingState);
 
     await createOrderFromPaymentIntent({
       orderNumber,
       subtotal,
-      tax: taxAmount,
+      tax: correctTax,
       shipping: shippingAmount,
       cartItems,
       guestData,

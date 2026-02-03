@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import BundleSheet from './BundleSheet'
 import Price from './Price'
 
 export interface Product {
@@ -14,8 +13,12 @@ export interface Product {
   image: string;
   hoverImage?: string;
   category?: string;
-  variantColor?: string; // For tee color variants
+  variantColor?: string; // For tee color variants or promotional copy
   variantSlug?: string; // slugified color for query param preselection
+  isBundle?: boolean;
+  bundleId?: string | null;
+  displayPrice?: string;
+  badgeLabel?: string;
 }
 
 // Editable product list for the homepage grid
@@ -30,6 +33,19 @@ export const products: Product[] = [
   { id: 2007, name: "Retro Track Suit", price: "$165", image: "/images/products/tracksuits/YORKVILLE BLACK AND WHITE COOKIES/BW.png", hoverImage: "/images/products/tracksuits/YORKVILLE BLACK AND WHITE COOKIES/TS1.png", category: "Tracksuits", variantColor: "Yorkville Black and White Cookies", variantSlug: "yorkville-black-and-white-cookies" },
   // Broadway Blueberry Jersey (merch slot before tees)
   { id: 1, name: "Broadway Blueberry Jersey", price: "$180", image: "/images/products/hockey Jersey/JN.png", hoverImage: "/images/products/hockey Jersey/JN1.png", category: "Jerseys", variantColor: "Black Ice", variantSlug: "hockey-jersey" },
+  {
+    id: 9001,
+    name: "Fruitstand Tee Bundle",
+    price: "$125",
+    displayPrice: "$106.25 bundle",
+    image: "/images/products/gala-tshirt/broadwaynoir/GN4.png",
+    hoverImage: "/images/products/mutsu-tshirt/suttonplacesnow/N4.png",
+    category: "Tops",
+    variantColor: "Curated trio · Save 15%",
+    isBundle: true,
+    bundleId: "tshirt-bundle",
+    badgeLabel: "Bundle",
+  },
   // New Tee lineup
   // Gala Tee – each color variant surfaced individually
   { id: 1011, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/broadwaynoir/GN4.png", hoverImage: "/images/products/gala-tshirt/broadwaynoir/GN5.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
@@ -221,13 +237,13 @@ interface ProductsGridProps {
   categoryFilter?: string | null;
   showBackgroundVideo?: boolean; // render the fixed background video (home only)
   collapseVariantsByName?: boolean;
+  onRequestBundleSheet?: (options?: { initialTab?: 'curated' | 'custom'; selectedId?: string | null }) => void;
 }
 
-export default function ProductsGrid({ categoryFilter, showBackgroundVideo = true, collapseVariantsByName = true }: ProductsGridProps = {}) {
+export default function ProductsGrid({ categoryFilter, showBackgroundVideo = true, collapseVariantsByName = true, onRequestBundleSheet }: ProductsGridProps = {}) {
   const router = useRouter();
   const [hovered, setHovered] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(true);
-  const [bundleOpen, setBundleOpen] = useState(false);
   // Track swatch selection per product name (id of the chosen variant)
   const [selectedVariantByName, setSelectedVariantByName] = useState<Record<string, number>>({});
   const CARD_RADIUS = 7; // subtle curvature for grid cards
@@ -240,12 +256,6 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (!isMobile) {
-      setBundleOpen(false);
-    }
-  }, [isMobile]);
   
   // Filter products based on category then collapse variants so only one card per product name
   const filteredProducts = useMemo(() => (
@@ -417,12 +427,25 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
       >
       {displayProducts.map((product, idx) => {
     const isActive = isMobile ? mobileHover === product.id : hovered === product.id;
+        const isBundleCard = Boolean(product.isBundle);
+        const openBundleSheet = () => {
+          if (!onRequestBundleSheet) {
+            return;
+          }
+          onRequestBundleSheet({
+            initialTab: 'custom',
+            selectedId: product.bundleId ?? null,
+          });
+        };
         // All variants for this product name (for swatches)
         const variants = collapseVariants ? (variantGroups[product.name] || [product]) : [product];
         const chosenId = selectedVariantByName[product.name];
         const activeVariant = collapseVariants && chosenId ? (variants.find(v => v.id === chosenId) || product) : product;
         // Custom link mapping for named PDPs
         const getProductLink = () => {
+          if (isBundleCard) {
+            return '#';
+          }
           const basePathMap: Record<string, string> = {
             'Empire Cordury hat': '/shop/empire-hat',
             'Empire Corduroy Hat': '/shop/empire-hat',
@@ -502,8 +525,14 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
                 const state = touchState.current[product.id];
                 const touchTime = state ? Date.now() - state.start : 0;
                 if (state && !state.moved && touchTime < 250) {
-                  router.push(getProductLink());
-                  lastNavigationRef.current = Date.now();
+                  if (isBundleCard) {
+                    setMobileHover(null);
+                    openBundleSheet();
+                    lastNavigationRef.current = Date.now();
+                  } else {
+                    router.push(getProductLink());
+                    lastNavigationRef.current = Date.now();
+                  }
                 } else {
                   setMobileHover(null);
                 }
@@ -520,7 +549,23 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
               if (Date.now() - lastNavigationRef.current < 350) {
                 return;
               }
+              if (isBundleCard) {
+                openBundleSheet();
+                lastNavigationRef.current = Date.now();
+                return;
+              }
               router.push(getProductLink());
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                if (isBundleCard) {
+                  openBundleSheet();
+                  lastNavigationRef.current = Date.now();
+                  return;
+                }
+                router.push(getProductLink());
+              }
             }}
             role="button"
             tabIndex={0}
@@ -532,6 +577,25 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
               overflow: 'hidden',
               borderRadius: CARD_RADIUS,
             }}>
+              {product.badgeLabel && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: 12,
+                    left: 12,
+                    backgroundColor: '#111827',
+                    color: '#ffffff',
+                    padding: '4px 10px',
+                    borderRadius: 999,
+                    fontSize: '0.65rem',
+                    fontWeight: 600,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {product.badgeLabel}
+                </span>
+              )}
               <Image
                 src={activeVariant.image}
                 alt={product.name}
@@ -647,15 +711,17 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
                     letterSpacing: '0.01em',
                     fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
                   }}>{/* price */}
-                      <Price price={product.price} />
+                    {product.displayPrice ? (
+                      <span>{product.displayPrice}</span>
+                    ) : (
+                      <Price price={product.price} salePrice={product.salePrice} />
+                    )}
                   </p>
                 </div>
             </div>
           </div>
         );
       })}
-      {/* Mobile bundle sheet */}
-      <BundleSheet open={bundleOpen} onClose={() => setBundleOpen(false)} />
     </div>
     </>
   );

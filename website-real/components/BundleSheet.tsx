@@ -128,10 +128,14 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
     }
   }, [open])
   useEffect(() => {
-    if (open) {
-      setSelectedId(prev => prev ?? (initialSelectedId ?? bundles[0]?.id ?? null))
-      setTab(initialTab ?? 'curated')
+    if (!open) return
+    const hasInitial = typeof initialSelectedId === 'string' && initialSelectedId.length > 0
+    if (hasInitial) {
+      setSelectedId(initialSelectedId)
+    } else {
+      setSelectedId(prev => prev ?? (bundles[0]?.id ?? null))
     }
+    setTab(initialTab ?? 'curated')
   }, [open, bundles, initialSelectedId, initialTab])
 
   useEffect(() => {

@@ -25,6 +25,11 @@ interface CartContextType {
   addBundleToCart: (opts: { bundleId: string; name: string; price: number; image: string; itemIds?: number[]; bundleSize?: string; quantity?: number }) => void;
   removeFromCart: (productId: string) => void;
   clearCart: () => void;
+  setLineQuantity: (lineId: string, quantity: number) => void;
+  isOverlayOpen: boolean;
+  openCartOverlay: () => void;
+  closeCartOverlay: () => void;
+  lastAddedItem: CartItem | null;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -126,6 +131,8 @@ const cartsEqual = (a: CartItem[], b: CartItem[]) => {
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+  const [lastAddedItem, setLastAddedItem] = useState<CartItem | null>(null);
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -216,6 +223,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [isLoaded]);
 
   const addToCart = (item: CartItem) => {
+    let addedLine: CartItem | null = null;
     setItems(prev => {
       // Normalize incoming item: ensure price is numeric and produce a stable lineId
       const normalized: CartItem = { ...item, price: Number(item.price) || 0 };
@@ -224,22 +232,29 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const existing = prev.find(i => i.lineId === lineId);
       if (existing) {
-        return prev.map(i =>
-          i.lineId === lineId
-            ? { ...i, quantity: i.quantity + normalized.quantity }
-            : i
-        );
+        const updated = { ...existing, quantity: existing.quantity + normalized.quantity };
+        addedLine = updated;
+        return prev.map(i => (i.lineId === lineId ? updated : i));
       }
+      addedLine = normalized;
       return [...prev, normalized];
     });
+
+    if (addedLine) {
+      setLastAddedItem(addedLine);
+    }
+    setIsOverlayOpen(true);
   };
 
   const addBundleToCart = ({ bundleId, name, price, image, itemIds = [], bundleSize, quantity = 1 }: { bundleId: string; name: string; price: number; image: string; itemIds?: number[]; bundleSize?: string; quantity?: number }) => {
     const productId = `bundle-${bundleId}`;
+    let addedLine: CartItem | null = null;
     setItems(prev => {
       const existing = prev.find(i => i.productId === productId);
       if (existing) {
-        return prev.map(i => i.productId === productId ? { ...i, quantity: i.quantity + quantity } : i);
+        const updated = { ...existing, quantity: existing.quantity + quantity };
+        addedLine = updated;
+        return prev.map(i => (i.productId === productId ? updated : i));
       }
       const lineId = deriveLineId({ productId, size: bundleSize, isBundle: true });
       const bundleItem: CartItem = {
@@ -254,17 +269,57 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         bundleSize,
         lineId,
       };
+      addedLine = bundleItem;
       return [...prev, bundleItem];
     });
+
+    if (addedLine) {
+      setLastAddedItem(addedLine);
+    }
+    setIsOverlayOpen(true);
   };
 
   const removeFromCart = (productId: string) => {
+    let remaining = 0;
     setItems(prev => {
       // If the provided id matches a lineId, remove only that line. Otherwise fall back to removing by productId for compatibility.
       const hasLine = prev.some(i => i.lineId === productId);
-      if (hasLine) return prev.filter(i => i.lineId !== productId);
-      return prev.filter(i => i.productId !== productId);
+      const next = hasLine ? prev.filter(i => i.lineId !== productId) : prev.filter(i => i.productId !== productId);
+      remaining = next.length;
+      return next;
     });
+
+    if (remaining === 0) {
+      setIsOverlayOpen(false);
+      setLastAddedItem(null);
+    }
+  };
+
+  const setLineQuantity = (lineId: string, quantity: number) => {
+    let removedAll = false;
+    let updatedLine: CartItem | null = null;
+    setItems(prev => {
+      const idx = prev.findIndex(i => (i.lineId ?? i.productId) === lineId);
+      if (idx === -1) return prev;
+      if (quantity <= 0) {
+        const next = prev.filter((_, index) => index !== idx);
+        removedAll = next.length === 0;
+        return next;
+      }
+      const target = prev[idx];
+      const updated: CartItem = { ...target, quantity };
+      const next = [...prev];
+      next[idx] = updated;
+      updatedLine = updated;
+      return next;
+    });
+
+    if (removedAll) {
+      setIsOverlayOpen(false);
+      setLastAddedItem(null);
+    } else if (updatedLine) {
+      setLastAddedItem(updatedLine);
+    }
   };
 
   const clearCart = () => {
@@ -273,10 +328,28 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (typeof window !== 'undefined') {
       localStorage.removeItem('cart');
     }
+    setIsOverlayOpen(false);
+    setLastAddedItem(null);
   };
 
+  const openCartOverlay = () => setIsOverlayOpen(true);
+  const closeCartOverlay = () => setIsOverlayOpen(false);
+
   return (
-    <CartContext.Provider value={{ items, addToCart, addBundleToCart, removeFromCart, clearCart }}>
+    <CartContext.Provider
+      value={{
+        items,
+        addToCart,
+        addBundleToCart,
+        removeFromCart,
+        clearCart,
+        setLineQuantity,
+        isOverlayOpen,
+        openCartOverlay,
+        closeCartOverlay,
+        lastAddedItem,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );

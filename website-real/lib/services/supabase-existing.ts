@@ -537,7 +537,12 @@ export class SupabaseOrderService {
     const guestData = safeJsonParse<GuestPayload>(metadata.guest ?? '{}', {});
     const customerData = safeJsonParse<CustomerPayload>(metadata.customer ?? '{}', {});
     const shippingAmount = Number(metadata.shipping ?? 0);
-    const taxAmount = Number(metadata.tax ?? 0);
+    
+    // Use Stripe's calculated tax instead of metadata tax
+    const taxAmount = session.total_details?.amount_tax 
+      ? Number(session.total_details.amount_tax) / 100 
+      : Number(metadata.tax ?? 0);
+    
     const orderNumber = (metadata.order_number as string) || generateOrderNumber();
 
     // Recalculate subtotal

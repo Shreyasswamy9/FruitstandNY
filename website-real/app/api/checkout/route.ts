@@ -192,6 +192,9 @@ export async function POST(request: NextRequest) {
       mode: 'payment',
       success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/cart`,
+      automatic_tax: {
+        enabled: true,
+      },
       metadata: {
         // Required by your webhook to create the order after payment
         cart: JSON.stringify(normalizedItems || []),
@@ -229,9 +232,10 @@ export async function POST(request: NextRequest) {
     // 8. IMPORTANT: DO NOT create or update any Supabase order here.
     // All order persistence must happen in the webhook on checkout.session.completed.
 
-    // 9. Return only the Stripe session id
+    // 9. Return the Stripe session id and URL for redirect
     return NextResponse.json({
-      sessionId: session.id
+      sessionId: session.id,
+      url: session.url
     });
 
   } catch (error) {

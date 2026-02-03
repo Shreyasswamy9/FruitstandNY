@@ -6,6 +6,8 @@ import { ensurePosthog, capturePageview } from "../instrumentation.client"
 import LogoButton from "./LogoButton"
 import StaggeredMenu from "./StagerredMenu"
 import SiteFooter from "./SiteFooter"
+import CartBar from "./CartBar"
+import CartOverlay from "./CartOverlay"
 
 // Context to control logo visibility (for intro)
 export const LogoVisibilityContext = createContext<{ hideLogo: boolean; setHideLogo: (v: boolean) => void }>({ hideLogo: false, setHideLogo: () => {} })
@@ -85,6 +87,8 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
       <LogoButton />
       
       {children}
+      <CartOverlay />
+        <CartBar />
       <SiteFooter />
       
       {/* Global StaggeredMenu - appears on all pages */}

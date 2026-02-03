@@ -1,10 +1,10 @@
 "use client";
 import React, { useState, useCallback, useMemo } from "react";
+import Image from "next/image";
 import SizeGuide from "@/components/SizeGuide";
-import FrequentlyBoughtTogether, { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
+import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import { useCart } from "../../../components/CartContext";
-import ColorPicker, { type ColorOption } from '@/components/ColorPicker';
-import ProductImageGallery from "@/components/ProductImageGallery";
+import { type ColorOption } from '@/components/ColorPicker';
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 
@@ -52,6 +52,7 @@ export default function FirstEditionTeePage() {
   const handleImageChange = useCallback((image: string) => {
     setSelectedImage(image);
   }, []);
+  
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
@@ -73,70 +74,128 @@ export default function FirstEditionTeePage() {
   );
 
   const purchaseColorOptions: PurchaseColorOption[] = useMemo(
-    () => colorOptions.map((option) => ({ value: option.slug ?? option.name, label: option.name, swatch: option.color })),
+    () => colorOptions.map((option) => ({ value: option.slug ?? option.name, label: option.name, swatch: option.color, border: option.border })),
     [colorOptions]
   );
 
   return (
     <div>
       <ProductPageBrandHeader />
-      <div
-        className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto py-12 px-4"
-        style={{ paddingTop: 96, paddingBottom: 64 }}
-      >
-        <ProductImageGallery
-          productName={PRODUCT.name}
-          options={colorOptions}
-          selectedOption={selectedColor}
-          selectedImage={selectedImage}
-          onOptionChange={(option, ctx) => handleSelectColor(option as FirstEditionColorOption, ctx)}
-          onImageChange={handleImageChange}
-          className="md:w-1/2"
-        />
-        <div className="md:w-1/2 flex flex-col justify-start">
-          <h1 className="text-3xl font-bold mb-2">{PRODUCT.name}</h1>
-          <div className="text-2xl font-semibold mb-6">${PRODUCT.price}</div>
-          {/* Color Picker */}
-          <ColorPicker
-            options={colorOptions}
-            selectedName={selectedColor.name}
-            onSelect={(opt) => {
-              const match = colorOptions.find(c => c.name === opt.name) ?? colorOptions[0];
-              handleSelectColor(match);
-            }}
-          />
-          <div className="mb-4 space-y-4">
-            <p className="text-lg text-gray-700 leading-relaxed">{PRODUCT.description}</p>
-            {PRODUCT.details && (
-              <div>
-                <span className="text-xs uppercase tracking-[0.2em] text-gray-500">Details</span>
-                <ul className="mt-2 list-disc list-inside text-gray-700 text-sm sm:text-base space-y-1">
-                  {PRODUCT.details.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+      
+      <main className="bg-[#fbf5ed] pb-[210px] pt-12">
+        {/* HERO SECTION - Top 75% */}
+        <div className="mx-auto w-full max-w-[400px] px-6 text-center" style={{ minHeight: '75vh' }}>
+          {/* IMAGE */}
+          <div className="relative mx-auto aspect-[4/5] w-full">
+            <Image
+              src={selectedImage}
+              alt={`${selectedColor.name} ${PRODUCT.name}`}
+              fill
+              sizes="(max-width: 768px) 92vw, 400px"
+              className="object-contain"
+              priority
+            />
           </div>
 
-        </div>
-      </div>
+          {/* TITLE / PRICE - Single Line */}
+          <div className="mt-8 flex flex-col items-center">
+            <h1 className="text-[22px] font-black uppercase tracking-[0.08em] leading-tight text-[#1d1c19]">
+              First Edition T - {selectedColor.name}
+            </h1>
 
-      <FrequentlyBoughtTogether
-        products={boughtTogetherItems}
-        onAddToCart={(item) => {
-          const fallbackSize = selectedSize ?? PRODUCT.sizes[2];
-          addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: fallbackSize });
-        }}
-        onAddAllToCart={() => {
-          const fallbackSize = selectedSize ?? PRODUCT.sizes[2];
-          boughtTogetherItems.forEach((item) => addToCart({ productId: item.id, name: item.name, price: item.price, image: item.image, quantity: 1, size: fallbackSize }));
-        }}
-      />
+            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+          </div>
+
+          {/* SWATCHES */}
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+            {colorOptions.map((option) => {
+              const isActive = option.slug === selectedColor.slug;
+
+              return (
+                <button
+                  key={option.slug}
+                  type="button"
+                  onClick={() => handleSelectColor(option)}
+                  aria-label={option.name}
+                  className={[
+                    "appearance-none bg-transparent [-webkit-tap-highlight-color:transparent]",
+                    "h-7 w-7 rounded-full overflow-hidden p-[2px]",
+                    "transition-transform duration-150 hover:-translate-y-[1px]",
+                    "focus:outline-none focus:ring-2 focus:ring-[#1d1c19]/35",
+                    isActive ? "ring-2 ring-[#1d1c19]" : "ring-1 ring-[#cfc2b3]",
+                  ].join(" ")}
+                >
+                  <span
+                    aria-hidden
+                    className="block h-full w-full rounded-full"
+                    style={{
+                      backgroundColor: option.color,
+                      border: option.border ? `1px solid ${option.border}` : undefined,
+                    }}
+                  />
+                </button>
+              );
+            })}
+          </div>
+
+          {/* SIZE GUIDE */}
+          <div className="mt-4 text-[12px] font-semibold uppercase tracking-[0.34em] text-[#1d1c19]">
+            <SizeGuide
+              productSlug="first-edition-tee"
+              imagePath="/images/size-guides/Size Guide/First Edition Tee Table.png"
+              buttonLabel="SIZE GUIDE"
+              className="text-[12px] font-semibold uppercase tracking-[0.34em]"
+            />
+          </div>
+        </div>
+
+        {/* DESCRIPTION SECTION */}
+        <div className="mx-auto w-full max-w-[400px] px-6 text-center">
+          <p className="px-1 text-[14px] leading-relaxed text-[#3d372f]">
+            {PRODUCT.description}
+          </p>
+        </div>
+
+        {/* DETAILS SECTION */}
+        <div className="mx-auto w-full max-w-[400px] px-6 text-left">
+          <div className="mt-8">
+            <p className="text-base font-semibold text-[#1d1c19]">Details</p>
+            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-[#1d1c19]">
+              {PRODUCT.details.map((detail) => (
+                <li key={detail}>{detail}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* YOU MAY ALSO LIKE SECTION */}
+        <div className="mx-auto w-full max-w-[400px] px-6 text-center">
+          <div className="mt-12">
+            <p className="text-[22px] font-black uppercase tracking-[0.32em] text-[#1d1c19]">
+              You May Also Like
+            </p>
+            <div className="mt-6 grid w-full grid-cols-2 gap-x-5 gap-y-10 text-left">
+              {boughtTogetherItems.map((product) => (
+                <div key={`${product.name}-${product.image}`} className="flex flex-col">
+                  <div className="relative aspect-[4/5] w-full overflow-hidden border border-[#1d1c19] bg-white">
+                    <Image src={product.image} alt={product.name} fill className="object-cover" sizes="200px" />
+                  </div>
+                  <p className="mt-4 text-[11px] font-black uppercase tracking-[0.34em] text-[#1d1c19]">
+                    {product.name}
+                  </p>
+                  <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.34em] text-[#1d1c19]">
+                    ${product.price}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </main>
 
       <ProductPurchaseBar
         price={PRODUCT.price}
-        summaryLabel={selectedColor.name}
+        summaryLabel={selectedColor.name.toUpperCase()}
         sizeOptions={sizeOptions}
         selectedSize={selectedSize}
         onSelectSize={setSelectedSize}
