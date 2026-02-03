@@ -14,10 +14,10 @@ interface EditorialPhoto {
 }
 
 const editorialPhotos: EditorialPhoto[] = [
-  { id: "1", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/images/editorial/FRUITSTANDEDITSr1-11.JPG", location: "LOWER EAST SIDE, MANHATTAN" },
-  { id: "2", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/images/editorial/FRUITSTANDEDITSr1-15.JPG", location: "CHINATOWN, MANHATTAN" },
-  { id: "3", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/images/editorial/FRUITSTANDEDITSr1-155.JPG", location: "WILLIAMSBURG, BROOKLYN" },
-  { id: "4", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/images/editorial/FRUITSTANDEDITSr1-21.JPG", location: "DUMBO, BROOKLYN" },
+  { id: "1", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY@main/website-real/public/images/editorial/FRUITSTANDEDITSr1-11.JPG", location: "LOWER EAST SIDE, MANHATTAN" },
+  { id: "2", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY@main/website-real/public/images/editorial/FRUITSTANDEDITSr1-15.JPG", location: "CHINATOWN, MANHATTAN" },
+  { id: "3", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY@main/website-real/public/images/editorial/FRUITSTANDEDITSr1-155.JPG", location: "WILLIAMSBURG, BROOKLYN" },
+  { id: "4", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY@main/website-real/public/images/editorial/FRUITSTANDEDITSr1-21.JPG", location: "DUMBO, BROOKLYN" },
 ]
 
 const newItems = [
