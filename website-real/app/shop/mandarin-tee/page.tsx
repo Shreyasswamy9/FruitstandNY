@@ -159,12 +159,6 @@ export default function MandarinTeePage() {
         onAddToCart={handleAddToCart}
         addDisabled={!selectedSize || Boolean(selectedSizeSoldOut)}
         addDisabledReason={selectedSizeSoldOut ? "Sold out" : undefined}
-        sizeGuideTrigger={
-          <SizeGuide
-            productSlug="mandarin-tee"
-            imagePath="/images/size-guides/Size Guide/Mandarin Tee Table.png"
-          />
-        }
       />
     </div>
   );

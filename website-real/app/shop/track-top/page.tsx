@@ -229,7 +229,6 @@ export default function TrackTopPage() {
           }
         }}
         onAddToCart={handleAddToCart}
-        sizeGuideTrigger={<SizeGuide productSlug="track-top" imagePath="/images/size-guides/Size Guide/Track Jacket.png" />}
       />
     </div>
   );

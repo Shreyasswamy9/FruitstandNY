@@ -256,7 +256,6 @@ export default function FujiTshirtPage() {
           }
         }}
         onAddToCart={handleAddToCart}
-        sizeGuideTrigger={<SizeGuide productSlug="fuji-tshirt" imagePath="/images/size-guides/Size Guide/Fuji Table.png" />}
       />
     </div>
   );

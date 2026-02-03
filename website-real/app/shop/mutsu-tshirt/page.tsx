@@ -232,7 +232,6 @@ export default function MutsuTshirtPage() {
           }
         }}
         onAddToCart={handleAddToCart}
-        sizeGuideTrigger={<SizeGuide productSlug="mutsu-tshirt" imagePath="/images/size-guides/Size Guide/Mutsu Table.png" />}
       />
     </div>
   );

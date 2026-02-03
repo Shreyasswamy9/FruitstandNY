@@ -208,7 +208,6 @@ export default function FirstEditionTeePage() {
           }
         }}
         onAddToCart={handleAddToCart}
-        sizeGuideTrigger={<SizeGuide productSlug="first-edition-tee" imagePath="/images/size-guides/Size Guide/First Edition Tee Table.png" />}
       />
     </div>
   );

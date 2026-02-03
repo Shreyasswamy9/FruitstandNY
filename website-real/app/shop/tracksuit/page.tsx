@@ -290,7 +290,6 @@ export default function TracksuitPage() {
           }
         }}
         onAddToCart={handleAddToCart}
-        sizeGuideTrigger={<SizeGuide productSlug="tracksuit" imagePath="/images/size-guides/Size Guide/Track Jacket.png" />}
       />
     </div>
   );

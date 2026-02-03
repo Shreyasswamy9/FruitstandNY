@@ -219,7 +219,6 @@ export default function HockeyJerseyPage() {
           }
         }}
         onAddToCart={handleAddToCart}
-        sizeGuideTrigger={<SizeGuide productSlug="hockey-jersey" imagePath="/images/size-guides/Size Guide/Hockey Jersey Table.png" />}
       />
     </div>
   );

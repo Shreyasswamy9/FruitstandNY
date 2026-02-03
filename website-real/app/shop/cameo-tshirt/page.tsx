@@ -233,7 +233,6 @@ export default function CameoTshirtPage() {
           }
         }}
         onAddToCart={handleAddToCart}
-        sizeGuideTrigger={<SizeGuide productSlug="cameo-tshirt" imagePath="/images/size-guides/Size Guide/Cameo Table.png" />}
       />
     </div>
   );

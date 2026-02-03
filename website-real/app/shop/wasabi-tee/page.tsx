@@ -141,7 +141,6 @@ export default function WasabiTeePage() {
         selectedSize={selectedSize}
         onSelectSize={setSelectedSize}
         onAddToCart={handleAddToCart}
-        sizeGuideTrigger={<SizeGuide productSlug="wasabi-tee" imagePath="/images/size-guides/Size Guide/Wabasabi Tee Table.png" />}
       />
 
     </div>

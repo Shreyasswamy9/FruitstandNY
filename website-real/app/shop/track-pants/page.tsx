@@ -229,7 +229,6 @@ export default function TrackPantsPage() {
           }
         }}
         onAddToCart={handleAddToCart}
-        sizeGuideTrigger={<SizeGuide productSlug="track-pants" imagePath="/images/size-guides/Size Guide/Track Pant Table.png" />}
       />
     </div>
   );
