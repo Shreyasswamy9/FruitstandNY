@@ -64,16 +64,6 @@ export default function CartOverlay() {
   const closeTweenRef = useRef<gsap.core.Tween | null>(null);
 
   useEffect(() => setMounted(true), []);
-    closeCartOverlay,
-    lastAddedItem,
-    setLineQuantity,
-    removeFromCart,
-    addToCart,
-  } = useCart();
-  const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
 
   // Initialize GSAP properties
   useLayoutEffect(() => {
