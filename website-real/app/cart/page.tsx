@@ -717,12 +717,17 @@ export default function CartPage() {
                               paymentMethodOrder: ['apple_pay', 'google_pay', 'amazon_pay', 'link'],
                             }}
                           />
+                          <div className="flex items-center gap-3 text-gray-300 text-[11px] uppercase tracking-[0.35em]">
+                            <span className="h-px bg-gray-200 flex-1" />
+                            <span>— OR —</span>
+                            <span className="h-px bg-gray-200 flex-1" />
+                          </div>
                           <button
                             type="button"
-                            onClick={() => setShowPaymentSection(true)}
-                            className="w-full py-3 border border-gray-300 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+                            onClick={() => router.push('/cart/checkout-redirect')}
+                            className="w-full py-3 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors"
                           >
-                            Other payment methods
+                            Continue to Checkout — ${total.toFixed(2)}
                           </button>
                         </div>
                       </Elements>
