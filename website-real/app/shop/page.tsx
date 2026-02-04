@@ -97,23 +97,6 @@ export default function ShopPage() {
         </div>
       </div>
 
-      {/* Shop CTA: Pick a bundle or build your own */}
-      <div className="px-4 sm:px-6 lg:px-8 -mt-6 mb-3" style={{ position: 'relative', zIndex: 2 }}>
-        <div className="max-w-4xl mx-auto">
-          <button
-            onClick={() => openBundleSheet({ tab: 'curated', selectedId: null })}
-            className="glass-banner w-full relative rounded-2xl p-3 sm:p-4 font-semibold active:scale-[0.99]"
-            aria-label="Pick a bundle or build your own"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-base sm:text-lg">Pick a bundle or build your own</span>
-              <span className="banner-pill text-[11px] sm:text-xs font-medium px-2 py-1 rounded-full">Save more together</span>
-            </div>
-            <span className="block text-[11px] sm:text-xs mt-1">Curated combos or your perfect mix - tap to start</span>
-          </button>
-        </div>
-      </div>
-
       {/* Products Grid */}
       <motion.div
         key={activeCategory || 'all'}

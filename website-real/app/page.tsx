@@ -16,10 +16,10 @@ interface EditorialPhoto {
 }
 
 const editorialPhotos: EditorialPhoto[] = [
-  { id: "1", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY@main/website-real/public/images/editorial/FRUITSTANDEDITSr1-11.JPG", location: "LOWER EAST SIDE, MANHATTAN" },
-  { id: "2", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY@main/website-real/public/images/editorial/FRUITSTANDEDITSr1-15.JPG", location: "CHINATOWN, MANHATTAN" },
-  { id: "3", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY@main/website-real/public/images/editorial/FRUITSTANDEDITSr1-155.JPG", location: "WILLIAMSBURG, BROOKLYN" },
-  { id: "4", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY@main/website-real/public/images/editorial/FRUITSTANDEDITSr1-21.JPG", location: "DUMBO, BROOKLYN" },
+  { id: "1", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY@main/website-real/public/images/editorial/FRUITSTANDEDITSr1-11.JPG", location: "LOWER EAST SIDE" },
+  { id: "2", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY@main/website-real/public/images/editorial/FRUITSTANDEDITSr1-15.JPG", location: "CHINATOWN" },
+  { id: "3", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY@main/website-real/public/images/editorial/FRUITSTANDEDITSr1-155.JPG", location: "WILLIAMSBURG" },
+  { id: "4", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY@main/website-real/public/images/editorial/FRUITSTANDEDITSr1-21.JPG", location: "DUMBO" },
 ]
 
 const newItems = [
@@ -409,9 +409,6 @@ export default function Home() {
         {/* Editorial Photos Section */}
         <section className="px-0 md:px-8 py-12 md:py-20">
           <div className="mx-auto w-full max-w-[1600px]">
-            <h2 className="mx-4 text-sm font-semibold uppercase tracking-[0.28em] text-[#181818] mb-8 md:mx-0">
-              Editorial
-            </h2>
 
             <div className="grid grid-cols-1 gap-6 px-0 md:grid-cols-4 md:gap-4">
               {editorialPhotos.map((photo) => (

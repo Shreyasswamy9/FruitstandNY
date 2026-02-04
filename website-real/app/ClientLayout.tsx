@@ -54,7 +54,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           pointer-events: auto !important;
           position: absolute !important;
           z-index: 10003 !important;
-          top: 10px !important;
+          top: 4px !important;
+          left: 0 !important;
           padding: 0 18px !important;
         }
 

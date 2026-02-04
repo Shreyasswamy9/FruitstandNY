@@ -499,21 +499,21 @@ export default function BundleSheet({ open, onClose, bundles = defaultBundles, p
             <div className="sticky bottom-0 bg-white border-t border-gray-200 px-5 py-3 rounded-t-2xl">
               {tab === 'curated' ? (
                 <div className="flex gap-3">
+                  <button onClick={onClose} className="px-4 py-3 rounded-xl border border-gray-300 text-gray-700">Close</button>
                   <button
                     onClick={() => { const b = bundles.find(x => x.id === selectedId) || bundles[0]; if (b) addCuratedToCart(b) }}
                     disabled={adding || !bundles.length}
                     className={`flex-1 py-3 rounded-xl text-white font-medium shadow-md active:opacity-90 ${adding ? 'bg-green-600' : 'bg-black'}`}
                   >{adding ? 'Added!' : 'Add selected bundle'}</button>
-                  <button onClick={onClose} className="px-4 py-3 rounded-xl border border-gray-300 text-gray-700">Close</button>
                 </div>
               ) : (
                 <div className="flex gap-3 items-center">
+                  <button onClick={onClose} className="px-4 py-3 rounded-xl border border-gray-300 text-gray-700">Close</button>
                   <button
                     onClick={addCustomToCart}
                     disabled={!canAddCustom || adding}
                     className={`flex-1 py-3 rounded-xl text-white font-medium shadow-md ${canAddCustom && !adding ? 'bg-black' : 'bg-gray-400'}`}
                   >{adding ? 'Adding…' : `Add ${comboSize} tee bundle – ${formatPrice(CUSTOM_BUNDLE_PRICES[comboSize])}`}</button>
-                  <button onClick={onClose} className="px-4 py-3 rounded-xl border border-gray-300 text-gray-700">Close</button>
                 </div>
               )}
             </div>

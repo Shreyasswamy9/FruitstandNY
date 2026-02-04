@@ -26,9 +26,9 @@ export default function LogoButton() {
       title="FRUITSTAND®"
       onClick={handleLogoClick}
       style={{
-        position: 'fixed',
-  top: '-5px',
-        left: '9px',
+          position: 'fixed',
+          top: '-15px',
+        left: '1px',
         zIndex: 10010,
         display: 'inline-flex',
         alignItems: 'flex-start',
