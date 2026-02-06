@@ -57,7 +57,7 @@ export default function EcruHatPage() {
         {/* HERO SECTION - Top 75% */}
         <div className="mx-auto w-full max-w-[1200px] px-6 text-center lg:px-12 lg:text-left lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-start lg:gap-12" style={{ minHeight: '75vh' }}>
           {/* IMAGE */}
-          <div className="relative mx-auto aspect-[4/5] w-full lg:mx-0 lg:max-w-[520px] lg:row-span-2">
+          <div className="relative mx-auto aspect-[4/5] w-full lg:mx-0 lg:max-w-[520px]">
             <img
               src={selectedImage}
               alt={PRODUCT.name}
@@ -65,32 +65,33 @@ export default function EcruHatPage() {
             />
           </div>
 
-          {/* TITLE / PRICE / COLORWAY - Single Line */}
-          <div className="mt-8 flex flex-col items-center lg:col-start-2 lg:items-start lg:mt-6">
-            <h1 className="text-[22px] font-black uppercase tracking-[0.08em] leading-tight text-[#1d1c19]">
-              Ecru Hat
-            </h1>
+          {/* RIGHT COLUMN - Table-like Grid */}
+          <div className="mt-8 flex flex-col items-stretch border border-[#1d1c19] bg-[#fbf5ed] lg:col-start-2 lg:mt-0">
+            {/* TITLE & PRICE */}
+            <div className="p-6 border-b border-[#1d1c19] text-center lg:text-left">
+              <h1 className="text-[22px] font-black uppercase tracking-[0.08em] leading-tight text-[#1d1c19]">
+                {PRODUCT.name}
+              </h1>
 
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
-          </div>
-        </div>
+              <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            </div>
 
-        {/* DESCRIPTION SECTION */}
-        <div className="mx-auto w-full max-w-[900px] px-6 text-center lg:px-12 lg:text-left">
-          <p className="px-1 text-[14px] leading-relaxed text-[#3d372f]">
-            {PRODUCT.description}
-          </p>
-        </div>
+            {/* DESCRIPTION */}
+            <div className="p-6 border-b border-[#1d1c19] text-center lg:text-left">
+              <p className="text-[14px] leading-relaxed text-[#3d372f]">
+                {PRODUCT.description}
+              </p>
+            </div>
 
-        {/* DETAILS SECTION */}
-        <div className="mx-auto w-full max-w-[900px] px-6 text-left lg:px-12">
-          <div className="mt-8">
-            <p className="text-base font-semibold text-[#1d1c19]">Details</p>
-            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-[#1d1c19]">
-              {PRODUCT.details.map((detail) => (
-                <li key={detail}>{detail}</li>
-              ))}
-            </ul>
+            {/* DETAILS LIST */}
+            <div className="p-6 text-left">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-[#1d1c19]">Details</p>
+              <ul className="mt-4 list-disc space-y-2 pl-5 text-[13px] text-[#1d1c19]">
+                {PRODUCT.details.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
 

@@ -109,11 +109,23 @@ export default function ProductPurchaseBar({
             className="relative flex overflow-hidden border-t border-white bg-black text-white shadow-[0_-14px_40px_rgba(0,0,0,0.35)]"
           >
             <div className="flex h-full w-full items-stretch">
-              <div className="relative flex flex-1 items-center justify-between border-r border-white px-3 py-4">
-                <span className="max-w-[120px] truncate text-[13px] font-semibold uppercase tracking-[0.18em]">
-                  {colorLabel}
-                </span>
-                <span className="pointer-events-none text-sm text-white ml-1">▼</span>
+              {/* Color Section - Black Background, White Text, Angled End */}
+              <div
+                className="relative flex flex-1 items-center justify-between px-6 py-4 bg-black text-white"
+                style={{
+                  clipPath: 'polygon(0 0, 100% 0, 92% 100%, 0% 100%)',
+                  marginRight: '-4%'
+                }}
+              >
+                <div className="flex items-center justify-between w-full pr-4">
+                  <span
+                    className="max-w-[120px] truncate text-[13px] uppercase tracking-[0.18em]"
+                    style={{ fontFamily: 'var(--font-avenir-medium)', fontWeight: 500 }}
+                  >
+                    {colorLabel}
+                  </span>
+                  <span className="pointer-events-none text-sm text-white ml-2">▼</span>
+                </div>
                 <select
                   aria-label="Select color"
                   value={selectedColor ?? ""}
@@ -125,20 +137,37 @@ export default function ProductPurchaseBar({
                   }}
                   className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
                 >
-                  {!selectedColor && <option value="">Select</option>}
+                  {!selectedColor && (
+                    <option value="" className="text-black bg-white">
+                      Select Color
+                    </option>
+                  )}
                   {colorOptions?.map((option) => (
-                    <option key={option.value} value={option.value}>
+                    <option key={option.value} value={option.value} className="text-black bg-white">
                       {option.label}
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className="relative flex flex-1 items-center justify-between border-r border-white px-3 py-4">
-                <span className="max-w-[120px] truncate text-[13px] font-semibold uppercase tracking-[0.18em]">
-                  {sizeLabel}
-                </span>
-                <span className="pointer-events-none text-sm text-white ml-1">▼</span>
+              {/* Size Section - White Background, Black Text, Angled Both Sides */}
+              <div
+                className="relative flex flex-1 items-center justify-between px-6 py-4 bg-white text-black"
+                style={{
+                  clipPath: 'polygon(8% 0, 100% 0, 92% 100%, 0% 100%)',
+                  marginRight: '-4%',
+                  marginLeft: '0'
+                }}
+              >
+                <div className="flex items-center justify-between w-full px-2">
+                  <span
+                    className="max-w-[120px] truncate text-[13px] uppercase tracking-[0.18em]"
+                    style={{ fontFamily: 'var(--font-avenir-medium)', fontWeight: 500 }}
+                  >
+                    {sizeLabel}
+                  </span>
+                  <span className="pointer-events-none text-sm text-black ml-2">▼</span>
+                </div>
                 <select
                   aria-label="Select size"
                   value={selectedSize ?? ""}
@@ -150,30 +179,40 @@ export default function ProductPurchaseBar({
                   }}
                   className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
                 >
-                  {!selectedSize && <option value="">Select</option>}
+                  {!selectedSize && (
+                    <option value="" className="text-black bg-white">
+                      Select Size
+                    </option>
+                  )}
                   {sizeOptions.map((option) => (
-                    <option key={option.value} value={option.value} disabled={option.soldOut}>
+                    <option key={option.value} value={option.value} disabled={option.soldOut} className="text-black bg-white">
                       {option.label ?? option.value}
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className="relative flex flex-1 items-stretch bg-white text-black">
+              {/* Add to Cart Section - White Background, Black Text, Angled Start */}
+              <div
+                className="relative flex flex-1 items-stretch bg-white text-black"
+                style={{
+                  clipPath: 'polygon(8% 0, 100% 0, 100% 100%, 0% 100%)'
+                }}
+              >
                 <button
                   type="button"
                   onClick={onAddToCart}
                   disabled={addButtonDisabled || isAdding}
-                  className={`relative z-10 flex h-full w-full items-center justify-center px-3 text-[13px] font-semibold uppercase tracking-[0.18em] transition ${
-                    addButtonDisabled || isAdding ? "opacity-50" : "hover:bg-[#f4f4f4]"
-                  }`}
+                  className={`relative z-10 flex h-full w-full items-center justify-center px-3 text-[13px] uppercase tracking-[0.18em] transition ${addButtonDisabled || isAdding ? "opacity-50" : "hover:bg-[#f4f4f4]"
+                    }`}
+                  style={{ fontFamily: 'var(--font-avenir-medium)', fontWeight: 500 }}
                   title={disableReason}
                 >
                   {isAdding
                     ? "ADDING"
                     : addButtonDisabled && disableReason
-                    ? disableReason.toUpperCase()
-                    : addToCartLabel.toUpperCase()}
+                      ? disableReason.toUpperCase()
+                      : addToCartLabel.toUpperCase()}
                 </button>
               </div>
             </div>

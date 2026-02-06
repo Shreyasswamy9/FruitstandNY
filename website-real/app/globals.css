@@ -1,4 +1,28 @@
 @font-face {
+  font-family: 'Avenir Black';
+  src: url('/fonts/Avenir LT 55 Roman Bold.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Avenir Medium';
+  src: url('/fonts/Avenir LT 55 Roman Bold.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Avenir Roman';
+  src: url('/fonts/Avenir LT 55 Roman Bold.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
   font-family: 'Fruitstand Light';
   src: url('/fonts/Fruitstand Light.ttf') format('truetype');
   font-weight: normal;
@@ -6,17 +30,16 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: 'Avenir LT 55';
-  src: url('/fonts/Avenir LT 55 Roman Bold.ttf') format('truetype');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
+:root {
+  --font-avenir-black: 'Avenir Black', sans-serif;
+  --font-avenir-medium: 'Avenir Medium', sans-serif;
+  --font-avenir-roman: 'Avenir Roman', sans-serif;
 }
 
 html, body, * {
-  font-family: 'Avenir LT 55', 'Fruitstand Light', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+  font-family: var(--font-avenir-roman), 'Fruitstand Light', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
+
 html, body {
   background-color: #fbf6f0;
 }

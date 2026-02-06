@@ -179,7 +179,7 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
             />
           </div>
         </div>
-        
+
         <div className="flex items-center gap-3 text-gray-300 text-[11px] uppercase tracking-[0.35em]">
           <span className="h-px bg-gray-200 flex-1" />
           <span>— OR —</span>
@@ -221,17 +221,25 @@ export default function CartPage() {
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [user, setUser] = useState<User | null>(null);
   const [showPaymentSection, setShowPaymentSection] = useState(false);
+
+  // Tax estimation state
+  const [postalCode, setPostalCode] = useState("");
+  const [selectedState, setSelectedState] = useState("");
+  const [estimatedTax, setEstimatedTax] = useState(0);
+  const [isCalculatingTax, setIsCalculatingTax] = useState(false);
+  const [taxError, setTaxError] = useState<string | null>(null);
+
   const router = useRouter();
 
   // Check auth state
   useEffect(() => {
     let mounted = true
-    ;(async () => {
-      const { data } = await supabase.auth.getUser()
-      if (!mounted) return
-      setUser(data.user ?? null)
-      setIsSignedIn(!!data.user)
-    })()
+      ; (async () => {
+        const { data } = await supabase.auth.getUser()
+        if (!mounted) return
+        setUser(data.user ?? null)
+        setIsSignedIn(!!data.user)
+      })()
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       const u = session?.user ?? null
@@ -305,11 +313,71 @@ export default function CartPage() {
   // Calculate totals
   const subtotal = getCartTotal();
   const shipping = subtotal >= 120 ? 0 : 8.99;
-  
+
   // Tax will be calculated at checkout based on shipping address
-  // Don't include tax in cart total to avoid showing incorrect amount
-  const tax = 0; // Tax calculated at checkout
-  const total = subtotal + shipping; // Total before tax
+  // Show estimated tax if zip and state are provided
+  const combinedTotal = subtotal + shipping + estimatedTax;
+
+  // Handle tax estimation
+  useEffect(() => {
+    const fetchTaxEstimate = async () => {
+      if (postalCode.length >= 5 && selectedState && subtotal > 0) {
+        setIsCalculatingTax(true);
+        setTaxError(null);
+        try {
+          const response = await fetch('/api/tax', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              postalCode,
+              state: selectedState,
+              subtotal,
+              country: 'US'
+            }),
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to calculate tax');
+          }
+
+          const result = await response.json();
+          setEstimatedTax(result.taxAmount);
+        } catch (err) {
+          console.error('Tax estimation error:', err);
+          setTaxError(err instanceof Error ? err.message : 'Error calculating tax');
+          setEstimatedTax(0);
+        } finally {
+          setIsCalculatingTax(false);
+        }
+      } else {
+        setEstimatedTax(0);
+      }
+    };
+
+    const timer = setTimeout(fetchTaxEstimate, 500);
+    return () => clearTimeout(timer);
+  }, [postalCode, selectedState, subtotal]);
+
+  const US_STATES = [
+    { code: 'AL', name: 'Alabama' }, { code: 'AK', name: 'Alaska' }, { code: 'AZ', name: 'Arizona' },
+    { code: 'AR', name: 'Arkansas' }, { code: 'CA', name: 'California' }, { code: 'CO', name: 'Colorado' },
+    { code: 'CT', name: 'Connecticut' }, { code: 'DE', name: 'Delaware' }, { code: 'FL', name: 'Florida' },
+    { code: 'GA', name: 'Georgia' }, { code: 'HI', name: 'Hawaii' }, { code: 'ID', name: 'Idaho' },
+    { code: 'IL', name: 'Illinois' }, { code: 'IN', name: 'Indiana' }, { code: 'IA', name: 'Iowa' },
+    { code: 'KS', name: 'Kansas' }, { code: 'KY', name: 'Kentucky' }, { code: 'LA', name: 'Louisiana' },
+    { code: 'ME', name: 'Maine' }, { code: 'MD', name: 'Maryland' }, { code: 'MA', name: 'Massachusetts' },
+    { code: 'MI', name: 'Michigan' }, { code: 'MN', name: 'Minnesota' }, { code: 'MS', name: 'Mississippi' },
+    { code: 'MO', name: 'Missouri' }, { code: 'MT', name: 'Montana' }, { code: 'NE', name: 'Nebraska' },
+    { code: 'NV', name: 'Nevada' }, { code: 'NH', name: 'New Hampshire' }, { code: 'NJ', name: 'New Jersey' },
+    { code: 'NM', name: 'New Mexico' }, { code: 'NY', name: 'New York' }, { code: 'NC', name: 'North Carolina' },
+    { code: 'ND', name: 'North Dakota' }, { code: 'OH', name: 'Ohio' }, { code: 'OK', name: 'Oklahoma' },
+    { code: 'OR', name: 'Oregon' }, { code: 'PA', name: 'Pennsylvania' }, { code: 'RI', name: 'Rhode Island' },
+    { code: 'SC', name: 'South Carolina' }, { code: 'SD', name: 'South Dakota' }, { code: 'TN', name: 'Tennessee' },
+    { code: 'TX', name: 'Texas' }, { code: 'UT', name: 'Utah' }, { code: 'VT', name: 'Vermont' },
+    { code: 'VA', name: 'Virginia' }, { code: 'WA', name: 'Washington' }, { code: 'WV', name: 'West Virginia' },
+    { code: 'WI', name: 'Wisconsin' }, { code: 'WY', name: 'Wyoming' }
+  ];
 
   const appearance = useMemo<Appearance>(() => ({
     theme: 'stripe',
@@ -359,10 +427,10 @@ export default function CartPage() {
       try {
         const customerPayload: CustomerCheckoutPayload | undefined = user
           ? {
-              email: user.email || undefined,
-              name: user.user_metadata?.full_name || user.user_metadata?.name || undefined,
-              phone: user.user_metadata?.phone || undefined,
-            }
+            email: user.email || undefined,
+            name: user.user_metadata?.full_name || user.user_metadata?.name || undefined,
+            phone: user.user_metadata?.phone || undefined,
+          }
           : undefined;
 
         const result = await createPaymentIntent({
@@ -445,7 +513,7 @@ export default function CartPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {items.length === 0 ? (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white rounded-2xl shadow-lg p-12 text-center"
@@ -475,7 +543,7 @@ export default function CartPage() {
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8">
             {/* Cart Items */}
             <div className="order-2 xl:order-1 xl:col-span-2">
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="bg-white rounded-2xl shadow-lg overflow-hidden"
@@ -483,7 +551,7 @@ export default function CartPage() {
                 <div className="p-4 sm:p-6 border-b border-gray-200">
                   <h2 className="text-xl font-semibold text-gray-900">Cart Items</h2>
                 </div>
-                
+
                 <div className="divide-y divide-gray-200">
                   {items.map((item, index) => (
                     <motion.div
@@ -506,7 +574,7 @@ export default function CartPage() {
                             <span className="absolute left-1 top-1 text-[10px] bg-black text-white px-2 py-0.5 rounded">Bundle</span>
                           </div>
                         ) : (
-                          <Link 
+                          <Link
                             href={`/shop/${item.productId}`}
                             className="relative w-20 h-20 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-gray-100 shrink-0 hover:ring-2 hover:ring-black hover:ring-opacity-50 transition-all duration-200 cursor-pointer"
                           >
@@ -519,7 +587,7 @@ export default function CartPage() {
                             />
                           </Link>
                         )}
-                        
+
                         <div className="flex-1 min-w-0">
                           {item.isBundle ? (
                             <div className="block">
@@ -530,7 +598,7 @@ export default function CartPage() {
                               )}
                             </div>
                           ) : (
-                            <Link 
+                            <Link
                               href={`/shop/${item.productId}`}
                               className="block hover:text-blue-600 transition-colors duration-200"
                             >
@@ -551,7 +619,7 @@ export default function CartPage() {
                             <Price price={item.price} />
                           </p>
                         </div>
-                        
+
                         <div className="flex items-center justify-between sm:flex-col sm:items-end sm:space-y-4">
                           <div className="flex items-center space-x-2 sm:space-x-3">
                             <button
@@ -562,11 +630,11 @@ export default function CartPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                               </svg>
                             </button>
-                            
+
                             <span className="text-lg font-semibold min-w-8 text-center">
                               {item.quantity}
                             </span>
-                            
+
                             <button
                               onClick={() => updateQuantity(item.lineId ?? item.productId, item.quantity + 1)}
                               className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
@@ -576,12 +644,12 @@ export default function CartPage() {
                               </svg>
                             </button>
                           </div>
-                          
+
                           <div className="flex items-center space-x-3 sm:flex-col sm:space-x-0 sm:space-y-2 sm:items-end">
                             <p className="text-lg font-bold text-gray-900">
                               ${(item.price * item.quantity).toFixed(2)}
                             </p>
-                            
+
                             <button
                               onClick={() => handleRemove(item.lineId ?? item.productId)}
                               className="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors"
@@ -596,7 +664,7 @@ export default function CartPage() {
                     </motion.div>
                   ))}
                 </div>
-                
+
                 <div className="p-4 sm:p-6 border-t border-gray-200">
                   <button
                     onClick={handleClearCart}
@@ -613,9 +681,9 @@ export default function CartPage() {
               {/* Total Box */}
               <div className="rounded-3xl bg-[#f7ede0] text-gray-900 p-5 shadow-lg border border-white/60">
                 <p className="text-[11px] uppercase tracking-[0.35em] text-gray-700/70">Estimated total</p>
-                <p className="mt-2 text-3xl font-semibold text-gray-900">${total.toFixed(2)}</p>
+                <p className="mt-2 text-3xl font-semibold text-gray-900">${combinedTotal.toFixed(2)}</p>
                 <p className="mt-2 text-xs text-gray-700/70">
-                  {items.reduce((sum, item) => sum + item.quantity, 0)} item{items.reduce((sum, item) => sum + item.quantity, 0) !== 1 ? 's' : ''} • plus tax (calculated at checkout)
+                  {items.reduce((sum, item) => sum + item.quantity, 0)} item{items.reduce((sum, item) => sum + item.quantity, 0) !== 1 ? 's' : ''} • {estimatedTax > 0 ? 'includes estimated tax' : 'plus tax (calculated at checkout)'}
                 </p>
                 {/* Free Shipping Progress */}
                 {subtotal >= 120 ? (
@@ -634,7 +702,7 @@ export default function CartPage() {
                       <span className="text-xs font-semibold text-gray-900">${(120 - subtotal).toFixed(2)} to go</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                      <div 
+                      <div
                         className="bg-gradient-to-r from-gray-700 to-gray-900 h-1.5 rounded-full transition-all duration-500"
                         style={{ width: `${Math.min((subtotal / 120) * 100, 100)}%` }}
                       />
@@ -645,7 +713,7 @@ export default function CartPage() {
 
               {/* Account Benefits Card - Only show for non-signed-in users */}
               {!isSignedIn && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
@@ -676,6 +744,53 @@ export default function CartPage() {
                   </div>
                 </motion.div>
               )}
+
+              {/* Tax Estimator */}
+              <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-5 shadow-sm">
+                <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  Estimate Shipping & Tax
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label htmlFor="state-select" className="text-[10px] uppercase tracking-wider text-gray-500 font-medium">State</label>
+                    <select
+                      id="state-select"
+                      value={selectedState}
+                      onChange={(e) => setSelectedState(e.target.value)}
+                      className="w-full h-10 px-3 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-black/5 focus:border-black transition-all outline-none"
+                    >
+                      <option value="">Select State</option>
+                      {US_STATES.map(s => (
+                        <option key={s.code} value={s.code}>{s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label htmlFor="zip-input" className="text-[10px] uppercase tracking-wider text-gray-500 font-medium">Zip Code</label>
+                    <input
+                      id="zip-input"
+                      type="text"
+                      placeholder="Zip Code"
+                      value={postalCode}
+                      onChange={(e) => setPostalCode(e.target.value.replace(/\D/g, '').slice(0, 5))}
+                      className="w-full h-10 px-3 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-black/5 focus:border-black transition-all outline-none"
+                    />
+                  </div>
+                </div>
+                {taxError && (
+                  <p className="mt-2 text-[10px] text-red-500">{taxError}</p>
+                )}
+                {isCalculatingTax && (
+                  <div className="mt-2 flex items-center gap-2 text-[10px] text-gray-400">
+                    <div className="h-2 w-2 animate-spin rounded-full border-b border-gray-400"></div>
+                    Calculating...
+                  </div>
+                )}
+              </div>
 
               {!showPaymentSection ? (
                 /* Express Checkout - Initial View */
@@ -738,31 +853,31 @@ export default function CartPage() {
                       <div id="express-section-guest">
                         <Elements stripe={stripePromise} options={elementsOptions} key={clientSecret}>
                           <div className="space-y-4">
-                          <ExpressCheckoutElement
-                            onConfirm={async (event?: StripeExpressCheckoutElementConfirmEvent) => {
-                              // Express checkout will handle the payment
-                            }}
-                            options={{
-                              paymentMethods: {
-                                applePay: 'auto',
-                                googlePay: 'auto',
-                                amazonPay: 'auto',
-                                link: 'auto',
-                              },
-                              emailRequired: true,
-                              phoneNumberRequired: true,
-                              shippingAddressRequired: true,
-                              allowedShippingCountries: ['US'],
-                              shippingRates: [
-                                {
-                                  id: 'fsny-free-shipping',
-                                  amount: 0,
-                                  displayName: 'Free shipping',
+                            <ExpressCheckoutElement
+                              onConfirm={async (event?: StripeExpressCheckoutElementConfirmEvent) => {
+                                // Express checkout will handle the payment
+                              }}
+                              options={{
+                                paymentMethods: {
+                                  applePay: 'auto',
+                                  googlePay: 'auto',
+                                  amazonPay: 'auto',
+                                  link: 'auto',
                                 },
-                              ],
-                              paymentMethodOrder: ['apple_pay', 'google_pay', 'amazon_pay', 'link'],
-                            }}
-                          />
+                                emailRequired: true,
+                                phoneNumberRequired: true,
+                                shippingAddressRequired: true,
+                                allowedShippingCountries: ['US'],
+                                shippingRates: [
+                                  {
+                                    id: 'fsny-free-shipping',
+                                    amount: 0,
+                                    displayName: 'Free shipping',
+                                  },
+                                ],
+                                paymentMethodOrder: ['apple_pay', 'google_pay', 'amazon_pay', 'link'],
+                              }}
+                            />
                             <button
                               type="button"
                               onClick={handleGuestCheckout}
@@ -855,13 +970,13 @@ export default function CartPage() {
                   </div>
                 )
               ) : null}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 w-full"
               >
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">Order Summary</h2>
-                
+
                 <div className="space-y-4">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal</span>
@@ -882,15 +997,23 @@ export default function CartPage() {
 
                   <div className="flex justify-between text-gray-600">
                     <span>Tax</span>
-                    <span className="text-sm italic">Calculated at checkout</span>
+                    {estimatedTax > 0 ? (
+                      <span className="font-medium">${estimatedTax.toFixed(2)}</span>
+                    ) : (
+                      <span className="text-sm italic">Calculated at checkout</span>
+                    )}
                   </div>
 
                   <div className="border-t border-gray-200 pt-4">
                     <div className="flex justify-between text-xl font-bold text-gray-900">
                       <span>Total</span>
-                      <span>${total.toFixed(2)}</span>
+                      <span>${combinedTotal.toFixed(2)}</span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">Tax will be added at checkout</p>
+                    {estimatedTax > 0 ? (
+                      <p className="text-xs text-green-600 mt-1">Includes estimated tax</p>
+                    ) : (
+                      <p className="text-xs text-gray-500 mt-1">Total before tax</p>
+                    )}
                   </div>
                 </div>
 
@@ -902,7 +1025,7 @@ export default function CartPage() {
                 >
                   Continue Shopping
                 </motion.a>
-                
+
                 <div className="mt-8 pt-6 border-t border-gray-200">
                   <p className="text-xs text-gray-500 text-center mb-4">Secure checkout guaranteed</p>
                   <div className="flex justify-center space-x-4 opacity-60">

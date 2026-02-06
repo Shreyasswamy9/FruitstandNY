@@ -110,7 +110,7 @@ export default function MutsuTshirtPage() {
         {/* HERO SECTION - Top 75% */}
         <div className="mx-auto w-full max-w-[1280px] px-6 text-center lg:px-12 lg:text-left lg:grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:items-start lg:gap-14" style={{ minHeight: '75vh' }}>
           {/* IMAGE */}
-          <div className="relative mx-auto aspect-[4/5] w-full lg:mx-0 lg:max-w-[620px] lg:row-span-3">
+          <div className="relative mx-auto aspect-[4/5] w-full lg:mx-0 lg:max-w-[620px]">
             <Image
               src={selectedImage}
               alt={`${selectedColor.name} ${PRODUCT.name}`}
@@ -121,74 +121,76 @@ export default function MutsuTshirtPage() {
             />
           </div>
 
-          {/* TITLE / PRICE - Single Line */}
-          <div className="mt-8 flex flex-col items-center lg:col-start-2 lg:items-start lg:mt-45">
-            <h1 className="text-[22px] font-black uppercase tracking-[0.08em] leading-tight text-[#1d1c19]">
-              Mutsu Tee - {selectedColor.name}
-            </h1>
+          {/* RIGHT COLUMN - Table-like Grid */}
+          <div className="mt-8 flex flex-col items-stretch border border-[#1d1c19] bg-[#fbf5ed] lg:col-start-2 lg:mt-0">
+            {/* TITLE & PRICE */}
+            <div className="p-6 border-b border-[#1d1c19] text-center lg:text-left">
+              <h1 className="text-[22px] font-black uppercase tracking-[0.08em] leading-tight text-[#1d1c19]">
+                Mutsu Tee - {selectedColor.name}
+              </h1>
 
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
-          </div>
+              <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            </div>
 
-          {/* SWATCHES */}
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-3 lg:col-start-2 lg:justify-start">
-            {colorOptions.map((option) => {
-              const isActive = option.slug === selectedColor.slug;
+            {/* SWATCHES & SIZE GUIDE */}
+            <div className="p-6 border-b border-[#1d1c19] flex flex-col items-center lg:items-start">
+              <div className="flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+                {colorOptions.map((option) => {
+                  const isActive = option.slug === selectedColor.slug;
 
-              return (
-                <button
-                  key={option.slug}
-                  type="button"
-                  onClick={() => handleSelectColor(option)}
-                  aria-label={option.name}
-                  className={[
-                    "appearance-none bg-transparent [-webkit-tap-highlight-color:transparent]",
-                    "h-7 w-7 rounded-full overflow-hidden p-[2px]",
-                    "transition-transform duration-150 hover:-translate-y-[1px]",
-                    "focus:outline-none focus:ring-2 focus:ring-[#1d1c19]/35",
-                    isActive ? "ring-2 ring-[#1d1c19]" : "ring-1 ring-[#cfc2b3]",
-                  ].join(" ")}
-                >
-                  <span
-                    aria-hidden
-                    className="block h-full w-full rounded-full"
-                    style={{
-                      backgroundColor: option.color,
-                      border: option.border ? `1px solid ${option.border}` : undefined,
-                    }}
-                  />
-                </button>
-              );
-            })}
-          </div>
+                  return (
+                    <button
+                      key={option.slug}
+                      type="button"
+                      onClick={() => handleSelectColor(option)}
+                      aria-label={option.name}
+                      className={[
+                        "appearance-none bg-transparent [-webkit-tap-highlight-color:transparent]",
+                        "h-7 w-7 rounded-full overflow-hidden p-[2px]",
+                        "transition-transform duration-150 hover:-translate-y-[1px]",
+                        "focus:outline-none focus:ring-2 focus:ring-[#1d1c19]/35",
+                        isActive ? "ring-2 ring-[#1d1c19]" : "ring-1 ring-[#cfc2b3]",
+                      ].join(" ")}
+                    >
+                      <span
+                        aria-hidden
+                        className="block h-full w-full rounded-full"
+                        style={{
+                          backgroundColor: option.color,
+                          border: option.border ? `1px solid ${option.border}` : undefined,
+                        }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
 
-          {/* SIZE GUIDE */}
-          <div className="mt-4 text-[12px] font-semibold uppercase tracking-[0.34em] text-[#1d1c19] lg:col-start-2 lg:text-left">
-            <SizeGuide
-              productSlug="mutsu-tshirt"
-              imagePath="/images/size-guides/Size Guide/Mutsu Table.png"
-              buttonLabel="SIZE GUIDE"
-              className="text-[12px] font-semibold uppercase tracking-[0.34em]"
-            />
-          </div>
-        </div>
+              <div className="mt-6 text-[12px] font-semibold uppercase tracking-[0.34em] text-[#1d1c19] border-b border-[#1d1c19] inline-block pb-0.5 cursor-pointer">
+                <SizeGuide
+                  productSlug="mutsu-tshirt"
+                  imagePath="/images/size-guides/Size Guide/Mutsu Table.png"
+                  buttonLabel="SIZE GUIDE"
+                  className="text-[12px] font-semibold uppercase tracking-[0.34em]"
+                />
+              </div>
+            </div>
 
-        {/* DESCRIPTION SECTION */}
-        <div className="mx-auto w-full max-w-[900px] px-6 text-center lg:px-12 lg:text-left">
-          <p className="px-1 text-[14px] leading-relaxed text-[#3d372f]">
-            {PRODUCT.description}
-          </p>
-        </div>
+            {/* DESCRIPTION */}
+            <div className="p-6 border-b border-[#1d1c19] text-center lg:text-left">
+              <p className="text-[14px] leading-relaxed text-[#3d372f]">
+                {PRODUCT.description}
+              </p>
+            </div>
 
-        {/* DETAILS SECTION */}
-        <div className="mx-auto w-full max-w-[900px] px-6 text-left lg:px-12">
-          <div className="mt-8">
-            <p className="text-base font-semibold text-[#1d1c19]">Details</p>
-            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-[#1d1c19]">
-              {PRODUCT.details.map((detail) => (
-                <li key={detail}>{detail}</li>
-              ))}
-            </ul>
+            {/* DETAILS LIST */}
+            <div className="p-6 text-left">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-[#1d1c19]">Details</p>
+              <ul className="mt-4 list-disc space-y-2 pl-5 text-[13px] text-[#1d1c19]">
+                {PRODUCT.details.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
 
