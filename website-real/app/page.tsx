@@ -239,7 +239,7 @@ export default function Home() {
   return (
     <>
       {/* <SignupPromoModal isOpen={showSignupPromo} onClose={() => setShowSignupPromo(false)} /> */}
-      
+
       {/* Intro Screen */}
       {(!isHydrated || !showMain) && (
         <div
@@ -368,6 +368,16 @@ export default function Home() {
               className="flex gap-3 overflow-x-auto px-6 pb-5 md:gap-6 md:overflow-visible md:px-0 lg:gap-8 scrollbar-hide snap-x snap-center scroll-smooth md:justify-center"
               style={{ scrollBehavior: "smooth", scrollPaddingInline: "var(--scroll-padding)" }}
             >
+              {/* Added NEW ITEMS banner as per design */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 z-10 w-full max-w-[228px] md:max-w-none md:w-[20rem] hidden md:block">
+                <div
+                  className="bg-black text-white text-[10px] tracking-[0.2em] py-2 text-center"
+                  style={{ fontFamily: 'var(--font-avenir-medium)', fontWeight: 500 }}
+                >
+                  NEW ITEMS
+                </div>
+              </div>
+
               {newItems.map((item) => (
                 <Link
                   key={item.id}
@@ -426,8 +436,11 @@ export default function Home() {
                   </div>
 
                   {/* Location Label */}
-                  <p className="px-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#6f6f6f] md:px-0">
-                    {photo.location}
+                  <p
+                    className="px-4 text-xs uppercase tracking-[0.18em] text-[#6f6f6f] md:px-0"
+                    style={{ fontFamily: 'var(--font-avenir-medium)', fontWeight: 500 }}
+                  >
+                    {photo.location}, MANHATTAN
                   </p>
                 </div>
               ))}
