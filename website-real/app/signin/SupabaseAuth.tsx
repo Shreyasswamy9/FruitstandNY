@@ -66,6 +66,57 @@ export default function SupabaseAuth({ mode = 'sign_in' }: SupabaseAuthProps) {
 
   // Welcome email sent ref must be outside useEffect
   const welcomeEmailSentRef = useRef<string | null>(null);
+  const signupEmailRef = useRef<string | null>(null);
+
+  // Watch for signup success messages in DOM (Supabase Auth UI)
+  useEffect(() => {
+    if (!isSignUp) return;
+    
+    // Capture email from input field changes
+    const captureEmail = () => {
+      const emailInput = document.querySelector('input[type="email"]') as HTMLInputElement;
+      if (emailInput?.value) {
+        signupEmailRef.current = emailInput.value;
+      }
+    };
+    
+    // Set up interval to capture email as user types
+    const emailCapture = setInterval(captureEmail, 500);
+    
+    const observer = new MutationObserver(() => {
+      // Look for success message from Supabase Auth UI
+      const alerts = document.querySelectorAll('[role="alert"], .supabase-auth-ui_ui-message');
+      
+      for (const alert of alerts) {
+        const messageText = alert.textContent || '';
+        
+        if (messageText.toLowerCase().includes('check your email')) {
+          const email = signupEmailRef.current;
+          
+          if (email) {
+            // Redirect to confirm account page immediately
+            setTimeout(() => {
+              router.replace(`/confirm-account?email=${encodeURIComponent(email)}`);
+            }, 100);
+            observer.disconnect();
+            clearInterval(emailCapture);
+            return;
+          }
+        }
+      }
+    });
+    
+    observer.observe(document.body, { 
+      childList: true, 
+      subtree: true,
+      characterData: true
+    });
+    
+    return () => {
+      observer.disconnect();
+      clearInterval(emailCapture);
+    };
+  }, [isSignUp, router]);
 
   useEffect(() => {
     let isMounted = true;
@@ -89,7 +140,9 @@ export default function SupabaseAuth({ mode = 'sign_in' }: SupabaseAuthProps) {
       }
     };
     checkSession();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state change:', event, 'Session:', !!session, 'isSignUp:', isSignUp);
+      
       // OAuth: session exists, redirect to /account
       if (event === 'SIGNED_IN' && session) {
         if (session.user?.id && welcomeEmailSentRef.current !== session.user.id) {
@@ -106,13 +159,12 @@ export default function SupabaseAuth({ mode = 'sign_in' }: SupabaseAuthProps) {
         router.replace(safeRedirect);
         return;
       }
-      // Only handle SIGNED_IN event for session-based logic
     });
     return () => {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [router, safeRedirect, searchParams]);
+  }, [router, safeRedirect, searchParams, isSignUp]);
 
     // All JSX is now in render, not in objects
     const badge = isSignUp ? 'Join FRUITSTAND®' : 'Secure Account Access';

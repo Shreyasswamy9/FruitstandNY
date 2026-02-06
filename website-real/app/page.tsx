@@ -183,35 +183,36 @@ export default function Home() {
     }
   }, [fruitstandTranslations.length, showLangFlip])
 
-  useEffect(() => {
-    if (!isHydrated || typeof window === "undefined") return
-
-    try {
-      if (window.localStorage.getItem("signupPromoSubmitted") === "1") {
-        return
-      }
-      if (window.sessionStorage.getItem("signupPromoShown") === "1") {
-        return
-      }
-    } catch {
-      // ignore storage failures
-    }
-
-    const onScroll = () => {
-      if (window.scrollY > 220) {
-        setShowSignupPromo(true)
-        try {
-          window.sessionStorage.setItem("signupPromoShown", "1")
-        } catch {
-          // ignore storage failures
-        }
-        window.removeEventListener("scroll", onScroll)
-      }
-    }
-
-    window.addEventListener("scroll", onScroll, { passive: true })
-    return () => window.removeEventListener("scroll", onScroll)
-  }, [isHydrated])
+  // Signup promo popup temporarily disabled (Mailchimp not set up)
+  // useEffect(() => {
+  //   if (!isHydrated || typeof window === "undefined") return
+  //
+  //   try {
+  //     if (window.localStorage.getItem("signupPromoSubmitted") === "1") {
+  //       return
+  //     }
+  //     if (window.sessionStorage.getItem("signupPromoShown") === "1") {
+  //       return
+  //     }
+  //   } catch {
+  //     // ignore storage failures
+  //   }
+  //
+  //   const onScroll = () => {
+  //     if (window.scrollY > 220) {
+  //       setShowSignupPromo(true)
+  //       try {
+  //         window.sessionStorage.setItem("signupPromoShown", "1")
+  //       } catch {
+  //         // ignore storage failures
+  //       }
+  //       window.removeEventListener("scroll", onScroll)
+  //     }
+  //   }
+  //
+  //   window.addEventListener("scroll", onScroll, { passive: true })
+  //   return () => window.removeEventListener("scroll", onScroll)
+  // }, [isHydrated])
 
   // Carousel scroll handlers
   const scrollCarousel = (direction: "left" | "right") => {
@@ -237,7 +238,7 @@ export default function Home() {
 
   return (
     <>
-      <SignupPromoModal isOpen={showSignupPromo} onClose={() => setShowSignupPromo(false)} />
+      {/* <SignupPromoModal isOpen={showSignupPromo} onClose={() => setShowSignupPromo(false)} /> */}
       
       {/* Intro Screen */}
       {(!isHydrated || !showMain) && (

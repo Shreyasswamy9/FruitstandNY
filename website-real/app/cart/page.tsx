@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import DiscountCode from "@/components/DiscountCode"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { useCart, type CartItem } from "../../components/CartContext"
@@ -617,30 +618,28 @@ export default function CartPage() {
                 <p className="mt-2 text-xs text-gray-700/70">
                   {items.reduce((sum, item) => sum + item.quantity, 0)} item{items.reduce((sum, item) => sum + item.quantity, 0) !== 1 ? 's' : ''} • plus tax (calculated at checkout)
                 </p>
-                {/* Free Shipping Progress */}
-                {subtotal >= 120 ? (
-                  <div className="mt-3 pt-3 border-t border-gray-300/50">
-                    <div className="flex items-center gap-2 text-green-700">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-xs font-semibold">You unlocked free shipping! 🎉</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mt-3 pt-3 border-t border-gray-300/50">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-xs text-gray-700">Free shipping at $120</span>
+                {/* Free Shipping Progress - Always visible */}
+                <div className="mt-3 pt-3 border-t border-gray-300/50">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs text-gray-700">Free shipping at $120</span>
+                    {subtotal >= 120 ? (
+                      <span className="text-xs font-semibold text-green-700 flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        Free shipping unlocked!
+                      </span>
+                    ) : (
                       <span className="text-xs font-semibold text-gray-900">${(120 - subtotal).toFixed(2)} to go</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                      <div 
-                        className="bg-gradient-to-r from-gray-700 to-gray-900 h-1.5 rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min((subtotal / 120) * 100, 100)}%` }}
-                      />
-                    </div>
+                    )}
                   </div>
-                )}
+                  <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                    <div 
+                      className="bg-gradient-to-r from-gray-700 to-gray-900 h-1.5 rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min((subtotal / 120) * 100, 100)}%` }}
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Account Benefits Card - Only show for non-signed-in users */}
@@ -651,210 +650,98 @@ export default function CartPage() {
                   transition={{ delay: 0.2 }}
                   className="rounded-xl bg-gradient-to-br from-[#f7ede0] to-[#efe5d5] p-3 shadow-sm border border-white/40"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      <h3 className="text-xs font-semibold text-gray-900">Get order tracking & faster checkout</h3>
+                  <div className="flex flex-col sm:flex-row gap-4 items-stretch">
+                    <div className="flex-1">
+                      <DiscountCode />
                     </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => router.push('/signup?redirect=/cart')}
-                      className="flex-1 py-2 bg-black text-white text-xs font-semibold rounded-lg hover:bg-gray-800 transition-colors"
-                    >
-                      Sign Up
-                    </button>
-                    <button
-                      onClick={() => router.push('/signin?redirect=/cart')}
-                      className="flex-1 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      Sign In
-                    </button>
+                    <div className="flex flex-col gap-2 justify-center w-full sm:w-32">
+                      <button
+                        onClick={() => router.push('/signup?redirect=/cart')}
+                        className="py-3 sm:py-2 bg-black text-white text-sm sm:text-xs font-semibold rounded-lg hover:bg-gray-800 transition-colors"
+                      >
+                        Sign Up
+                      </button>
+                      <button
+                        onClick={() => router.push('/signin?redirect=/cart')}
+                        className="py-3 sm:py-2 bg-white border border-gray-300 text-gray-700 text-sm sm:text-xs font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        Sign In
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               )}
 
-              {!showPaymentSection ? (
-                /* Express Checkout - Initial View */
-                <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 space-y-4 shadow-sm">
-                  <div>
-                    <h3 className="text-base font-semibold text-gray-900">Express checkout</h3>
-                    <p className="text-xs text-gray-500 mt-1">Pay with Apple Pay, Google Pay, Amazon Pay, or Link.</p>
-                  </div>
-
-                  {isSignedIn && clientSecret && elementsOptions ? (
-                    <div id="express-section">
-                      <Elements stripe={stripePromise} options={elementsOptions} key={clientSecret}>
-                        <div className="space-y-4">
-                          <ExpressCheckoutElement
-                            onConfirm={async (event?: StripeExpressCheckoutElementConfirmEvent) => {
-                              const stripe = useStripe();
-                              const elements = useElements();
-                              // Call confirmPayment from PaymentSection logic
-                              // This will be handled by the existing logic
-                            }}
-                            options={{
-                              paymentMethods: {
-                                applePay: 'auto',
-                                googlePay: 'auto',
-                                amazonPay: 'auto',
-                                link: 'auto',
-                              },
-                              emailRequired: true,
-                              phoneNumberRequired: true,
-                              shippingAddressRequired: true,
-                              allowedShippingCountries: ['US'],
-                              shippingRates: [
-                                {
-                                  id: 'fsny-free-shipping',
-                                  amount: 0,
-                                  displayName: 'Free shipping',
-                                },
-                              ],
-                              paymentMethodOrder: ['apple_pay', 'google_pay', 'amazon_pay', 'link'],
-                            }}
-                          />
-                          <div className="flex items-center gap-3 text-gray-300 text-[11px] uppercase tracking-[0.35em]">
-                            <span className="h-px bg-gray-200 flex-1" />
-                            <span>— OR —</span>
-                            <span className="h-px bg-gray-200 flex-1" />
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => router.push('/cart/checkout-redirect')}
-                            className="w-full py-3 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors"
-                          >
-                            Continue to Checkout — ${total.toFixed(2)}
-                          </button>
-                        </div>
-                      </Elements>
-                    </div>
-                  ) : !isSignedIn ? (
-                    /* Guest - Show express pay buttons */
-                    clientSecret && elementsOptions ? (
-                      <div id="express-section-guest">
-                        <Elements stripe={stripePromise} options={elementsOptions} key={clientSecret}>
-                          <div className="space-y-4">
-                          <ExpressCheckoutElement
-                            onConfirm={async (event?: StripeExpressCheckoutElementConfirmEvent) => {
-                              // Express checkout will handle the payment
-                            }}
-                            options={{
-                              paymentMethods: {
-                                applePay: 'auto',
-                                googlePay: 'auto',
-                                amazonPay: 'auto',
-                                link: 'auto',
-                              },
-                              emailRequired: true,
-                              phoneNumberRequired: true,
-                              shippingAddressRequired: true,
-                              allowedShippingCountries: ['US'],
-                              shippingRates: [
-                                {
-                                  id: 'fsny-free-shipping',
-                                  amount: 0,
-                                  displayName: 'Free shipping',
-                                },
-                              ],
-                              paymentMethodOrder: ['apple_pay', 'google_pay', 'amazon_pay', 'link'],
-                            }}
-                          />
-                            <button
-                              type="button"
-                              onClick={handleGuestCheckout}
-                              disabled={sessionLoading || items.length === 0}
-                              className="w-full py-3 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {sessionLoading ? (
-                                <div className="flex items-center justify-center">
-                                  <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-white mr-2"></div>
-                                  Loading...
-                                </div>
-                              ) : (
-                                `Checkout — $${total.toFixed(2)}`
-                              )}
-                            </button>
-                          </div>
-                        </Elements>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <button
-                          type="button"
-                          onClick={handleGuestCheckout}
-                          disabled={sessionLoading || items.length === 0}
-                          className="w-full py-4 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {sessionLoading ? (
-                            <div className="flex items-center justify-center">
-                              <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-white mr-2"></div>
-                              Loading...
-                            </div>
-                          ) : (
-                            `Checkout — $${total.toFixed(2)}`
-                          )}
-                        </button>
-                        <button
-                          onClick={() => router.push('/signin?redirect=/cart')}
-                          className="w-full py-3 border border-gray-300 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-colors"
-                        >
-                          Sign In for Express Pay
-                        </button>
-                      </div>
-                    )
-                  ) : (
-                    <div className="flex items-center justify-center text-sm text-gray-600">
-                      <div className="flex items-center gap-2">
-                        <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-gray-500"></div>
-                        <span>Loading...</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {paymentMessage && (
-                    <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
-                      {paymentMessage}
-                    </div>
-                  )}
+              {/* Express Checkout - Always visible */}
+              <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 space-y-4 shadow-sm">
+                <div>
+                  <h3 className="text-base font-semibold text-gray-900">Express checkout</h3>
+                  <p className="text-xs sm:text-xs text-gray-500 mt-1">Pay with Apple Pay, Google Pay, Amazon Pay, or Link.</p>
                 </div>
-              ) : isSignedIn ? (
-                /* Full Payment Section - For logged-in users only */
-                clientSecret && elementsOptions ? (
-                  <div id="payment-section">
-                    <Elements stripe={stripePromise} options={elementsOptions} key={clientSecret}>
-                      <PaymentSection
-                        total={total}
-                        items={items}
-                        processing={paymentProcessing}
-                        setProcessing={setPaymentProcessing}
-                        message={paymentMessage}
-                        setMessage={setPaymentMessage}
-                        elementsReady={elementsReady}
-                        setElementsReady={setElementsReady}
-                        orderNumber={resolveOrderNumber()}
+                {clientSecret && elementsOptions ? (
+                  <Elements stripe={stripePromise} options={elementsOptions} key={clientSecret}>
+                    <div className="space-y-4">
+                      <ExpressCheckoutElement
+                        onConfirm={async (event?: StripeExpressCheckoutElementConfirmEvent) => {
+                          // Express checkout will handle the payment
+                        }}
+                        options={{
+                          paymentMethods: {
+                            applePay: 'auto',
+                            googlePay: 'auto',
+                            amazonPay: 'auto',
+                            link: 'auto',
+                          },
+                          emailRequired: true,
+                          phoneNumberRequired: true,
+                          shippingAddressRequired: true,
+                          allowedShippingCountries: ['US'],
+                          shippingRates: [
+                            {
+                              id: 'fsny-free-shipping',
+                              amount: 0,
+                              displayName: 'Free shipping',
+                            },
+                          ],
+                          paymentMethodOrder: ['apple_pay', 'google_pay', 'amazon_pay', 'link'],
+                        }}
                       />
-                    </Elements>
-                    <button
-                      type="button"
-                      onClick={() => setShowPaymentSection(false)}
-                      className="mt-4 w-full py-3 border border-gray-300 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-colors"
-                    >
-                      Back to express checkout
-                    </button>
-                  </div>
+                      <div className="flex items-center gap-3 text-gray-300 text-[11px] uppercase tracking-[0.35em]">
+                        <span className="h-px bg-gray-200 flex-1" />
+                        <span>— OR —</span>
+                        <span className="h-px bg-gray-200 flex-1" />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={isSignedIn ? () => router.push('/cart/checkout-redirect') : handleGuestCheckout}
+                        className="w-full py-3 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={sessionLoading || items.length === 0}
+                      >
+                        {sessionLoading ? (
+                          <div className="flex items-center justify-center">
+                            <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-white mr-2"></div>
+                            Loading...
+                          </div>
+                        ) : (
+                          `Checkout — $${total.toFixed(2)}`
+                        )}
+                      </button>
+                    </div>
+                  </Elements>
                 ) : (
-                  <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-sm flex items-center justify-center text-sm text-gray-600">
+                  <div className="flex items-center justify-center text-sm text-gray-600">
                     <div className="flex items-center gap-2">
                       <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-gray-500"></div>
-                      <span>Loading payment methods…</span>
+                      <span>Loading...</span>
                     </div>
                   </div>
-                )
-              ) : null}
+                )}
+                {paymentMessage && (
+                  <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
+                    {paymentMessage}
+                  </div>
+                )}
+              </div>
               <motion.div 
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
