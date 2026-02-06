@@ -7,6 +7,7 @@ import { CartProvider } from "../components/CartContext"
 import Script from 'next/script'
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react";
+import TrackingPixels from "./components/TrackingPixels";
 declare global {
   interface Window {
     __SHOW_LOGO__?: boolean;
@@ -62,6 +63,7 @@ export default function RootLayout({
       >
         <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N8M6F5WK"
         height="0" width="0" style={{display:'none',visibility:'hidden'}}></iframe></noscript>
+        <TrackingPixels />
         <CartProvider>
           <Suspense fallback={null}>
             <ClientRootLayout>

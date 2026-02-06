@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^3.10.0",
+    "@mailchimp/mailchimp_transactional": "^1.0.58",
+    "@stripe/react-stripe-js": "^3.1.0",
     "@stripe/stripe-js": "^7.9.0",
     "@supabase/auth-ui-react": "^0.4.7",
     "@supabase/auth-ui-shared": "^0.1.8",
@@ -37,6 +39,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/mailchimp__mailchimp_transactional": "^1.0.11",
     "@types/node": "^20.19.13",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",

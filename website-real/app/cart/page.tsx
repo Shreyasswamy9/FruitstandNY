@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import DiscountCode from "@/components/DiscountCode"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { useCart, type CartItem } from "../../components/CartContext"
@@ -685,29 +686,27 @@ export default function CartPage() {
                 <p className="mt-2 text-xs text-gray-700/70">
                   {items.reduce((sum, item) => sum + item.quantity, 0)} item{items.reduce((sum, item) => sum + item.quantity, 0) !== 1 ? 's' : ''} • {estimatedTax > 0 ? 'includes estimated tax' : 'plus tax (calculated at checkout)'}
                 </p>
-                {/* Free Shipping Progress */}
-                {subtotal >= 120 ? (
-                  <div className="mt-3 pt-3 border-t border-gray-300/50">
-                    <div className="flex items-center gap-2 text-green-700">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-xs font-semibold">You unlocked free shipping! 🎉</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mt-3 pt-3 border-t border-gray-300/50">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-xs text-gray-700">Free shipping at $120</span>
+                {/* Free Shipping Progress - Always visible */}
+                <div className="mt-3 pt-3 border-t border-gray-300/50">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs text-gray-700">Free shipping at $120</span>
+                    {subtotal >= 120 ? (
+                      <span className="text-xs font-semibold text-green-700 flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        Free shipping unlocked!
+                      </span>
+                    ) : (
                       <span className="text-xs font-semibold text-gray-900">${(120 - subtotal).toFixed(2)} to go</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                      <div
-                        className="bg-gradient-to-r from-gray-700 to-gray-900 h-1.5 rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min((subtotal / 120) * 100, 100)}%` }}
-                      />
-                    </div>
+                  <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                    <div
+                      className="bg-gradient-to-r from-gray-700 to-gray-900 h-1.5 rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min((subtotal / 120) * 100, 100)}%` }}
+                    />
                   </div>
+                </div>
                 )}
               </div>
 
@@ -719,28 +718,24 @@ export default function CartPage() {
                   transition={{ delay: 0.2 }}
                   className="rounded-xl bg-gradient-to-br from-[#f7ede0] to-[#efe5d5] p-3 shadow-sm border border-white/40"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      <h3 className="text-xs font-semibold text-gray-900">Get order tracking & faster checkout</h3>
+                  <div className="flex flex-col sm:flex-row gap-4 items-stretch">
+                    <div className="flex-1">
+                      <DiscountCode />
                     </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => router.push('/signup?redirect=/cart')}
-                      className="flex-1 py-2 bg-black text-white text-xs font-semibold rounded-lg hover:bg-gray-800 transition-colors"
-                    >
-                      Sign Up
-                    </button>
-                    <button
-                      onClick={() => router.push('/signin?redirect=/cart')}
-                      className="flex-1 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      Sign In
-                    </button>
+                    <div className="flex flex-col gap-2 justify-center w-full sm:w-32">
+                      <button
+                        onClick={() => router.push('/signup?redirect=/cart')}
+                        className="py-3 sm:py-2 bg-black text-white text-sm sm:text-xs font-semibold rounded-lg hover:bg-gray-800 transition-colors"
+                      >
+                        Sign Up
+                      </button>
+                      <button
+                        onClick={() => router.push('/signin?redirect=/cart')}
+                        className="py-3 sm:py-2 bg-white border border-gray-300 text-gray-700 text-sm sm:text-xs font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        Sign In
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               )}
