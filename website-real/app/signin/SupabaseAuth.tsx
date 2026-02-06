@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import Link from 'next/link';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
@@ -38,6 +38,7 @@ export default function SupabaseAuth({ mode = 'sign_in' }: SupabaseAuthProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [redirectTo, setRedirectTo] = useState<string | undefined>(undefined);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const isSignUp = mode === 'sign_up';
 
   const rawRedirect = searchParams?.get('redirect') ?? null;
@@ -49,94 +50,89 @@ export default function SupabaseAuth({ mode = 'sign_in' }: SupabaseAuthProps) {
     return rawRedirect.startsWith('/') ? rawRedirect : `/${rawRedirect}`;
   }, [rawRedirect]);
 
+  // Define oppositeAuthHref for switching between sign in and sign up
+  const oppositeAuthHref = isSignUp ? '/signin' : '/signup';
+
   useEffect(() => {
     if (!authCode) return;
-
     const finalizeOAuth = async () => {
       const { error } = await supabase.auth.exchangeCodeForSession(authCode);
       if (error) {
         console.error('Supabase OAuth exchange failed:', error);
       }
     };
-
     finalizeOAuth();
   }, [authCode]);
 
+  // Welcome email sent ref must be outside useEffect
+  const welcomeEmailSentRef = useRef<string | null>(null);
+
   useEffect(() => {
     let isMounted = true;
-
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!isMounted || !session) return;
-      router.replace(safeRedirect);
-    };
-
-    checkSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
+      if (!isMounted) return;
+      if (session) {
+        // Send welcome email only once per session
+        if (session.user?.id && welcomeEmailSentRef.current !== session.user.id) {
+          fetch('/api/emails/welcome', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json'
+            }
+          }).finally(() => {
+            welcomeEmailSentRef.current = session.user.id;
+          });
+        }
         router.replace(safeRedirect);
       }
+    };
+    checkSession();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // OAuth: session exists, redirect to /account
+      if (event === 'SIGNED_IN' && session) {
+        if (session.user?.id && welcomeEmailSentRef.current !== session.user.id) {
+          fetch('/api/emails/welcome', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json'
+            }
+          }).finally(() => {
+            welcomeEmailSentRef.current = session.user.id;
+          });
+        }
+        router.replace(safeRedirect);
+        return;
+      }
+      // Only handle SIGNED_IN event for session-based logic
     });
-
     return () => {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [router, safeRedirect]);
+  }, [router, safeRedirect, searchParams]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const origin = window.location.origin;
-    const callbackUrl = new URL('/auth/callback', origin);
-    callbackUrl.searchParams.set('redirect', safeRedirect);
-    setRedirectTo(callbackUrl.toString());
-  }, [safeRedirect]);
-
-  const oppositeAuthHref = useMemo(() => {
-    const base = isSignUp ? '/signin' : '/signup';
-    if (!safeRedirect) return base;
-    const params = new URLSearchParams({ redirect: safeRedirect });
-    return `${base}?${params.toString()}`;
-  }, [isSignUp, safeRedirect]);
-
-  const copy = useMemo(() => {
-    if (isSignUp) {
-      return {
-        badge: 'Join FRUITSTAND®',
-        heading: (
-          <>
-            Create your
-            {' '}
-            <span className="font-semibold">account</span>
-          </>
-        ),
-        description:
-          'Unlock drops, track orders, and personalize your FRUITSTAND experience with a single login.',
-        bullets: [
+    // All JSX is now in render, not in objects
+    const badge = isSignUp ? 'Join FRUITSTAND®' : 'Secure Account Access';
+    const heading = isSignUp
+      ? <span>Create your <span className="font-semibold">account</span></span>
+      : <span>Welcome <span className="font-semibold">back</span></span>;
+    const description = isSignUp
+      ? 'Unlock drops, track orders, and personalize your FRUITSTAND experience with a single login.'
+      : 'Sign in to manage orders, track shipments, and personalize your FRUITSTAND® experience.';
+    const bullets = isSignUp
+      ? [
           'Access new releases before anyone else',
           'Save your favorite fits for later',
           'Faster checkout and order tracking'
-        ],
-      };
-    }
-
-    return {
-      badge: 'Secure Account Access',
-      heading: (
-        <>
-          Welcome <span className="font-semibold">back</span>
-        </>
-      ),
-      description:
-        'Sign in to manage orders, track shipments, and personalize your FRUITSTAND® experience.',
-      bullets: [
-        'Order history & tracking',
-        'Manage saved addresses',
-        'Exclusive promotions'
-      ],
-    };
-  }, [isSignUp]);
+        ]
+      : [
+          'Order history & tracking',
+          'Manage saved addresses',
+          'Exclusive promotions'
+        ];
 
   return (
   <div className="min-h-screen bg-[#fbf6f0] text-gray-900 overflow-hidden relative">
@@ -154,16 +150,16 @@ export default function SupabaseAuth({ mode = 'sign_in' }: SupabaseAuthProps) {
             {/* Left branding / intro */}
             <div className="space-y-6">
               <span className="inline-block px-4 py-1.5 bg-gray-100 text-gray-700 rounded-full text-xs font-medium tracking-wide shadow-sm">
-                {copy.badge}
+                {badge}
               </span>
               <h1 className="text-5xl md:text-6xl font-light leading-tight">
-                {copy.heading}
+                {heading}
               </h1>
               <p className="text-lg text-gray-600 max-w-md">
-                {copy.description}
+                {description}
               </p>
               <ul className="space-y-2 text-sm text-gray-600">
-                {copy.bullets.map((bullet) => (
+                {bullets.map((bullet) => (
                   <li key={bullet} className="flex items-center gap-2">
                     <span className="inline-block w-2 h-2 rounded-full bg-gray-400" />
                     {bullet}

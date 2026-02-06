@@ -4,6 +4,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { SupabaseOrderService } from '@/lib/services/supabase-existing'
 import { generateOrderNumber } from '@/lib/orderNumbers'
 import { readCartMetadata } from '@/lib/stripeCartMetadata'
+import { sendTransactionalTemplate } from '@/lib/email/transactional'
+import { hasEmailEvent, recordEmailEvent } from '@/lib/email/emailEvents'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
@@ -179,6 +181,10 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
         // Update existing order with Stripe shipping data + payment status
         await SupabaseOrderService.updateOrderWithShipping(existingOrder.id, shippingData);
         console.log(`Updated order ${existingOrder.id} with Stripe shipping data and paid status`);
+        
+        // Send order confirmation email
+        await sendOrderConfirmationEmail(existingOrder, session);
+        
         return;
       }
     } catch (err) {
@@ -196,6 +202,10 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
     }
 
     console.log('Webhook: Order synced in Supabase with id', syncResult.id)
+    
+    // Send order confirmation email for newly created order
+    await sendOrderConfirmationEmail(syncResult, session);
+    
     console.log('Webhook processed successfully');
 
   } catch (err: unknown) {
@@ -263,6 +273,15 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
         payment_status: 'paid',
         status: 'confirmed',
       });
+      
+      // Send order confirmation email
+      await sendOrderConfirmationEmailFromPaymentIntent(
+        existingOrder,
+        paymentIntent,
+        shippingEmail,
+        shippingName
+      );
+      
       return;
     }
 
@@ -272,7 +291,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
     const shippingState = shippingDetails?.address?.state || guestData?.address?.state;
     const correctTax = calculateCorrectTax(subtotal, shippingState);
 
-    await createOrderFromPaymentIntent({
+    const newOrder = await createOrderFromPaymentIntent({
       orderNumber,
       subtotal,
       tax: correctTax,
@@ -286,6 +305,16 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
       shippingEmail,
       shippingPhone,
     });
+    
+    // Send order confirmation email for new order
+    if (newOrder) {
+      await sendOrderConfirmationEmailFromPaymentIntent(
+        newOrder,
+        paymentIntent,
+        shippingEmail,
+        shippingName
+      );
+    }
   } catch (error) {
     console.error('Error handling payment_intent.succeeded:', error);
     throw error;
@@ -561,4 +590,136 @@ async function getSupabaseAdminClient() {
   const { createClient } = await import('@supabase/supabase-js')
   cachedSupabaseAdmin = createClient(url, serviceKey)
   return cachedSupabaseAdmin
+}
+
+/**
+ * Send order confirmation email from checkout session
+ */
+async function sendOrderConfirmationEmail(
+  order: { id: string | number; order_number?: string; total_amount?: number },
+  session: Stripe.Checkout.Session
+) {
+  try {
+    const orderId = order.id
+    const orderNumber = order.order_number || 'Unknown'
+    
+    // Check if email already sent for this order
+    const alreadySent = await hasEmailEvent(orderId, 'order_confirmation')
+    if (alreadySent) {
+      console.log(`Order confirmation email already sent for order ${orderId}`)
+      return
+    }
+    
+    // Determine customer email from session
+    const customerEmail = session.customer_email || 
+                         session.customer_details?.email ||
+                         (session.metadata?.guest ? JSON.parse(session.metadata.guest).email : null) ||
+                         (session.metadata?.customer ? JSON.parse(session.metadata.customer).email : null)
+    
+    if (!customerEmail) {
+      console.error(`No customer email found for order ${orderId}`)
+      return
+    }
+    
+    // Determine customer name
+    const customerName = session.customer_details?.name ||
+                        (session.metadata?.guest ? 
+                          (() => {
+                            const guest = JSON.parse(session.metadata.guest)
+                            return `${guest.firstName || ''} ${guest.lastName || ''}`.trim()
+                          })() : null) ||
+                        (session.metadata?.customer ? JSON.parse(session.metadata.customer).name : null) ||
+                        'Valued Customer'
+    
+    // Calculate order total
+    const orderTotal = order.total_amount ? 
+                      `$${(order.total_amount / 100).toFixed(2)}` : 
+                      `$${((session.amount_total || 0) / 100).toFixed(2)}`
+    
+    // Build order URL
+    const baseUrl = process.env.APP_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://fruitstandny.com'
+    const orderUrl = `${baseUrl}/order/${orderNumber}`
+    
+    // Send email
+    const result = await sendTransactionalTemplate({
+      templateName: 'order_confirmation',
+      toEmail: customerEmail,
+      toName: customerName,
+      mergeVars: {
+        ORDER_NUMBER: orderNumber,
+        ORDER_TOTAL: orderTotal,
+        ORDER_URL: orderUrl,
+        CUSTOMER_NAME: customerName,
+      },
+    })
+    
+    if (result.success) {
+      // Record that email was sent
+      await recordEmailEvent(orderId, 'order_confirmation')
+      console.log(`Order confirmation email sent to ${customerEmail} for order ${orderNumber}`)
+    } else {
+      console.error(`Failed to send order confirmation email: ${result.error}`)
+    }
+  } catch (error) {
+    console.error('Error in sendOrderConfirmationEmail:', error)
+  }
+}
+
+/**
+ * Send order confirmation email from payment intent
+ */
+async function sendOrderConfirmationEmailFromPaymentIntent(
+  order: { id: string | number; order_number?: string; total_amount?: number },
+  paymentIntent: Stripe.PaymentIntent,
+  customerEmail: string,
+  customerName: string
+) {
+  try {
+    const orderId = order.id
+    const orderNumber = order.order_number || 'Unknown'
+    
+    // Check if email already sent for this order
+    const alreadySent = await hasEmailEvent(orderId, 'order_confirmation')
+    if (alreadySent) {
+      console.log(`Order confirmation email already sent for order ${orderId}`)
+      return
+    }
+    
+    if (!customerEmail) {
+      console.error(`No customer email found for order ${orderId}`)
+      return
+    }
+    
+    // Calculate order total
+    const orderTotal = order.total_amount ? 
+                      `$${(order.total_amount / 100).toFixed(2)}` : 
+                      `$${((paymentIntent.amount || 0) / 100).toFixed(2)}`
+    
+    // Build order URL
+    const baseUrl = process.env.APP_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://fruitstandny.com'
+    const orderUrl = `${baseUrl}/order/${orderNumber}`
+    
+    // Send email
+    const result = await sendTransactionalTemplate({
+      templateName: 'order_confirmation',
+      toEmail: customerEmail,
+      toName: customerName || 'Valued Customer',
+      mergeVars: {
+        ORDER_NUMBER: orderNumber,
+        ORDER_TOTAL: orderTotal,
+        ORDER_URL: orderUrl,
+        CUSTOMER_NAME: customerName || 'Valued Customer',
+      },
+    })
+    
+    if (result.success) {
+      // Record that email was sent
+      await recordEmailEvent(orderId, 'order_confirmation')
+      console.log(`Order confirmation email sent to ${customerEmail} for order ${orderNumber}`)
+    } else {
+      console.error(`Failed to send order confirmation email: ${result.error}`)
+    }
+  } catch (error) {
+    console.error('Error in sendOrderConfirmationEmailFromPaymentIntent:', error)
+  }
 }
