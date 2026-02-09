@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
       items?: CheckoutItemPayload[];
       shipping?: number | string;
       tax?: number | string;
+      discountCode?: string | null;
       guestData?: Record<string, unknown> | null;
       customerData?: {
         email?: string;
@@ -57,6 +58,15 @@ export async function POST(request: NextRequest) {
         phone?: string;
       } | null;
     };
+
+    type DiscountDefinition = {
+      type: 'percent' | 'amount';
+      value: number;
+      label?: string;
+      active: boolean;
+    };
+
+    const DISCOUNT_CODES: Record<string, DiscountDefinition> = {};
 
     // 3. Parse Request
     let requestData: CheckoutRequestPayload;
@@ -68,7 +78,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Checkout API: Request data parsed');
-    const { items = [], shipping = 0, tax = 0, guestData = null, customerData = null } = requestData;
+    const { items = [], shipping = 0, tax = 0, discountCode = null, guestData = null, customerData = null } = requestData;
 
     // 4. Auth (Optional) - preserved for logging only
     const authHeader = request.headers.get('authorization');
@@ -92,13 +102,47 @@ export async function POST(request: NextRequest) {
 
     const normalizedItems: CheckoutItemPayload[] = Array.isArray(items) ? items : [];
     const subtotal = normalizedItems.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 0)), 0);
-    const totalAmount = subtotal + safeShipping + safeTax;
+    const normalizedDiscountCode = typeof discountCode === 'string'
+      ? discountCode.trim().toUpperCase()
+      : '';
+
+    const discountDefinition = normalizedDiscountCode
+      ? DISCOUNT_CODES[normalizedDiscountCode]
+      : undefined;
+
+    const rawDiscountAmount = discountDefinition && discountDefinition.active
+      ? (discountDefinition.type === 'percent'
+        ? (subtotal * discountDefinition.value) / 100
+        : discountDefinition.value)
+      : 0;
+
+    const discountAmount = Math.max(0, Math.min(rawDiscountAmount, subtotal));
+    const totalAmount = subtotal - discountAmount + safeShipping + safeTax;
     const orderNumber = generateOrderNumber();
 
     console.log('Checkout API: Order details calculated', { orderNumber, totalAmount });
 
     // 6. Prepare Stripe line items (unchanged except image handling)
-    const lineItems = normalizedItems.map((item) => {
+    const discountRatio = subtotal > 0 && discountAmount > 0
+      ? (subtotal - discountAmount) / subtotal
+      : 1;
+
+    const adjustedUnitAmounts = normalizedItems.map((item) => (
+      Math.max(Math.round(Number(item.price || 0) * 100 * discountRatio), 0)
+    ));
+
+    const adjustedSubtotal = adjustedUnitAmounts.reduce((sum, amount, index) => (
+      sum + amount * Number(normalizedItems[index]?.quantity || 0)
+    ), 0);
+
+    const targetSubtotal = Math.max(Math.round((subtotal - discountAmount) * 100), 0);
+    const remainder = targetSubtotal - adjustedSubtotal;
+
+    const lineItems = normalizedItems.map((item, index) => {
+      const finalUnitAmount = Math.max(
+        adjustedUnitAmounts[index] + (index === 0 ? remainder : 0),
+        0
+      );
       let imageUrl = item.image;
       if (imageUrl && !imageUrl.startsWith('http')) {
         const cleanPath = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
@@ -133,7 +177,7 @@ export async function POST(request: NextRequest) {
         price_data: {
           currency: 'usd',
           product_data: productData,
-          unit_amount: Math.round(Number(item.price || 0) * 100),
+          unit_amount: finalUnitAmount,
         },
         quantity: Number(item.quantity || 1),
       };
@@ -201,6 +245,8 @@ export async function POST(request: NextRequest) {
         tax: String(safeTax),
         shipping: String(safeShipping),
         subtotal: String(subtotal),
+        discount_code: normalizedDiscountCode || '',
+        discount_amount: String(discountAmount),
         guest: JSON.stringify(guestData || {}),
         customer: JSON.stringify(customerData || {}),
         order_number: orderNumber,

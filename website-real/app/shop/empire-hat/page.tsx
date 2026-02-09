@@ -5,6 +5,18 @@ import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 
+function formatText(text: string, productName: string, colorNames: string[]): string {
+  let lower = text.toLowerCase();
+  const nameRegex = new RegExp(productName, "gi");
+  lower = lower.replace(nameRegex, productName.toUpperCase());
+  colorNames.forEach(color => {
+    const colorRegex = new RegExp(color, "gi");
+    lower = lower.replace(colorRegex, color.toUpperCase());
+  });
+  lower = lower.replace(/(?:^|[.!?]\s+)([a-z])/g, (match) => match.toUpperCase());
+  return lower;
+}
+
 const EMPIRE_HAT_IMAGES = [
   "/images/products/empire-hat/Apple Hat.png",
   "/images/products/empire-hat/A1.png",
@@ -28,11 +40,7 @@ const PRODUCT = {
 };
 
 export default function EmpireHatPage() {
-  const galleryOption = useMemo(
-    () => ({ name: PRODUCT.name, slug: "default", images: EMPIRE_HAT_IMAGES }),
-    []
-  );
-  const [selectedImage, setSelectedImage] = useState(EMPIRE_HAT_IMAGES[0]);
+  const [selectedImage] = useState(EMPIRE_HAT_IMAGES[0]);
   const sizeOptions = useMemo<PurchaseSizeOption[]>(
     () => [{ value: "ONE_SIZE", label: "One Size" }],
     []
@@ -58,11 +66,11 @@ export default function EmpireHatPage() {
     <div>
       <ProductPageBrandHeader />
 
-      <main className="bg-[#fbf5ed] pb-[210px] pt-12">
+      <main className="bg-[#fbf5ed] pb-52.5 pt-12">
         {/* HERO SECTION - Top 75% */}
-        <div className="mx-auto w-full max-w-[400px] px-6 text-center" style={{ minHeight: '75vh' }}>
+        <div className="mx-auto w-full max-w-100 px-6 text-center" style={{ minHeight: '75vh' }}>
           {/* IMAGE */}
-          <div className="relative mx-auto aspect-[4/5] w-full">
+          <div className="relative mx-auto aspect-4/5 w-full">
             <img
               src={selectedImage}
               alt={PRODUCT.name}
@@ -72,8 +80,8 @@ export default function EmpireHatPage() {
 
           {/* TITLE / PRICE / COLORWAY - Single Line */}
           <div className="mt-8 flex flex-col items-center">
-            <h1 className="text-[22px] font-black uppercase tracking-[0.08em] leading-tight text-[#1d1c19]">
-              Empire Corduroy Hat
+            <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
+              {PRODUCT.name}
             </h1>
 
             <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
@@ -81,26 +89,26 @@ export default function EmpireHatPage() {
         </div>
 
         {/* DESCRIPTION SECTION */}
-        <div className="mx-auto w-full max-w-[400px] px-6 text-center">
+        <div className="mx-auto w-full max-w-100 px-6 text-center mt-5">
           <p className="px-1 text-[14px] leading-relaxed text-[#3d372f]">
-            {PRODUCT.description}
+            {formatText(PRODUCT.description, "Empire Corduroy Hat", ["Empire", "Corduroy", "Apple", "Red"])}
           </p>
         </div>
 
         {/* DETAILS SECTION */}
-        <div className="mx-auto w-full max-w-[400px] px-6 text-left">
+        <div className="mx-auto w-full max-w-100 px-6 text-left">
           <div className="mt-8">
             <p className="text-base font-semibold text-[#1d1c19]">Details</p>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-[#1d1c19]">
               {PRODUCT.details.map((detail) => (
-                <li key={detail}>{detail}</li>
+                <li key={detail}>{formatText(detail, "Empire Corduroy Hat", ["Empire", "Corduroy", "Apple", "Red"])}</li>
               ))}
             </ul>
           </div>
         </div>
 
         {/* YOU MAY ALSO LIKE SECTION */}
-        <div className="mx-auto w-full max-w-[400px] px-6 text-center">
+        <div className="mx-auto w-full max-w-100 px-6 text-center">
           <div className="mt-12">
             <p className="text-[22px] font-black uppercase tracking-[0.32em] text-[#1d1c19]">
               You May Also Like

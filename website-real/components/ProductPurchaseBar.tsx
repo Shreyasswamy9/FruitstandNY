@@ -109,7 +109,7 @@ export default function ProductPurchaseBar({
             className="relative flex overflow-hidden border-t border-white bg-black text-white shadow-[0_-14px_40px_rgba(0,0,0,0.35)]"
           >
             <div className="flex h-full w-full items-stretch">
-              <div className="relative flex flex-1 items-center justify-between border-r border-white px-3 py-4">
+              <div className="relative flex flex-1 items-center justify-between border-r border-black px-3 py-4">
                 <span className="max-w-[120px] truncate text-[13px] font-semibold uppercase tracking-[0.18em]">
                   {colorLabel}
                 </span>

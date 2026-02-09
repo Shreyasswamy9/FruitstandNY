@@ -6,6 +6,18 @@ import { useCart } from "../../../components/CartContext";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 
+function formatText(text: string, productName: string, colorNames: string[]): string {
+  let lower = text.toLowerCase();
+  const nameRegex = new RegExp(productName, "gi");
+  lower = lower.replace(nameRegex, productName.toUpperCase());
+  colorNames.forEach(color => {
+    const colorRegex = new RegExp(color, "gi");
+    lower = lower.replace(colorRegex, color.toUpperCase());
+  });
+  lower = lower.replace(/(?:^|[.!?]\s+)([a-z])/g, (match) => match.toUpperCase());
+  return lower;
+}
+
 const TRACKSUIT_IMAGE_MAP: Record<string, string[]> = {
   'elmhurst-taro-custard': [
     '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png',
@@ -164,9 +176,9 @@ export default function TracksuitPage() {
 
       <main className="bg-[#fbf5ed] pb-[210px] pt-16 md:pt-20 lg:pt-24">
         {/* HERO SECTION - Top 75% */}
-        <div className="mx-auto w-full max-w-[1200px] px-6 text-center lg:px-12 lg:text-left lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-start lg:gap-12" style={{ minHeight: '75vh' }}>
+        <div className="mx-auto w-full max-w-[1280px] px-6 text-center lg:px-12 lg:text-left lg:grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:items-start lg:gap-14" style={{ minHeight: '75vh' }}>
           {/* IMAGE */}
-          <div className="relative mx-auto aspect-[4/5] w-full lg:mx-0 lg:max-w-[520px] lg:row-span-3">
+          <div className="relative mx-auto aspect-[4/5] w-full lg:mx-0 lg:max-w-[620px] lg:row-span-3">
             <Image
               src={selectedImage}
               alt={`${selectedColor.name} ${PRODUCT.name}`}
@@ -179,9 +191,12 @@ export default function TracksuitPage() {
 
           {/* TITLE / PRICE / COLORWAY - Single Line */}
           <div className="mt-8 flex flex-col items-center lg:col-start-2 lg:items-start lg:mt-6">
-            <h1 className="text-[22px] font-black uppercase tracking-[0.08em] leading-tight text-[#1d1c19]">
-              Retro Track Suit - {selectedColor.name}
+            <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
+              {PRODUCT.name}
             </h1>
+            <p className="mt-1 text-[18px] text-[#1d1c19] font-avenir-light">
+              {selectedColor.name.toUpperCase()}
+            </p>
 
             <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
 
@@ -220,21 +235,21 @@ export default function TracksuitPage() {
             </div>
 
             {/* SIZE GUIDE */}
-            <div className="mt-4 text-[12px] font-semibold uppercase tracking-[0.34em] text-[#1d1c19] lg:col-start-2 lg:text-left">
+            <div className="mt-2 text-[13px] font-semibold uppercase tracking-[0.34em] text-[#1d1c19] lg:col-start-2 lg:text-left">
               <SizeGuide
                 productSlug="tracksuit"
                 imagePath="/images/size-guides/Size Guide/Track Jacket.png"
                 buttonLabel="SIZE GUIDE"
-                className="text-[12px] font-semibold uppercase tracking-[0.34em]"
+                className="text-[13px] font-semibold uppercase tracking-[0.34em]"
               />
             </div>
           </div>
         </div>
 
         {/* DESCRIPTION SECTION */}
-        <div className="mx-auto w-full max-w-[900px] px-6 text-center lg:px-12 lg:text-left">
+        <div className="mx-auto w-full max-w-[900px] px-6 text-center lg:px-12 lg:text-left mt-5">
           <p className="px-1 text-[14px] leading-relaxed text-[#3d372f]">
-            {PRODUCT.description}
+            {formatText(PRODUCT.description, "Retro Track Suit", ["Retro", "Track", "Suit", "Fruitstand"])}
           </p>
         </div>
 
@@ -244,7 +259,7 @@ export default function TracksuitPage() {
             <p className="text-base font-semibold text-[#1d1c19]">Details</p>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-[#1d1c19]">
               {PRODUCT_DETAILS.map((detail) => (
-                <li key={detail}>{detail}</li>
+                <li key={detail}>{formatText(detail, "Retro Track Suit", ["Retro", "Track", "Suit", "Fruitstand"])}</li>
               ))}
             </ul>
           </div>

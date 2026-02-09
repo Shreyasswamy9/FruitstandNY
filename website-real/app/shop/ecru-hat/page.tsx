@@ -5,6 +5,18 @@ import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 
+function formatText(text: string, productName: string, colorNames: string[]): string {
+  let lower = text.toLowerCase();
+  const nameRegex = new RegExp(productName, "gi");
+  lower = lower.replace(nameRegex, productName.toUpperCase());
+  colorNames.forEach(color => {
+    const colorRegex = new RegExp(color, "gi");
+    lower = lower.replace(colorRegex, color.toUpperCase());
+  });
+  lower = lower.replace(/(?:^|[.!?]\s+)([a-z])/g, (match) => match.toUpperCase());
+  return lower;
+}
+
 const ECRU_HAT_IMAGES = [
   "/images/products/Ecru Hat/Beige Hat.png",
   "/images/products/Ecru Hat/B1.png",
@@ -23,11 +35,7 @@ const PRODUCT = {
 };
 
 export default function EcruHatPage() {
-  const galleryOption = useMemo(
-    () => ({ name: PRODUCT.name, slug: "default", images: ECRU_HAT_IMAGES }),
-    []
-  );
-  const [selectedImage, setSelectedImage] = useState(ECRU_HAT_IMAGES[0]);
+  const [selectedImage] = useState(ECRU_HAT_IMAGES[0]);
   const sizeOptions = useMemo<PurchaseSizeOption[]>(
     () => [{ value: "ONE_SIZE", label: "One Size" }],
     []
@@ -53,11 +61,11 @@ export default function EcruHatPage() {
     <div>
       <ProductPageBrandHeader />
 
-      <main className="bg-[#fbf5ed] pb-[210px] pt-16 md:pt-20 lg:pt-24">
+      <main className="bg-[#fbf5ed] pb-52.5 pt-16 md:pt-20 lg:pt-24">
         {/* HERO SECTION - Top 75% */}
-        <div className="mx-auto w-full max-w-[1200px] px-6 text-center lg:px-12 lg:text-left lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-start lg:gap-12" style={{ minHeight: '75vh' }}>
+        <div className="mx-auto w-full max-w-300 px-6 text-center lg:px-12 lg:text-left lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-start lg:gap-12" style={{ minHeight: '75vh' }}>
           {/* IMAGE */}
-          <div className="relative mx-auto aspect-[4/5] w-full lg:mx-0 lg:max-w-[520px] lg:row-span-2">
+          <div className="relative mx-auto aspect-4/5 w-full lg:mx-0 lg:max-w-130 lg:row-span-2">
             <img
               src={selectedImage}
               alt={PRODUCT.name}
@@ -67,8 +75,8 @@ export default function EcruHatPage() {
 
           {/* TITLE / PRICE / COLORWAY - Single Line */}
           <div className="mt-8 flex flex-col items-center lg:col-start-2 lg:items-start lg:mt-6">
-            <h1 className="text-[22px] font-black uppercase tracking-[0.08em] leading-tight text-[#1d1c19]">
-              Ecru Hat
+            <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
+              {PRODUCT.name}
             </h1>
 
             <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
@@ -76,26 +84,26 @@ export default function EcruHatPage() {
         </div>
 
         {/* DESCRIPTION SECTION */}
-        <div className="mx-auto w-full max-w-[900px] px-6 text-center lg:px-12 lg:text-left">
+        <div className="mx-auto w-full max-w-225 px-6 text-center lg:px-12 lg:text-left mt-5">
           <p className="px-1 text-[14px] leading-relaxed text-[#3d372f]">
-            {PRODUCT.description}
+            {formatText(PRODUCT.description, "Ecru Hat", ["Ecru", "Fruitstand"])}
           </p>
         </div>
 
         {/* DETAILS SECTION */}
-        <div className="mx-auto w-full max-w-[900px] px-6 text-left lg:px-12">
+        <div className="mx-auto w-full max-w-225 px-6 text-left lg:px-12">
           <div className="mt-8">
             <p className="text-base font-semibold text-[#1d1c19]">Details</p>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-[#1d1c19]">
               {PRODUCT.details.map((detail) => (
-                <li key={detail}>{detail}</li>
+                <li key={detail}>{formatText(detail, "Ecru Hat", ["Ecru", "Fruitstand"])}</li>
               ))}
             </ul>
           </div>
         </div>
 
         {/* YOU MAY ALSO LIKE SECTION */}
-        <div className="mx-auto w-full max-w-[1200px] px-6 text-center lg:px-12">
+        <div className="mx-auto w-full max-w-300 px-6 text-center lg:px-12">
           <div className="mt-12">
             <p className="text-[22px] font-black uppercase tracking-[0.32em] text-[#1d1c19]">
               You May Also Like
@@ -103,7 +111,7 @@ export default function EcruHatPage() {
             <div className="mt-6 grid w-full grid-cols-2 gap-x-5 gap-y-10 text-left sm:grid-cols-3 lg:grid-cols-4">
               {boughtTogetherItems.map((product) => (
                 <div key={`${product.name}-${product.image}`} className="flex flex-col">
-                  <div className="relative aspect-[4/5] w-full overflow-hidden border border-[#1d1c19] bg-white">
+                  <div className="relative aspect-4/5 w-full overflow-hidden border border-[#1d1c19] bg-white">
                     <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
                   </div>
                   <p className="mt-4 text-[11px] font-black uppercase tracking-[0.34em] text-[#1d1c19]">

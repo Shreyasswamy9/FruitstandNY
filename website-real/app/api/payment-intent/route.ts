@@ -43,7 +43,17 @@ interface PaymentIntentRequest {
   paymentIntentId?: string | null;
   guestData?: GuestPayload | null;
   customerData?: CustomerPayload | null;
+  discountCode?: string | null;
 }
+
+type DiscountDefinition = {
+  type: 'percent' | 'amount';
+  value: number;
+  label?: string;
+  active: boolean;
+};
+
+const DISCOUNT_CODES: Record<string, DiscountDefinition> = {};
 
 export async function POST(request: NextRequest) {
   try {
@@ -76,7 +86,23 @@ export async function POST(request: NextRequest) {
       return sum + unitPrice * qty;
     }, 0);
 
-    const total = subtotal + shipping + tax;
+    const normalizedDiscountCode = typeof payload.discountCode === 'string'
+      ? payload.discountCode.trim().toUpperCase()
+      : '';
+
+    const discountDefinition = normalizedDiscountCode
+      ? DISCOUNT_CODES[normalizedDiscountCode]
+      : undefined;
+
+    const rawDiscountAmount = discountDefinition && discountDefinition.active
+      ? (discountDefinition.type === 'percent'
+        ? (subtotal * discountDefinition.value) / 100
+        : discountDefinition.value)
+      : 0;
+
+    const discountAmount = Math.max(0, Math.min(rawDiscountAmount, subtotal));
+
+    const total = subtotal - discountAmount + shipping + tax;
     const amountInCents = Math.round(total * 100);
 
     if (!Number.isFinite(amountInCents) || amountInCents <= 0) {
@@ -93,6 +119,8 @@ export async function POST(request: NextRequest) {
 
     const baseMetadata = {
       subtotal: String(subtotal),
+      discount_code: normalizedDiscountCode || '',
+      discount_amount: String(discountAmount),
       shipping: String(shipping),
       tax: String(tax),
       guest: JSON.stringify(guestData || {}),

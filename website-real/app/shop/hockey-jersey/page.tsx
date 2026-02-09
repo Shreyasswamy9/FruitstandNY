@@ -8,6 +8,18 @@ import { useCart } from "@/components/CartContext";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 
+function formatText(text: string, productName: string, colorNames: string[]): string {
+  let lower = text.toLowerCase();
+  const nameRegex = new RegExp(productName, "gi");
+  lower = lower.replace(nameRegex, productName.toUpperCase());
+  colorNames.forEach(color => {
+    const colorRegex = new RegExp(color, "gi");
+    lower = lower.replace(colorRegex, color.toUpperCase());
+  });
+  lower = lower.replace(/(?:^|[.!?]\s+)([a-z])/g, (match) => match.toUpperCase());
+  return lower;
+}
+
 const HOCKEY_JERSEY_IMAGE_SET = [
   "/images/products/hockey Jersey/JN.png",
   "/images/products/hockey Jersey/JN1.png",
@@ -111,9 +123,12 @@ export default function HockeyJerseyPage() {
 
           {/* TITLE / PRICE / COLORWAY - Single Line */}
           <div className="mt-8 flex flex-col items-center lg:col-start-2 lg:items-start lg:mt-6">
-            <h1 className="text-[22px] font-black uppercase tracking-[0.08em] leading-tight text-[#1d1c19]">
-              Broadway Blueberry Jersey
+            <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
+              {PRODUCT.name}
             </h1>
+            <p className="mt-1 text-[18px] text-[#1d1c19] font-avenir-light">
+              {selectedColor.name.toUpperCase()}
+            </p>
 
             <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
 
@@ -149,21 +164,21 @@ export default function HockeyJerseyPage() {
             </div>
 
             {/* SIZE GUIDE */}
-            <div className="mt-4 text-[12px] font-semibold uppercase tracking-[0.34em] text-[#1d1c19] lg:col-start-2 lg:text-left">
+            <div className="mt-2 text-[13px] font-semibold uppercase tracking-[0.34em] text-[#1d1c19] lg:col-start-2 lg:text-left">
               <SizeGuide
                 productSlug="hockey-jersey"
                 imagePath="/images/size-guides/Size Guide/Hockey Jersey Table.png"
                 buttonLabel="SIZE GUIDE"
-                className="text-[12px] font-semibold uppercase tracking-[0.34em]"
+                className="text-[13px] font-semibold uppercase tracking-[0.34em]"
               />
             </div>
           </div>
         </div>
 
         {/* DESCRIPTION SECTION */}
-        <div className="mx-auto w-full max-w-[900px] px-6 text-center lg:px-12 lg:text-left">
+        <div className="mx-auto w-full max-w-[900px] px-6 text-center lg:px-12 lg:text-left mt-5">
           <p className="px-1 text-[14px] leading-relaxed text-[#3d372f]">
-            {PRODUCT.description}
+            {formatText(PRODUCT.description, "Broadway Blueberry Jersey", ["Blueberry", "Jersey", "Fruitstand"])}
           </p>
         </div>
 
@@ -173,7 +188,7 @@ export default function HockeyJerseyPage() {
             <p className="text-base font-semibold text-[#1d1c19]">Details</p>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-[#1d1c19]">
               {PRODUCT.details.map((detail) => (
-                <li key={detail}>{detail}</li>
+                <li key={detail}>{formatText(detail, "Broadway Blueberry Jersey", ["Blueberry", "Jersey", "Fruitstand"])}</li>
               ))}
             </ul>
           </div>

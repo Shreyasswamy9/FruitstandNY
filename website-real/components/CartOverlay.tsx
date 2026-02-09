@@ -56,6 +56,7 @@ export default function CartOverlay() {
   } = useCart();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
   
   // Refs for GSAP animation
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -87,6 +88,7 @@ export default function CartOverlay() {
     closeTweenRef.current?.kill();
 
     if (isOverlayOpen) {
+      setShouldRender(true);
       // Animate in: backdrop fades in, panel slides up from bottom
       openTlRef.current = gsap.timeline()
         .to(backdrop, { opacity: 1, duration: 0.28, ease: 'power4.out' }, 0)
@@ -94,7 +96,9 @@ export default function CartOverlay() {
     } else if (backdrop.style.opacity !== '0') {
       // Only animate out if it's currently visible
       // Animate out: panel slides down to bottom, backdrop fades out
-      closeTweenRef.current = gsap.timeline()
+      closeTweenRef.current = gsap.timeline({
+        onComplete: () => setShouldRender(false)
+      })
         .to(panel, { y: 300, opacity: 0, duration: 0.32, ease: 'power3.in' }, 0)
         .to(backdrop, { opacity: 0, duration: 0.32, ease: 'power3.in' }, 0);
     }
@@ -170,7 +174,7 @@ export default function CartOverlay() {
   if (!portalTarget) return null;
 
   // Only render when overlay should be visible or is animating
-  if (!isOverlayOpen && !backdropRef.current) return null;
+  if (!isOverlayOpen && !shouldRender) return null;
 
   // Render overlay (visibility controlled by GSAP)
   return createPortal(

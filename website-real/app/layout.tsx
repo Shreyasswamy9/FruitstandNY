@@ -5,7 +5,6 @@ import "./globals.css"
 import ClientRootLayout from "../components/ClientRootLayout"
 import { CartProvider } from "../components/CartContext"
 import Script from 'next/script'
-import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react";
 import TrackingPixels from "./components/TrackingPixels";
 declare global {

@@ -5,7 +5,19 @@ import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 
-const FOREST_HILLS_IMAGES = [
+function formatText(text: string, productName: string, colorNames: string[]): string {
+  let lower = text.toLowerCase();
+  const nameRegex = new RegExp(productName, "gi");
+  lower = lower.replace(nameRegex, productName.toUpperCase());
+  colorNames.forEach(color => {
+    const colorRegex = new RegExp(color, "gi");
+    lower = lower.replace(colorRegex, color.toUpperCase());
+  });
+  lower = lower.replace(/(?:^|[.!?]\s+)([a-z])/g, (match) => match.toUpperCase());
+  return lower;
+}
+
+const FOREST_HILLS_HAT_IMAGES = [
   "/images/products/Forest Hills Hat/Green Hat.png",
   "/images/products/Forest Hills Hat/G1.png",
   "/images/products/Forest Hills Hat/G2.png",
@@ -27,11 +39,7 @@ const PRODUCT = {
 };
 
 export default function ForestHillsHatPage() {
-  const galleryOption = useMemo(
-    () => ({ name: PRODUCT.name, slug: "default", images: FOREST_HILLS_IMAGES }),
-    []
-  );
-  const [selectedImage, setSelectedImage] = useState(FOREST_HILLS_IMAGES[0]);
+  const [selectedImage] = useState(FOREST_HILLS_HAT_IMAGES[0]);
   const sizeOptions = useMemo<PurchaseSizeOption[]>(
     () => [{ value: "ONE_SIZE", label: "One Size" }],
     []
@@ -71,8 +79,8 @@ export default function ForestHillsHatPage() {
 
           {/* TITLE / PRICE / COLORWAY - Single Line */}
           <div className="mt-8 flex flex-col items-center">
-            <h1 className="text-[22px] font-black uppercase tracking-[0.08em] leading-tight text-[#1d1c19]">
-              Forest Hills Hat
+            <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
+              {PRODUCT.name}
             </h1>
 
             <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
@@ -80,9 +88,9 @@ export default function ForestHillsHatPage() {
         </div>
 
         {/* DESCRIPTION SECTION */}
-        <div className="mx-auto w-full max-w-[400px] px-6 text-center">
+        <div className="mx-auto w-full max-w-[400px] px-6 text-center mt-5">
           <p className="px-1 text-[14px] leading-relaxed text-[#3d372f]">
-            {PRODUCT.description}
+            {formatText(PRODUCT.description, "Forest Hills Hat", ["Forest", "Hills", "Lime", "Green", "Fruitstand"])}
           </p>
         </div>
 
@@ -92,7 +100,7 @@ export default function ForestHillsHatPage() {
             <p className="text-base font-semibold text-[#1d1c19]">Details</p>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-[#1d1c19]">
               {PRODUCT.details.map((detail) => (
-                <li key={detail}>{detail}</li>
+                <li key={detail}>{formatText(detail, "Forest Hills Hat", ["Forest", "Hills", "Lime", "Green", "Fruitstand"])}</li>
               ))}
             </ul>
           </div>

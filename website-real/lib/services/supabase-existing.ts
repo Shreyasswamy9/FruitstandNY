@@ -1,7 +1,7 @@
 import { supabase } from '@/app/supabase-client';
 import { readCartMetadata } from '@/lib/stripeCartMetadata';
 import { generateOrderNumber } from '@/lib/orderNumbers';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 
 // Helper: safe JSON parse

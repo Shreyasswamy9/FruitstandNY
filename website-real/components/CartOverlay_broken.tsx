@@ -162,7 +162,7 @@ export default function CartOverlay() {
   // Render overlay (always in DOM, visibility controlled by GSAP)
   return createPortal(
     <>
-      {isOverlayOpen || backdropRef.current ? (
+      {isOverlayOpen ? (
         <div
           ref={backdropRef}
           id={overlayBackdropId}

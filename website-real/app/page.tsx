@@ -6,7 +6,6 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader"
-import SignupPromoModal from "@/components/SignupPromoModal"
 import { LogoVisibilityContext } from "@/components/ClientRootLayout"
 
 interface EditorialPhoto {
@@ -18,8 +17,8 @@ interface EditorialPhoto {
 const editorialPhotos: EditorialPhoto[] = [
   { id: "1", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY@main/website-real/public/images/editorial/FRUITSTANDEDITSr1-11.JPG", location: "LOWER EAST SIDE" },
   { id: "2", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY@main/website-real/public/images/editorial/FRUITSTANDEDITSr1-15.JPG", location: "CHINATOWN" },
-  { id: "3", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY@main/website-real/public/images/editorial/FRUITSTANDEDITSr1-155.JPG", location: "WILLIAMSBURG" },
-  { id: "4", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY@main/website-real/public/images/editorial/FRUITSTANDEDITSr1-21.JPG", location: "DUMBO" },
+  { id: "3", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY@main/website-real/public/images/editorial/FRUITSTANDEDITSr1-155.JPG", location: "LOWER EAST SIDE" },
+  { id: "4", image: "https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY@main/website-real/public/images/editorial/FRUITSTANDEDITSr1-21.JPG", location: "LOWER EAST SIDE" },
 ]
 
 const newItems = [
@@ -40,9 +39,9 @@ const newItems = [
   {
     id: "shirt-combo",
     name: "SHIRT COMBO",
-    image: "/images/products/gala-tshirt/suttonplacesnow/GN11.png",
+    image: "/images/products/Teebundle/Five T-Shirts.png",
     price: "$106.25",
-    link: "/shop?bundle=tshirt-bundle",
+    link: "/shop/tshirt-bundle",
   },
   {
     id: "fuji-tee",
@@ -56,7 +55,6 @@ const newItems = [
 export default function Home() {
   const carouselRef = useRef<HTMLDivElement>(null)
   const [isHydrated, setIsHydrated] = useState(false)
-  const [showSignupPromo, setShowSignupPromo] = useState(false)
   const [showMain, setShowMain] = useState(true)
   const { setHideLogo } = useContext(LogoVisibilityContext)
   const [currentLangIndex, setCurrentLangIndex] = useState(0)
@@ -220,11 +218,8 @@ export default function Home() {
 
     const container = carouselRef.current
     const currentScroll = container.scrollLeft
-    const firstCard = container.querySelector<HTMLElement>(".carousel-card")
-    const computedStyles = window.getComputedStyle(container)
-    const gapValue = parseInt(computedStyles.columnGap || computedStyles.gap || "0", 10)
-    const cardWidth = firstCard?.offsetWidth ?? container.clientWidth
-    const scrollAmount = cardWidth + gapValue
+    const viewportWidth = typeof window !== "undefined" ? window.innerWidth : 0
+    const scrollAmount = viewportWidth
 
     if (!scrollAmount) return
 
@@ -361,50 +356,69 @@ export default function Home() {
         )}
 
         {/* New Items Carousel */}
-        <section className="w-full pb-12 pt-10 md:pb-16 md:pt-14">
-          <div className="relative mx-auto w-full max-w-[520px] md:max-w-6xl">
-            <div
-              ref={carouselRef}
-              className="flex gap-3 overflow-x-auto px-6 pb-5 md:gap-6 md:overflow-visible md:px-0 lg:gap-8 scrollbar-hide snap-x snap-center scroll-smooth md:justify-center"
-              style={{ scrollBehavior: "smooth", scrollPaddingInline: "var(--scroll-padding)" }}
-            >
-              {newItems.map((item) => (
-                <Link
-                  key={item.id}
-                  href={item.link}
-                  className="carousel-card group flex shrink-0 snap-center flex-col overflow-hidden rounded-[22px] border border-[#dcd2c6] bg-gradient-to-b from-[#f7f0e6] to-white shadow-[0_20px_34px_rgba(24,24,24,0.08)] transition-transform duration-300 hover:-translate-y-[6px]"
-                >
-                  <div className="relative aspect-[3/4] w-full bg-[#f5efe4]">
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      fill
-                      unoptimized
-                      className="object-contain transition duration-300"
-                    />
-                  </div>
-                </Link>
-              ))}
-            </div>
-
+        <section className="w-full py-0">
+          {/* Carousel Container with Arrows */}
+          <div className="relative w-full flex items-stretch">
+            {/* Left Arrow - Mobile Only */}
             <button
               type="button"
               onClick={() => scrollCarousel("left")}
-              className="absolute left-2 top-1/2 z-10 md:hidden flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#d0c3b3] bg-white text-[#181818] shadow-[0_18px_34px_rgba(24,24,24,0.12)] transition hover:bg-[#f8f1e6]"
+              className="absolute left-0 top-0 bottom-14 md:hidden z-10 flex items-center justify-center text-[#181818] -translate-x-10 w-8"
               aria-label="Scroll left"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="w-6 h-6" strokeWidth={1.5} />
             </button>
+
+            {/* Main Carousel Content */}
+            <div className="relative w-full">
+              {/* Scrollable Carousel */}
+              <div
+                ref={carouselRef}
+                className="new-items-carousel overflow-x-auto scrollbar-hide md:overflow-visible"
+                style={{
+                  scrollBehavior: "smooth",
+                  minHeight: "400px",
+                }}
+              >
+                <div className="flex border-l border-r border-t border-[#181818] md:border md:rounded-none">
+                  {newItems.map((item, index) => (
+                    <Link
+                      key={item.id}
+                      href={item.link}
+                      className="carousel-card flex shrink-0 flex-col items-center justify-center border-l border-[#181818] first:border-l-0 md:border-l md:first:border-l-0 bg-[#f7f2ea]"
+                    >
+                      <div className="relative w-full h-full flex items-center justify-center bg-[#f7f2ea]">
+                        <Image
+                          src={item.image}
+                          alt={item.name}
+                          fill
+                          unoptimized
+                          className="object-contain"
+                        />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bottom Label Bar */}
+              <div className="w-full h-14 bg-[#181818] flex items-center justify-center border-l border-r border-b border-[#181818] md:border">
+                <span className="text-white text-sm font-semibold tracking-widest uppercase text-center">
+                  NEW ITEMS
+                </span>
+              </div>
+            </div>
+
+            {/* Right Arrow - Mobile Only */}
             <button
               type="button"
               onClick={() => scrollCarousel("right")}
-              className="absolute right-2 top-1/2 z-10 md:hidden flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#d0c3b3] bg-white text-[#181818] shadow-[0_18px_34px_rgba(24,24,24,0.12)] transition hover:bg-[#f8f1e6]"
+              className="absolute right-0 top-0 bottom-14 md:hidden z-10 flex items-center justify-center text-[#181818] translate-x-10 w-8"
               aria-label="Scroll right"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="w-6 h-6" strokeWidth={1.5} />
             </button>
           </div>
-
         </section>
 
         {/* Editorial Photos Section */}
@@ -437,36 +451,63 @@ export default function Home() {
 
         {/* Scrollbar Hide Styles */}
         <style>{`
-          .carousel-card {
-            flex: 0 0 calc((min(100vw, 520px) - 46px) / 2);
-            max-width: 228px;
-            width: calc((min(100vw, 520px) - 46px) / 2);
-          }
-          @media (min-width: 640px) {
-            .carousel-card {
-              flex-basis: 16rem;
-              max-width: 16rem;
-              width: 16rem;
-            }
-          }
-          @media (min-width: 768px) {
-            .carousel-card {
-              flex: 0 0 auto;
-              max-width: none;
-              width: 18rem;
-            }
-          }
-          @media (min-width: 1024px) {
-            .carousel-card {
-              width: 20rem;
-            }
-          }
           .scrollbar-hide {
             -ms-overflow-style: none;
             scrollbar-width: none;
           }
           .scrollbar-hide::-webkit-scrollbar {
             display: none;
+          }
+
+          /* New Items Carousel */
+          .new-items-carousel {
+            scroll-snap-type: x mandatory;
+            scroll-padding: 0;
+            display: flex;
+          }
+
+          .carousel-card {
+            width: 50vw;
+            flex: 0 0 50vw;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            height: 100%;
+            min-height: 400px;
+          }
+
+          @media (min-width: 768px) {
+            .carousel-card {
+              flex: 1 1 0%;
+              scroll-snap-align: none;
+              scroll-snap-stop: unset;
+              min-height: 500px;
+            }
+
+            .new-items-carousel > div {
+              display: flex !important;
+              width: 100%;
+            }
+
+            .new-items-carousel {
+              display: flex;
+              scroll-snap-type: none;
+              overflow: visible !important;
+              width: 100%;
+            }
+
+            .carousel-card:nth-child(n+5) {
+              display: none;
+            }
+          }
+
+          @media (min-width: 1024px) {
+            .carousel-card {
+              flex: 1 1 0%;
+            }
+
+            .carousel-card:nth-child(n+5) {
+              display: none;
+            }
           }
         `}</style>
       </div>

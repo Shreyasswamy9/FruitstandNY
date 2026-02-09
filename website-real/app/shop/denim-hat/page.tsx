@@ -5,6 +5,18 @@ import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 
+function formatText(text: string, productName: string, colorNames: string[]): string {
+  let lower = text.toLowerCase();
+  const nameRegex = new RegExp(productName, "gi");
+  lower = lower.replace(nameRegex, productName.toUpperCase());
+  colorNames.forEach(color => {
+    const colorRegex = new RegExp(color, "gi");
+    lower = lower.replace(colorRegex, color.toUpperCase());
+  });
+  lower = lower.replace(/(?:^|[.!?]\s+)([a-z])/g, (match) => match.toUpperCase());
+  return lower;
+}
+
 const DENIM_HAT_IMAGES = [
   "/images/products/denim-hat/Denim Hat.png",
   "/images/products/denim-hat/D1.png",
@@ -25,11 +37,7 @@ const PRODUCT = {
 };
 
 export default function DenimHatPage() {
-  const galleryOption = useMemo(
-    () => ({ name: PRODUCT.name, slug: "default", images: DENIM_HAT_IMAGES }),
-    []
-  );
-  const [selectedImage, setSelectedImage] = useState(DENIM_HAT_IMAGES[0]);
+  const [selectedImage] = useState(DENIM_HAT_IMAGES[0]);
   const sizeOptions = useMemo<PurchaseSizeOption[]>(
     () => [{ value: "ONE_SIZE", label: "One Size" }],
     []
@@ -69,8 +77,8 @@ export default function DenimHatPage() {
 
           {/* TITLE / PRICE / COLORWAY - Single Line */}
           <div className="mt-8 flex flex-col items-center">
-            <h1 className="text-[22px] font-black uppercase tracking-[0.08em] leading-tight text-[#1d1c19]">
-              Indigo Hat
+            <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
+              {PRODUCT.name}
             </h1>
 
             <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
@@ -78,9 +86,9 @@ export default function DenimHatPage() {
         </div>
 
         {/* DESCRIPTION SECTION */}
-        <div className="mx-auto w-full max-w-[400px] px-6 text-center">
+        <div className="mx-auto w-full max-w-[400px] px-6 text-center mt-5">
           <p className="px-1 text-[14px] leading-relaxed text-[#3d372f]">
-            {PRODUCT.description}
+            {formatText(PRODUCT.description, "Indigo Hat", ["Indigo", "Denim", "Fruitstand"])}
           </p>
         </div>
 
@@ -90,7 +98,7 @@ export default function DenimHatPage() {
             <p className="text-base font-semibold text-[#1d1c19]">Details</p>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-[#1d1c19]">
               {PRODUCT.details.map((detail) => (
-                <li key={detail}>{detail}</li>
+                <li key={detail}>{formatText(detail, "Indigo Hat", ["Indigo", "Denim", "Fruitstand"])}</li>
               ))}
             </ul>
           </div>

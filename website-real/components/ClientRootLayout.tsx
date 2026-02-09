@@ -52,19 +52,7 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
   }, [pathname, menuOpen])
 
   useEffect(() => {
-    if (typeof document === "undefined") {
-      return
-    }
-    const body = document.body
-    const shouldUppercase = pathname ? pathname === '/' || pathname.startsWith('/shop') : false
-    if (shouldUppercase) {
-      body.classList.add("product-page-uppercase")
-    } else {
-      body.classList.remove("product-page-uppercase")
-    }
-    return () => {
-      body.classList.remove("product-page-uppercase")
-    }
+    // Universal uppercase logic removed
   }, [pathname])
 
   useEffect(() => {
