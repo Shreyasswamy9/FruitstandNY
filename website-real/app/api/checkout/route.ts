@@ -190,9 +190,9 @@ export async function POST(request: NextRequest) {
           currency: 'usd',
           product_data: { name: 'Shipping' },
           unit_amount: Math.round(safeShipping * 100),
+          tax_behavior: 'exclusive', // Tax will be calculated on shipping too
         },
         quantity: 1,
-        tax_behavior: 'exclusive', // Tax will be calculated on shipping too
       });
     }
 
