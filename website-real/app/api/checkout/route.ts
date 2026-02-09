@@ -178,6 +178,7 @@ export async function POST(request: NextRequest) {
           currency: 'usd',
           product_data: productData,
           unit_amount: finalUnitAmount,
+          tax_behavior: 'exclusive', // Tax will be calculated on top of this price
         },
         quantity: Number(item.quantity || 1),
       };
@@ -191,19 +192,11 @@ export async function POST(request: NextRequest) {
           unit_amount: Math.round(safeShipping * 100),
         },
         quantity: 1,
+        tax_behavior: 'exclusive', // Tax will be calculated on shipping too
       });
     }
 
-    if (safeTax > 0) {
-      lineItems.push({
-        price_data: {
-          currency: 'usd',
-          product_data: { name: 'Tax' },
-          unit_amount: Math.round(safeTax * 100),
-        },
-        quantity: 1,
-      });
-    }
+    // Remove manual tax line item - Stripe automatic_tax will calculate it
 
     // 7. Create Stripe Session with metadata containing full order payload (no DB writes here)
     type GuestAddress = {
