@@ -16,13 +16,15 @@ export async function GET(request: NextRequest) {
 
     if (!order) {
       // 1. Fetch session from Stripe
+      console.log('Order not found in DB for session:', sessionId);
       const session = await stripe.checkout.sessions.retrieve(sessionId);
 
       // 2. If paid, attempt to sync/create the order immediately (Hybrid approach)
       if (session && session.payment_status === 'paid') {
-        console.log('Order not found in DB, attempting interactive sync for session:', sessionId);
+        console.log('Session is paid, attempting interactive sync for session:', sessionId);
         const syncedOrder = await SupabaseOrderService.syncOrderFromStripeSession(session);
         if (syncedOrder) {
+          console.log('Successfully synced order:', syncedOrder.order_number);
           return NextResponse.json({
             data: {
               orderNumber: syncedOrder.order_number,
@@ -37,10 +39,17 @@ export async function GET(request: NextRequest) {
               currency: 'USD',
             },
           });
+        } else {
+          console.log('Sync returned null for session:', sessionId);
         }
+      } else {
+        console.log('Session payment status:', session?.payment_status);
       }
 
-      return NextResponse.json({ data: null }, { status: 404 });
+      return NextResponse.json({ 
+        error: 'Order not found yet. It may still be processing.',
+        data: null 
+      }, { status: 404 });
     }
 
     return NextResponse.json({

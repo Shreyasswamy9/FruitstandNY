@@ -4,7 +4,6 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { supabase } from '@/app/supabase-client';
 import { useCart } from '@/components/CartContext';
 import { trackPurchase, generateEventId } from '@/lib/analytics/meta-pixel';
 
@@ -79,7 +78,6 @@ function SuccessContent() {
       const params = new URLSearchParams(window.location.search);
       const sid = params.get('session_id');
       const pid = params.get('payment_intent');
-      const fromAccountCreation = params.get('from') === 'account-creation';
       const orderNumberParam = params.get('order_number') ?? params.get('orderNumber');
 
       if (!isActive) {
@@ -98,35 +96,6 @@ function SuccessContent() {
       }
 
       if (sid) {
-        if (!fromAccountCreation) {
-          try {
-            const { data, error } = await supabase.auth.getSession();
-
-            if (!isActive) {
-              return;
-            }
-
-            if (error) {
-              console.error('Unable to verify Supabase session:', error);
-            }
-
-            const hasActiveSession = Boolean(data?.session);
-
-            if (!hasActiveSession) {
-              router.push(`/success/create-account?session_id=${sid}`);
-              return;
-            }
-          } catch (sessionError) {
-            if (!isActive) {
-              return;
-            }
-
-            console.error('Supabase session check failed:', sessionError);
-            router.push(`/success/create-account?session_id=${sid}`);
-            return;
-          }
-        }
-
         setShouldFetchOrder(true);
         localStorage.removeItem('cart');
         window.dispatchEvent(new Event('cartCleared'));
@@ -155,38 +124,67 @@ function SuccessContent() {
     let isActive = true;
 
     const loadOrder = async () => {
-      try {
-        setDetailsError(null);
-        const endpoint = sessionId
-          ? `/api/orders/by-session?session_id=${encodeURIComponent(sessionId)}`
-          : `/api/orders/by-payment-intent?payment_intent=${encodeURIComponent(paymentIntentId!)}`;
-        const response = await fetch(endpoint);
+      const maxRetries = 5;
+      const retryDelay = 2000; // 2 seconds between retries
+      
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
         if (!isActive) return;
-        if (!response.ok) {
-          const payload = await response.json().catch(() => ({}));
-          setDetailsError(payload?.error ?? 'Unable to load order details.');
-          setOrderDetails(null);
-          return;
-        }
+        
+        try {
+          setDetailsError(null);
+          const endpoint = sessionId
+            ? `/api/orders/by-session?session_id=${encodeURIComponent(sessionId)}`
+            : `/api/orders/by-payment-intent?payment_intent=${encodeURIComponent(paymentIntentId!)}`;
+          const response = await fetch(endpoint);
+          
+          if (!isActive) return;
+          
+          if (!response.ok) {
+            if (response.status === 404 && attempt < maxRetries - 1) {
+              // Order not found yet, wait and retry
+              console.log(`Order not found, retrying in ${retryDelay}ms... (attempt ${attempt + 1}/${maxRetries})`);
+              await new Promise(resolve => setTimeout(resolve, retryDelay));
+              continue;
+            }
+            
+            const payload = await response.json().catch(() => ({}));
+            setDetailsError(payload?.error ?? 'Unable to load order details.');
+            setOrderDetails(null);
+            return;
+          }
 
-        const payload = await response.json();
-        if (!isActive) return;
-        if (payload?.data) {
-          setOrderDetails({
-            orderNumber: payload.data.orderNumber,
-            totalAmount: payload.data.totalAmount,
-            status: payload.data.status,
-            items: payload.data.items || [],
-            currency: payload.data.currency || 'USD',
-          });
-        } else {
+          const payload = await response.json();
+          if (!isActive) return;
+          
+          if (payload?.data) {
+            setOrderDetails({
+              orderNumber: payload.data.orderNumber,
+              totalAmount: payload.data.totalAmount,
+              status: payload.data.status,
+              items: payload.data.items || [],
+              currency: payload.data.currency || 'USD',
+            });
+            return; // Success, exit retry loop
+          } else if (attempt < maxRetries - 1) {
+            // No data yet, retry
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+            continue;
+          } else {
+            setOrderDetails(null);
+          }
+        } catch (error) {
+          if (!isActive) return;
+          
+          if (attempt < maxRetries - 1) {
+            console.log(`Error fetching order, retrying... (attempt ${attempt + 1}/${maxRetries})`, error);
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+            continue;
+          }
+          
+          setDetailsError('Unable to load order details.');
           setOrderDetails(null);
+          console.error('Order details fetch failed after retries:', error);
         }
-      } catch (error) {
-        if (!isActive) return;
-        setDetailsError('Unable to load order details.');
-        setOrderDetails(null);
-        console.error('Order details fetch failed:', error);
       }
     };
 
@@ -198,6 +196,16 @@ function SuccessContent() {
   }, [sessionId, paymentIntentId, shouldFetchOrder]);
 
   useEffect(() => {
+    if (orderDetails?.orderNumber) {
+      // If we have order details from API, clear any old sessionStorage value
+      // and update with the correct order number
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.removeItem('latestOrderNumber');
+      }
+      return;
+    }
+    
+    // Only use sessionStorage as a fallback if we don't have API data yet
     if (initialOrderNumber) {
       return;
     }
@@ -209,9 +217,10 @@ function SuccessContent() {
       if (/^\d{6}$/.test(stored)) {
         setInitialOrderNumber(stored);
       }
+      // Remove it immediately after reading to prevent reuse
       window.sessionStorage.removeItem('latestOrderNumber');
     }
-  }, [initialOrderNumber]);
+  }, [initialOrderNumber, orderDetails]);
 
   useEffect(() => {
     if (hasClearedCart.current) {
@@ -221,9 +230,9 @@ function SuccessContent() {
     hasClearedCart.current = true;
   }, [clearCart]);
 
-  const resolvedOrderNumber = [orderDetails?.orderNumber, initialOrderNumber].find(
-    (value): value is string => typeof value === 'string' && /^\d{6}$/.test(value)
-  ) ?? null;
+  const resolvedOrderNumber = orderDetails?.orderNumber 
+    ? orderDetails.orderNumber 
+    : (initialOrderNumber && /^\d{6}$/.test(initialOrderNumber) ? initialOrderNumber : null);
 
   if (loading) {
     return (
