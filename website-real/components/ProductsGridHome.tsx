@@ -526,8 +526,13 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
                 const touchTime = state ? Date.now() - state.start : 0;
                 if (state && !state.moved && touchTime < 250) {
                   if (isBundleCard) {
+                    // Navigate to dedicated bundle page if it exists
+                    if (product.bundleId === 'tshirt-bundle') {
+                      router.push('/shop/tshirt-bundle');
+                    } else {
+                      openBundleSheet();
+                    }
                     setMobileHover(null);
-                    openBundleSheet();
                     lastNavigationRef.current = Date.now();
                   } else {
                     router.push(getProductLink());
