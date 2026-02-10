@@ -6,6 +6,7 @@ import SizeGuide from "@/components/SizeGuide";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseSizeOption, PurchaseColorOption } from "@/components/ProductPurchaseBar";
+import { useTrackProductView } from "@/hooks/useTrackProductView";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -57,6 +58,17 @@ export default function GalaTshirtPage() {
   const [selectedImage, setSelectedImage] = useState(GALA_COLOR_OPTIONS[0].images[0]);
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+
+  useTrackProductView({
+    productId: "16eab132-c3a5-4b1c-88b5-1a82cbcd90de",
+    productName: PRODUCT.name,
+    price: PRODUCT.price,
+    currency: "USD",
+    selectedVariant: {
+      color: selectedColor.name,
+      sku: selectedColor.slug,
+    },
+  });
 
   const handleSelectColor = useCallback((option: GalaColorOption, ctx?: { image?: string }) => {
     setSelectedColor(option);

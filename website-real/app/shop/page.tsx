@@ -6,6 +6,7 @@ import ProductsGrid from "../../components/ProductsGridHome"
 import BundleSheet from "../../components/BundleSheet"
 import ProductPageBrandHeader from "../../components/ProductPageBrandHeader"
 import { ChevronDown } from "lucide-react"
+import { useTrackCategoryView } from "@/hooks/useTrackCategoryView"
 
 const SORT_OPTIONS = [
   { label: 'All Products', value: null },
@@ -51,6 +52,11 @@ export default function ShopPage() {
   }, [])
 
   const selectedLabel = SORT_OPTIONS.find(opt => opt.value === activeCategory)?.label || 'All Products'
+
+  // Track category/collection view
+  useTrackCategoryView({
+    categoryName: selectedLabel,
+  })
 
   return (
     <>

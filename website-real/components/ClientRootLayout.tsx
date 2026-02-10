@@ -1,13 +1,15 @@
 "use client"
 
-import React, { createContext, useState, useEffect } from "react"
+import React, { createContext, useState, useEffect, useRef } from "react"
 import { usePathname, useSearchParams } from "next/navigation"
 import { ensurePosthog, capturePageview } from "../instrumentation.client"
+import { trackPageView } from "@/lib/analytics/meta-pixel"
 import LogoButton from "./LogoButton"
 import StaggeredMenu from "./StagerredMenu"
 import SiteFooter from "./SiteFooter"
 import CartBar from "./CartBar"
 import CartOverlay from "./CartOverlay"
+import GlobalAddToCartTracker from '@/components/GlobalAddToCartTracker';
 
 // Context to control logo visibility (for intro)
 export const LogoVisibilityContext = createContext<{ hideLogo: boolean; setHideLogo: (v: boolean) => void }>({ hideLogo: false, setHideLogo: () => {} })
@@ -21,15 +23,28 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const lastTrackedUrl = useRef<string>('')
 
   // Ensure PostHog initializes on every client render
   useEffect(() => {
     ensurePosthog()
   }, [])
 
+  // Track Meta Pixel PageView on route changes (SPA navigation)
   useEffect(() => {
     const query = searchParams?.toString()
-    capturePageview(query ? `${pathname}?${query}` : pathname)
+    const currentUrl = query ? `${pathname}?${query}` : pathname
+
+    // Dedupe: only track if URL actually changed
+    if (currentUrl !== lastTrackedUrl.current) {
+      lastTrackedUrl.current = currentUrl
+      
+      // Track Meta Pixel PageView
+      trackPageView()
+      
+      // Track PostHog pageview
+      capturePageview(currentUrl)
+    }
   }, [pathname, searchParams])
 
   // Apply a global class to body for pages to react (e.g., hide category pills)
@@ -71,6 +86,9 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
   
   return (
     <LogoVisibilityContext.Provider value={{ hideLogo, setHideLogo }}>
+      {/* Global AddToCart tracker */}
+      <GlobalAddToCartTracker />
+      
       {/* Logo button, visible on every page, picture only, hidden if hideLogo */}
       <LogoButton />
       

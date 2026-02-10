@@ -4,6 +4,7 @@ import { useCart } from "../../../components/CartContext";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
+import { useTrackProductView } from "@/hooks/useTrackProductView";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -42,6 +43,13 @@ export default function EcruHatPage() {
   );
   const [selectedSize, setSelectedSize] = useState<string>(() => sizeOptions[0]?.value ?? "");
   const { addToCart } = useCart();
+
+  useTrackProductView({
+    productId: "700581d7-2b22-44bb-a0af-d938f7e71d58",
+    productName: PRODUCT.name,
+    price: PRODUCT.price,
+    currency: "USD",
+  });
 
   const handleAddToCart = useCallback(() => {
     if (!selectedSize) return;

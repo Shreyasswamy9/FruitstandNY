@@ -4,6 +4,7 @@ import { useCart } from "../../../components/CartContext";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
+import { useTrackProductView } from "@/hooks/useTrackProductView";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -42,6 +43,13 @@ export default function PorcelainHatPage() {
   );
   const [selectedSize, setSelectedSize] = useState<string>(() => sizeOptions[0]?.value ?? "");
   const { addToCart } = useCart();
+
+  useTrackProductView({
+    productId: "bca735d7-f575-4ef3-9ff7-28966205618b",
+    productName: PRODUCT.name,
+    price: PRODUCT.price,
+    currency: "USD",
+  });
 
   const handleAddToCart = useCallback(() => {
     if (!selectedSize) return;

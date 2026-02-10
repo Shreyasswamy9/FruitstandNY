@@ -160,6 +160,7 @@ export interface Order {
   notes?: string;
   created_at: string;
   updated_at: string;
+  order_items?: OrderItem[];
 }
 
 export interface OrderItem {

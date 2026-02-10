@@ -5,6 +5,7 @@ import React, { useState, useCallback, useMemo } from "react";
 import { useCart } from "../../../components/CartContext";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
+import { useTrackProductView } from "@/hooks/useTrackProductView";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -69,6 +70,17 @@ export default function TrackTopPage() {
   const [selectedImage, setSelectedImage] = useState(colorOptions[0].images[0]);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const { addToCart } = useCart();
+
+  useTrackProductView({
+    productId: "91c47e89-efd4-4961-aadf-d4f7bf6e13b7",
+    productName: PRODUCT.name,
+    price: PRODUCT.price,
+    currency: "USD",
+    selectedVariant: {
+      color: selectedColor.name,
+      sku: selectedColor.slug,
+    },
+  });
 
   const handleSelectColor = useCallback((option: TrackTopColorOption, ctx?: { image?: string }) => {
     setSelectedColor(option);

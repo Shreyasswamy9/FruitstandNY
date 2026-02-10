@@ -6,18 +6,69 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { supabase } from '@/app/supabase-client';
 import { useCart } from '@/components/CartContext';
+import { trackPurchase, generateEventId } from '@/lib/analytics/meta-pixel';
+
+type OrderItem = {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+};
+
+type OrderDetails = {
+  orderNumber: string;
+  totalAmount: number;
+  status: string;
+  items: OrderItem[];
+  currency: string;
+};
 
 function SuccessContent() {
   const [loading, setLoading] = useState(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
-  const [orderDetails, setOrderDetails] = useState<{ orderNumber: string; totalAmount: number; status: string } | null>(null);
+  const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
   const [detailsError, setDetailsError] = useState<string | null>(null);
   const [shouldFetchOrder, setShouldFetchOrder] = useState(false);
   const [initialOrderNumber, setInitialOrderNumber] = useState<string | null>(null);
   const hasClearedCart = useRef(false);
+  const purchaseTracked = useRef(false);
   const router = useRouter();
   const { clearCart } = useCart();
+
+  // Track Purchase once order details are loaded
+  useEffect(() => {
+    if (!orderDetails || purchaseTracked.current) return;
+    if (!orderDetails.orderNumber || orderDetails.items.length === 0) return;
+
+    // Check if already tracked in sessionStorage
+    const trackingKey = `purchase_tracked_${orderDetails.orderNumber}`;
+    if (sessionStorage.getItem(trackingKey)) {
+      purchaseTracked.current = true;
+      return;
+    }
+
+    // Track Purchase event
+    const contents = orderDetails.items.map(item => ({
+      id: item.id,
+      quantity: item.quantity,
+      item_price: item.price,
+      title: item.name,
+    }));
+
+    trackPurchase({
+      content_ids: orderDetails.items.map(item => item.id),
+      contents,
+      value: orderDetails.totalAmount,
+      currency: orderDetails.currency || 'USD',
+      order_id: orderDetails.orderNumber,
+      eventId: generateEventId(),
+    });
+
+    // Mark as tracked
+    sessionStorage.setItem(trackingKey, 'true');
+    purchaseTracked.current = true;
+  }, [orderDetails]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -125,6 +176,8 @@ function SuccessContent() {
             orderNumber: payload.data.orderNumber,
             totalAmount: payload.data.totalAmount,
             status: payload.data.status,
+            items: payload.data.items || [],
+            currency: payload.data.currency || 'USD',
           });
         } else {
           setOrderDetails(null);
@@ -168,6 +221,10 @@ function SuccessContent() {
     hasClearedCart.current = true;
   }, [clearCart]);
 
+  const resolvedOrderNumber = [orderDetails?.orderNumber, initialOrderNumber].find(
+    (value): value is string => typeof value === 'string' && /^\d{6}$/.test(value)
+  ) ?? null;
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#fbf6f0] flex items-center justify-center">
@@ -178,10 +235,6 @@ function SuccessContent() {
       </div>
     );
   }
-
-  const resolvedOrderNumber = [orderDetails?.orderNumber, initialOrderNumber].find(
-    (value): value is string => typeof value === 'string' && /^\d{6}$/.test(value)
-  ) ?? null;
 
   return (
     <div className="min-h-screen bg-[#fbf6f0] flex items-center justify-center px-4">

@@ -5,6 +5,7 @@ import SizeGuide from "@/components/SizeGuide";
 import { useCart } from "../../../components/CartContext";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
+import { useTrackProductView } from "@/hooks/useTrackProductView";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -121,6 +122,18 @@ export default function TracksuitPage() {
   const [selectedImage, setSelectedImage] = useState(DEFAULT_VARIANT.images[0]);
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+
+  // Track product page view
+  useTrackProductView({
+    productId: "0f5810c1-abec-4e70-a077-33c839b4de2b",
+    productName: PRODUCT.name,
+    price: PRODUCT.price,
+    currency: "USD",
+    selectedVariant: {
+      color: selectedColor.name,
+      sku: selectedColor.slug,
+    },
+  });
 
   const handleSelectColor = useCallback((option: TracksuitVariant, ctx?: { image?: string }) => {
     setSelectedColor(option);

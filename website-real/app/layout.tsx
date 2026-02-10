@@ -6,7 +6,7 @@ import ClientRootLayout from "../components/ClientRootLayout"
 import { CartProvider } from "../components/CartContext"
 import Script from 'next/script'
 import { Suspense } from "react";
-import TrackingPixels from "./components/TrackingPixels";
+import MetaPixelBase from "@/components/MetaPixelBase";
 declare global {
   interface Window {
     __SHOW_LOGO__?: boolean;
@@ -49,6 +49,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <MetaPixelBase />
         <Script id="google-tag-manager" strategy="afterInteractive">{`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
         new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
         j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
@@ -62,7 +63,6 @@ export default function RootLayout({
       >
         <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N8M6F5WK"
         height="0" width="0" style={{display:'none',visibility:'hidden'}}></iframe></noscript>
-        <TrackingPixels />
         <CartProvider>
           <Suspense fallback={null}>
             <ClientRootLayout>

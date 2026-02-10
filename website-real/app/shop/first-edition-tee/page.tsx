@@ -7,6 +7,7 @@ import { useCart } from "../../../components/CartContext";
 import { type ColorOption } from '@/components/ColorPicker';
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
+import { useTrackProductView } from "@/hooks/useTrackProductView";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -55,6 +56,17 @@ export default function FirstEditionTeePage() {
   const [selectedImage, setSelectedImage] = useState<string>(colorOptions[0].images[0]);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const { addToCart } = useCart();
+
+  useTrackProductView({
+    productId: "149da285-d6ae-4c37-bf76-376ad50363f8",
+    productName: PRODUCT.name,
+    price: PRODUCT.price,
+    currency: "USD",
+    selectedVariant: {
+      color: selectedColor.name,
+      sku: selectedColor.slug,
+    },
+  });
 
   const handleSelectColor = useCallback((option: FirstEditionColorOption, ctx?: { image?: string }) => {
     setSelectedColor(option);

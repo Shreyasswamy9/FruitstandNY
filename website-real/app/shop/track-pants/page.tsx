@@ -5,6 +5,7 @@ import React, { useState, useCallback, useMemo } from "react";
 import { useCart } from "../../../components/CartContext";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
+import { useTrackProductView } from "@/hooks/useTrackProductView";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -66,6 +67,17 @@ export default function TrackPantsPage() {
   const [selectedImage, setSelectedImage] = useState(colorOptions[0].images[0]);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const { addToCart } = useCart();
+
+  useTrackProductView({
+    productId: "859d396c-0cd7-4d62-9a95-135ce8efbb82",
+    productName: PRODUCT.name,
+    price: PRODUCT.price,
+    currency: "USD",
+    selectedVariant: {
+      color: selectedColor.name,
+      sku: selectedColor.slug,
+    },
+  });
 
   const handleSelectColor = useCallback((option: TrackColorOption, ctx?: { image?: string }) => {
     setSelectedColor(option);

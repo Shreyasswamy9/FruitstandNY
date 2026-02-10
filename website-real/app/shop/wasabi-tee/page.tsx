@@ -6,6 +6,7 @@ import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import { useCart } from "../../../components/CartContext";
 import ProductPurchaseBar, { PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import SizeGuide from "@/components/SizeGuide";
+import { useTrackProductView } from "@/hooks/useTrackProductView";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -44,6 +45,14 @@ export default function WasabiTeePage() {
   const [selectedImage] = useState(wasabiImages[0]);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const { addToCart } = useCart();
+
+  useTrackProductView({
+    productId: "51977ef7-ae8f-486f-9dd7-7620e3b6e70a",
+    productName: PRODUCT.name,
+    price: PRODUCT.price,
+    currency: "USD",
+  });
+
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({

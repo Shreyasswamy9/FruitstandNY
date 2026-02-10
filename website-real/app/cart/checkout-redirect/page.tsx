@@ -7,6 +7,8 @@ import { useStripeCheckout, type CheckoutItem } from "@/hooks/useCheckout"
 import { supabase } from "@/app/supabase-client"
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader"
 import type { User } from "@supabase/supabase-js"
+import { trackInitiateCheckout, type MetaPixelContent } from "@/lib/analytics/meta-pixel"
+import { generateEventId } from "@/lib/analytics/meta-pixel"
 
 export default function CheckoutRedirectPage() {
   const router = useRouter()
@@ -47,6 +49,23 @@ export default function CheckoutRedirectPage() {
         const subtotal = items.reduce((total, item) => total + (Number(item.price) * item.quantity), 0)
         const shipping = subtotal >= 120 ? 0 : 8.99
         const tax = 0 // Tax calculated at checkout
+        const total = subtotal + shipping + tax
+
+        // Track InitiateCheckout BEFORE creating session
+        const contents: MetaPixelContent[] = items.map((item) => ({
+          id: item.lineId || item.productId,
+          quantity: item.quantity,
+          item_price: item.price,
+          title: item.name,
+        }))
+
+        trackInitiateCheckout({
+          contents,
+          value: total,
+          currency: "USD",
+          num_items: items.reduce((sum, item) => sum + item.quantity, 0),
+          eventId: generateEventId(),
+        })
 
         // Prepare normalized items
         const normalizedItems: CheckoutItem[] = items.map((item) => ({

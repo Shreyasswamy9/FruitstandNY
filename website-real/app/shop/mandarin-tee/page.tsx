@@ -6,6 +6,7 @@ import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import { useCart } from "../../../components/CartContext";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
+import { useTrackProductView } from "@/hooks/useTrackProductView";
 
 // Simple formatter for highlighting keywords in the description
 // Formatter: lowercase except product/color names uppercased
@@ -65,6 +66,13 @@ export default function MandarinTeePage() {
     return firstAvailable ?? null;
   });
   const { addToCart } = useCart();
+
+  useTrackProductView({
+    productId: "f47a07e4-6470-49b2-ace6-a60e70ee3737",
+    productName: PRODUCT.name,
+    price: PRODUCT.price,
+    currency: "USD",
+  });
 
   const handleAddToCart = useCallback(() => {
     if (!selectedSize) return;

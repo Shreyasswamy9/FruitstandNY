@@ -7,6 +7,7 @@ import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import { useCart } from "@/components/CartContext";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
+import { useTrackProductView } from "@/hooks/useTrackProductView";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -56,6 +57,18 @@ export default function HockeyJerseyPage() {
   const [selectedImage, setSelectedImage] = useState(colorOptions[0].images[0]);
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+
+  useTrackProductView({
+    productId: "e1e3790d-d37e-4327-a14e-53bad7745ec8",
+    productName: PRODUCT.name,
+    price: PRODUCT.price,
+    currency: "USD",
+    selectedVariant: {
+      color: selectedColor.name,
+      sku: selectedColor.slug,
+    },
+  });
+
   const handleSelectColor = useCallback((option: HockeyJerseyVariant, ctx?: { image?: string }) => {
     setSelectedColor(option);
     setSelectedImage(prev => ctx?.image ?? option.images?.[0] ?? prev);

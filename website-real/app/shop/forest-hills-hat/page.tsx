@@ -4,6 +4,7 @@ import { useCart } from "../../../components/CartContext";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
+import { useTrackProductView } from "@/hooks/useTrackProductView";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -46,6 +47,13 @@ export default function ForestHillsHatPage() {
   );
   const [selectedSize, setSelectedSize] = useState<string>(() => sizeOptions[0]?.value ?? "");
   const { addToCart } = useCart();
+
+  useTrackProductView({
+    productId: "8d1d5080-2106-420d-b7ea-babc2fba5457",
+    productName: PRODUCT.name,
+    price: PRODUCT.price,
+    currency: "USD",
+  });
 
   const handleAddToCart = useCallback(() => {
     if (!selectedSize) return;

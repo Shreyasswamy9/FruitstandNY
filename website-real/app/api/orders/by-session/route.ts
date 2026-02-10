@@ -28,6 +28,13 @@ export async function GET(request: NextRequest) {
               orderNumber: syncedOrder.order_number,
               totalAmount: syncedOrder.total_amount,
               status: syncedOrder.status,
+              items: (syncedOrder.order_items || []).map((item: any) => ({
+                id: item.product_id || item.id,
+                name: item.product_name || item.name || 'Product',
+                price: Number(item.price || item.unit_price || 0),
+                quantity: Number(item.quantity || 1),
+              })),
+              currency: 'USD',
             },
           });
         }
@@ -41,6 +48,13 @@ export async function GET(request: NextRequest) {
         orderNumber: order.order_number,
         totalAmount: order.total_amount,
         status: order.status,
+        items: (order.order_items || []).map((item: any) => ({
+          id: item.product_id || item.id,
+          name: item.product_name || item.name || 'Product',
+          price: Number(item.price || item.unit_price || 0),
+          quantity: Number(item.quantity || 1),
+        })),
+        currency: 'USD',
       },
     });
   } catch (error) {

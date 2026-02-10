@@ -7,6 +7,7 @@ import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import { type ColorOption } from '@/components/ColorPicker';
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
+import { useTrackProductView } from "@/hooks/useTrackProductView";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -61,6 +62,17 @@ export default function CameoTshirtPage() {
   const [selectedImage, setSelectedImage] = useState<string>(colorOptions[0].images[0]);
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+
+  useTrackProductView({
+    productId: "1ad5fc4b-898d-4e86-ada6-c4787ba20add",
+    productName: PRODUCT.name,
+    price: PRODUCT.price,
+    currency: "USD",
+    selectedVariant: {
+      color: selectedColor.name,
+      sku: selectedColor.slug,
+    },
+  });
 
   const handleSelectColor = useCallback((option: CameoColorOption, ctx?: { image?: string }) => {
     setSelectedColor(option);

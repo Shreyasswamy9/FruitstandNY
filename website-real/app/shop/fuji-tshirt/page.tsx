@@ -5,6 +5,7 @@ import SizeGuide from "@/components/SizeGuide";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
+import { useTrackProductView } from "@/hooks/useTrackProductView";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -82,6 +83,17 @@ export default function FujiTshirtPage() {
   const [selectedImage, setSelectedImage] = useState<string>(colorOptions[0].images[0]);
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+
+  useTrackProductView({
+    productId: "1dcbfbda-626c-49fb-858e-c50050b4b726",
+    productName: PRODUCT.name,
+    price: PRODUCT.price,
+    currency: "USD",
+    selectedVariant: {
+      color: selectedColor.name,
+      sku: selectedColor.slug,
+    },
+  });
 
   const updateUrlForColor = useCallback((slug?: string) => {
     if (typeof window === 'undefined') return;

@@ -4,6 +4,7 @@ import { useCart } from "../../../components/CartContext";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
+import { useTrackProductView } from "@/hooks/useTrackProductView";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -47,6 +48,13 @@ export default function EmpireHatPage() {
   );
   const [selectedSize, setSelectedSize] = useState<string>(() => sizeOptions[0]?.value ?? "");
   const { addToCart } = useCart();
+
+  useTrackProductView({
+    productId: "98da26f5-be40-4f35-a8ad-b26dd9ae01f9",
+    productName: PRODUCT.name,
+    price: PRODUCT.price,
+    currency: "USD",
+  });
 
   const handleAddToCart = useCallback(() => {
     if (!selectedSize) return;

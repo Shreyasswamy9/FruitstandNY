@@ -10,6 +10,7 @@ import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/c
 import { useCart } from "@/components/CartContext";
 import { TEE_VARIANTS, SIZE_OPTIONS, type TeeVariant, type TeeColor, type SizeOption } from "@/lib/teeVariants";
 import { CUSTOM_BUNDLE_PRICES, type CustomBundleSize } from "@/lib/customBundles";
+import { useTrackProductView } from "@/hooks/useTrackProductView";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -53,6 +54,13 @@ export default function TshirtBundlePage() {
   ]);
 
   const currentItem = items[currentIndex];
+
+  useTrackProductView({
+    productId: "custom-tee-bundle",
+    productName: PRODUCT.name,
+    price: CUSTOM_BUNDLE_PRICES[bundleSize],
+    currency: "USD",
+  });
 
   const updateTeeType = useCallback((tee: TeeVariant) => {
     setItems((prev) => {
