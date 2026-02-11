@@ -154,13 +154,13 @@ export default function TshirtBundlePage() {
     <div>
       <ProductPageBrandHeader />
 
-      <main className="bg-[#fbf5ed] pb-[60px] pt-16 md:pt-20 lg:pt-24">
+      <main className="bg-[#fbf5ed] pb-15 pt-16 md:pt-20 lg:pt-24">
         <div
-          className="mx-auto w-full max-w-[1280px] px-6 text-center lg:px-12 lg:text-left lg:grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:items-start lg:gap-14"
+          className="mx-auto w-full max-w-7xl px-6 text-center lg:px-12 lg:text-left lg:grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:items-start lg:gap-14"
           style={{ minHeight: "75vh" }}
         >
           {/* IMAGE */}
-          <div className="relative mx-auto aspect-[4/5] w-full lg:mx-0 lg:max-w-[620px] lg:row-span-3">
+          <div className="relative mx-auto aspect-4/5 w-full lg:mx-0 lg:max-w-155 lg:row-span-3">
             <Image
               src={currentItem.color.image}
               alt={`${currentItem.tee.name} - ${currentItem.color.name}`}
@@ -238,8 +238,8 @@ export default function TshirtBundlePage() {
                     aria-label={color.name}
                     className={[
                       "appearance-none bg-transparent [-webkit-tap-highlight-color:transparent]",
-                      "h-7 w-7 rounded-full overflow-hidden p-[2px]",
-                      "transition-transform duration-150 hover:-translate-y-[1px]",
+                      "h-7 w-7 rounded-full overflow-hidden p-0.5",
+                      "transition-transform duration-150 hover:-translate-y-px",
                       "focus:outline-none focus:ring-2 focus:ring-[#1d1c19]/35",
                       isActive ? "ring-2 ring-[#1d1c19]" : "ring-1 ring-[#cfc2b3]",
                     ].join(" ")}
@@ -275,7 +275,7 @@ export default function TshirtBundlePage() {
 
           {/* DESCRIPTION */}
           <section className="mt-12 lg:col-span-2 lg:mt-24">
-            <div className="mx-auto max-w-[900px]">
+            <div className="mx-auto max-w-225">
               <h2 className="text-[20px] uppercase tracking-[0.12em] font-avenir-black text-[#1d1c19]">
                 Description
               </h2>
@@ -287,7 +287,7 @@ export default function TshirtBundlePage() {
 
           {/* DETAILS */}
           <section className="mt-10 lg:col-span-2 lg:mt-16">
-            <div className="mx-auto max-w-[900px]">
+            <div className="mx-auto max-w-225">
               <h2 className="text-[20px] uppercase tracking-[0.12em] font-avenir-black text-[#1d1c19]">
                 Details
               </h2>
@@ -308,7 +308,7 @@ export default function TshirtBundlePage() {
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-6">
                 {boughtTogetherItems.map((item) => (
                   <a key={item.id} href={`/shop/${item.id}`} className="group">
-                    <div className="relative aspect-[4/5] w-full overflow-hidden">
+                    <div className="relative aspect-4/5 w-full overflow-hidden">
                       <Image
                         src={item.image}
                         alt={item.name}

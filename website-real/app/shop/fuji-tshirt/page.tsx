@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import Link from "next/link";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
@@ -154,11 +155,11 @@ export default function FujiTshirtPage() {
     <div>
       <ProductPageBrandHeader />
 
-      <main className="bg-[#fbf5ed] pb-[210px] pt-16 md:pt-20 lg:pt-24">
+      <main className="bg-[#fbf5ed] pb-52.5 pt-16 md:pt-20 lg:pt-24">
         {/* HERO SECTION - Top 75% */}
-        <div className="mx-auto w-full max-w-[1200px] px-6 text-center lg:px-12 lg:text-left lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-start lg:gap-12" style={{ minHeight: '75vh' }}>
+        <div className="mx-auto w-full max-w-300 px-6 text-center lg:px-12 lg:text-left lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-start lg:gap-12" style={{ minHeight: '75vh' }}>
           {/* IMAGE */}
-          <div className="relative mx-auto aspect-[4/5] w-full lg:mx-0 lg:max-w-[520px] lg:row-span-3">
+          <div className="relative mx-auto aspect-4/5 w-full lg:mx-0 lg:max-w-130 lg:row-span-3">
             <img
               src={selectedImage}
               alt={`${selectedColor.name} ${PRODUCT.name}`}
@@ -191,8 +192,8 @@ export default function FujiTshirtPage() {
                   aria-label={option.name}
                   className={[
                     "appearance-none bg-transparent [-webkit-tap-highlight-color:transparent]",
-                    "h-7 w-7 rounded-full overflow-hidden p-[2px]",
-                    "transition-transform duration-150 hover:-translate-y-[1px]",
+                    "h-7 w-7 rounded-full overflow-hidden p-0.5",
+                    "transition-transform duration-150 hover:-translate-y-px",
                     "focus:outline-none focus:ring-2 focus:ring-[#1d1c19]/35",
                     isActive ? "ring-2 ring-[#1d1c19]" : "ring-1 ring-[#cfc2b3]",
                   ].join(" ")}
@@ -221,14 +222,14 @@ export default function FujiTshirtPage() {
         </div>
 
         {/* DESCRIPTION SECTION */}
-        <div className="mx-auto w-full max-w-[900px] px-6 text-center lg:px-12 lg:text-left mt-5">
+        <div className="mx-auto w-full max-w-225 px-6 text-center lg:px-12 lg:text-left mt-5">
           <p className="px-1 text-[14px] leading-relaxed text-[#3d372f]">
             {formatText(PRODUCT.description, "Fuji Long Sleeve", ["Fuji", "Portugal"])}
           </p>
         </div>
 
         {/* DETAILS SECTION */}
-        <div className="mx-auto w-full max-w-[900px] px-6 text-left lg:px-12">
+        <div className="mx-auto w-full max-w-225 px-6 text-left lg:px-12">
           <div className="mt-8">
             <p className="text-base font-semibold text-[#1d1c19]">Details</p>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-[#1d1c19]">
@@ -240,15 +241,20 @@ export default function FujiTshirtPage() {
         </div>
 
         {/* YOU MAY ALSO LIKE SECTION */}
-        <div className="mx-auto w-full max-w-[1200px] px-6 text-center lg:px-12">
+        <div className="mx-auto w-full max-w-300 px-6 text-center lg:px-12">
           <div className="mt-12">
             <p className="text-[22px] font-black uppercase tracking-[0.32em] text-[#1d1c19]">
               You May Also Like
             </p>
             <div className="mt-6 grid w-full grid-cols-2 gap-x-5 gap-y-10 text-left sm:grid-cols-3 lg:grid-cols-4">
               {boughtTogetherItems.map((product) => (
-                <div key={`${product.name}-${product.image}`} className="flex flex-col">
-                  <div className="relative aspect-[4/5] w-full overflow-hidden border border-[#1d1c19] bg-white">
+                <Link
+                  key={`${product.name}-${product.image}`}
+                  href={`/shop/${product.id}`}
+                  className="flex flex-col hover:shadow-lg transition-shadow rounded-lg"
+                  style={{ textDecoration: 'none' }}
+                >
+                    <div className="relative aspect-4/5 w-full overflow-hidden border border-[#1d1c19] bg-white">
                     <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
                   </div>
                   <p className="mt-4 text-[11px] font-black uppercase tracking-[0.34em] text-[#1d1c19]">
@@ -257,7 +263,7 @@ export default function FujiTshirtPage() {
                   <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.34em] text-[#1d1c19]">
                     ${product.price}
                   </p>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

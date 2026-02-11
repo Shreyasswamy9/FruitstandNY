@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import React, { useState, useCallback, useMemo } from "react";
 import Image from "next/image";
 import SizeGuide from "@/components/SizeGuide";
@@ -199,8 +200,13 @@ export default function FirstEditionTeePage() {
             </p>
             <div className="mt-5 grid w-full grid-cols-2 gap-x-4 gap-y-6 text-left sm:grid-cols-3 lg:grid-cols-4">
               {boughtTogetherItems.map((product) => (
-                <div key={`${product.name}-${product.image}`} className="flex flex-col">
-                  <div className="relative aspect-[4/5] w-full overflow-hidden border border-[#1d1c19] bg-white">
+                <Link
+                  key={`${product.name}-${product.image}`}
+                  href={`/shop/${product.id}`}
+                  className="flex flex-col hover:shadow-lg transition-shadow rounded-lg"
+                  style={{ textDecoration: 'none' }}
+                >
+                  <div className="relative aspect-4/5 w-full overflow-hidden border border-[#1d1c19] bg-white">
                     <Image src={product.image} alt={product.name} fill className="object-cover" sizes="200px" />
                   </div>
                   <p className="mt-4 text-[11px] font-black uppercase tracking-[0.34em] text-[#1d1c19]">
@@ -209,7 +215,7 @@ export default function FirstEditionTeePage() {
                   <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.34em] text-[#1d1c19]">
                     ${product.price}
                   </p>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

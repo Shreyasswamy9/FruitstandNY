@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import SizeGuide from "@/components/SizeGuide";
@@ -91,21 +92,25 @@ const PRODUCT_DETAILS = [
 
 const RECOMMENDED_PRODUCTS = [
   {
+    id: "track-pants",
     name: "Retro Track Pant",
     price: "$90",
     image: "/images/products/Track Pants/YORKVILLE BLACK AND WHITE COOKIES/P5.png",
   },
   {
+    id: "porcelain-hat",
     name: "FS Cap",
     price: "$40",
     image: "/images/products/Porcelain Hat/FS2.png",
   },
   {
+    id: "ecru-hat",
     name: "FS Cap",
     price: "$40",
     image: "/images/products/Ecru Hat/Beige Hat.png",
   },
   {
+    id: "track-pants",
     name: "Retro Track Pant",
     price: "$90",
     image: "/images/products/Track Pants/Victory Liberty Club/P3.png",
@@ -286,17 +291,22 @@ export default function TracksuitPage() {
             </p>
             <div className="mt-6 grid w-full grid-cols-2 gap-x-5 gap-y-10 text-left sm:grid-cols-3 lg:grid-cols-4">
               {RECOMMENDED_PRODUCTS.map((product) => (
-                <div key={`${product.name}-${product.image}`} className="flex flex-col">
-                  <div className="relative aspect-[4/5] w-full overflow-hidden border border-[#1d1c19] bg-white">
+                <Link
+                  key={`${product.name}-${product.image}`}
+                  href={`/shop/${product.id}`}
+                  className="flex flex-col hover:shadow-lg transition-shadow rounded-lg"
+                  style={{ textDecoration: 'none' }}
+                >
+                  <div className="relative aspect-4/5 w-full overflow-hidden border border-[#1d1c19] bg-white">
                     <Image src={product.image} alt={product.name} fill className="object-cover" sizes="200px" />
                   </div>
                   <p className="mt-4 text-[11px] font-black uppercase tracking-[0.34em] text-[#1d1c19]">
                     {product.name}
                   </p>
                   <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.34em] text-[#1d1c19]">
-                    {product.price}
+                    ${product.price}
                   </p>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

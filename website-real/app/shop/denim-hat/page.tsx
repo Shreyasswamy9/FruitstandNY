@@ -1,5 +1,6 @@
 "use client";
 import React, { useCallback, useMemo, useState } from "react";
+import Link from "next/link";
 import { useCart } from "../../../components/CartContext";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
@@ -119,18 +120,23 @@ export default function DenimHatPage() {
               You May Also Like
             </p>
             <div className="mt-6 grid w-full grid-cols-2 gap-x-5 gap-y-10 text-left">
-              {boughtTogetherItems.map((product) => (
-                <div key={`${product.name}-${product.image}`} className="flex flex-col">
-                  <div className="relative aspect-[4/5] w-full overflow-hidden border border-[#1d1c19] bg-white">
-                    <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
-                  </div>
-                  <p className="mt-4 text-[11px] font-black uppercase tracking-[0.34em] text-[#1d1c19]">
-                    {product.name}
-                  </p>
-                  <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.34em] text-[#1d1c19]">
-                    ${product.price}
-                  </p>
-                </div>
+                  {boughtTogetherItems.map((product) => (
+                    <Link
+                      key={`${product.name}-${product.image}`}
+                      href={`/shop/${product.id}`}
+                      className="flex flex-col hover:shadow-lg transition-shadow rounded-lg"
+                      style={{ textDecoration: 'none' }}
+                    >
+                      <div className="relative aspect-[4/5] w-full overflow-hidden border border-[#1d1c19] bg-white">
+                        <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+                      </div>
+                      <p className="mt-4 text-[11px] font-black uppercase tracking-[0.34em] text-[#1d1c19]">
+                        {product.name}
+                      </p>
+                      <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.34em] text-[#1d1c19]">
+                        ${product.price}
+                      </p>
+                    </Link>
               ))}
             </div>
           </div>

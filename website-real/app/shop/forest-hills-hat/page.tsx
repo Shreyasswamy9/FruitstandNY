@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import React, { useCallback, useMemo, useState } from "react";
 import { useCart } from "../../../components/CartContext";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
