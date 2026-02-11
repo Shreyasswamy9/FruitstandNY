@@ -227,7 +227,7 @@ export default function SupabaseAuth({ mode = 'sign_in' }: SupabaseAuthProps) {
                 <Auth
                   supabaseClient={supabase}
                   appearance={appearance}
-                  providers={['google','apple']}
+                  providers={['google']}
                   socialLayout="horizontal"
                   redirectTo={redirectTo}
                   showLinks={false}
