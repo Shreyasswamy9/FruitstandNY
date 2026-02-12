@@ -13,6 +13,7 @@ import { stripePromise, useCheckout, useStripeCheckout, type CheckoutItem, type 
 import { supabase } from "../supabase-client"
 import { useRouter } from "next/navigation"
 import type { User } from "@supabase/supabase-js"
+import { trackInitiateCheckout, type MetaPixelContent, generateEventId } from "@/lib/analytics/meta-pixel"
 
 const ORDER_NUMBER_STORAGE_KEY = 'latestOrderNumber';
 
@@ -235,6 +236,7 @@ export default function CartPage() {
   const [appliedDiscountCode, setAppliedDiscountCode] = useState<string | null>(null);
   const [discountMessage, setDiscountMessage] = useState<string | null>(null);
   const [discountError, setDiscountError] = useState<string | null>(null);
+  const hasTrackedInitiateCheckout = useRef(false);
 
   const router = useRouter();
 
@@ -347,6 +349,29 @@ export default function CartPage() {
   // Don't include tax in cart total to avoid showing incorrect amount
   const tax = 0; // Tax calculated at checkout
   const total = Math.max(subtotal + shipping - discountAmount, 0); // Total before tax
+
+  // Track InitiateCheckout when user lands on cart with items
+  useEffect(() => {
+    if (hasTrackedInitiateCheckout.current) return;
+    if (!items.length) return;
+
+    const contents: MetaPixelContent[] = items.map((item) => ({
+      id: item.lineId || item.productId,
+      quantity: item.quantity,
+      item_price: Number(item.price ?? 0),
+      title: item.name,
+    }));
+
+    trackInitiateCheckout({
+      contents,
+      value: total,
+      currency: "USD",
+      num_items: items.reduce((sum, item) => sum + item.quantity, 0),
+      eventId: generateEventId(),
+    });
+
+    hasTrackedInitiateCheckout.current = true;
+  }, [items, total]);
 
   const handleApplyDiscount = useCallback(() => {
     const normalized = discountCode.trim().toUpperCase();
