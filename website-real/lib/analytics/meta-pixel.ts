@@ -77,6 +77,7 @@ export interface AdvancedMatchingData {
 const PIXEL_ID = "951068325996992";
 const DEFAULT_CURRENCY = "USD";
 const PRODUCTION = process.env.NODE_ENV === "production";
+const DEBUG_ENABLED = process.env.NEXT_PUBLIC_META_PIXEL_DEBUG === "true" || process.env.NEXT_PUBLIC_META_PIXEL_DEBUG === "1";
 
 // Event deduplication: track which events have been fired in this session
 const firedEventIds = new Set<string>();
@@ -173,6 +174,15 @@ function ensurePixelLoaded(): boolean {
   return true;
 }
 
+/**
+ * Log Meta Pixel values only if debug mode is enabled via environment variable
+ */
+function logMetaPixel(eventName: string, data: MetaPixelEventData | AdvancedMatchingData | any): void {
+  if (!DEBUG_ENABLED) return;
+  
+  console.log(`[Meta Pixel Debug] ${eventName}:`, JSON.stringify(data, null, 2));
+}
+
 // ============================================================================
 // Core Tracking Functions
 // ============================================================================
@@ -188,7 +198,10 @@ export function trackPageView(eventData?: MetaPixelEventData): void {
   
   // Check deduplication
   if (hasEventBeenFired(eventId)) {
-    console.log(`PageView already tracked with event_id: ${eventId}`);
+    if (DEBUG_ENABLED) {
+      console.log(`[Meta Pixel Debug] PageView already tracked with event_id: ${eventId}`);
+    }
+
     return;
   }
   
@@ -201,7 +214,7 @@ export function trackPageView(eventData?: MetaPixelEventData): void {
   window.fbq?.("track", "PageView", data);
   markEventAsFired(eventId);
   
-  console.log(`[Meta Pixel] PageView tracked:`, data);
+  logMetaPixel("PageView", data);
 }
 
 /**
@@ -219,7 +232,9 @@ export function trackViewContent(options: {
   const eventId = options.eventId || generateEventId();
   
   if (hasEventBeenFired(eventId)) {
-    console.log(`ViewContent already tracked with event_id: ${eventId}`);
+    if (DEBUG_ENABLED) {
+      console.log(`[Meta Pixel Debug] ViewContent already tracked with event_id: ${eventId}`);
+    }
     return;
   }
   
@@ -235,7 +250,7 @@ export function trackViewContent(options: {
   window.fbq?.("track", "ViewContent", data);
   markEventAsFired(eventId);
   
-  console.log(`[Meta Pixel] ViewContent tracked:`, data);
+  logMetaPixel("ViewContent", data);
 }
 
 /**
@@ -253,7 +268,9 @@ export function trackViewCategory(options: {
   const eventId = options.eventId || generateEventId();
   
   if (hasEventBeenFired(eventId)) {
-    console.log(`ViewCategory already tracked with event_id: ${eventId}`);
+    if (DEBUG_ENABLED) {
+      console.log(`[Meta Pixel Debug] ViewCategory already tracked with event_id: ${eventId}`);
+    }
     return;
   }
   
@@ -268,7 +285,7 @@ export function trackViewCategory(options: {
   window.fbq?.("track", "ViewContent", data);
   markEventAsFired(eventId);
   
-  console.log(`[Meta Pixel] ViewCategory tracked:`, data);
+  logMetaPixel("ViewCategory", data);
 }
 
 /**
@@ -285,7 +302,9 @@ export function trackSearch(options: {
   const eventId = options.eventId || generateEventId();
   
   if (hasEventBeenFired(eventId)) {
-    console.log(`Search already tracked with event_id: ${eventId}`);
+    if (DEBUG_ENABLED) {
+      console.log(`[Meta Pixel Debug] Search already tracked with event_id: ${eventId}`);
+    }
     return;
   }
   
@@ -299,7 +318,7 @@ export function trackSearch(options: {
   window.fbq?.("track", "Search", data);
   markEventAsFired(eventId);
   
-  console.log(`[Meta Pixel] Search tracked:`, data);
+  logMetaPixel("Search", data);
 }
 
 /**
@@ -318,7 +337,9 @@ export function trackAddToCart(options: {
   const eventId = options.eventId || generateEventId();
   
   if (hasEventBeenFired(eventId)) {
-    console.log(`AddToCart already tracked with event_id: ${eventId}`);
+    if (DEBUG_ENABLED) {
+      console.log(`[Meta Pixel Debug] AddToCart already tracked with event_id: ${eventId}`);
+    }
     return;
   }
   
@@ -335,7 +356,7 @@ export function trackAddToCart(options: {
   window.fbq?.("track", "AddToCart", data);
   markEventAsFired(eventId);
   
-  console.log(`[Meta Pixel] AddToCart tracked:`, data);
+  logMetaPixel("AddToCart", data);
 }
 
 /**
@@ -353,7 +374,9 @@ export function trackInitiateCheckout(options: {
   const eventId = options.eventId || generateEventId();
   
   if (hasEventBeenFired(eventId)) {
-    console.log(`InitiateCheckout already tracked with event_id: ${eventId}`);
+    if (DEBUG_ENABLED) {
+      console.log(`[Meta Pixel Debug] InitiateCheckout already tracked with event_id: ${eventId}`);
+    }
     return;
   }
   
@@ -369,7 +392,7 @@ export function trackInitiateCheckout(options: {
   window.fbq?.("track", "InitiateCheckout", data);
   markEventAsFired(eventId);
   
-  console.log(`[Meta Pixel] InitiateCheckout tracked:`, data);
+  logMetaPixel("InitiateCheckout", data);
 }
 
 /**
@@ -386,7 +409,9 @@ export function trackAddPaymentInfo(options: {
   const eventId = options.eventId || generateEventId();
   
   if (hasEventBeenFired(eventId)) {
-    console.log(`AddPaymentInfo already tracked with event_id: ${eventId}`);
+    if (DEBUG_ENABLED) {
+      console.log(`[Meta Pixel Debug] AddPaymentInfo already tracked with event_id: ${eventId}`);
+    }
     return;
   }
   
@@ -401,7 +426,7 @@ export function trackAddPaymentInfo(options: {
   window.fbq?.("track", "AddPaymentInfo", data);
   markEventAsFired(eventId);
   
-  console.log(`[Meta Pixel] AddPaymentInfo tracked:`, data);
+  logMetaPixel("AddPaymentInfo", data);
 }
 
 /**
@@ -421,7 +446,9 @@ export function trackPurchase(options: {
   const eventId = options.eventId || generateEventId();
   
   if (hasEventBeenFired(eventId)) {
-    console.log(`Purchase already tracked with event_id: ${eventId}`);
+    if (DEBUG_ENABLED) {
+      console.log(`[Meta Pixel Debug] Purchase already tracked with event_id: ${eventId}`);
+    }
     return;
   }
   
@@ -438,7 +465,7 @@ export function trackPurchase(options: {
   window.fbq?.("track", "Purchase", data);
   markEventAsFired(eventId);
   
-  console.log(`[Meta Pixel] Purchase tracked:`, data);
+  logMetaPixel("Purchase", data);
 }
 
 /**
@@ -456,7 +483,9 @@ export function trackAddToWishlist(options: {
   const eventId = options.eventId || generateEventId();
   
   if (hasEventBeenFired(eventId)) {
-    console.log(`AddToWishlist already tracked with event_id: ${eventId}`);
+    if (DEBUG_ENABLED) {
+      console.log(`[Meta Pixel Debug] AddToWishlist already tracked with event_id: ${eventId}`);
+    }
     return;
   }
   
@@ -471,7 +500,7 @@ export function trackAddToWishlist(options: {
   window.fbq?.("track", "AddToWishlist", data);
   markEventAsFired(eventId);
   
-  console.log(`[Meta Pixel] AddToWishlist tracked:`, data);
+  logMetaPixel("AddToWishlist", data);
 }
 
 /**
@@ -486,7 +515,9 @@ export function trackCompleteRegistration(options: {
   const eventId = options.eventId || generateEventId();
   
   if (hasEventBeenFired(eventId)) {
-    console.log(`CompleteRegistration already tracked with event_id: ${eventId}`);
+    if (DEBUG_ENABLED) {
+      console.log(`[Meta Pixel Debug] CompleteRegistration already tracked with event_id: ${eventId}`);
+    }
     return;
   }
   
@@ -498,7 +529,7 @@ export function trackCompleteRegistration(options: {
   window.fbq?.("track", "CompleteRegistration", data);
   markEventAsFired(eventId);
   
-  console.log(`[Meta Pixel] CompleteRegistration tracked:`, data);
+  logMetaPixel("CompleteRegistration", data);
 }
 
 /**
@@ -514,7 +545,9 @@ export function trackLead(options: {
   const eventId = options.eventId || generateEventId();
   
   if (hasEventBeenFired(eventId)) {
-    console.log(`Lead already tracked with event_id: ${eventId}`);
+    if (DEBUG_ENABLED) {
+      console.log(`[Meta Pixel Debug] Lead already tracked with event_id: ${eventId}`);
+    }
     return;
   }
   
@@ -527,7 +560,7 @@ export function trackLead(options: {
   window.fbq?.("track", "Lead", data);
   markEventAsFired(eventId);
   
-  console.log(`[Meta Pixel] Lead tracked:`, data);
+  logMetaPixel("Lead", data);
 }
 
 /**
@@ -541,7 +574,9 @@ export function trackContact(options: {
   const eventId = options.eventId || generateEventId();
   
   if (hasEventBeenFired(eventId)) {
-    console.log(`Contact already tracked with event_id: ${eventId}`);
+    if (DEBUG_ENABLED) {
+      console.log(`[Meta Pixel Debug] Contact already tracked with event_id: ${eventId}`);
+    }
     return;
   }
   
@@ -552,7 +587,7 @@ export function trackContact(options: {
   window.fbq?.("track", "Contact", data);
   markEventAsFired(eventId);
   
-  console.log(`[Meta Pixel] Contact tracked:`, data);
+  logMetaPixel("Contact", data);
 }
 
 /**
@@ -568,7 +603,9 @@ export function trackSubscribe(options: {
   const eventId = options.eventId || generateEventId();
   
   if (hasEventBeenFired(eventId)) {
-    console.log(`Subscribe already tracked with event_id: ${eventId}`);
+    if (DEBUG_ENABLED) {
+      console.log(`[Meta Pixel Debug] Subscribe already tracked with event_id: ${eventId}`);
+    }
     return;
   }
   
@@ -581,7 +618,7 @@ export function trackSubscribe(options: {
   window.fbq?.("track", "Subscribe", data);
   markEventAsFired(eventId);
   
-  console.log(`[Meta Pixel] Subscribe tracked:`, data);
+  logMetaPixel("Subscribe", data);
 }
 
 /**
@@ -606,7 +643,7 @@ export async function setAdvancedMatchingData(
   
   window.fbq?.("setUserData", hashedData);
   
-  console.log(`[Meta Pixel] Advanced Matching data set`);
+  logMetaPixel("Advanced Matching", hashedData);
 }
 
 /**
@@ -614,7 +651,9 @@ export async function setAdvancedMatchingData(
  */
 export function clearEventHistory(): void {
   firedEventIds.clear();
-  console.log(`[Meta Pixel] Event history cleared`);
+  if (DEBUG_ENABLED) {
+    console.log(`[Meta Pixel Debug] Event history cleared`);
+  }
 }
 
 /**
@@ -623,7 +662,9 @@ export function clearEventHistory(): void {
 export function optOut(): void {
   localStorage.setItem("meta_pixel_opt_out", "true");
   firedEventIds.clear();
-  console.log(`[Meta Pixel] Opted out from tracking`);
+  if (DEBUG_ENABLED) {
+    console.log(`[Meta Pixel Debug] Opted out from tracking`);
+  }
 }
 
 /**
@@ -631,5 +672,7 @@ export function optOut(): void {
  */
 export function optIn(): void {
   localStorage.removeItem("meta_pixel_opt_out");
-  console.log(`[Meta Pixel] Opted in to tracking`);
+  if (DEBUG_ENABLED) {
+    console.log(`[Meta Pixel Debug] Opted in to tracking`);
+  }
 }
