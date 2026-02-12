@@ -596,7 +596,7 @@ export class SupabaseOrderService {
     }
 
     const createdOrder = newOrder as Order;
-
+    let insertedItems: OrderItem[] = [];
     // 4. Create Order Items
     if (cartItems.length > 0) {
       const orderItemRows = cartItems.map((item) => {
@@ -620,7 +620,12 @@ export class SupabaseOrderService {
         };
       });
 
-      const { error: itemsErr } = await supabaseAdmin.from('order_items').insert(orderItemRows);
+      const { data: insertedItemsData, error: itemsErr } = await supabaseAdmin
+      .from('order_items')
+      .insert(orderItemRows)
+      .select(); // returns inserted rows
+
+      insertedItems = insertedItemsData ?? [];
 
       if (itemsErr) {
         console.error('Failed to insert order items, rolling back order', itemsErr);
@@ -631,6 +636,9 @@ export class SupabaseOrderService {
       console.log(`Inserted ${orderItemRows.length} order items for order ${createdOrder.id}`);
     }
 
-    return createdOrder;
+    return {
+      ...createdOrder,
+      order_items: insertedItems ?? [],
+    };
   }
 }
