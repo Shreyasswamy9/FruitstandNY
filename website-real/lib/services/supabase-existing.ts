@@ -1,7 +1,7 @@
 import { supabase } from '@/app/supabase-client';
 import { readCartMetadata } from '@/lib/stripeCartMetadata';
 import { generateOrderNumber } from '@/lib/orderNumbers';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 
 // Helper: safe JSON parse
@@ -160,6 +160,7 @@ export interface Order {
   notes?: string;
   created_at: string;
   updated_at: string;
+  order_items?: OrderItem[];
 }
 
 export interface OrderItem {
@@ -595,7 +596,7 @@ export class SupabaseOrderService {
     }
 
     const createdOrder = newOrder as Order;
-
+    let insertedItems: OrderItem[] = [];
     // 4. Create Order Items
     if (cartItems.length > 0) {
       const orderItemRows = cartItems.map((item) => {
@@ -619,7 +620,12 @@ export class SupabaseOrderService {
         };
       });
 
-      const { error: itemsErr } = await supabaseAdmin.from('order_items').insert(orderItemRows);
+      const { data: insertedItemsData, error: itemsErr } = await supabaseAdmin
+      .from('order_items')
+      .insert(orderItemRows)
+      .select(); // returns inserted rows
+
+      insertedItems = insertedItemsData ?? [];
 
       if (itemsErr) {
         console.error('Failed to insert order items, rolling back order', itemsErr);
@@ -630,6 +636,9 @@ export class SupabaseOrderService {
       console.log(`Inserted ${orderItemRows.length} order items for order ${createdOrder.id}`);
     }
 
-    return createdOrder;
+    return {
+      ...createdOrder,
+      order_items: insertedItems ?? [],
+    };
   }
 }

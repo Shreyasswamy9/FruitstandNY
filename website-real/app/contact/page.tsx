@@ -4,7 +4,6 @@ import {
   Grid2x2,
   Instagram,
   Mail,
-  MessageCircle,
   Rows3,
   Search,
   Twitter,
@@ -87,8 +86,8 @@ export default function ContactPage() {
 
       <section className="relative isolate overflow-hidden border-b border-[#181818]/10">
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#211c16] via-[#2d251c] to-[#342a1f]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.12),_transparent_60%)]" />
+          <div className="absolute inset-0 bg-linear-to-r from-[#211c16] via-[#2d251c] to-[#342a1f]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12),transparent_60%)]" />
         </div>
         <div className="relative mx-auto flex max-w-5xl flex-col items-center px-6 pb-32 pt-28 text-center text-white sm:px-10">
           <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold tracking-[0.28em] uppercase text-white/80">

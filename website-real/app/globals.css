@@ -1,28 +1,4 @@
 @font-face {
-  font-family: 'Avenir Black';
-  src: url('/fonts/Avenir LT 55 Roman Bold.ttf') format('truetype');
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Avenir Medium';
-  src: url('/fonts/Avenir LT 55 Roman Bold.ttf') format('truetype');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Avenir Roman';
-  src: url('/fonts/Avenir LT 55 Roman Bold.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
   font-family: 'Fruitstand Light';
   src: url('/fonts/Fruitstand Light.ttf') format('truetype');
   font-weight: normal;
@@ -30,16 +6,43 @@
   font-display: swap;
 }
 
-:root {
-  --font-avenir-black: 'Avenir Black', sans-serif;
-  --font-avenir-medium: 'Avenir Medium', sans-serif;
-  --font-avenir-roman: 'Avenir Roman', sans-serif;
+@font-face {
+  font-family: 'Avenir LT 55';
+  src: url('/fonts/Avenir LT 55 Roman Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Avenir Black';
+  src: url('/fonts/Avenir Black.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Avenir Light';
+  src: url('/fonts/Avenir Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
 }
 
 html, body, * {
-  font-family: var(--font-avenir-roman), 'Fruitstand Light', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family: 'Avenir LT 55', 'Fruitstand Light', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
 }
 
+.font-avenir-black {
+  font-family: 'Avenir Black', 'Avenir LT 55', 'Fruitstand Light', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+  font-weight: 900;
+}
+
+.font-avenir-light {
+  font-family: 'Avenir Light', 'Avenir LT 55', 'Fruitstand Light', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+  font-weight: 300;
+}
 html, body {
   background-color: #fbf6f0;
 }

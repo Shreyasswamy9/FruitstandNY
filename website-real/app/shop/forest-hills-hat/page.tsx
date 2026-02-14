@@ -1,11 +1,25 @@
 "use client";
+import Link from "next/link";
 import React, { useCallback, useMemo, useState } from "react";
 import { useCart } from "../../../components/CartContext";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
+import { useTrackProductView } from "@/hooks/useTrackProductView";
 
-const FOREST_HILLS_IMAGES = [
+function formatText(text: string, productName: string, colorNames: string[]): string {
+  let lower = text.toLowerCase();
+  const nameRegex = new RegExp(productName, "gi");
+  lower = lower.replace(nameRegex, productName.toUpperCase());
+  colorNames.forEach(color => {
+    const colorRegex = new RegExp(color, "gi");
+    lower = lower.replace(colorRegex, color.toUpperCase());
+  });
+  lower = lower.replace(/(?:^|[.!?]\s+)([a-z])/g, (match) => match.toUpperCase());
+  return lower;
+}
+
+const FOREST_HILLS_HAT_IMAGES = [
   "/images/products/Forest Hills Hat/Green Hat.png",
   "/images/products/Forest Hills Hat/G1.png",
   "/images/products/Forest Hills Hat/G2.png",
@@ -27,17 +41,20 @@ const PRODUCT = {
 };
 
 export default function ForestHillsHatPage() {
-  const galleryOption = useMemo(
-    () => ({ name: PRODUCT.name, slug: "default", images: FOREST_HILLS_IMAGES }),
-    []
-  );
-  const [selectedImage, setSelectedImage] = useState(FOREST_HILLS_IMAGES[0]);
+  const [selectedImage] = useState(FOREST_HILLS_HAT_IMAGES[0]);
   const sizeOptions = useMemo<PurchaseSizeOption[]>(
     () => [{ value: "ONE_SIZE", label: "One Size" }],
     []
   );
   const [selectedSize, setSelectedSize] = useState<string>(() => sizeOptions[0]?.value ?? "");
   const { addToCart } = useCart();
+
+  useTrackProductView({
+    productId: "8d1d5080-2106-420d-b7ea-babc2fba5457",
+    productName: PRODUCT.name,
+    price: PRODUCT.price,
+    currency: "USD",
+  });
 
   const handleAddToCart = useCallback(() => {
     if (!selectedSize) return;
@@ -59,9 +76,9 @@ export default function ForestHillsHatPage() {
 
       <main className="bg-[#fbf5ed] pb-[210px] pt-12">
         {/* HERO SECTION - Top 75% */}
-        <div className="mx-auto w-full max-w-[1200px] px-6 text-center lg:px-12 lg:text-left lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-start lg:gap-12" style={{ minHeight: '75vh' }}>
+        <div className="mx-auto w-full max-w-[400px] px-6 text-center" style={{ minHeight: '75vh' }}>
           {/* IMAGE */}
-          <div className="relative mx-auto aspect-[4/5] w-full lg:mx-0 lg:max-w-[520px]">
+          <div className="relative mx-auto aspect-[4/5] w-full">
             <img
               src={selectedImage}
               alt={PRODUCT.name}
@@ -69,33 +86,32 @@ export default function ForestHillsHatPage() {
             />
           </div>
 
-          {/* RIGHT COLUMN - Table-like Grid */}
-          <div className="mt-8 flex flex-col items-stretch border border-[#1d1c19] bg-[#fbf5ed] lg:col-start-2 lg:mt-0">
-            {/* TITLE & PRICE */}
-            <div className="p-6 border-b border-[#1d1c19] text-center lg:text-left">
-              <h1 className="text-[22px] font-black uppercase tracking-[0.08em] leading-tight text-[#1d1c19]">
-                {PRODUCT.name}
-              </h1>
+          {/* TITLE / PRICE / COLORWAY - Single Line */}
+          <div className="mt-8 flex flex-col items-center">
+            <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
+              {PRODUCT.name}
+            </h1>
 
-              <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
-            </div>
+            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+          </div>
+        </div>
 
-            {/* DESCRIPTION */}
-            <div className="p-6 border-b border-[#1d1c19] text-center lg:text-left">
-              <p className="text-[14px] leading-relaxed text-[#3d372f]">
-                {PRODUCT.description}
-              </p>
-            </div>
+        {/* DESCRIPTION SECTION */}
+        <div className="mx-auto w-full max-w-[400px] px-6 text-center mt-5">
+          <p className="px-1 text-[14px] leading-relaxed text-[#3d372f]">
+            {formatText(PRODUCT.description, "Forest Hills Hat", ["Forest", "Hills", "Lime", "Green", "Fruitstand"])}
+          </p>
+        </div>
 
-            {/* DETAILS LIST */}
-            <div className="p-6 text-left">
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-[#1d1c19]">Details</p>
-              <ul className="mt-4 list-disc space-y-2 pl-5 text-[13px] text-[#1d1c19]">
-                {PRODUCT.details.map((detail) => (
-                  <li key={detail}>{detail}</li>
-                ))}
-              </ul>
-            </div>
+        {/* DETAILS SECTION */}
+        <div className="mx-auto w-full max-w-[400px] px-6 text-left">
+          <div className="mt-8">
+            <p className="text-base font-semibold text-[#1d1c19]">Details</p>
+            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-[#1d1c19]">
+              {PRODUCT.details.map((detail) => (
+                <li key={detail}>{formatText(detail, "Forest Hills Hat", ["Forest", "Hills", "Lime", "Green", "Fruitstand"])}</li>
+              ))}
+            </ul>
           </div>
         </div>
 

@@ -47,6 +47,7 @@ export default function CheckoutRedirectPage() {
         const subtotal = items.reduce((total, item) => total + (Number(item.price) * item.quantity), 0)
         const shipping = subtotal >= 120 ? 0 : 8.99
         const tax = 0 // Tax calculated at checkout
+        const total = subtotal + shipping + tax
 
         // Prepare normalized items
         const normalizedItems: CheckoutItem[] = items.map((item) => ({

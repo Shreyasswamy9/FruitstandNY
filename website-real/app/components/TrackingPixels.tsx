@@ -4,8 +4,14 @@ import Script from "next/script";
 
 declare global {
   interface Window {
-    fbq?: (...args: any[]) => void;
-    _fbq?: (...args: any[]) => void;
+    fbq?: (((...args: any[]) => void) & {
+      callMethod?: (...args: any[]) => void;
+      queue?: any[];
+      push?: (...args: any[]) => void;
+      loaded?: boolean;
+      version?: string;
+    }) | undefined;
+    _fbq?: any;
     ttq?: {
       track: (event: string, data?: any) => void;
       page: () => void;

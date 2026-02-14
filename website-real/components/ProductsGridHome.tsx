@@ -38,8 +38,8 @@ export const products: Product[] = [
     name: "Fruitstand Tee Bundle",
     price: "$125",
     displayPrice: "$106.25 bundle",
-    image: "/images/products/gala-tshirt/broadwaynoir/GN4.png",
-    hoverImage: "/images/products/mutsu-tshirt/suttonplacesnow/N4.png",
+    image: "/images/products/Teebundle/Five T-Shirts.png",
+    hoverImage: "/images/products/Teebundle/Five T-Shirts.png",
     category: "Tops",
     variantColor: "Curated trio · Save 15%",
     isBundle: true,
@@ -526,8 +526,13 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
                 const touchTime = state ? Date.now() - state.start : 0;
                 if (state && !state.moved && touchTime < 250) {
                   if (isBundleCard) {
+                    // Navigate to dedicated bundle page if it exists
+                    if (product.bundleId === 'tshirt-bundle') {
+                      router.push('/shop/tshirt-bundle');
+                    } else {
+                      openBundleSheet();
+                    }
                     setMobileHover(null);
-                    openBundleSheet();
                     lastNavigationRef.current = Date.now();
                   } else {
                     router.push(getProductLink());
@@ -550,7 +555,12 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
                 return;
               }
               if (isBundleCard) {
-                openBundleSheet();
+                // Navigate to dedicated bundle page if it exists
+                if (product.bundleId === 'tshirt-bundle') {
+                  router.push('/shop/tshirt-bundle');
+                } else {
+                  openBundleSheet();
+                }
                 lastNavigationRef.current = Date.now();
                 return;
               }

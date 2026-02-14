@@ -42,6 +42,7 @@ export type CreatePaymentIntentArgs = {
   paymentIntentId?: string | null;
   guestData?: GuestCheckoutPayload;
   customerData?: CustomerCheckoutPayload;
+  discountCode?: string | null;
 };
 
 export type CreatePaymentIntentResult = {
@@ -111,6 +112,7 @@ export type CreateCheckoutSessionArgs = {
   items: CheckoutItem[];
   shipping: number;
   tax: number;
+  discountCode?: string | null;
 };
 
 export type CreateCheckoutSessionResult = {
