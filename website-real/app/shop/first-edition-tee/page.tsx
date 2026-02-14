@@ -8,6 +8,7 @@ import { useCart } from "../../../components/CartContext";
 import { type ColorOption } from '@/components/ColorPicker';
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
+import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
@@ -55,6 +56,7 @@ export default function FirstEditionTeePage() {
   ], []);
   const [selectedColor, setSelectedColor] = useState<FirstEditionColorOption>(colorOptions[0]);
   const [selectedImage, setSelectedImage] = useState<string>(colorOptions[0].images[0]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const { addToCart } = useCart();
 
@@ -72,6 +74,7 @@ export default function FirstEditionTeePage() {
   const handleSelectColor = useCallback((option: FirstEditionColorOption, ctx?: { image?: string }) => {
     setSelectedColor(option);
     setSelectedImage(prev => ctx?.image ?? option.images?.[0] ?? prev);
+    setCurrentImageIndex(0);
   }, []);
   
   const handleAddToCart = () => {
@@ -108,13 +111,23 @@ export default function FirstEditionTeePage() {
         <div className="mx-auto w-full max-w-[1280px] px-6 text-center lg:px-12 lg:text-left lg:grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:items-start lg:gap-14" style={{ minHeight: '75vh' }}>
           {/* IMAGE */}
           <div className="relative mx-auto aspect-[4/5] w-full lg:mx-0 lg:max-w-[620px] lg:row-span-3">
-            <Image
-              src={selectedImage}
-              alt={`${selectedColor.name} ${PRODUCT.name}`}
-              fill
-              sizes="(max-width: 768px) 92vw, 400px"
-              className="object-contain"
-              priority
+            <ProductImageGallery
+              productName={PRODUCT.name}
+              options={colorOptions.map((color) => ({
+                name: color.name,
+                images: color.images,
+              }))}
+              selectedOption={{
+                name: selectedColor.name,
+                images: selectedColor.images,
+              } as ProductImageGalleryOption}
+              selectedImage={selectedImage}
+              onImageChange={(image) => {
+                setSelectedImage(image);
+                setCurrentImageIndex(selectedColor.images.indexOf(image));
+              }}
+              className="h-full w-full"
+              frameBackground="transparent"
             />
           </div>
 

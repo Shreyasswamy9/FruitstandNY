@@ -1,6 +1,7 @@
 "use client";
 import React, { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
+import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useCart } from "../../../components/CartContext";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
@@ -37,7 +38,8 @@ const PRODUCT = {
 };
 
 export default function EcruHatPage() {
-  const [selectedImage] = useState(ECRU_HAT_IMAGES[0]);
+  const [selectedImage, setSelectedImage] = useState(ECRU_HAT_IMAGES[0]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const sizeOptions = useMemo<PurchaseSizeOption[]>(
     () => [{ value: "ONE_SIZE", label: "One Size" }],
     []
@@ -75,10 +77,25 @@ export default function EcruHatPage() {
         <div className="mx-auto w-full max-w-300 px-6 text-center lg:px-12 lg:text-left lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-start lg:gap-12" style={{ minHeight: '75vh' }}>
           {/* IMAGE */}
           <div className="relative mx-auto aspect-4/5 w-full lg:mx-0 lg:max-w-130 lg:row-span-2">
-            <img
-              src={selectedImage}
-              alt={PRODUCT.name}
-              className="h-full w-full object-contain"
+            <ProductImageGallery
+              productName={PRODUCT.name}
+              options={[
+                {
+                  name: "Default",
+                  images: ECRU_HAT_IMAGES,
+                },
+              ]}
+              selectedOption={{
+                name: "Default",
+                images: ECRU_HAT_IMAGES,
+              } as ProductImageGalleryOption}
+              selectedImage={selectedImage}
+              onImageChange={(image) => {
+                setSelectedImage(image);
+                setCurrentImageIndex(ECRU_HAT_IMAGES.indexOf(image));
+              }}
+              className="h-full w-full"
+              frameBackground="transparent"
             />
           </div>
 

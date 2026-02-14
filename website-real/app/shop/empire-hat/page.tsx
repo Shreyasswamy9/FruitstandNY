@@ -1,6 +1,7 @@
 "use client";
 import React, { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
+import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useCart } from "../../../components/CartContext";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
@@ -42,7 +43,8 @@ const PRODUCT = {
 };
 
 export default function EmpireHatPage() {
-  const [selectedImage] = useState(EMPIRE_HAT_IMAGES[0]);
+  const [selectedImage, setSelectedImage] = useState(EMPIRE_HAT_IMAGES[0]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const sizeOptions = useMemo<PurchaseSizeOption[]>(
     () => [{ value: "ONE_SIZE", label: "One Size" }],
     []
@@ -80,10 +82,25 @@ export default function EmpireHatPage() {
         <div className="mx-auto w-full max-w-100 px-6 text-center" style={{ minHeight: '75vh' }}>
           {/* IMAGE */}
           <div className="relative mx-auto aspect-4/5 w-full">
-            <img
-              src={selectedImage}
-              alt={PRODUCT.name}
-              className="h-full w-full object-contain"
+            <ProductImageGallery
+              productName={PRODUCT.name}
+              options={[
+                {
+                  name: "Default",
+                  images: EMPIRE_HAT_IMAGES,
+                },
+              ]}
+              selectedOption={{
+                name: "Default",
+                images: EMPIRE_HAT_IMAGES,
+              } as ProductImageGalleryOption}
+              selectedImage={selectedImage}
+              onImageChange={(image) => {
+                setSelectedImage(image);
+                setCurrentImageIndex(EMPIRE_HAT_IMAGES.indexOf(image));
+              }}
+              className="h-full w-full"
+              frameBackground="transparent"
             />
           </div>
 

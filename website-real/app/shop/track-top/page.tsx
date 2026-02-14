@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import SizeGuide from "@/components/SizeGuide";
 import React, { useState, useCallback, useMemo } from "react";
+import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useCart } from "../../../components/CartContext";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
@@ -69,6 +70,7 @@ export default function TrackTopPage() {
   const colorOptions = COLOR_DATA;
   const [selectedColor, setSelectedColor] = useState<TrackTopColorOption>(colorOptions[0]);
   const [selectedImage, setSelectedImage] = useState(colorOptions[0].images[0]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const { addToCart } = useCart();
 
@@ -86,6 +88,7 @@ export default function TrackTopPage() {
   const handleSelectColor = useCallback((option: TrackTopColorOption, ctx?: { image?: string }) => {
     setSelectedColor(option);
     setSelectedImage(prev => ctx?.image ?? option.images?.[0] ?? prev);
+    setCurrentImageIndex(0);
     if (typeof window !== 'undefined' && option.slug) {
       const basePath = window.location.pathname.split('?')[0];
       window.history.replaceState(null, '', `${basePath}?color=${option.slug}`);
@@ -130,10 +133,23 @@ export default function TrackTopPage() {
         <div className="mx-auto w-full max-w-7xl px-6 text-center lg:px-12 lg:text-left lg:grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:items-start lg:gap-14" style={{ minHeight: '75vh' }}>
           {/* IMAGE */}
           <div className="relative mx-auto aspect-4/5 w-full lg:mx-0 lg:max-w-155 lg:row-span-3">
-            <img
-              src={selectedImage}
-              alt={`${selectedColor.name} ${PRODUCT.name}`}
-              className="h-full w-full object-contain"
+            <ProductImageGallery
+              productName={PRODUCT.name}
+              options={COLOR_DATA.map((color) => ({
+                name: color.name,
+                images: color.images,
+              }))}
+              selectedOption={{
+                name: selectedColor.name,
+                images: selectedColor.images,
+              } as ProductImageGalleryOption}
+              selectedImage={selectedImage}
+              onImageChange={(image) => {
+                setSelectedImage(image);
+                setCurrentImageIndex(selectedColor.images.indexOf(image));
+              }}
+              className="h-full w-full"
+              frameBackground="transparent"
             />
           </div>
 

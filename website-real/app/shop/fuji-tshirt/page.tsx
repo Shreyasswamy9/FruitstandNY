@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
+import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
@@ -82,6 +83,7 @@ export default function FujiTshirtPage() {
   ], []);
   const [selectedColor, setSelectedColor] = useState<FujiColorOption>(colorOptions[0]);
   const [selectedImage, setSelectedImage] = useState<string>(colorOptions[0].images[0]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
 
@@ -106,6 +108,7 @@ export default function FujiTshirtPage() {
   const handleSelectColor = useCallback((option: FujiColorOption, ctx?: { image?: string }) => {
     setSelectedColor(option);
     setSelectedImage(prev => ctx?.image ?? option.images?.[0] ?? prev);
+    setCurrentImageIndex(0);
     updateUrlForColor(option.slug);
   }, [updateUrlForColor]);
   
@@ -160,10 +163,23 @@ export default function FujiTshirtPage() {
         <div className="mx-auto w-full max-w-300 px-6 text-center lg:px-12 lg:text-left lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-start lg:gap-12" style={{ minHeight: '75vh' }}>
           {/* IMAGE */}
           <div className="relative mx-auto aspect-4/5 w-full lg:mx-0 lg:max-w-130 lg:row-span-3">
-            <img
-              src={selectedImage}
-              alt={`${selectedColor.name} ${PRODUCT.name}`}
-              className="h-full w-full object-contain"
+            <ProductImageGallery
+              productName={PRODUCT.name}
+              options={colorOptions.map((color) => ({
+                name: color.name,
+                images: color.images,
+              }))}
+              selectedOption={{
+                name: selectedColor.name,
+                images: selectedColor.images,
+              } as ProductImageGalleryOption}
+              selectedImage={selectedImage}
+              onImageChange={(image) => {
+                setSelectedImage(image);
+                setCurrentImageIndex(selectedColor.images.indexOf(image));
+              }}
+              className="h-full w-full"
+              frameBackground="transparent"
             />
           </div>
 

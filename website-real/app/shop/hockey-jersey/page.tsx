@@ -2,6 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import SizeGuide from "@/components/SizeGuide";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import { useCart } from "@/components/CartContext";
@@ -55,6 +56,7 @@ export default function HockeyJerseyPage() {
   const colorOptions = HOCKEY_JERSEY_VARIANTS;
   const [selectedColor, setSelectedColor] = useState<HockeyJerseyVariant>(colorOptions[0]);
   const [selectedImage, setSelectedImage] = useState(colorOptions[0].images[0]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
 
@@ -72,6 +74,7 @@ export default function HockeyJerseyPage() {
   const handleSelectColor = useCallback((option: HockeyJerseyVariant, ctx?: { image?: string }) => {
     setSelectedColor(option);
     setSelectedImage(prev => ctx?.image ?? option.images?.[0] ?? prev);
+    setCurrentImageIndex(0);
     if (typeof window !== 'undefined') {
       const basePath = window.location.pathname.split('?')[0];
       const query = option.slug ? `?color=${option.slug}` : '';
@@ -127,10 +130,23 @@ export default function HockeyJerseyPage() {
         <div className="mx-auto w-full max-w-[1200px] px-6 text-center lg:px-12 lg:text-left lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-start lg:gap-12" style={{ minHeight: '75vh' }}>
           {/* IMAGE */}
           <div className="relative mx-auto aspect-[4/5] w-full lg:mx-0 lg:max-w-[520px] lg:row-span-3">
-            <img
-              src={selectedImage}
-              alt={`${selectedColor.name} ${PRODUCT.name}`}
-              className="h-full w-full object-contain"
+            <ProductImageGallery
+              productName={PRODUCT.name}
+              options={HOCKEY_JERSEY_VARIANTS.map((variant) => ({
+                name: variant.name,
+                images: variant.images,
+              }))}
+              selectedOption={{
+                name: selectedColor.name,
+                images: selectedColor.images,
+              } as ProductImageGalleryOption}
+              selectedImage={selectedImage}
+              onImageChange={(image) => {
+                setSelectedImage(image);
+                setCurrentImageIndex(selectedColor.images.indexOf(image));
+              }}
+              className="h-full w-full"
+              frameBackground="transparent"
             />
           </div>
 

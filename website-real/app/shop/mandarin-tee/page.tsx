@@ -3,6 +3,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import SizeGuide from "@/components/SizeGuide";
+import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import { useCart } from "../../../components/CartContext";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
@@ -53,7 +54,8 @@ const OUT_OF_STOCK_SIZES = [
   "XS", "S", "XXXL"] as const;
 
 export default function MandarinTeePage() {
-  const [selectedImage] = useState(MANDARIN_IMAGES[0]);
+  const [selectedImage, setSelectedImage] = useState(MANDARIN_IMAGES[0]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const sizeOptions = useMemo<PurchaseSizeOption[]>(
     () =>
       PRODUCT.sizes.map((size) => ({
@@ -103,13 +105,25 @@ export default function MandarinTeePage() {
         <div className="mx-auto w-full max-w-7xl px-6 text-center lg:px-12 lg:text-left lg:grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:items-start lg:gap-14" style={{ minHeight: '75vh' }}>
           {/* IMAGE */}
           <div className="relative mx-auto aspect-4/5 w-full lg:mx-0 lg:max-w-155 lg:row-span-3">
-            <Image
-              src={selectedImage}
-              alt={PRODUCT.name}
-              fill
-              sizes="(max-width: 768px) 92vw, 400px"
-              className="object-contain"
-              priority
+            <ProductImageGallery
+              productName={PRODUCT.name}
+              options={[
+                {
+                  name: "Default",
+                  images: MANDARIN_IMAGES,
+                },
+              ]}
+              selectedOption={{
+                name: "Default",
+                images: MANDARIN_IMAGES,
+              } as ProductImageGalleryOption}
+              selectedImage={selectedImage}
+              onImageChange={(image) => {
+                setSelectedImage(image);
+                setCurrentImageIndex(MANDARIN_IMAGES.indexOf(image));
+              }}
+              className="h-full w-full"
+              frameBackground="transparent"
             />
           </div>
 

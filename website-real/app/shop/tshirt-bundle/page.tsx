@@ -7,6 +7,7 @@ import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import SizeGuide from "@/components/SizeGuide";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
+import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useCart } from "@/components/CartContext";
 import { TEE_VARIANTS, SIZE_OPTIONS, type TeeVariant, type TeeColor, type SizeOption } from "@/lib/teeVariants";
 import { CUSTOM_BUNDLE_PRICES, type CustomBundleSize } from "@/lib/customBundles";
@@ -47,6 +48,7 @@ export default function TshirtBundlePage() {
 
   const [bundleSize, setBundleSize] = useState<CustomBundleSize>(3);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [items, setItems] = useState<BundleItem[]>([
     { tee: TEE_VARIANTS[0], color: TEE_VARIANTS[0].colors[0], size: null },
     { tee: TEE_VARIANTS[1], color: TEE_VARIANTS[1].colors[0], size: null },
@@ -63,6 +65,7 @@ export default function TshirtBundlePage() {
   });
 
   const updateTeeType = useCallback((tee: TeeVariant) => {
+    setCurrentImageIndex(0);
     setItems((prev) => {
       const next = [...prev];
       next[currentIndex] = { tee, color: tee.colors[0], size: null };
@@ -73,6 +76,7 @@ export default function TshirtBundlePage() {
   const updateColor = useCallback((colorName: string) => {
     const color = currentItem.tee.colors.find((c) => c.name === colorName);
     if (!color) return;
+    setCurrentImageIndex(0);
     setItems((prev) => {
       const next = [...prev];
       next[currentIndex] = { ...next[currentIndex], color };
@@ -161,13 +165,25 @@ export default function TshirtBundlePage() {
         >
           {/* IMAGE */}
           <div className="relative mx-auto aspect-4/5 w-full lg:mx-0 lg:max-w-155 lg:row-span-3">
-            <Image
-              src={currentItem.color.image}
-              alt={`${currentItem.tee.name} - ${currentItem.color.name}`}
-              fill
-              sizes="(max-width: 768px) 92vw, 620px"
-              className="object-contain"
-              priority
+            <ProductImageGallery
+              productName={PRODUCT.name}
+              options={[
+                {
+                  name: currentItem.color.name,
+                  images: currentItem.color.images || [currentItem.color.image],
+                },
+              ]}
+              selectedOption={{
+                name: currentItem.color.name,
+                images: currentItem.color.images || [currentItem.color.image],
+              } as ProductImageGalleryOption}
+              selectedImage={currentItem.color.images?.[currentImageIndex] || currentItem.color.image}
+              onImageChange={(image) => {
+                const images = currentItem.color.images || [currentItem.color.image];
+                setCurrentImageIndex(images.indexOf(image));
+              }}
+              className="h-full w-full"
+              frameBackground="transparent"
             />
           </div>
 

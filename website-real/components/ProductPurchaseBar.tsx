@@ -109,11 +109,11 @@ export default function ProductPurchaseBar({
             className="relative flex overflow-hidden border-t border-white bg-black text-white shadow-[0_-14px_40px_rgba(0,0,0,0.35)]"
           >
             <div className="flex h-full w-full items-stretch">
-              <div className="relative flex flex-1 items-center justify-between border-r border-black px-3 py-4">
+              <div className="relative flex flex-1 items-center justify-end border-r border-black px-3 py-4">
                 <span className="max-w-[120px] truncate text-[13px] font-semibold uppercase tracking-[0.18em]">
                   {colorLabel}
                 </span>
-                <span className="pointer-events-none text-sm text-white ml-1">▼</span>
+                <span className="pointer-events-none text-sm text-white ml-2">▼</span>
                 <select
                   aria-label="Select color"
                   value={selectedColor ?? ""}
@@ -124,6 +124,7 @@ export default function ProductPurchaseBar({
                     }
                   }}
                   className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                  style={{ color: "#000000", backgroundColor: "#ffffff" }}
                 >
                   {!selectedColor && <option value="">Select</option>}
                   {colorOptions?.map((option) => (
@@ -134,11 +135,11 @@ export default function ProductPurchaseBar({
                 </select>
               </div>
 
-              <div className="relative flex flex-1 items-center justify-between border-r border-white px-3 py-4">
+              <div className="relative flex flex-1 items-center justify-end border-r border-white px-3 py-4">
                 <span className="max-w-[120px] truncate text-[13px] font-semibold uppercase tracking-[0.18em]">
                   {sizeLabel}
                 </span>
-                <span className="pointer-events-none text-sm text-white ml-1">▼</span>
+                <span className="pointer-events-none text-sm text-white ml-2">▼</span>
                 <select
                   aria-label="Select size"
                   value={selectedSize ?? ""}
@@ -149,6 +150,7 @@ export default function ProductPurchaseBar({
                     }
                   }}
                   className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                  style={{ color: "#000000", backgroundColor: "#ffffff" }}
                 >
                   {!selectedSize && <option value="">Select</option>}
                   {sizeOptions.map((option) => (
@@ -165,7 +167,7 @@ export default function ProductPurchaseBar({
                   onClick={onAddToCart}
                   disabled={addButtonDisabled || isAdding}
                   className={`relative z-10 flex h-full w-full items-center justify-center px-3 text-[13px] font-semibold uppercase tracking-[0.18em] transition ${
-                    addButtonDisabled || isAdding ? "opacity-50" : "hover:bg-[#f4f4f4]"
+                    addButtonDisabled || isAdding ? "opacity-500" : "hover:bg-[#f4f4f4]"
                   }`}
                   title={disableReason}
                 >
