@@ -56,7 +56,7 @@ export default function TshirtBundlePage() {
   const currentItem = items[currentIndex];
 
   useTrackProductView({
-    productId: "custom-tee-bundle",
+    productId: "89c1a393-3829-47bc-9c11-40e8183672cd",
     productName: PRODUCT.name,
     price: CUSTOM_BUNDLE_PRICES[bundleSize],
     currency: "USD",
@@ -123,7 +123,7 @@ export default function TshirtBundlePage() {
       .map((item) => `${item.tee.name} • ${item.color.name} • ${item.size}`)
       .join(" | ");
     addToCart({
-      productId: `custom-tee-bundle-${bundleSize}-${Date.now()}`,
+      productId: "89c1a393-3829-47bc-9c11-40e8183672cd",
       name: `Build Your Bundle (${bundleSize}) – ${summary}`,
       price,
       image: "/images/products/Teebundle/Five T-Shirts.png",

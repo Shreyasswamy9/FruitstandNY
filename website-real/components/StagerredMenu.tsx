@@ -199,7 +199,11 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       preLayerElsRef.current = preLayers;
 
       const offscreen = position === 'left' ? -100 : 100;
-      gsap.set([panel, ...preLayers], { xPercent: offscreen });
+      gsap.set([panel, ...preLayers], { xPercent: offscreen, visibility: 'visible' });
+      
+      if (preContainer) {
+        gsap.set(preContainer, { visibility: 'visible' });
+      }
 
       gsap.set(plusH, { transformOrigin: '50% 50%', rotate: 0 });
       gsap.set(plusV, { transformOrigin: '50% 50%', rotate: 90 });
@@ -466,6 +470,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
           ref={preLayersRef}
           className="sm-prelayers absolute top-0 right-0 bottom-0 pointer-events-none z-5"
           aria-hidden="true"
+          style={{ visibility: 'hidden' }}
         >
           {(() => {
             const raw = colors && colors.length ? colors.slice(0, 4) : ['#1e1e22', '#35353c'];
@@ -533,7 +538,11 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
           id="staggered-menu-panel"
           ref={panelRef}
           className="staggered-menu-panel absolute top-0 right-0 h-full bg-white flex flex-col p-[6em_2em_4.5em_2em] overflow-y-auto z-50 backdrop-blur-md"
-          style={{ WebkitBackdropFilter: 'blur(12px)', paddingBottom: 'calc(4.5rem + env(safe-area-inset-bottom, 0px))' }}
+          style={{ 
+            WebkitBackdropFilter: 'blur(12px)', 
+            paddingBottom: 'calc(4.5rem + env(safe-area-inset-bottom, 0px))',
+            visibility: 'hidden'
+          }}
           aria-hidden={!open}
         >
           <div className="sm-panel-inner flex-1 flex flex-col gap-5 pt-6">

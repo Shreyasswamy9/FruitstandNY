@@ -1,12 +1,10 @@
 "use client"
 
-import { animate } from "animejs"
-import { useRef, useEffect, useState, useContext } from "react"
+import { useRef, useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader"
-import { LogoVisibilityContext } from "@/components/ClientRootLayout"
 
 interface EditorialPhoto {
   id: string
@@ -55,131 +53,13 @@ const newItems = [
 export default function Home() {
   const carouselRef = useRef<HTMLDivElement>(null)
   const [isHydrated, setIsHydrated] = useState(false)
-  const [showMain, setShowMain] = useState(true)
-  const { setHideLogo } = useContext(LogoVisibilityContext)
-  const [currentLangIndex, setCurrentLangIndex] = useState(0)
-  const [showLangFlip, setShowLangFlip] = useState(false)
 
-  const titleRef = useRef<HTMLHeadingElement>(null)
-  const subtitleRef = useRef<HTMLParagraphElement>(null)
-  const logoRef = useRef<HTMLDivElement>(null)
-  const introTriggeredRef = useRef(false)
-
-  const fruitstandTranslations = [
-    "FRUITSTAND",
-    "水果摊",
-    "Frutaria",
-    "Frutería",
-    "फलस्टैंड",
-    "Stall de fruits",
-    "Obststand",
-    "Fruttivendolo",
-    "フルーツスタンド",
-    "فروٹ اسٹینڈ",
-  ]
-
-  // Handle hydration and intro - only on first load
+  // Handle hydration
   useEffect(() => {
     setIsHydrated(true)
-    if (typeof window !== "undefined") {
-      const introPlayed = !!window.sessionStorage.getItem("introPlayed")
-      if (!introPlayed) {
-        setShowMain(false)
-        setShowLangFlip(true)
-        introTriggeredRef.current = true
-      }
-    }
   }, [])
 
-  // Watch for intro replay (when logo is clicked)
-  useEffect(() => {
-    const handleIntroReset = () => {
-      if (isHydrated) {
-        setShowMain(false)
-        setShowLangFlip(true)
-        setCurrentLangIndex(0)
-        introTriggeredRef.current = true
-      }
-    }
 
-    window.addEventListener("introReset", handleIntroReset)
-    return () => window.removeEventListener("introReset", handleIntroReset)
-  }, [isHydrated])
-
-  // Hide logo and cart bar during intro
-  useEffect(() => {
-    setHideLogo(!showMain)
-  }, [showMain, setHideLogo])
-
-  // Language flip animation
-  useEffect(() => {
-    if (titleRef.current && showLangFlip) {
-      let flipCount = 0
-      const maxFlips = fruitstandTranslations.length * 2
-      const langFlipInterval = setInterval(() => {
-        setCurrentLangIndex((prev) => (prev + 1) % fruitstandTranslations.length)
-        flipCount++
-        if (flipCount >= maxFlips) {
-          clearInterval(langFlipInterval)
-          setShowLangFlip(false)
-          // Immediately start the fade-in animation after language flipping
-          if (logoRef.current) {
-            animate(logoRef.current, {
-              opacity: [0, 1],
-              scale: [0.8, 1],
-              duration: 600,
-              easing: "easeOutQuart",
-              delay: 0,
-            })
-          }
-          // Fade in subtitle after logo
-          const subtitleId = setTimeout(() => {
-            if (subtitleRef.current) {
-              animate(subtitleRef.current, {
-                opacity: [0, 1],
-                translateY: [20, 0],
-                duration: 1000,
-                easing: "easeOutQuart",
-              })
-            }
-          }, 600)
-
-          // Auto transition to main content
-          const toMainId = setTimeout(() => {
-            if (logoRef.current) {
-              animate(logoRef.current, {
-                opacity: [1, 0],
-                scale: [1, 1.1],
-                duration: 800,
-                easing: "easeInQuart",
-              })
-            }
-            if (subtitleRef.current) {
-              animate(subtitleRef.current, {
-                opacity: [1, 0],
-                translateY: [0, -20],
-                duration: 800,
-                easing: "easeInQuart",
-              })
-            }
-            const showId = setTimeout(() => {
-              setShowMain(true)
-              if (typeof window !== "undefined") {
-                window.sessionStorage.setItem("introPlayed", "1")
-              }
-            }, 800)
-            return () => clearTimeout(showId)
-          }, 2000)
-
-          return () => {
-            clearTimeout(subtitleId)
-            clearTimeout(toMainId as unknown as number)
-          }
-        }
-      }, 100)
-      return () => clearInterval(langFlipInterval)
-    }
-  }, [fruitstandTranslations.length, showLangFlip])
 
   // Signup promo popup temporarily disabled (Mailchimp not set up)
   // useEffect(() => {
@@ -235,125 +115,26 @@ export default function Home() {
     <>
       {/* <SignupPromoModal isOpen={showSignupPromo} onClose={() => setShowSignupPromo(false)} /> */}
       
-      {/* Intro Screen */}
-      {(!isHydrated || !showMain) && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100dvh",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 10001,
-            backfaceVisibility: "hidden",
-            WebkitBackfaceVisibility: "hidden",
-            willChange: "opacity, transform",
-            paddingTop: "env(safe-area-inset-top)",
-            paddingBottom: "env(safe-area-inset-bottom)",
-            overflow: "hidden",
-          }}
-        >
-          <Image
-            src="/images/black-plain-concrete-textured.jpg"
-            alt="Intro background"
-            fill
-            priority
-            style={{
-              objectFit: "cover",
-              zIndex: -1,
-              pointerEvents: "none",
-              userSelect: "none",
-            }}
-            sizes="100vw"
-            quality={70}
-          />
-          <div
-            ref={logoRef}
-            style={{
-              opacity: isHydrated && showLangFlip ? 1 : 0,
-              transform: "scale(0.8) translateZ(0)",
-              backfaceVisibility: "hidden",
-              WebkitBackfaceVisibility: "hidden",
-              willChange: "transform, opacity",
-            }}
-          >
-            <h1
-              ref={titleRef}
-              style={{
-                fontSize: "clamp(2rem, 8vw, 4rem)",
-                fontWeight: "400",
-                letterSpacing: "clamp(0.1em, 2vw, 0.3em)",
-                textTransform: "uppercase",
-                margin: "0 0 clamp(20px, 5vw, 40px) 0",
-                color: "#fff",
-                textAlign: "center",
-                transition: "none",
-                display: "flex",
-                justifyContent: "center",
-                fontFamily: "Arial, Helvetica, sans-serif",
-                backfaceVisibility: "hidden",
-                WebkitBackfaceVisibility: "hidden",
-                padding: "0 clamp(10px, 3vw, 20px)",
-                maxWidth: "90vw",
-                wordWrap: "break-word",
-              }}
-            >
-              {fruitstandTranslations[currentLangIndex]}
-            </h1>
-          </div>
-
-          {/* Minimal subtitle */}
-          <p
-            ref={subtitleRef}
-            style={{
-              fontSize: "clamp(0.8rem, 3vw, 1rem)",
-              color: "rgba(255, 255, 255, 0.6)",
-              textAlign: "center",
-              opacity: 0,
-              transform: "translate3d(0, 20px, 0)",
-              fontWeight: "300",
-              letterSpacing: "clamp(0.1em, 2vw, 0.2em)",
-              margin: 0,
-              textTransform: "uppercase",
-              fontFamily: "Arial, sans-serif",
-              backfaceVisibility: "hidden",
-              WebkitBackfaceVisibility: "hidden",
-              willChange: "transform, opacity",
-              padding: "0 clamp(10px, 3vw, 20px)",
-              maxWidth: "90vw",
-            }}
-          >
-            New York
-          </p>
-        </div>
-      )}
-
       <ProductPageBrandHeader />
       <div className="w-full bg-[#fbf6f0]">
         {/* Hero Video Section - Sized to accommodate carousel */}
-        {isHydrated && (
-          <section className="relative w-full min-h-[80vh] overflow-hidden">
-            <video
-              className="absolute inset-0 h-full w-full object-cover"
-              autoPlay
-              muted
-              loop
-              playsInline
-              controls={false}
-              poster="/images/home.jpg"
-            >
-              <source
-                src="https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/Videos/homevideo.mp4"
-                type="video/mp4"
-              />
-            </video>
-            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/40 to-black/70" />
-          </section>
-        )}
+        <section className="relative w-full min-h-[80vh] overflow-hidden">
+          <video
+            className="absolute inset-0 h-full w-full object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+            controls={false}
+            poster="/images/home.jpg"
+          >
+            <source
+              src="https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY/Videos/homevideo.mp4"
+              type="video/mp4"
+            />
+          </video>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/40 to-black/70" />
+        </section>
 
         {/* New Items Carousel */}
         <section className="w-full py-0">
