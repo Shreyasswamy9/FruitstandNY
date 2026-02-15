@@ -56,6 +56,7 @@ export default function RootLayout({
         'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
         })(window,document,'script','dataLayer','GTM-N8M6F5WK');`}
         </Script>
+        <Script id="mcjs" strategy="afterInteractive">{`!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/fcf0bbb9c363876e4b7950198/177293cf6369623cf7ebb592e.js");`}</Script>
       </head>
       <body 
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#fbf6f0]`}

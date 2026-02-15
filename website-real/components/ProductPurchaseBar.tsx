@@ -1,5 +1,6 @@
 "use client";
 
+import { Shredder } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 export type PurchaseSizeOption = {
@@ -85,7 +86,7 @@ export default function ProductPurchaseBar({
       if (entry) {
         setBarHeight(entry.contentRect.height);
       }
-    });
+    }); 
 
     observer.observe(node);
     return () => observer.disconnect();
