@@ -67,8 +67,8 @@ const supportChannels = [
     icon: Mail,
     heading: "Email our studio",
     description: "Reach us any time and expect a response within one business day.",
-    meta: "support@fruitstandny.com",
-    href: "mailto:support@fruitstandny.com",
+    meta: "=info@fruitstandny.com",
+    href: "mailto:info@fruitstandny.com",
     id: "email-support",
   },
 ]
