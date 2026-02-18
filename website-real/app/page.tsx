@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader"
+import SignupPromoModal from "@/components/SignupPromoModal"
 
 interface EditorialPhoto {
   id: string
@@ -53,44 +54,43 @@ const newItems = [
 export default function Home() {
   const carouselRef = useRef<HTMLDivElement>(null)
   const [isHydrated, setIsHydrated] = useState(false)
+  const [showSignupPromo, setShowSignupPromo] = useState(false)
 
   // Handle hydration
   useEffect(() => {
     setIsHydrated(true)
   }, [])
 
+  // Signup promo popup - shows after user scrolls down
+  useEffect(() => {
+    if (!isHydrated || typeof window === "undefined") return
 
+    try {
+      if (window.localStorage.getItem("signupPromoSubmitted") === "1") {
+        return
+      }
+      if (window.sessionStorage.getItem("signupPromoShown") === "1") {
+        return
+      }
+    } catch {
+      // ignore storage failures
+    }
 
-  // Signup promo popup temporarily disabled (Mailchimp not set up)
-  // useEffect(() => {
-  //   if (!isHydrated || typeof window === "undefined") return
-  //
-  //   try {
-  //     if (window.localStorage.getItem("signupPromoSubmitted") === "1") {
-  //       return
-  //     }
-  //     if (window.sessionStorage.getItem("signupPromoShown") === "1") {
-  //       return
-  //     }
-  //   } catch {
-  //     // ignore storage failures
-  //   }
-  //
-  //   const onScroll = () => {
-  //     if (window.scrollY > 220) {
-  //       setShowSignupPromo(true)
-  //       try {
-  //         window.sessionStorage.setItem("signupPromoShown", "1")
-  //       } catch {
-  //         // ignore storage failures
-  //       }
-  //       window.removeEventListener("scroll", onScroll)
-  //     }
-  //   }
-  //
-  //   window.addEventListener("scroll", onScroll, { passive: true })
-  //   return () => window.removeEventListener("scroll", onScroll)
-  // }, [isHydrated])
+    const onScroll = () => {
+      if (window.scrollY > 220) {
+        setShowSignupPromo(true)
+        try {
+          window.sessionStorage.setItem("signupPromoShown", "1")
+        } catch {
+          // ignore storage failures
+        }
+        window.removeEventListener("scroll", onScroll)
+      }
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [isHydrated])
 
   // Carousel scroll handlers
   const scrollCarousel = (direction: "left" | "right") => {
@@ -113,7 +113,7 @@ export default function Home() {
 
   return (
     <>
-      {/* <SignupPromoModal isOpen={showSignupPromo} onClose={() => setShowSignupPromo(false)} /> */}
+      <SignupPromoModal isOpen={showSignupPromo} onClose={() => setShowSignupPromo(false)} />
       
       <ProductPageBrandHeader />
       <div className="w-full bg-[#fbf6f0]">
