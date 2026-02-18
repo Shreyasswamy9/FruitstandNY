@@ -455,6 +455,14 @@ export default function CartPage() {
             }
           : undefined;
 
+        console.log('CartPage: Creating payment intent', {
+          itemsCount: normalizedItems.length,
+          shipping,
+          tax,
+          isSignedIn: !!user,
+          hasCustomerPayload: !!customerPayload,
+        });
+
         const result = await createPaymentIntent({
           items: normalizedItems,
           shipping,
@@ -473,9 +481,11 @@ export default function CartPage() {
         _setElementsReady(!secretChanged);
         setPaymentMessage(null);
         setCheckoutError(null);
+        console.log('CartPage: Payment intent loaded successfully');
       } catch (error) {
         if (!active) return;
         const message = error instanceof Error ? error.message : 'Unable to initialise payment.';
+        console.error('CartPage: Payment intent creation error', message);
         setPaymentMessage(message);
       }
     })();
@@ -497,11 +507,22 @@ export default function CartPage() {
 
     try {
       setPaymentMessage(null);
+      
+      // For logged-in users, use customer data; for guests, pass empty but still include the field
+      const customerPayload: CustomerCheckoutPayload | undefined = user
+        ? {
+            email: user.email || undefined,
+            name: user.user_metadata?.full_name || user.user_metadata?.name || undefined,
+            phone: user.user_metadata?.phone || undefined,
+          }
+        : undefined;
+
       const result = await createCheckoutSession({
         items: normalizedItems,
         shipping,
         tax,
         discountCode: appliedDiscountCode,
+        customerData: customerPayload,
       });
 
       if (result.url) {
@@ -512,7 +533,7 @@ export default function CartPage() {
       const message = error instanceof Error ? error.message : 'Unable to start checkout.';
       setPaymentMessage(message);
     }
-  }, [createCheckoutSession, normalizedItems, sessionLoading, shipping, tax, appliedDiscountCode]);
+  }, [createCheckoutSession, normalizedItems, sessionLoading, shipping, tax, appliedDiscountCode, user]);
 
   return (
     <div className="min-h-screen bg-[#fbf6f0]">
@@ -637,14 +658,33 @@ export default function CartPage() {
                     </div>
                   </Elements>
                 ) : (
-                  <div className="flex items-center justify-center text-sm text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-gray-500"></div>
-                      <span>Loading...</span>
-                    </div>
+                  <div className="space-y-4">
+                    {paymentMessage ? (
+                      <>
+                        <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
+                          <p className="font-semibold mb-2">Payment Error</p>
+                          <p>{paymentMessage}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={isSignedIn ? () => router.push('/cart/checkout-redirect') : handleGuestCheckout}
+                          className="w-full py-3 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={sessionLoading || items.length === 0}
+                        >
+                          Continue to Checkout →
+                        </button>
+                      </>
+                    ) : (
+                      <div className="flex items-center justify-center text-sm text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-gray-500"></div>
+                          <span>Loading payment options...</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
-                {paymentMessage && (
+                {paymentMessage && clientSecret && (
                   <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
                     {paymentMessage}
                   </div>

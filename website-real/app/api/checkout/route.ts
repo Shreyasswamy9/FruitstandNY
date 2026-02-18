@@ -265,8 +265,18 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Checkout API: Creating Stripe session...');
-    const session = await stripe.checkout.sessions.create(sessionConfig);
-    console.log('Checkout API: Stripe session created', session.id);
+    let session: Stripe.Checkout.Session;
+    try {
+      session = await stripe.checkout.sessions.create(sessionConfig);
+      console.log('Checkout API: Stripe session created successfully', {
+        id: session.id,
+        url: session.url ? 'present' : 'missing',
+        orderNumber: sessionConfig.metadata?.order_number,
+      });
+    } catch (error) {
+      console.error('Checkout API: Failed to create Stripe session', error);
+      throw error;
+    }
 
     // 8. IMPORTANT: DO NOT create or update any Supabase order here.
     // All order persistence must happen in the webhook on checkout.session.completed.

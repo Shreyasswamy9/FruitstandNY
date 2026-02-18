@@ -70,6 +70,14 @@ export const useCheckout = () => {
         headers.Authorization = `Bearer ${session.access_token}`;
       }
 
+      console.log('useCheckout: Creating payment intent', {
+        itemsCount: args.items.length,
+        shipping: args.shipping,
+        tax: args.tax,
+        hasCustomerData: !!args.customerData,
+        hasGuestData: !!args.guestData,
+      });
+
       const response = await fetch('/api/payment-intent', {
         method: 'POST',
         headers,
@@ -81,18 +89,26 @@ export const useCheckout = () => {
         const message = typeof payload?.error === 'string'
           ? payload.error
           : 'Unable to initialise payment. Please try again.';
+        console.error('useCheckout: Payment intent creation failed', { status: response.status, message });
         setError(message);
         throw new Error(message);
       }
 
       const data = (await response.json()) as CreatePaymentIntentResult;
       if (!data?.clientSecret || !data?.paymentIntentId) {
+        console.error('useCheckout: Incomplete payment intent response', data);
         throw new Error('Incomplete payment intent response from server.');
       }
+
+      console.log('useCheckout: Payment intent created successfully', {
+        paymentIntentId: data.paymentIntentId,
+        orderNumber: data.orderNumber,
+      });
 
       return data;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unexpected error creating payment intent.';
+      console.error('useCheckout: Error in createPaymentIntent', message);
       setError(message);
       throw err instanceof Error ? err : new Error(message);
     } finally {
@@ -113,6 +129,8 @@ export type CreateCheckoutSessionArgs = {
   shipping: number;
   tax: number;
   discountCode?: string | null;
+  guestData?: GuestCheckoutPayload | null;
+  customerData?: CustomerCheckoutPayload | null;
 };
 
 export type CreateCheckoutSessionResult = {
@@ -129,6 +147,14 @@ export const useStripeCheckout = () => {
       setLoading(true);
       setError(null);
 
+      console.log('useStripeCheckout: Creating checkout session', {
+        itemsCount: args.items.length,
+        shipping: args.shipping,
+        tax: args.tax,
+        hasCustomerData: !!args.customerData,
+        hasGuestData: !!args.guestData,
+      });
+
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: {
@@ -142,18 +168,25 @@ export const useStripeCheckout = () => {
         const message = typeof payload?.error === 'string'
           ? payload.error
           : 'Unable to start checkout. Please try again.';
+        console.error('useStripeCheckout: Checkout session creation failed', { status: response.status, message });
         setError(message);
         throw new Error(message);
       }
 
       const data = (await response.json()) as CreateCheckoutSessionResult;
       if (!data?.sessionId || !data?.url) {
+        console.error('useStripeCheckout: Incomplete checkout session response', data);
         throw new Error('Incomplete checkout session response from server.');
       }
+
+      console.log('useStripeCheckout: Checkout session created successfully', {
+        sessionId: data.sessionId,
+      });
 
       return data;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unexpected error creating checkout session.';
+      console.error('useStripeCheckout: Error in createCheckoutSession', message);
       setError(message);
       throw err instanceof Error ? err : new Error(message);
     } finally {
