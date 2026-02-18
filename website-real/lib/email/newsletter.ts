@@ -62,6 +62,43 @@ export async function subscribeToNewsletter(
   }
 }
 
+function formatMailchimpError(errorData: any) {
+  if (errorData?.detail) {
+    return errorData.detail
+  }
+
+  const errors = Array.isArray(errorData?.errors) ? errorData.errors : []
+  if (errors.length > 0) {
+    return errors
+      .map((item: { message?: string }) => item?.message)
+      .filter(Boolean)
+      .join('; ')
+  }
+
+  return 'Failed to subscribe'
+}
+
+function normalizePhoneToE164(phone: string) {
+  const trimmed = phone.trim()
+
+  if (trimmed.startsWith('+')) {
+    const digits = trimmed.replace(/\D/g, '')
+    return digits.length >= 10 ? `+${digits}` : null
+  }
+
+  const digits = trimmed.replace(/\D/g, '')
+
+  if (digits.length === 10) {
+    return `+1${digits}`
+  }
+
+  if (digits.length === 11 && digits.startsWith('1')) {
+    return `+${digits}`
+  }
+
+  return null
+}
+
 /**
  * Subscribe email to Mailchimp audience
  */
@@ -101,7 +138,7 @@ async function subscribeEmail(
       }
 
       console.error('Mailchimp email error:', errorData)
-      return { success: false, error: errorData.detail || 'Failed to subscribe email' }
+      return { success: false, error: formatMailchimpError(errorData) }
     }
 
     return { success: true, message: 'Email subscribed successfully' }
@@ -121,8 +158,11 @@ async function subscribeSMS(
   serverName: string
 ) {
   try {
-    // Normalize phone number (remove non-digits)
-    const normalizedPhone = phone.replace(/\D/g, '')
+    const normalizedPhone = normalizePhoneToE164(phone)
+
+    if (!normalizedPhone) {
+      return { success: false, error: 'Please enter a valid phone number with country code' }
+    }
 
     const auth = Buffer.from(`anystring:${apiKey}`).toString('base64')
 
@@ -150,7 +190,7 @@ async function subscribeSMS(
       }
 
       console.error('Mailchimp SMS error:', errorData)
-      return { success: false, error: errorData.detail || 'Failed to subscribe to SMS' }
+      return { success: false, error: formatMailchimpError(errorData) }
     }
 
     return { success: true, message: 'SMS subscribed successfully' }
