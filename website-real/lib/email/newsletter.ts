@@ -49,7 +49,7 @@ export async function subscribeToNewsletter(
 
     // For SMS signup
     if ((signupType === 'phone' || !signupType) && phone && smsAudienceId) {
-      const smsResult = await subscribeSMS(phone, apiKey, smsAudienceId, serverName)
+      const smsResult = await subscribeSMS(phone, apiKey, smsAudienceId, serverName, email)
       if (!smsResult.success) {
         return smsResult
       }
@@ -155,7 +155,8 @@ async function subscribeSMS(
   phone: string,
   apiKey: string,
   smsAudienceId: string,
-  serverName: string
+  serverName: string,
+  email?: string
 ) {
   try {
     const normalizedPhone = normalizePhoneToE164(phone)
@@ -165,6 +166,9 @@ async function subscribeSMS(
     }
 
     const auth = Buffer.from(`anystring:${apiKey}`).toString('base64')
+    const digitsOnly = normalizedPhone.replace(/\D/g, '')
+    const placeholderEmail = `${digitsOnly}@sms.fruitstandny.com`
+    const emailAddress = email?.trim() || placeholderEmail
 
     const response = await fetch(
       `https://${serverName}.api.mailchimp.com/3.0/lists/${smsAudienceId}/members`,
@@ -175,6 +179,7 @@ async function subscribeSMS(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          email_address: emailAddress,
           phone_number: normalizedPhone,
           status: 'subscribed',
           tags: ['15% Discount'],
