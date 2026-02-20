@@ -361,7 +361,6 @@ export default function TshirtBundlePage() {
         onAddToCart={addBundleToCart}
         addDisabled={!canAddToCart}
         addDisabledReason={!canAddToCart ? "Complete all tees in bundle" : undefined}
-        sizeGuideTrigger={<SizeGuide productSlug="tshirt-bundle" />}
       />
     </div>
   );
