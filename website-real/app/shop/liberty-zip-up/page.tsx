@@ -148,6 +148,37 @@ export default function LibertyZipUpPage() {
             </p>
             <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
 
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+              {LIBERTY_ZIP_COLOR_OPTIONS.map((option) => {
+                const isActive = option.slug === selectedColor.slug;
+
+                return (
+                  <button
+                    key={option.slug}
+                    type="button"
+                    onClick={() => handleSelectColor(option)}
+                    aria-label={option.name}
+                    className={[
+                      "appearance-none bg-transparent [-webkit-tap-highlight-color:transparent]",
+                      "h-7 w-7 rounded-full overflow-hidden p-0.5",
+                      "transition-transform duration-150 hover:-translate-y-px",
+                      "focus:outline-none focus:ring-2 focus:ring-[#1d1c19]/35",
+                      isActive ? "ring-2 ring-[#1d1c19]" : "ring-1 ring-[#cfc2b3]",
+                    ].join(" ")}
+                  >
+                    <span
+                      aria-hidden
+                      className="block h-full w-full rounded-full"
+                      style={{
+                        backgroundColor: option.color,
+                        border: option.border ? `1px solid ${option.border}` : undefined,
+                      }}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+
             {/* DESCRIPTION */}
             <p className="mt-6 text-sm leading-relaxed text-[#1d1c19] lg:max-w-sm">
               {PRODUCT.description}

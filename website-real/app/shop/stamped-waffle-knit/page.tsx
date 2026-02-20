@@ -34,7 +34,7 @@ type StampedColorOption = {
 };
 
 const STAMPED_COLOR_OPTIONS: StampedColorOption[] = [
-  { name: 'Default', slug: 'default', color: '#e8d5c4', images: ['/images/products/Stamped%20Waffle%20Knit/Waffle%20Knit%20Tag.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Default', slug: 'default', color: '#e8d5c4', images: ['/images/products/Stamped%20Waffle%20Knit/Waffle%20Knit%20Tag.png', '/images/products/Stamped%20Waffle%20Knit/firefly_20260220101448_720.png', '/images/products/Stamped%20Waffle%20Knit/firefly_20260220101518_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
 ];
 
 const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;

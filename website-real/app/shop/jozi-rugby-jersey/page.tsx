@@ -36,7 +36,7 @@ type JoziColorOption = {
 };
 
 const JOZI_COLOR_OPTIONS: JoziColorOption[] = [
-  { name: 'Default', slug: 'default', color: '#2d5016', images: ['/images/products/Jozi%20Rugby%20Jersey/Jozi%20DS%201x1.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Default', slug: 'default', color: '#2d5016', images: ['/images/products/Jozi%20Rugby%20Jersey/Jozi%20DS%201x1.png', '/images/products/Jozi%20Rugby%20Jersey/firefly_20260220101930_720.png', '/images/products/Jozi%20Rugby%20Jersey/firefly_20260220102000_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
 ];
 
 const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;

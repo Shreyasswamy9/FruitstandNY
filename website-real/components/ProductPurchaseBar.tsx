@@ -162,6 +162,16 @@ export default function ProductPurchaseBar({
           >
             <div className="flex h-full w-full items-stretch">
               <div className="relative flex flex-1 items-center justify-end border-r border-black px-3 py-4">
+                {selectedColorOption?.swatch ? (
+                  <span
+                    aria-hidden
+                    className="mr-2 inline-block h-3 w-3 shrink-0 rounded-full"
+                    style={{
+                      backgroundColor: selectedColorOption.swatch,
+                      border: selectedColorOption.border ?? "1px solid rgba(255,255,255,0.45)",
+                    }}
+                  />
+                ) : null}
                 <span className="max-w-[120px] truncate text-[13px] font-semibold uppercase tracking-[0.18em]">
                   {colorLabel}
                 </span>

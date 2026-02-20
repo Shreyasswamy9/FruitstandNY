@@ -36,7 +36,7 @@ type KiwiColorOption = {
 };
 
 const KIWI_COLOR_OPTIONS: KiwiColorOption[] = [
-  { name: 'Default', slug: 'default', color: '#2d5016', images: ['/images/products/Kiwi%20Rugby%20Jersey/Kiwi%20DS%201x1.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Default', slug: 'default', color: '#2d5016', images: ['/images/products/Kiwi%20Rugby%20Jersey/Kiwi%20DS%201x1.png', '/images/products/Kiwi%20Rugby%20Jersey/firefly_20260220101748_720.png', '/images/products/Kiwi%20Rugby%20Jersey/firefly_20260220101848_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
 ];
 
 const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;

@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
@@ -36,9 +36,9 @@ type LibertyHoodieColorOption = {
 };
 
 const LIBERTY_HOODIE_COLOR_OPTIONS: LibertyHoodieColorOption[] = [
-  { name: 'Onyx', slug: 'onyx', color: '#1a1a1a', images: ['/images/products/Liberty%20Hoodie/Onyx%20Hoodie%20DS%201x1.png'], bg: '#f5f5f5', border: '#d4d4d4' },
-  { name: 'Mauve', slug: 'mauve', color: '#9d7a8a', images: ['/images/products/Liberty%20Hoodie/Mauve%20DS%201x1.png'], bg: '#f5f5f5', border: '#d4d4d4' },
-  { name: 'Stone', slug: 'stone', color: '#a39e9d', images: ['/images/products/Liberty%20Hoodie/Stone%20Hoodie%20DS%201x1.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Onyx', slug: 'onyx', color: '#1a1a1a', images: ['/images/products/Liberty%20Hoodie/hoodies/onyx/Onyx%20Hoodie%20DS%201x1.png', '/images/products/Liberty%20Hoodie/hoodies/onyx/firefly_20260220101110_720.png', '/images/products/Liberty%20Hoodie/hoodies/onyx/firefly_20260220101136_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Mauve', slug: 'mauve', color: '#9d7a8a', images: ['/images/products/Liberty%20Hoodie/hoodies/mauve/Mauve%20DS%201x1.png', '/images/products/Liberty%20Hoodie/hoodies/mauve/firefly_20260220095920_720.png', '/images/products/Liberty%20Hoodie/hoodies/mauve/firefly_20260220095944_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Stone', slug: 'stone', color: '#a39e9d', images: ['/images/products/Liberty%20Hoodie/hoodies/stone/Stone%20Hoodie%20DS%201x1.png', '/images/products/Liberty%20Hoodie/hoodies/stone/firefly_20260220100833_720.png', '/images/products/Liberty%20Hoodie/hoodies/stone/firefly_20260220100916_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
 ];
 
 const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
@@ -51,7 +51,7 @@ export default function LibertyHoodiePage() {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
 
   useTrackProductView({
-    productId: "liberty-hoodie-001",
+    productId: "324aacbd-fc54-4887-b4ef-9679297af9e1",
     productName: PRODUCT.name,
     price: PRODUCT.price,
     currency: "USD",
@@ -75,7 +75,7 @@ export default function LibertyHoodiePage() {
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
-      productId: "liberty-hoodie-001",
+      productId: "324aacbd-fc54-4887-b4ef-9679297af9e1",
       name: PRODUCT.name,
       price: PRODUCT.price,
       image: selectedImage,
@@ -111,13 +111,23 @@ export default function LibertyHoodiePage() {
               productName={PRODUCT.name}
               options={LIBERTY_HOODIE_COLOR_OPTIONS.map((variant) => ({
                 name: variant.name,
+                slug: variant.slug,
                 images: variant.images,
               }))}
               selectedOption={{
                 name: selectedColor.name,
+                slug: selectedColor.slug,
                 images: selectedColor.images,
               } as ProductImageGalleryOption}
               selectedImage={selectedImage}
+              onOptionChange={(option, ctx) => {
+                const match = LIBERTY_HOODIE_COLOR_OPTIONS.find(
+                  (variant) => variant.slug === option.slug || variant.name === option.name
+                );
+                if (match) {
+                  handleSelectColor(match, ctx);
+                }
+              }}
               onImageChange={(image) => {
                 setSelectedImage(image);
                 setCurrentImageIndex(selectedColor.images.indexOf(image));
@@ -137,7 +147,6 @@ export default function LibertyHoodiePage() {
             </p>
             <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
 
-            {/* SWATCHES */}
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
               {LIBERTY_HOODIE_COLOR_OPTIONS.map((option) => {
                 const isActive = option.slug === selectedColor.slug;
