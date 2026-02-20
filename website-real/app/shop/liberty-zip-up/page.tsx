@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
@@ -37,9 +37,9 @@ type LibertyZipColorOption = {
 };
 
 const LIBERTY_ZIP_COLOR_OPTIONS: LibertyZipColorOption[] = [
-  { name: 'Onyx', slug: 'onyx', color: '#1a1a1a', images: ['/images/products/Liberty%20Zip-up/Onyx%20Zip-up%20DS%201x1.png'], bg: '#f5f5f5', border: '#d4d4d4' },
-  { name: 'Moss', slug: 'moss', color: '#556b2f', images: ['/images/products/Liberty%20Zip-up/Moss%20DS%201x1.png'], bg: '#f5f5f5', border: '#d4d4d4' },
-  { name: 'Copper', slug: 'copper', color: '#b87333', images: ['/images/products/Liberty%20Zip-up/Copper%20DS%201x1.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Onyx', slug: 'onyx', color: '#1a1a1a', images: ['/images/products/Liberty%20Zip-up/zip%20ups/Onyx/Onyx%20Zip-up%20DS%201x1.png', '/images/products/Liberty%20Zip-up/zip%20ups/Onyx/firefly_20260220100236_720.png', '/images/products/Liberty%20Zip-up/zip%20ups/Onyx/firefly_20260220100306_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Moss', slug: 'moss', color: '#556b2f', images: ['/images/products/Liberty%20Zip-up/zip%20ups/Moss%20liberty/Moss%20DS%201x1.png', '/images/products/Liberty%20Zip-up/zip%20ups/Moss%20liberty/firefly_20260220095702_720.png', '/images/products/Liberty%20Zip-up/zip%20ups/Moss%20liberty/firefly_20260220095800_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Copper', slug: 'copper', color: '#b87333', images: ['/images/products/Liberty%20Zip-up/zip%20ups/copper/Copper%20DS%201x1.png', '/images/products/Liberty%20Zip-up/zip%20ups/copper/firefly_20260220100429_720.png', '/images/products/Liberty%20Zip-up/zip%20ups/copper/firefly_20260220100639_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
 ];
 
 const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
@@ -52,7 +52,7 @@ export default function LibertyZipUpPage() {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
 
   useTrackProductView({
-    productId: "liberty-zip-up-001",
+    productId: "b544f080-b1b5-4dab-8e51-4208b456f73c",
     productName: PRODUCT.name,
     price: PRODUCT.price,
     currency: "USD",
@@ -76,7 +76,7 @@ export default function LibertyZipUpPage() {
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
-      productId: "liberty-zip-up-001",
+      productId: "b544f080-b1b5-4dab-8e51-4208b456f73c",
       name: PRODUCT.name,
       price: PRODUCT.price,
       image: selectedImage,
@@ -112,13 +112,23 @@ export default function LibertyZipUpPage() {
               productName={PRODUCT.name}
               options={LIBERTY_ZIP_COLOR_OPTIONS.map((variant) => ({
                 name: variant.name,
+                slug: variant.slug,
                 images: variant.images,
               }))}
               selectedOption={{
                 name: selectedColor.name,
+                slug: selectedColor.slug,
                 images: selectedColor.images,
               } as ProductImageGalleryOption}
               selectedImage={selectedImage}
+              onOptionChange={(option, ctx) => {
+                const match = LIBERTY_ZIP_COLOR_OPTIONS.find(
+                  (variant) => variant.slug === option.slug || variant.name === option.name
+                );
+                if (match) {
+                  handleSelectColor(match, ctx);
+                }
+              }}
               onImageChange={(image) => {
                 setSelectedImage(image);
                 setCurrentImageIndex(selectedColor.images.indexOf(image));
@@ -137,38 +147,6 @@ export default function LibertyZipUpPage() {
               {selectedColor.name.toUpperCase()}
             </p>
             <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
-
-            {/* SWATCHES */}
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
-              {LIBERTY_ZIP_COLOR_OPTIONS.map((option) => {
-                const isActive = option.slug === selectedColor.slug;
-
-                return (
-                  <button
-                    key={option.slug}
-                    type="button"
-                    onClick={() => handleSelectColor(option)}
-                    aria-label={option.name}
-                    className={[
-                      "appearance-none bg-transparent [-webkit-tap-highlight-color:transparent]",
-                      "h-7 w-7 rounded-full overflow-hidden p-0.5",
-                      "transition-transform duration-150 hover:-translate-y-px",
-                      "focus:outline-none focus:ring-2 focus:ring-[#1d1c19]/35",
-                      isActive ? "ring-2 ring-[#1d1c19]" : "ring-1 ring-[#cfc2b3]",
-                    ].join(" ")}
-                  >
-                    <span
-                      aria-hidden
-                      className="block h-full w-full rounded-full"
-                      style={{
-                        backgroundColor: option.color,
-                        border: option.border ? `1px solid ${option.border}` : undefined,
-                      }}
-                    />
-                  </button>
-                );
-              })}
-            </div>
 
             {/* DESCRIPTION */}
             <p className="mt-6 text-sm leading-relaxed text-[#1d1c19] lg:max-w-sm">
