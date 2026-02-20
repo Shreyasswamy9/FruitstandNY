@@ -7,6 +7,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader"
 import SignupPromoModal from "@/components/SignupPromoModal"
 
+const SIGNUP_PROMO_ENABLED = false
+
 interface EditorialPhoto {
   id: string
   image: string
@@ -98,6 +100,7 @@ export default function Home() {
 
   // Signup promo popup - shows after user scrolls down
   useEffect(() => {
+    if (!SIGNUP_PROMO_ENABLED) return
     if (!isHydrated || typeof window === "undefined") return
 
     try {
@@ -148,7 +151,7 @@ export default function Home() {
 
   return (
     <>
-      <SignupPromoModal isOpen={showSignupPromo} onClose={() => setShowSignupPromo(false)} />
+      <SignupPromoModal isOpen={SIGNUP_PROMO_ENABLED && showSignupPromo} onClose={() => setShowSignupPromo(false)} />
       
       <ProductPageBrandHeader />
       <div className="w-full bg-[#fbf6f0]">
