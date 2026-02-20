@@ -33,14 +33,14 @@ const newItems = [
   {
     id: "liberty-zip-up",
     name: "LIBERTY ZIP-UP",
-    image: "/images/products/Liberty%20Zip-up/zip%20ups/Onyx/Onyx%20Zip-up%20DS%201x1.png",
+    image: "/images/products/Liberty%20Zip-up/zip%20ups/copper/Copper%20DS%201x1.png",
     price: "$110",
     link: "/shop/liberty-zip-up",
   },
   {
     id: "liberty-hoodie",
     name: "LIBERTY HOODIE",
-    image: "/images/products/Liberty%20Hoodie/hoodies/onyx/Onyx%20Hoodie%20DS%201x1.png",
+    image: "/images/products/Liberty%20Hoodie/hoodies/mauve/Mauve%20DS%201x1.png",
     price: "$110",
     link: "/shop/liberty-hoodie",
   },

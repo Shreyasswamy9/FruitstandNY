@@ -27,9 +27,9 @@ export const products: Product[] = [
   // Kiwi Rugby Jersey
   { id: 2, name: "Kiwi Rugby Jersey", price: "$125", image: "/images/products/Kiwi%20Rugby%20Jersey/Kiwi%20DS%201x1.png", hoverImage: "/images/products/Kiwi%20Rugby%20Jersey/Kiwi%20DS%201x1.png", category: "Jerseys", variantSlug: "kiwi-rugby-jersey", badgeLabel: "NEW" },
   // Liberty Zip-Up
-  { id: 3, name: "Liberty Zip-Up", price: "$110", image: "/images/products/Liberty%20Zip-up/zip%20ups/Onyx/Onyx%20Zip-up%20DS%201x1.png", hoverImage: "/images/products/Liberty%20Zip-up/zip%20ups/Onyx/Onyx%20Zip-up%20DS%201x1.png", category: "Tops", variantSlug: "liberty-zip-up", badgeLabel: "NEW" },
+  { id: 3, name: "Liberty Zip-Up", price: "$110", image: "/images/products/Liberty%20Zip-up/zip%20ups/copper/Copper%20DS%201x1.png", hoverImage: "/images/products/Liberty%20Zip-up/zip%20ups/copper/Copper%20DS%201x1.png", category: "Tops", variantSlug: "liberty-zip-up", badgeLabel: "NEW" },
   // Liberty Hoodie
-  { id: 4, name: "Liberty Hoodie", price: "$110", image: "/images/products/Liberty%20Hoodie/hoodies/onyx/Onyx%20Hoodie%20DS%201x1.png", hoverImage: "/images/products/Liberty%20Hoodie/hoodies/onyx/Onyx%20Hoodie%20DS%201x1.png", category: "Tops", variantSlug: "liberty-hoodie", badgeLabel: "NEW" },
+  { id: 4, name: "Liberty Hoodie", price: "$110", image: "/images/products/Liberty%20Hoodie/hoodies/mauve/Mauve%20DS%201x1.png", hoverImage: "/images/products/Liberty%20Hoodie/hoodies/mauve/Mauve%20DS%201x1.png", category: "Tops", variantSlug: "liberty-hoodie", badgeLabel: "NEW" },
   // Jozi Rugby Jersey
   { id: 5, name: "Jozi Rugby Jersey", price: "$125", image: "/images/products/Jozi%20Rugby%20Jersey/Jozi%20DS%201x1.png", hoverImage: "/images/products/Jozi%20Rugby%20Jersey/Jozi%20DS%201x1.png", category: "Jerseys", variantSlug: "jozi-rugby-jersey", badgeLabel: "NEW" },
   // Stamped Waffle Knit
