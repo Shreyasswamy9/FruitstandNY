@@ -22,6 +22,41 @@ const editorialPhotos: EditorialPhoto[] = [
 
 const newItems = [
   {
+    id: "kiwi-rugby-jersey",
+    name: "KIWI RUGBY JERSEY",
+    image: "/images/products/Kiwi%20Rugby%20Jersey/Kiwi%20DS%201x1.png",
+    price: "$125",
+    link: "/shop/kiwi-rugby-jersey",
+  },
+  {
+    id: "liberty-zip-up",
+    name: "LIBERTY ZIP-UP",
+    image: "/images/products/Liberty%20Zip-up/zip%20ups/Onyx/Onyx%20Zip-up%20DS%201x1.png",
+    price: "$110",
+    link: "/shop/liberty-zip-up",
+  },
+  {
+    id: "liberty-hoodie",
+    name: "LIBERTY HOODIE",
+    image: "/images/products/Liberty%20Hoodie/hoodies/onyx/Onyx%20Hoodie%20DS%201x1.png",
+    price: "$110",
+    link: "/shop/liberty-hoodie",
+  },
+  {
+    id: "jozi-rugby-jersey",
+    name: "JOZI RUGBY JERSEY",
+    image: "/images/products/Jozi%20Rugby%20Jersey/Jozi%20DS%201x1.png",
+    price: "$125",
+    link: "/shop/jozi-rugby-jersey",
+  },
+  {
+    id: "stamped-waffle-knit",
+    name: "STAMPED WAFFLE KNIT",
+    image: "/images/products/Stamped%20Waffle%20Knit/Waffle%20Knit%20Tag.png",
+    price: "$65",
+    link: "/shop/stamped-waffle-knit",
+  },
+  {
     id: "tracksuit",
     name: "RETRO TRACK SUIT",
     image: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png",
@@ -158,7 +193,6 @@ export default function Home() {
                 className="new-items-carousel overflow-x-auto scrollbar-hide md:overflow-visible"
                 style={{
                   scrollBehavior: "smooth",
-                  minHeight: "400px",
                 }}
               >
                 <div className="flex border-l border-r border-t border-[#181818] md:border md:rounded-none">
@@ -168,7 +202,7 @@ export default function Home() {
                       href={item.link}
                       className="carousel-card flex shrink-0 flex-col items-center justify-center border-l border-[#181818] first:border-l-0 md:border-l md:first:border-l-0 bg-[#f7f2ea]"
                     >
-                      <div className="relative w-full h-full flex items-center justify-center bg-[#f7f2ea]">
+                      <div className="relative w-full aspect-square md:aspect-auto md:h-full flex items-center justify-center bg-[#f7f2ea]">
                         <Image
                           src={item.image}
                           alt={item.name}
@@ -248,12 +282,12 @@ export default function Home() {
           }
 
           .carousel-card {
-            width: 50vw;
-            flex: 0 0 50vw;
+            width: calc((100vw - 54px) / 2);
+            flex: 0 0 calc((100vw - 54px) / 2);
             scroll-snap-align: start;
             scroll-snap-stop: always;
-            height: 100%;
-            min-height: 400px;
+            height: auto;
+            min-height: auto;
           }
 
           @media (min-width: 768px) {

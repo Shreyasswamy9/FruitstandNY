@@ -205,12 +205,20 @@ export default function ProductImageGallery({
   const selectedKey = selectedOption.slug ?? selectedOption.name;
 
   const currentFrameIndex = useMemo(() => {
-    return frames.findIndex((frame) => frame.optionKey === selectedKey && frame.image === selectedImage);
-  }, [frames, selectedKey, selectedImage]);
+    return frames.findIndex(
+      (frame) =>
+        frame.image === selectedImage &&
+        (frame.optionKey === selectedKey || frame.option.name === selectedOption.name)
+    );
+  }, [frames, selectedImage, selectedKey, selectedOption.name]);
 
   const fallbackIndex = useMemo(() => {
-    return frames.findIndex((frame) => frame.optionKey === selectedKey);
-  }, [frames, selectedKey]);
+    const byKeyOrName = frames.findIndex(
+      (frame) => frame.optionKey === selectedKey || frame.option.name === selectedOption.name
+    );
+    if (byKeyOrName >= 0) return byKeyOrName;
+    return frames.findIndex((frame) => frame.image === selectedImage);
+  }, [frames, selectedImage, selectedKey, selectedOption.name]);
 
   const goToFrame = useCallback(
     (nextIndex: number) => {
@@ -220,8 +228,17 @@ export default function ProductImageGallery({
       if (!target) return;
 
       if (target.optionKey !== selectedKey) {
-        onOptionChange?.(target.option, { image: target.image });
-      } else if (target.image !== selectedImage) {
+        if (onOptionChange) {
+          onOptionChange(target.option, { image: target.image });
+          return;
+        }
+        if (target.image !== selectedImage) {
+          onImageChange(target.image);
+        }
+        return;
+      }
+
+      if (target.image !== selectedImage) {
         onImageChange(target.image);
       }
     },
@@ -394,7 +411,7 @@ export default function ProductImageGallery({
         style={{
           background: frameSurface,
           border: frameBorderStyle,
-          touchAction: "pan-x pan-y pinch-zoom",
+          touchAction: "pan-y pinch-zoom",
           overscrollBehaviorY: "contain",
         }}
         role="group"
@@ -464,8 +481,12 @@ export default function ProductImageGallery({
               type="button"
               aria-label="Previous image"
               className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full border border-white/70 bg-white/80 text-[#111] shadow-sm backdrop-blur transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-white/60 sm:h-9 sm:w-9"
+              onPointerDown={(event) => {
+                event.stopPropagation();
+              }}
               onClick={(event) => {
                 event.preventDefault();
+                event.stopPropagation();
                 goToPrev();
               }}
             >
@@ -488,8 +509,12 @@ export default function ProductImageGallery({
               type="button"
               aria-label="Next image"
               className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full border border-white/70 bg-white/80 text-[#111] shadow-sm backdrop-blur transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-white/60 sm:h-9 sm:w-9"
+              onPointerDown={(event) => {
+                event.stopPropagation();
+              }}
               onClick={(event) => {
                 event.preventDefault();
+                event.stopPropagation();
                 goToNext();
               }}
             >

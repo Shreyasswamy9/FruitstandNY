@@ -23,7 +23,18 @@ export interface Product {
 
 // Editable product list for the homepage grid
 export const products: Product[] = [
-  // Retro Track Suit Collection (spotlight first)
+  // NEW ITEMS - Featured First
+  // Kiwi Rugby Jersey
+  { id: 2, name: "Kiwi Rugby Jersey", price: "$125", image: "/images/products/Kiwi%20Rugby%20Jersey/Kiwi%20DS%201x1.png", hoverImage: "/images/products/Kiwi%20Rugby%20Jersey/Kiwi%20DS%201x1.png", category: "Jerseys", variantSlug: "kiwi-rugby-jersey", badgeLabel: "NEW" },
+  // Liberty Zip-Up
+  { id: 3, name: "Liberty Zip-Up", price: "$110", image: "/images/products/Liberty%20Zip-up/zip%20ups/Onyx/Onyx%20Zip-up%20DS%201x1.png", hoverImage: "/images/products/Liberty%20Zip-up/zip%20ups/Onyx/Onyx%20Zip-up%20DS%201x1.png", category: "Tops", variantSlug: "liberty-zip-up", badgeLabel: "NEW" },
+  // Liberty Hoodie
+  { id: 4, name: "Liberty Hoodie", price: "$110", image: "/images/products/Liberty%20Hoodie/hoodies/onyx/Onyx%20Hoodie%20DS%201x1.png", hoverImage: "/images/products/Liberty%20Hoodie/hoodies/onyx/Onyx%20Hoodie%20DS%201x1.png", category: "Tops", variantSlug: "liberty-hoodie", badgeLabel: "NEW" },
+  // Jozi Rugby Jersey
+  { id: 5, name: "Jozi Rugby Jersey", price: "$125", image: "/images/products/Jozi%20Rugby%20Jersey/Jozi%20DS%201x1.png", hoverImage: "/images/products/Jozi%20Rugby%20Jersey/Jozi%20DS%201x1.png", category: "Jerseys", variantSlug: "jozi-rugby-jersey", badgeLabel: "NEW" },
+  // Stamped Waffle Knit
+  { id: 1081, name: "Stamped Waffle Knit", price: "$65", image: "/images/products/Stamped%20Waffle%20Knit/Waffle%20Knit%20Tag.png", hoverImage: "/images/products/Stamped%20Waffle%20Knit/Waffle%20Knit%20Tag.png", category: "Tops", variantSlug: "stamped-waffle-knit", badgeLabel: "NEW" },
+  // Retro Track Suit Collection (spotlight second)
   { id: 2001, name: "Retro Track Suit", price: "$165", image: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png", hoverImage: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TS7.png", category: "Tracksuits", variantColor: "Elmhurst Taro Custard", variantSlug: "elmhurst-taro-custard" },
   { id: 2002, name: "Retro Track Suit", price: "$165", image: "/images/products/tracksuits/Greenpoint Patina Crew/GB.png", hoverImage: "/images/products/tracksuits/Greenpoint Patina Crew/TS2.png", category: "Tracksuits", variantColor: "Greenpoint Patina Crew", variantSlug: "greenpoint-patina-crew" },
   { id: 2003, name: "Retro Track Suit", price: "$165", image: "/images/products/tracksuits/NOHO NAPOLETANOS/TB.png", hoverImage: "/images/products/tracksuits/NOHO NAPOLETANOS/TS3.png", category: "Tracksuits", variantColor: "Noho Napoletanos", variantSlug: "noho-napoletanos" },
@@ -164,7 +175,13 @@ const roundRobinByProductName = (items: Product[]): Product[] => {
 const aestheticallyShuffleProducts = (items: Product[]): Product[] => {
   if (!items.length) return [];
 
-  const byCategory = items.reduce((acc, product) => {
+  // Keep the first 5 items fixed at the top (new products)
+  const pinnedItems = items.slice(0, 5);
+  const restItems = items.slice(5);
+
+  if (restItems.length === 0) return pinnedItems;
+
+  const byCategory = restItems.reduce((acc, product) => {
     const key = product.category ?? "Misc";
     (acc[key] ||= []).push(product);
     return acc;
@@ -230,7 +247,7 @@ const aestheticallyShuffleProducts = (items: Product[]): Product[] => {
     }
   }
 
-  return [...blended, ...hats];
+  return [...pinnedItems, ...blended, ...hats];
 };
 
 interface ProductsGridProps {
@@ -467,6 +484,11 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
             'Retro Track Jacket': '/shop/track-top',
             'Wabisabi™ Scheffel Hall Pears Tee': '/shop/wasabi-tee',
             'First Edition Tee': '/shop/first-edition-tee',
+            'Kiwi Rugby Jersey': '/shop/kiwi-rugby-jersey',
+            'Liberty Zip-Up': '/shop/liberty-zip-up',
+            'Liberty Hoodie': '/shop/liberty-hoodie',
+            'Jozi Rugby Jersey': '/shop/jozi-rugby-jersey',
+            'Stamped Waffle Knit': '/shop/stamped-waffle-knit',
           };
           const base = basePathMap[product.name] || `/products/${product.id}`;
           const slug = activeVariant.variantSlug;
@@ -601,6 +623,9 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
                     fontWeight: 600,
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase',
+                    zIndex: 10,
+                    opacity: 1,
+                    pointerEvents: 'none',
                   }}
                 >
                   {product.badgeLabel}
