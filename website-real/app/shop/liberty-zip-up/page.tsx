@@ -37,9 +37,9 @@ type LibertyZipColorOption = {
 };
 
 const LIBERTY_ZIP_COLOR_OPTIONS: LibertyZipColorOption[] = [
-  { name: 'Onyx', slug: 'onyx', color: '#1a1a1a', images: ['/images/products/Liberty%20Zip-up/zip%20ups/Onyx/Onyx%20Zip-up%20DS%201x1.png', '/images/products/Liberty%20Zip-up/zip%20ups/Onyx/firefly_20260220100236_720.png', '/images/products/Liberty%20Zip-up/zip%20ups/Onyx/firefly_20260220100306_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
-  { name: 'Moss', slug: 'moss', color: '#556b2f', images: ['/images/products/Liberty%20Zip-up/zip%20ups/Moss%20liberty/Moss%20DS%201x1.png', '/images/products/Liberty%20Zip-up/zip%20ups/Moss%20liberty/firefly_20260220095702_720.png', '/images/products/Liberty%20Zip-up/zip%20ups/Moss%20liberty/firefly_20260220095800_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
-  { name: 'Copper', slug: 'copper', color: '#b87333', images: ['/images/products/Liberty%20Zip-up/zip%20ups/copper/Copper%20DS%201x1.png', '/images/products/Liberty%20Zip-up/zip%20ups/copper/firefly_20260220100429_720.png', '/images/products/Liberty%20Zip-up/zip%20ups/copper/firefly_20260220100639_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Onyx', slug: 'onyx', color: '#1a1a1a', images: ['/images/products/liberty zip ups/onyx/onyx_zip-up_ds_1x1_720.png', '/images/products/liberty zip ups/onyx/onyx_zip_1_720.png', '/images/products/liberty zip ups/onyx/onyx_zip_2_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Moss', slug: 'moss', color: '#556b2f', images: ['/images/products/liberty zip ups/moss/moss_ds_1x1_720.png', '/images/products/liberty zip ups/moss/moss_zip_1_720.png', '/images/products/liberty zip ups/moss/moss_zip_2_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Copper', slug: 'copper', color: '#b87333', images: ['/images/products/liberty zip ups/copper/copper_ds_1x1_720.png', '/images/products/liberty zip ups/copper/copper_zip_1_720.png', '/images/products/liberty zip ups/copper/copper_zip_2_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
 ];
 
 const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
@@ -139,7 +139,7 @@ export default function LibertyZipUpPage() {
           </div>
 
           {/* TITLE / PRICE */}
-          <div className="mt-8 flex flex-col items-center lg:col-start-2 lg:items-start lg:mt-6">
+          <div className="mt-8 flex flex-col lg:col-start-2 lg:items-start lg:mt-6">
             <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
               {PRODUCT.name}
             </h1>
@@ -147,6 +147,9 @@ export default function LibertyZipUpPage() {
               {selectedColor.name.toUpperCase()}
             </p>
             <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <div className="mt-4">
+              <SizeGuide productSlug="liberty-zip-up" />
+            </div>
 
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
               {LIBERTY_ZIP_COLOR_OPTIONS.map((option) => {
@@ -187,17 +190,14 @@ export default function LibertyZipUpPage() {
             {/* DETAILS */}
             <div className="mt-6 text-left">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1d1c19] mb-3">Details</p>
-              <ul className="space-y-2">
-                {PRODUCT.details.map((detail, idx) => (
-                  <li key={idx} className="text-xs text-[#1d1c19]">● {detail}</li>
-                ))}
+                <ul className="space-y-2 text-left">
+                  {PRODUCT.details.map((detail, idx) => (
+                    <li key={idx} className="text-xs text-[#1d1c19] text-left !text-left">● {detail}</li>
+                  ))}
               </ul>
             </div>
 
             {/* SIZE GUIDE */}
-            <div className="mt-6">
-              <SizeGuide productSlug="liberty-zip-up" />
-            </div>
           </div>
         </div>
 

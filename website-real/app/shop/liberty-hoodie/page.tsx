@@ -36,9 +36,9 @@ type LibertyHoodieColorOption = {
 };
 
 const LIBERTY_HOODIE_COLOR_OPTIONS: LibertyHoodieColorOption[] = [
-  { name: 'Onyx', slug: 'onyx', color: '#1a1a1a', images: ['/images/products/Liberty%20Hoodie/hoodies/onyx/Onyx%20Hoodie%20DS%201x1.png', '/images/products/Liberty%20Hoodie/hoodies/onyx/firefly_20260220101110_720.png', '/images/products/Liberty%20Hoodie/hoodies/onyx/firefly_20260220101136_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
-  { name: 'Mauve', slug: 'mauve', color: '#9d7a8a', images: ['/images/products/Liberty%20Hoodie/hoodies/mauve/Mauve%20DS%201x1.png', '/images/products/Liberty%20Hoodie/hoodies/mauve/firefly_20260220095920_720.png', '/images/products/Liberty%20Hoodie/hoodies/mauve/firefly_20260220095944_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
-  { name: 'Stone', slug: 'stone', color: '#a39e9d', images: ['/images/products/Liberty%20Hoodie/hoodies/stone/Stone%20Hoodie%20DS%201x1.png', '/images/products/Liberty%20Hoodie/hoodies/stone/firefly_20260220100833_720.png', '/images/products/Liberty%20Hoodie/hoodies/stone/firefly_20260220100916_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Onyx', slug: 'onyx', color: '#1a1a1a', images: ['/images/products/liberty hoodies/onyx/onyx_hoodie_ds_1x1_720.png', '/images/products/liberty hoodies/onyx/Onyx Hoodie 1.png', '/images/products/liberty hoodies/onyx/Onyx Hoodie 2.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Mauve', slug: 'mauve', color: '#9d7a8a', images: ['/images/products/liberty hoodies/mauve/mauve_ds_1x1_720.png', '/images/products/liberty hoodies/mauve/Mauve Hoodie 1.png', '/images/products/liberty hoodies/mauve/Mauve Hoodie 2.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Stone', slug: 'stone', color: '#a39e9d', images: ['/images/products/liberty hoodies/stone/stone_hoodie_ds_1x1_720.png', '/images/products/liberty hoodies/stone/Stone Hoodie 1.png', '/images/products/liberty hoodies/stone/Stone Hoodie 2.png'], bg: '#f5f5f5', border: '#d4d4d4' },
 ];
 
 const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
@@ -138,7 +138,7 @@ export default function LibertyHoodiePage() {
           </div>
 
           {/* TITLE / PRICE */}
-          <div className="mt-8 flex flex-col items-center lg:col-start-2 lg:items-start lg:mt-6">
+          <div className="mt-8 flex flex-col lg:col-start-2 lg:items-start lg:mt-6">
             <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
               {PRODUCT.name}
             </h1>
@@ -146,6 +146,9 @@ export default function LibertyHoodiePage() {
               {selectedColor.name.toUpperCase()}
             </p>
             <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <div className="mt-4">
+              <SizeGuide productSlug="liberty-hoodie" />
+            </div>
 
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
               {LIBERTY_HOODIE_COLOR_OPTIONS.map((option) => {
@@ -186,17 +189,14 @@ export default function LibertyHoodiePage() {
             {/* DETAILS */}
             <div className="mt-6 text-left">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1d1c19] mb-3">Details</p>
-              <ul className="space-y-2">
+              <ul className="space-y-2 !text-left">
                 {PRODUCT.details.map((detail, idx) => (
-                  <li key={idx} className="text-xs text-[#1d1c19]">● {detail}</li>
+                  <li key={idx} className="text-xs text-[#1d1c19] text-left !text-left">● {detail}</li>
                 ))}
               </ul>
             </div>
 
             {/* SIZE GUIDE */}
-            <div className="mt-6">
-              <SizeGuide productSlug="liberty-hoodie" />
-            </div>
           </div>
         </div>
 

@@ -26,35 +26,35 @@ const newItems = [
   {
     id: "kiwi-rugby-jersey",
     name: "KIWI RUGBY JERSEY",
-    image: "/images/products/Kiwi%20Rugby%20Jersey/Kiwi%20DS%201x1.png",
+    image: "/images/products/kiwi rugby jersey/kiwi_ds_1x1_720.png",
     price: "$125",
     link: "/shop/kiwi-rugby-jersey",
   },
   {
     id: "liberty-zip-up",
     name: "LIBERTY ZIP-UP",
-    image: "/images/products/Liberty%20Zip-up/zip%20ups/copper/Copper%20DS%201x1.png",
+    image: "/images/products/liberty zip ups/copper/copper_ds_1x1_720.png",
     price: "$110",
     link: "/shop/liberty-zip-up",
   },
   {
     id: "liberty-hoodie",
     name: "LIBERTY HOODIE",
-    image: "/images/products/Liberty%20Hoodie/hoodies/mauve/Mauve%20DS%201x1.png",
+    image: "/images/products/liberty hoodies/mauve/mauve_ds_1x1_720.png",
     price: "$110",
     link: "/shop/liberty-hoodie",
   },
   {
     id: "jozi-rugby-jersey",
     name: "JOZI RUGBY JERSEY",
-    image: "/images/products/Jozi%20Rugby%20Jersey/Jozi%20DS%201x1.png",
+    image: "/images/products/jozi rugby jersey/jozi_ds_1x1_720.png",
     price: "$125",
     link: "/shop/jozi-rugby-jersey",
   },
   {
     id: "stamped-waffle-knit",
     name: "STAMPED WAFFLE KNIT",
-    image: "/images/products/Stamped%20Waffle%20Knit/Waffle%20Knit%20Tag.png",
+    image: "/images/products/waffle knit/waffle_knit_ds_1x1_720.png",
     price: "$65",
     link: "/shop/stamped-waffle-knit",
   },
@@ -99,32 +99,33 @@ export default function Home() {
   }, [])
 
   // Signup promo popup - shows after user scrolls down
+  // Define the onScroll handler
+  const onScroll = () => {
+    if (!SIGNUP_PROMO_ENABLED) return
+    if (typeof window === "undefined") return
+
+    // Show promo if not already shown
+    const shown = window.sessionStorage.getItem("signupPromoShown")
+    if (!shown) {
+      setShowSignupPromo(true)
+      try {
+        window.sessionStorage.setItem("signupPromoShown", "1")
+      } catch {
+        // ignore storage failures
+      }
+    }
+  }
+
   useEffect(() => {
     if (!SIGNUP_PROMO_ENABLED) return
     if (!isHydrated || typeof window === "undefined") return
 
     try {
-      if (window.localStorage.getItem("signupPromoSubmitted") === "1") {
-        return
-      }
-      if (window.sessionStorage.getItem("signupPromoShown") === "1") {
-        return
-      }
+      window.sessionStorage.setItem("signupPromoShown", "1")
     } catch {
       // ignore storage failures
     }
-
-    const onScroll = () => {
-      if (window.scrollY > 220) {
-        setShowSignupPromo(true)
-        try {
-          window.sessionStorage.setItem("signupPromoShown", "1")
-        } catch {
-          // ignore storage failures
-        }
-        window.removeEventListener("scroll", onScroll)
-      }
-    }
+    window.removeEventListener("scroll", onScroll)
 
     window.addEventListener("scroll", onScroll, { passive: true })
     return () => window.removeEventListener("scroll", onScroll)

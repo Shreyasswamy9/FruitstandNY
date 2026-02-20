@@ -36,7 +36,7 @@ type JoziColorOption = {
 };
 
 const JOZI_COLOR_OPTIONS: JoziColorOption[] = [
-  { name: 'Default', slug: 'default', color: '#2d5016', images: ['/images/products/Jozi%20Rugby%20Jersey/Jozi%20DS%201x1.png', '/images/products/Jozi%20Rugby%20Jersey/firefly_20260220101930_720.png', '/images/products/Jozi%20Rugby%20Jersey/firefly_20260220102000_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Default', slug: 'default', color: '#2d5016', images: ['/images/products/jozi rugby jersey/jozi_ds_1x1_720.png', '/images/products/jozi rugby jersey/jozi_1_720.png', '/images/products/jozi rugby jersey/jozi_2_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
 ];
 
 const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
@@ -126,11 +126,14 @@ export default function JoziRugbyJerseyPage() {
           </div>
 
           {/* TITLE / PRICE */}
-          <div className="mt-8 flex flex-col items-center lg:col-start-2 lg:items-start lg:mt-6">
+          <div className="mt-8 flex flex-col lg:col-start-2 lg:items-start lg:mt-6">
             <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
               {PRODUCT.name}
             </h1>
             <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <div className="mt-4">
+              <SizeGuide productSlug="jozi-rugby-jersey" />
+            </div>
 
             {/* DESCRIPTION */}
             <p className="mt-6 text-sm leading-relaxed text-[#1d1c19] lg:max-w-sm">
@@ -140,17 +143,14 @@ export default function JoziRugbyJerseyPage() {
             {/* DETAILS */}
             <div className="mt-6 text-left">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1d1c19] mb-3">Details</p>
-              <ul className="space-y-2">
-                {PRODUCT.details.map((detail, idx) => (
-                  <li key={idx} className="text-xs text-[#1d1c19]">● {detail}</li>
-                ))}
+                <ul className="space-y-2 text-left">
+                  {PRODUCT.details.map((detail, idx) => (
+                    <li key={idx} className="text-xs text-[#1d1c19] text-left !text-left">● {detail}</li>
+                  ))}
               </ul>
             </div>
 
             {/* SIZE GUIDE */}
-            <div className="mt-6">
-              <SizeGuide productSlug="jozi-rugby-jersey" />
-            </div>
           </div>
         </div>
 

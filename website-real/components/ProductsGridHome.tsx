@@ -25,15 +25,15 @@ export interface Product {
 export const products: Product[] = [
   // NEW ITEMS - Featured First
   // Kiwi Rugby Jersey
-  { id: 2, name: "Kiwi Rugby Jersey", price: "$125", image: "/images/products/Kiwi%20Rugby%20Jersey/Kiwi%20DS%201x1.png", hoverImage: "/images/products/Kiwi%20Rugby%20Jersey/Kiwi%20DS%201x1.png", category: "Jerseys", variantSlug: "kiwi-rugby-jersey", badgeLabel: "NEW" },
+    { id: 2, name: "Kiwi Rugby Jersey", price: "$125", image: "/images/products/kiwi rugby jersey/kiwi_ds_1x1_720.png", hoverImage: "/images/products/kiwi rugby jersey/kiwi_2_720.png", category: "Jerseys", variantSlug: "kiwi-rugby-jersey", badgeLabel: "NEW" },
   // Liberty Zip-Up
-  { id: 3, name: "Liberty Zip-Up", price: "$110", image: "/images/products/Liberty%20Zip-up/zip%20ups/copper/Copper%20DS%201x1.png", hoverImage: "/images/products/Liberty%20Zip-up/zip%20ups/copper/Copper%20DS%201x1.png", category: "Tops", variantSlug: "liberty-zip-up", badgeLabel: "NEW" },
+  { id: 3, name: "Liberty Zip-Up", price: "$110", image: "/images/products/liberty zip ups/copper/copper_ds_1x1_720.png", hoverImage: "/images/products/liberty zip ups/copper/copper_zip_1_720.png", category: "Tops", variantSlug: "liberty-zip-up", badgeLabel: "NEW" },
   // Liberty Hoodie
-  { id: 4, name: "Liberty Hoodie", price: "$110", image: "/images/products/Liberty%20Hoodie/hoodies/mauve/Mauve%20DS%201x1.png", hoverImage: "/images/products/Liberty%20Hoodie/hoodies/mauve/Mauve%20DS%201x1.png", category: "Tops", variantSlug: "liberty-hoodie", badgeLabel: "NEW" },
+  { id: 4, name: "Liberty Hoodie", price: "$110", image: "/images/products/liberty hoodies/mauve/mauve_ds_1x1_720.png", hoverImage: "/images/products/liberty hoodies/mauve/Mauve Hoodie 1.png", category: "Tops", variantSlug: "liberty-hoodie", badgeLabel: "NEW" },
   // Jozi Rugby Jersey
-  { id: 5, name: "Jozi Rugby Jersey", price: "$125", image: "/images/products/Jozi%20Rugby%20Jersey/Jozi%20DS%201x1.png", hoverImage: "/images/products/Jozi%20Rugby%20Jersey/Jozi%20DS%201x1.png", category: "Jerseys", variantSlug: "jozi-rugby-jersey", badgeLabel: "NEW" },
+    { id: 5, name: "Jozi Rugby Jersey", price: "$125", image: "/images/products/jozi rugby jersey/jozi_ds_1x1_720.png", hoverImage: "/images/products/jozi rugby jersey/jozi_2_720.png", category: "Jerseys", variantSlug: "jozi-rugby-jersey", badgeLabel: "NEW" },
   // Stamped Waffle Knit
-  { id: 1081, name: "Stamped Waffle Knit", price: "$65", image: "/images/products/Stamped%20Waffle%20Knit/Waffle%20Knit%20Tag.png", hoverImage: "/images/products/Stamped%20Waffle%20Knit/Waffle%20Knit%20Tag.png", category: "Tops", variantSlug: "stamped-waffle-knit", badgeLabel: "NEW" },
+  { id: 1081, name: "Stamped Waffle Knit", price: "$65", image: "/images/products/waffle knit/waffle_knit_ds_1x1_720.png", hoverImage: "/images/products/waffle knit/stamped_waffle_knit_1_720.png", category: "Tops", variantSlug: "stamped-waffle-knit", badgeLabel: "NEW" },
   // Retro Track Suit Collection (spotlight second)
   { id: 2001, name: "Retro Track Suit", price: "$165", image: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png", hoverImage: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TS7.png", category: "Tracksuits", variantColor: "Elmhurst Taro Custard", variantSlug: "elmhurst-taro-custard" },
   { id: 2002, name: "Retro Track Suit", price: "$165", image: "/images/products/tracksuits/Greenpoint Patina Crew/GB.png", hoverImage: "/images/products/tracksuits/Greenpoint Patina Crew/TS2.png", category: "Tracksuits", variantColor: "Greenpoint Patina Crew", variantSlug: "greenpoint-patina-crew" },

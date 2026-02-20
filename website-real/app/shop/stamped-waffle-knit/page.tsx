@@ -34,7 +34,7 @@ type StampedColorOption = {
 };
 
 const STAMPED_COLOR_OPTIONS: StampedColorOption[] = [
-  { name: 'Default', slug: 'default', color: '#e8d5c4', images: ['/images/products/Stamped%20Waffle%20Knit/Waffle%20Knit%20Tag.png', '/images/products/Stamped%20Waffle%20Knit/firefly_20260220101448_720.png', '/images/products/Stamped%20Waffle%20Knit/firefly_20260220101518_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Default', slug: 'default', color: '#e8d5c4', images: ['/images/products/waffle knit/waffle_knit_ds_1x1_720.png', '/images/products/waffle knit/stamped_waffle_knit_1_720.png', '/images/products/waffle knit/stamped_waffle_knit_2_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
 ];
 
 const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
@@ -124,11 +124,14 @@ export default function StampedWaffleKnitPage() {
           </div>
 
           {/* TITLE / PRICE */}
-          <div className="mt-8 flex flex-col items-center lg:col-start-2 lg:items-start lg:mt-6">
+          <div className="mt-8 flex flex-col lg:col-start-2 lg:items-start lg:mt-6">
             <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
               {PRODUCT.name}
             </h1>
             <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <div className="mt-4">
+              <SizeGuide productSlug="stamped-waffle-knit" />
+            </div>
 
             {/* DESCRIPTION */}
             <p className="mt-6 text-sm leading-relaxed text-[#1d1c19] lg:max-w-sm">
@@ -138,17 +141,14 @@ export default function StampedWaffleKnitPage() {
             {/* DETAILS */}
             <div className="mt-6 text-left">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1d1c19] mb-3">Details</p>
-              <ul className="space-y-2">
+              <ul className="space-y-2 !text-left">
                 {PRODUCT.details.map((detail, idx) => (
-                  <li key={idx} className="text-xs text-[#1d1c19]">● {detail}</li>
+                  <li key={idx} className="text-xs text-[#1d1c19] text-left !text-left">● {detail}</li>
                 ))}
               </ul>
             </div>
 
             {/* SIZE GUIDE */}
-            <div className="mt-6">
-              <SizeGuide productSlug="stamped-waffle-knit" />
-            </div>
           </div>
         </div>
 
