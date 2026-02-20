@@ -55,7 +55,9 @@ export default function ProductPurchaseBar({
   summaryLabel: _summaryLabel,
 }: ProductPurchaseBarProps) {
   const barRef = useRef<HTMLDivElement | null>(null);
+  const sizeNoticeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [barHeight, setBarHeight] = useState(PURCHASE_BAR_HEIGHT_FALLBACK);
+  const [showSizeNotice, setShowSizeNotice] = useState(false);
 
   const selectedColorOption = useMemo(() => {
     if (!selectedColor || !colorOptions?.length) return null;
@@ -73,8 +75,21 @@ export default function ProductPurchaseBar({
     return selectedColorOption.label.toUpperCase();
   }, [selectedColorOption]);
 
-  const addButtonDisabled = addDisabled ?? !selectedSize;
-  const disableReason = addDisabledReason ?? (!selectedSize ? "Select a size" : undefined);
+  const addButtonDisabled = Boolean(addDisabled);
+  const disableReason = addDisabled ? addDisabledReason : undefined;
+
+  const triggerSizeNotice = () => {
+    setShowSizeNotice(true);
+
+    if (sizeNoticeTimeoutRef.current) {
+      clearTimeout(sizeNoticeTimeoutRef.current);
+    }
+
+    sizeNoticeTimeoutRef.current = setTimeout(() => {
+      setShowSizeNotice(false);
+      sizeNoticeTimeoutRef.current = null;
+    }, 1700);
+  };
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -101,10 +116,46 @@ export default function ProductPurchaseBar({
     };
   }, [barHeight]);
 
+  useEffect(() => {
+    return () => {
+      if (sizeNoticeTimeoutRef.current) {
+        clearTimeout(sizeNoticeTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (selectedSize) {
+      setShowSizeNotice(false);
+    }
+  }, [selectedSize]);
+
+  const handleAddToCartClick = () => {
+    if (isAdding || addButtonDisabled) return;
+
+    if (!selectedSize) {
+      triggerSizeNotice();
+      return;
+    }
+
+    onAddToCart();
+  };
+
   return (
     <>
       <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[10004]">
         <div className="pointer-events-auto w-full pb-[calc(env(safe-area-inset-bottom,0px)+10px)]">
+          <div
+            className={`pointer-events-none flex justify-center px-4 pb-2 transition-all duration-300 ${
+              showSizeNotice ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
+            }`}
+            aria-live="polite"
+          >
+            <div className="rounded-full border border-white/20 bg-black/90 px-3 py-1 text-[11px] font-medium tracking-[0.06em] text-white shadow-lg backdrop-blur-sm">
+              Select a size before adding to cart
+            </div>
+          </div>
+
           <div
             ref={barRef}
             className="relative flex overflow-hidden border-t border-white bg-black text-white shadow-[0_-14px_40px_rgba(0,0,0,0.35)]"
@@ -165,18 +216,14 @@ export default function ProductPurchaseBar({
               <div className="relative flex flex-1 items-stretch bg-white text-black">
                 <button
                   type="button"
-                  onClick={onAddToCart}
+                  onClick={handleAddToCartClick}
                   disabled={addButtonDisabled || isAdding}
                   className={`relative z-10 flex h-full w-full items-center justify-center px-3 text-[13px] font-semibold uppercase tracking-[0.18em] transition ${
-                    addButtonDisabled || isAdding ? "opacity-500" : "hover:bg-[#f4f4f4]"
+                    addButtonDisabled || isAdding ? "opacity-50" : "hover:bg-[#f4f4f4]"
                   }`}
                   title={disableReason}
                 >
-                  {isAdding
-                    ? "ADDING"
-                    : addButtonDisabled && disableReason
-                    ? disableReason.toUpperCase()
-                    : addToCartLabel.toUpperCase()}
+                  {isAdding ? "ADDING" : addButtonDisabled && disableReason ? disableReason.toUpperCase() : addToCartLabel.toUpperCase()}
                 </button>
               </div>
             </div>
