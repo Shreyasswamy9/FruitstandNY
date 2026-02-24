@@ -50,7 +50,12 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <MetaPixelBase />
-        <script async src="https://chimpstatic.com/mcjs-connected/js/users/fcf0bbb9c363876e4b7950198/177293cf6369623cf7ebb592e.js"></script>
+          <Script
+            id="mcjs"
+            strategy="afterInteractive"
+          >
+            {`!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/fcf0bbb9c363876e4b7950198/701c39750148b2925ed7905a1.js");`}
+          </Script>
         <Script id="google-tag-manager" strategy="afterInteractive">{`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
         new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
         j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
