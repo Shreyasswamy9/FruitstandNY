@@ -53,7 +53,14 @@ type DiscountDefinition = {
   active: boolean;
 };
 
-const DISCOUNT_CODES: Record<string, DiscountDefinition> = {};
+const DISCOUNT_CODES: Record<string, DiscountDefinition> = {
+  FS2026: {
+    type: 'percent',
+    value: 15,
+    label: '15% off with FS2026',
+    active: true,
+  },
+};
 
 export async function POST(request: NextRequest) {
   const requestId = Math.random().toString(36).substring(7);

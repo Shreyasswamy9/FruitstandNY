@@ -66,7 +66,14 @@ export async function POST(request: NextRequest) {
       active: boolean;
     };
 
-    const DISCOUNT_CODES: Record<string, DiscountDefinition> = {};
+    const DISCOUNT_CODES: Record<string, DiscountDefinition> = {
+      FS2026: {
+        type: 'percent',
+        value: 15,
+        label: '15% off with FS2026',
+        active: true,
+      },
+    };
 
     // 3. Parse Request
     let requestData: CheckoutRequestPayload;
