@@ -148,7 +148,7 @@ export default function LibertyZipUpPage() {
             </p>
             <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
             <div className="mt-4">
-              <SizeGuide productSlug="liberty-zip-up" />
+              <SizeGuide productSlug="liberty-hoodie" />
             </div>
 
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3 lg:justify-start">

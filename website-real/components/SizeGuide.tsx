@@ -21,6 +21,34 @@ export const SizeGuide: React.FC<SizeGuideProps> = ({
   // Candidate image sources to try before showing a fallback UI
   const candidatePaths = React.useMemo(() => {
     if (imagePath) return [imagePath];
+    // Special cases for Liberty Hoodie/Zip-Up, Rugby Jersey, and Waffle Knit
+    if (productSlug === "liberty-hoodie" || productSlug === "liberty-zip-up") {
+      return [
+        "/images/size-guides/Size Guide/liberty hoodie size guide.jpeg",
+        "/images/size-guides/liberty-hoodie.png",
+        "/images/size-guides/liberty-hoodie.jpg",
+        "/images/size-guides/liberty-hoodie.jpeg",
+        "/images/size-guides/liberty-hoodie.webp",
+      ];
+    }
+    if (productSlug === "rugby-jersey" || productSlug === "kiwi-rugby-jersey" || productSlug === "jozi-rugby-jersey") {
+      return [
+        "/images/size-guides/Size Guide/rugby jersey size guide.jpeg",
+        "/images/size-guides/rugby-jersey.png",
+        "/images/size-guides/rugby-jersey.jpg",
+        "/images/size-guides/rugby-jersey.jpeg",
+        "/images/size-guides/rugby-jersey.webp",
+      ];
+    }
+    if (productSlug === "waffle-knit" || productSlug === "stamped-waffle-knit") {
+      return [
+        "/images/size-guides/Size Guide/waffle knit.jpeg",
+        "/images/size-guides/waffle-knit.png",
+        "/images/size-guides/waffle-knit.jpg",
+        "/images/size-guides/waffle-knit.jpeg",
+        "/images/size-guides/waffle-knit.webp",
+      ];
+    }
     const base = `/images/size-guides/${productSlug}`;
     return [
       `${base}.png`,

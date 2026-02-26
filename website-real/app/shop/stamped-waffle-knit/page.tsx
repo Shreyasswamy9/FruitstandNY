@@ -130,7 +130,7 @@ export default function StampedWaffleKnitPage() {
             </h1>
             <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
             <div className="mt-4">
-              <SizeGuide productSlug="stamped-waffle-knit" />
+              <SizeGuide productSlug="waffle-knit" />
             </div>
 
             {/* DESCRIPTION */}
