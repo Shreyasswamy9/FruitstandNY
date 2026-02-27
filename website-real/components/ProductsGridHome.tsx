@@ -33,7 +33,7 @@ export const products: Product[] = [
   // Jozi Rugby Jersey
   { id: 5, name: "Jozi Rugby Jersey", price: "$125", image: "/images/products/jozi rugby jersey/Jozi DS 1x1.png", hoverImage: "/images/products/jozi rugby jersey/Jozi 1.png", category: "Jerseys", variantSlug: "jozi-rugby-jersey", badgeLabel: "NEW" },
   // Stamped Waffle Knit
-  { id: 1081, name: "Stamped Waffle Knit", price: "$65", image: "/images/products/waffle knit/Stamped Waffle Knit Updated.png", hoverImage: "/images/products/waffle knit/Stamped Waffle Knit Updated.png", category: "Tops", variantSlug: "stamped-waffle-knit", badgeLabel: "NEW" },
+  { id: 1081, name: "Stamped Waffle Knit", price: "$65", image: "/images/products/waffle knit/Stamped Waffle Knit 1.png", hoverImage: "/images/products/waffle knit/Stamped Waffle Knit 2.png", category: "Tops", variantSlug: "stamped-waffle-knit", badgeLabel: "NEW" },
   // Retro Track Suit Collection (spotlight second)
   { id: 2001, name: "Retro Track Suit", price: "$165", image: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png", hoverImage: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TS7.png", category: "Tracksuits", variantColor: "Elmhurst Taro Custard", variantSlug: "elmhurst-taro-custard" },
   { id: 2002, name: "Retro Track Suit", price: "$165", image: "/images/products/tracksuits/Greenpoint Patina Crew/GB.png", hoverImage: "/images/products/tracksuits/Greenpoint Patina Crew/TS2.png", category: "Tracksuits", variantColor: "Greenpoint Patina Crew", variantSlug: "greenpoint-patina-crew" },
