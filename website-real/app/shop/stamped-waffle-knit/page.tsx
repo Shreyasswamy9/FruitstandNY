@@ -34,7 +34,7 @@ type StampedColorOption = {
 };
 
 const STAMPED_COLOR_OPTIONS: StampedColorOption[] = [
-  { name: 'Default', slug: 'default', color: '#e8d5c4', images: ['/images/products/waffle knit/waffle_knit_ds_1x1_720.png', '/images/products/waffle knit/Stamped Waffle Knit 1.png', '/images/products/waffle knit/Stamped Waffle Knit 2.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Default', slug: 'default', color: '#e8d5c4', images: ['/images/products/waffle knit/Stamped Waffle Knit Updated.png'], bg: '#f5f5f5', border: '#d4d4d4' },
 ];
 
 const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;

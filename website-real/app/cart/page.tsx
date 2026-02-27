@@ -27,8 +27,8 @@ type DiscountDefinition = {
 const DISCOUNT_CODES: Record<string, DiscountDefinition> = {
   FS2026: {
     type: 'percent',
-    value: 15,
-    label: '15% off with FS2026',
+    value: 25,
+    label: '25% off with FS2026',
     active: true,
   },
 };

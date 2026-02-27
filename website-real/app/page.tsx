@@ -54,7 +54,7 @@ const newItems = [
   {
     id: "stamped-waffle-knit",
     name: "STAMPED WAFFLE KNIT",
-    image: "/images/products/waffle knit/waffle_knit_ds_1x1_720.png",
+    image: "/images/products/waffle knit/Stamped Waffle Knit Updated.png",
     price: "$65",
     link: "/shop/stamped-waffle-knit",
   },
