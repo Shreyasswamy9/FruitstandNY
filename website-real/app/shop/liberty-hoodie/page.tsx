@@ -36,9 +36,9 @@ type LibertyHoodieColorOption = {
 };
 
 const LIBERTY_HOODIE_COLOR_OPTIONS: LibertyHoodieColorOption[] = [
-  { name: 'Onyx', slug: 'onyx', color: '#1a1a1a', images: ['/images/products/liberty hoodies/onyx/onyx_hoodie_ds_1x1_720.png', '/images/products/liberty hoodies/onyx/Onyx Hoodie 1.png', '/images/products/liberty hoodies/onyx/Onyx Hoodie 2.png'], bg: '#f5f5f5', border: '#d4d4d4' },
-  { name: 'Mauve', slug: 'mauve', color: '#9d7a8a', images: ['/images/products/liberty hoodies/mauve/mauve_ds_1x1_720.png', '/images/products/liberty hoodies/mauve/Mauve Hoodie 1.png', '/images/products/liberty hoodies/mauve/Mauve Hoodie 2.png'], bg: '#f5f5f5', border: '#d4d4d4' },
-  { name: 'Stone', slug: 'stone', color: '#a39e9d', images: ['/images/products/liberty hoodies/stone/stone_hoodie_ds_1x1_720.png', '/images/products/liberty hoodies/stone/Stone Hoodie 1.png', '/images/products/liberty hoodies/stone/Stone Hoodie 2.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Onyx', slug: 'onyx', color: '#1a1a1a', images: ['/images/products/liberty hoodies/onyx/Onyx Hoodie DS 1x1.png', '/images/products/liberty hoodies/onyx/Onyx Hoodie 1 copy.png', '/images/products/liberty hoodies/onyx/Onyx Hoodie 2 copy.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Mauve', slug: 'mauve', color: '#9d7a8a', images: ['/images/products/liberty hoodies/mauve/Mauve DS 1x1.png', '/images/products/liberty hoodies/mauve/Mauve Hoodie 1 copy.png', '/images/products/liberty hoodies/mauve/Mauve Hoodie 2 copy.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Stone', slug: 'stone', color: '#a39e9d', images: ['/images/products/liberty hoodies/stone/Stone Hoodie DS 1x1.png', '/images/products/liberty hoodies/stone/Stone Hoodie 1 copy.png', '/images/products/liberty hoodies/stone/Stone Hoodie 2 copy.png'], bg: '#f5f5f5', border: '#d4d4d4' },
 ];
 
 const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;

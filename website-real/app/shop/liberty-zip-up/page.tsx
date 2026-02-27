@@ -37,9 +37,9 @@ type LibertyZipColorOption = {
 };
 
 const LIBERTY_ZIP_COLOR_OPTIONS: LibertyZipColorOption[] = [
-  { name: 'Onyx', slug: 'onyx', color: '#1a1a1a', images: ['/images/products/liberty zip ups/onyx/onyx_zip-up_ds_1x1_720.png', '/images/products/liberty zip ups/onyx/onyx_zip_1_720.png', '/images/products/liberty zip ups/onyx/onyx_zip_2_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
-  { name: 'Moss', slug: 'moss', color: '#556b2f', images: ['/images/products/liberty zip ups/moss/moss_ds_1x1_720.png', '/images/products/liberty zip ups/moss/moss_zip_1_720.png', '/images/products/liberty zip ups/moss/moss_zip_2_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
-  { name: 'Copper', slug: 'copper', color: '#b87333', images: ['/images/products/liberty zip ups/copper/copper_ds_1x1_720.png', '/images/products/liberty zip ups/copper/copper_zip_1_720.png', '/images/products/liberty zip ups/copper/copper_zip_2_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Onyx', slug: 'onyx', color: '#1a1a1a', images: ['/images/products/liberty zip ups/onyx/Onyx Zip-up DS 1x1.png', '/images/products/liberty zip ups/onyx/Onyx Zip 1.png', '/images/products/liberty zip ups/onyx/Onyx Zip 2.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Moss', slug: 'moss', color: '#556b2f', images: ['/images/products/liberty zip ups/moss/Moss DS 1x1.png', '/images/products/liberty zip ups/moss/Moss Zip 1.png', '/images/products/liberty zip ups/moss/Moss Zip 2.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Copper', slug: 'copper', color: '#b87333', images: ['/images/products/liberty zip ups/copper/Copper DS 1x1.png', '/images/products/liberty zip ups/copper/Copper Zip 1.png', '/images/products/liberty zip ups/copper/Copper Zip 2.png'], bg: '#f5f5f5', border: '#d4d4d4' },
 ];
 
 const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
