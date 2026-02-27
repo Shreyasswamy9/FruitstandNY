@@ -192,7 +192,7 @@ export default function LibertyZipUpPage() {
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1d1c19] mb-3">Details</p>
                 <ul className="space-y-2 text-left">
                   {PRODUCT.details.map((detail, idx) => (
-                    <li key={idx} className="text-[11px] text-[#1d1c19] text-left !text-left">● {detail}</li>
+                    <li key={idx} className="text-[11px] text-[#1d1c19] text-left !text-left !text-[11px]">● {detail}</li>
                   ))}
               </ul>
             </div>
