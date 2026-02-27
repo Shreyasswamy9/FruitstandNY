@@ -47,7 +47,7 @@ const newItems = [
   {
     id: "jozi-rugby-jersey",
     name: "JOZI RUGBY JERSEY",
-    image: "/images/products/jozi rugby jersey/jozi_ds_1x1_720.png",
+    image: "/images/products/jozi rugby jersey/jozi_1_721.png",
     price: "$125",
     link: "/shop/jozi-rugby-jersey",
   },
