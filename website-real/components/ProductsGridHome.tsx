@@ -31,7 +31,7 @@ export const products: Product[] = [
   // Liberty Hoodie
   { id: 4, name: "Liberty Hoodie", price: "$110", image: "/images/products/liberty hoodies/mauve/mauve_ds_1x1_720.png", hoverImage: "/images/products/liberty hoodies/mauve/Mauve Hoodie 1.png", category: "Tops", variantSlug: "liberty-hoodie", badgeLabel: "NEW" },
   // Jozi Rugby Jersey
-    { id: 5, name: "Jozi Rugby Jersey", price: "$125", image: "/images/products/jozi rugby jersey/jozi_1_721.png", hoverImage: "/images/products/jozi rugby jersey/jozi_2_720.png", category: "Jerseys", variantSlug: "jozi-rugby-jersey", badgeLabel: "NEW" },
+    { id: 5, name: "Jozi Rugby Jersey", price: "$125", image: "/images/products/jozi rugby jersey/jozi_1_721.png", hoverImage: "/images/products/jozi rugby jersey/jozi_ds_1x1_720.png", category: "Jerseys", variantSlug: "jozi-rugby-jersey", badgeLabel: "NEW" },
   // Stamped Waffle Knit
   { id: 1081, name: "Stamped Waffle Knit", price: "$65", image: "/images/products/waffle knit/waffle_knit_ds_1x1_720.png", hoverImage: "/images/products/waffle knit/stamped_waffle_knit_1_720.png", category: "Tops", variantSlug: "stamped-waffle-knit", badgeLabel: "NEW" },
   // Retro Track Suit Collection (spotlight second)

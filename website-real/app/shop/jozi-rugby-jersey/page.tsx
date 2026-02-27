@@ -36,7 +36,7 @@ type JoziColorOption = {
 };
 
 const JOZI_COLOR_OPTIONS: JoziColorOption[] = [
-  { name: 'Default', slug: 'default', color: '#2d5016', images: ['/images/products/jozi rugby jersey/jozi_1_721.png', '/images/products/jozi rugby jersey/jozi_1_720.png', '/images/products/jozi rugby jersey/jozi_2_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Default', slug: 'default', color: '#2d5016', images: ['/images/products/jozi rugby jersey/jozi_1_721.png', '/images/products/jozi rugby jersey/jozi_2_720.png', '/images/products/jozi rugby jersey/jozi_ds_1x1_720.png'], bg: '#f5f5f5', border: '#d4d4d4' },
 ];
 
 const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
