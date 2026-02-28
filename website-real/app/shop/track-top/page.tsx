@@ -58,7 +58,7 @@ const PRODUCT = {
     "100% Nylon shell",
     "Full-zip front with stand collar",
     "Inner mesh lining",
-    "Quality guaranteed, Free returns."
+    "Quality guaranteed, Free returns.",
     "Ribbed cuffs and hem",
     "Two front pockets",
     "Relaxed fit",

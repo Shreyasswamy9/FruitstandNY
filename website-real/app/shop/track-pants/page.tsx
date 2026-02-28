@@ -58,7 +58,7 @@ const PRODUCT = {
     "100% Nylon shell",
     "Inner mesh lining",
     "Tapered fit",
-    "Quality guaranteed, Free returns."
+    "Quality guaranteed, Free returns.",
     "Made in Sialkot, Pakistan",
   ],
   sizes: ["XS", "S", "M", "L", "XL", "XXL", "XXXL"],
