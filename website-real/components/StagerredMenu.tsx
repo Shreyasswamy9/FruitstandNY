@@ -57,6 +57,9 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   onMenuOpen,
   onMenuClose
 }: StaggeredMenuProps) => {
+    useEffect(() => {
+      console.log('StaggeredMenu items:', items);
+    }, [items]);
   const [open, setOpen] = useState(false);
   const openRef = useRef(false);
 

@@ -4,8 +4,26 @@ import { motion } from "framer-motion"
 import Link from "next/link"
 
 export default function PrivacyPolicyPage() {
+  const policies = [
+    { label: "Privacy Policy", link: "/privacy-policy" },
+    { label: "Return Policy", link: "/return-policy" },
+    { label: "Cookie Policy", link: "/cookie-policy" },
+    { label: "Terms & Conditions", link: "/terms-and-conditions" }
+  ];
   return (
-  <div className="min-h-screen bg-[#fbf6f0]">
+    <div className="min-h-screen bg-[#fbf6f0]">
+      {/* Policy Selector - Always Visible */}
+      <div className="w-full max-w-2xl mx-auto pt-12 pb-4 px-4 sticky top-0 z-30 bg-[#fbf6f0]">
+        <h1 className="text-[2rem] font-black uppercase tracking-[0.08em] text-[#1d1c19] mb-6 text-center font-avenir-black">Select a Policy</h1>
+        <div className="flex flex-wrap gap-4 justify-center mb-8">
+          {policies.map((policy) => (
+            <Link href={policy.link} key={policy.label} className="rounded-lg border border-[#1d1c19]/15 bg-white shadow-sm hover:shadow-lg transition-shadow px-6 py-3 font-black uppercase tracking-[0.08em] text-[#1d1c19] hover:text-[#5227FF] font-avenir-black">
+              {policy.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+      {/* ...existing page content... */}
       {/* Header */}
       <div className="bg-gray-50 border-b pt-20 sm:pt-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -21,8 +39,7 @@ export default function PrivacyPolicyPage() {
           </p>
         </div>
       </div>
-
-      {/* Content */}
+      {/* ...existing page content... */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

@@ -118,7 +118,9 @@ export default function ClientRootLayout({ children }: ClientRootLayoutProps) {
             { label: "Shop", ariaLabel: "Browse products", link: "/shop" },
             { label: "Account", ariaLabel: "Access your account", link: "/account" },
             { label: "Cart", ariaLabel: "View your cart", link: "/cart" },
-            { label: "Contact", ariaLabel: "Contact us", link: "/contact" }
+            { label: "Contact", ariaLabel: "Contact us", link: "/contact" },
+            { label: "Policies", ariaLabel: "View our policies", link: "/privacy-policy" },
+            { label: "About Us", ariaLabel: "Learn about us", link: "/about" }
           ]}
           socialItems={[
             { label: "Instagram", link: "https://www.instagram.com/fruitstandny/" },
