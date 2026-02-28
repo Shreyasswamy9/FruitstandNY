@@ -88,7 +88,8 @@ const PRODUCT_DETAILS = [
   "Ribbed cuffs and hem",
   "Two front pockets",
   "Relaxed Fit",
-  "Made in Sialkot, Pakistan",
+    "Quality guaranteed, Free returns.",
+    "Made in Sialkot, Pakistan",
 ];
 
 const RECOMMENDED_PRODUCTS = [

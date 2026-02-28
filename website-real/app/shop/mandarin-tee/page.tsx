@@ -46,6 +46,7 @@ const PRODUCT = {
     '32" screen-printed artwork front and back',
     "Made in Dongguan, Guangdong, China",
     "Ships with a custom FRUITSTAND sticker printed in NYC",
+    "Quality guaranteed, Free returns."
   ],
   sizes: ["XS", "S", "M", "L", "XL", "XXL", "XXXL"],
 };

@@ -66,11 +66,12 @@ const PRODUCT = {
   description:
     "Crafted from 100% organic cotton in Portugal, made in a relaxed fit. At 250 GSM, it’s heavy weight, soft, and breathable — designed for effortless everyday wear.",
   details: [
-    "100% organic cotton (250 GSM)",
+    "100% organic cotton (160 GSM)",
     "Oversized, loose silhouette",
     "Breathable and soft for everyday wear",
     "Made in Portugal",
     "Ships with a custom FRUITSTAND sticker printed in NYC",
+    "Quality guaranteed, Free returns."
   ],
 };
 

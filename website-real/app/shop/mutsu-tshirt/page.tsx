@@ -47,6 +47,7 @@ const PRODUCT = {
     "Front left pocket",
     "Made in Portugal",
     "Ships with a custom FRUITSTAND sticker printed in NYC",
+    "Quality guaranteed, Free returns."
   ],
 };
 

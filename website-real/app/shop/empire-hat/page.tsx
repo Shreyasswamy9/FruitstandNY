@@ -39,6 +39,7 @@ const PRODUCT = {
     "Flexible brim with contrast under-bill",
     "Adjustable strap, one size fits most",
     "Made in Fujian, China",
+    "Quality guaranteed, Free returns."
   ],
 };
 

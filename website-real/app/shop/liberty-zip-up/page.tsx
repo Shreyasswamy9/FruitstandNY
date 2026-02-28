@@ -23,6 +23,7 @@ const PRODUCT = {
     "Two front pockets",
     "Relaxed Fit",
     "Made in Guangdong, China",
+    "Quality guaranteed, Free returns."
   ],
   longDescription: "Sewn from 100% cotton at 420 gsm and built for all-day wear while a custom wash process ensures every piece is unique. The construction makes it easy to layer and adjust throughout the day. It's a piece designed to work with everything — and work for you.",
 };

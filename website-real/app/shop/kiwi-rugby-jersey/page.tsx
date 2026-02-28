@@ -22,6 +22,7 @@ const PRODUCT = {
     "Vintage laced-neck collar",
     "Relaxed Fit",
     "Made in Dongguan, China",
+    "Quality guaranteed, Free returns."
   ],
   longDescription: "The Kiwi Rugby Jersey pays homage to the triumphant New Zealand Rugby Team — famed for their international success, and known as the country's national sport. As a three-time world champion, New Zealand Rugby signifies success.",
 };

@@ -45,6 +45,7 @@ const PRODUCT = {
     "Designed in NYC — crafted in Portugal",
     "Trademark BLOCK LOGO at the chest with ‘ORGANIC NEW YORK CULTURE’ near the waist",
     "Comes with custom NYC-made hang tags and a sustainable burlap bag",
+    "Quality guaranteed, Free returns."
   ],
   sizes: ["XS", "S", "M", "L", "XL", "XXL", "XXXL"],
 };

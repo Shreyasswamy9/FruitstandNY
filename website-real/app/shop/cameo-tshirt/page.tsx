@@ -52,6 +52,7 @@ const PRODUCT = {
     "Breathable and soft for everyday wear",
     "Made in Portugal",
     "Ships with a custom FRUITSTAND sticker printed in NYC",
+    "Quality guaranteed, Free returns."
   ],
 };
 

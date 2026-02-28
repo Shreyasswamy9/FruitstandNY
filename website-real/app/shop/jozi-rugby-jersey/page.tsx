@@ -22,6 +22,7 @@ const PRODUCT = {
     "Three button collar",
     "Relaxed Fit",
     "Made in Dongguan, China",
+    "Quality guaranteed, Free returns."
   ],
   longDescription: "The Jozi Rugby Jersey pays homage to the triumphant South African National Rugby Team — one of the most successful in world history, as a four-time world champion and consistent world #1.",
 };

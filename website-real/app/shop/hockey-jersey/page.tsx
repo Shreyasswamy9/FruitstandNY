@@ -47,6 +47,7 @@ const PRODUCT = {
     "Ribbed V-neck",
     "Made in Sialkot, Pakistan",
     "Ships with a custom FRUITSTAND sticker printed in NYC",
+    "Quality guaranteed, Free returns."
   ],
 };
 

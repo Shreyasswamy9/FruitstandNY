@@ -34,6 +34,7 @@ const PRODUCT = {
     "Select color + size for each tee",
     "Bundle pricing applied automatically",
     "Ships together as one curated set",
+    "Quality guaranteed, Free returns."
   ],
 };
 

@@ -39,6 +39,7 @@ const PRODUCT = {
     "Designed in NYC and crafted in Portugal",
     "Includes NYC-made hang tags and sustainable burlap bag",
     "Image of Scheffel Hall (photo taken Dec 2021) inside our golden pear motif",
+    "Quality guaranteed, Free returns."
   ],
   sizes: ["XS", "S", "M", "L", "XL", "XXL", "XXXL"],
 };

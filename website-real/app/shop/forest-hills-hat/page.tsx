@@ -38,6 +38,7 @@ const PRODUCT = {
     "Detailed embroidery on front and back",
     "Adjustable strap, one size fits most",
     "Made in Fujian, China",
+    "Quality guaranteed, Free returns."
   ],
 };
 

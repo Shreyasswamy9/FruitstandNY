@@ -36,6 +36,7 @@ const PRODUCT = {
     "Contrasting top-stitch detail",
     "Adjustable strap with metal closure",
     "One size fits most",
+    "Quality guaranteed, Free returns."
   ],
 };
 

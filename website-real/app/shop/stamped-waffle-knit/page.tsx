@@ -20,6 +20,7 @@ const PRODUCT = {
     "250 gsm",
     "Relaxed Fit",
     "Made in Guangdong, China",
+    "Quality guaranteed, Free returns."
   ],
   longDescription: "Constructed from 100% cotton at 250 gsm, this textured waffle knit is both comfortable and easy to wear. With a digitally printed technique, every piece is unique, highlighting a different collection of stamps on each one. Functioning like the objects it is inspired by: a memento, a relic, and a record of having been somewhere — or having made something move.",
 };

@@ -34,6 +34,7 @@ const PRODUCT = {
     "Adjustable strap with brushed metal closure",
     "Embroidered front and back hits",
     "One size fits most",
+    "Quality guaranteed, Free returns."
   ],
 };
 

@@ -34,6 +34,7 @@ const PRODUCT = {
     "Matching tonal embroidery",
     "Adjustable strap with metal clasp",
     "One size fits most",
+    "Quality guaranteed, Free returns."
   ],
 };
 
