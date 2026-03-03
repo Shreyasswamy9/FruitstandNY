@@ -173,6 +173,16 @@ export default function Home() {
             />
           </video>
           <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/40 to-black/70" />
+          {/* Shop Now Button inside video at bottom */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex justify-center w-full pointer-events-none">
+            <a
+              href="/shop"
+              className="pointer-events-auto text-white underline underline-offset-4 font-black text-lg md:text-xl tracking-wide"
+              style={{ fontFamily: 'Avenir Black, Avenir, Helvetica, Arial, sans-serif', letterSpacing: '0.04em' }}
+            >
+              Shop Now
+            </a>
+          </div>
         </section>
 
         {/* New Items Carousel */}
@@ -222,9 +232,13 @@ export default function Home() {
 
               {/* Bottom Label Bar */}
               <div className="w-full h-14 bg-[#181818] flex items-center justify-center border-l border-r border-b border-[#181818] md:border">
-                <span className="text-white text-sm font-semibold tracking-widest uppercase text-center">
+                <a
+                  href="/shop"
+                  className="text-white text-sm font-semibold tracking-widest uppercase text-center hover:text-[#ffe066] transition-colors duration-200 cursor-pointer"
+                  style={{ fontFamily: 'Avenir Black, Avenir, Helvetica, Arial, sans-serif', letterSpacing: '0.15em', padding: '0.5em 1.5em', borderRadius: '0.5em' }}
+                >
                   NEW ITEMS
-                </span>
+                </a>
               </div>
             </div>
 
