@@ -5,7 +5,7 @@ import { useCart } from "./CartContext";
 import { usePathname } from "next/navigation";
 
 export default function CartBar() {
-  const { items } = useCart();
+  const { items, freeShippingActive, freeShippingSecondsLeft } = useCart();
   const [showCartBar, setShowCartBar] = useState(false);
   const pathname = usePathname();
   const { hideLogo } = useContext(LogoVisibilityContext); // hideLogo true during intro on home
@@ -54,6 +54,11 @@ export default function CartBar() {
             <span className="inline-block bg-white text-black rounded-full px-3 py-1 text-sm font-bold shadow">
               {items.reduce((a, b) => a + b.quantity, 0)}
             </span>
+            {freeShippingActive && (
+              <span className="ml-3 px-3 py-1 rounded-full bg-green-500 text-white text-xs font-semibold animate-pulse">
+                Free shipping for {Math.floor(freeShippingSecondsLeft / 60)}:{(freeShippingSecondsLeft % 60).toString().padStart(2, '0')}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 md:gap-3">
             <span className="text-sm md:text-base font-semibold">

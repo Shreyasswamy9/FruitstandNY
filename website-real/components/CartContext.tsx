@@ -30,6 +30,9 @@ interface CartContextType {
   openCartOverlay: () => void;
   closeCartOverlay: () => void;
   lastAddedItem: CartItem | null;
+  freeShippingExpiresAt: number | null;
+  freeShippingActive: boolean;
+  freeShippingSecondsLeft: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -133,21 +136,28 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoaded, setIsLoaded] = useState(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [lastAddedItem, setLastAddedItem] = useState<CartItem | null>(null);
+  // Free shipping timer state
+  const [freeShippingExpiresAt, setFreeShippingExpiresAt] = useState<number | null>(null);
+  const [freeShippingSecondsLeft, setFreeShippingSecondsLeft] = useState(0);
+  const freeShippingActive = freeShippingExpiresAt !== null && freeShippingSecondsLeft > 0;
 
-  // Load cart from localStorage on mount
+  // Load cart and free shipping timer from localStorage on mount
   useEffect(() => {
-    const stored = typeof window !== 'undefined' ? localStorage.getItem('cart') : null;
-    console.log('Loading cart from localStorage:', stored);
+    if (typeof window === 'undefined') return;
+    const stored = localStorage.getItem('cart');
+    const storedFreeShipping = localStorage.getItem('freeShippingExpiresAt');
     if (stored) {
       try {
         const parsedItems = JSON.parse(stored);
-        console.log('Parsed cart items:', parsedItems);
         const normalized = normalizeStoredItems(parsedItems);
         setItems(normalized);
       } catch (error) {
-        console.error('Error parsing cart from localStorage:', error);
-        localStorage.removeItem('cart'); // Clear corrupted data
+        localStorage.removeItem('cart');
       }
+    }
+    if (storedFreeShipping) {
+      const expires = parseInt(storedFreeShipping, 10);
+      if (!isNaN(expires)) setFreeShippingExpiresAt(expires);
     }
     setIsLoaded(true);
   }, []);
@@ -170,6 +180,26 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('cart', JSON.stringify(items));
     }
   }, [items, isLoaded]);
+
+  // Free shipping timer countdown
+  useEffect(() => {
+    if (!freeShippingExpiresAt) {
+      setFreeShippingSecondsLeft(0);
+      return;
+    }
+    const update = () => {
+      const now = Date.now();
+      const seconds = Math.max(0, Math.floor((freeShippingExpiresAt - now) / 1000));
+      setFreeShippingSecondsLeft(seconds);
+      if (seconds <= 0) {
+        setFreeShippingExpiresAt(null);
+        localStorage.removeItem('freeShippingExpiresAt');
+      }
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [freeShippingExpiresAt]);
 
   useEffect(() => {
     if (!isLoaded || typeof window === 'undefined') return;
@@ -240,6 +270,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return [...prev, normalized];
     });
 
+    // Start free shipping timer (10 min) if not already active
+    setTimeout(() => {
+      setItems(currentItems => {
+        const now = Date.now();
+        const timerExpired = !freeShippingExpiresAt || freeShippingExpiresAt < now;
+        if (currentItems.length > 0 && timerExpired) {
+          const expires = now + 10 * 60 * 1000;
+          setFreeShippingExpiresAt(expires);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('freeShippingExpiresAt', expires.toString());
+          }
+        }
+        return currentItems;
+      });
+    }, 0);
+
     if (addedLine) {
       setLastAddedItem(addedLine);
     }
@@ -292,6 +338,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (remaining === 0) {
       setIsOverlayOpen(false);
       setLastAddedItem(null);
+      setFreeShippingExpiresAt(null);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('freeShippingExpiresAt');
+      }
     }
   };
 
@@ -323,13 +373,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const clearCart = () => {
-    console.log('Cart cleared manually');
     setItems([]);
     if (typeof window !== 'undefined') {
       localStorage.removeItem('cart');
+      localStorage.removeItem('freeShippingExpiresAt');
     }
     setIsOverlayOpen(false);
     setLastAddedItem(null);
+    setFreeShippingExpiresAt(null);
   };
 
   const openCartOverlay = () => setIsOverlayOpen(true);
@@ -348,6 +399,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         openCartOverlay,
         closeCartOverlay,
         lastAddedItem,
+        freeShippingExpiresAt,
+        freeShippingActive,
+        freeShippingSecondsLeft,
       }}
     >
       {children}

@@ -53,6 +53,8 @@ export default function CartOverlay() {
     setLineQuantity,
     removeFromCart,
     addToCart,
+    freeShippingActive,
+    freeShippingSecondsLeft,
   } = useCart();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
@@ -193,6 +195,11 @@ export default function CartOverlay() {
         ref={panelRef}
         className="relative w-full max-w-[480px] rounded-[28px] border border-[#1b1a18]/10 bg-[#fbf5eb] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.35)]"
       >
+        {freeShippingActive && (
+          <div className="mb-4 p-3 rounded-xl bg-green-500 text-white text-center font-bold text-sm animate-pulse">
+            🎉 Free shipping unlocked! Complete your purchase in the next {Math.floor(freeShippingSecondsLeft / 60)}:{(freeShippingSecondsLeft % 60).toString().padStart(2, '0')} minutes.
+          </div>
+        )}
         <header className="flex items-center justify-between border-b border-[#1b1a18]/20 pb-4">
           <h2 className="text-lg font-black uppercase tracking-[0.42em] text-[#1b1a18]">Cart</h2>
           <button

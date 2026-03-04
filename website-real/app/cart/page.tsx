@@ -226,8 +226,8 @@ const _PaymentSection: React.FC<PaymentSectionProps> = ({
 };
 */
 
-export default function CartPage() {
-  const { items, removeFromCart, clearCart, setLineQuantity } = useCart();
+function CartPage() {
+  const { items, removeFromCart, clearCart, setLineQuantity, freeShippingActive, freeShippingSecondsLeft } = useCart();
   const { createPaymentIntent, loading: _intentLoading, error: checkoutError, setError: setCheckoutError } = useCheckout();
   const { createCheckoutSession, loading: sessionLoading } = useStripeCheckout();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
@@ -328,7 +328,8 @@ export default function CartPage() {
 
   // Calculate totals
   const subtotal = getCartTotal();
-  const shipping = subtotal >= 120 ? 0 : 8.99;
+  // Free shipping if timer is active, regardless of subtotal
+  const shipping = freeShippingActive ? 0 : (subtotal >= 120 ? 0 : 8.99);
 
   const resolveDiscount = useCallback((code: string, currentSubtotal: number) => {
     const normalized = code.trim().toUpperCase();
@@ -559,7 +560,7 @@ export default function CartPage() {
             </div>
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Your cart is empty</h2>
             <p className="text-gray-600 mb-8 max-w-md mx-auto">
-              Looks like you haven`&apos;`t added any items to your cart yet. Start shopping to fill it up!
+              Looks like you haven't added any items to your cart yet. Start shopping to fill it up!
             </p>
             <motion.a
               href="/shop"
@@ -584,27 +585,36 @@ export default function CartPage() {
                 <p className="mt-2 text-xs text-gray-700/70">
                   {items.reduce((sum, item) => sum + item.quantity, 0)} item{items.reduce((sum, item) => sum + item.quantity, 0) !== 1 ? 's' : ''} • plus tax (calculated at checkout)
                 </p>
-                {/* Free Shipping Progress - Always visible */}
+                {/* Free Shipping Countdown or Progress */}
                 <div className="mt-3 pt-3 border-t border-gray-300/50">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs text-gray-700">Free shipping at $120</span>
-                    {subtotal >= 120 ? (
-                      <span className="text-xs font-semibold text-green-700 flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        Free shipping unlocked!
-                      </span>
-                    ) : (
-                      <span className="text-xs font-semibold text-gray-900">${(120 - subtotal).toFixed(2)} to go</span>
-                    )}
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                    <div 
-                      className="bg-linear-to-r from-gray-700 to-gray-900 h-1.5 rounded-full transition-all duration-500"
-                      style={{ width: `${Math.min((subtotal / 120) * 100, 100)}%` }}
-                    />
-                  </div>
+                  {freeShippingActive ? (
+                    <div className="mb-2 p-2 rounded-lg bg-[#1d8950s] text-white text-center font-bold text-xs">
+                      🎉 You got free shipping for a limited time! <br />
+                      <span className="font-mono text-base">{Math.floor(freeShippingSecondsLeft / 60)}:{(freeShippingSecondsLeft % 60).toString().padStart(2, '0')}</span> left
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs text-gray-700">Free shipping at $120</span>
+                        {subtotal >= 120 ? (
+                          <span className="text-xs font-semibold text-green-700 flex items-center gap-1">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            Free shipping unlocked!
+                          </span>
+                        ) : (
+                          <span className="text-xs font-semibold text-gray-900">${(120 - subtotal).toFixed(2)} to go</span>
+                        )}
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                        <div 
+                          className="bg-linear-to-r from-gray-700 to-gray-900 h-1.5 rounded-full transition-all duration-500"
+                          style={{ width: `${Math.min((subtotal / 120) * 100, 100)}%` }}
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -895,3 +905,5 @@ export default function CartPage() {
     </div>
   )
 }
+
+export default CartPage;
