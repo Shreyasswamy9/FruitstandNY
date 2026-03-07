@@ -187,6 +187,7 @@ const aestheticallyShuffleProducts = (items: Product[]): Product[] => {
     return acc;
   }, {} as Record<string, Product[]>);
 
+  // Sprinkle hats throughout the grid instead of placing them all at the end
   const hats = roundRobinByProductName([...(byCategory["Hats"] ?? [])]);
   delete byCategory["Hats"];
 
@@ -210,10 +211,20 @@ const aestheticallyShuffleProducts = (items: Product[]): Product[] => {
   const blended: Product[] = [];
   let rotationIndex = 0;
   let lastCategory: string | undefined;
+  let hatIndex = 0;
+  const hatInterval = 3; // Sprinkle a hat every 3 products
 
   const hasInventory = () => Object.values(sequences).some(queue => queue.length);
+  let productCounter = 0;
 
-  while (hasInventory()) {
+  while (hasInventory() || hatIndex < hats.length) {
+    // Sprinkle a hat every N products
+    if (hatIndex < hats.length && productCounter > 0 && productCounter % hatInterval === 0) {
+      blended.push(hats[hatIndex++]);
+      productCounter++;
+      continue;
+    }
+
     let chosenCategory: string | undefined;
 
     for (let attempt = 0; attempt < dynamicRotation.length; attempt++) {
@@ -240,6 +251,7 @@ const aestheticallyShuffleProducts = (items: Product[]): Product[] => {
     if (item) {
       blended.push(item);
       lastCategory = chosenCategory;
+      productCounter++;
     }
 
     if (!queue?.length) {
@@ -247,7 +259,12 @@ const aestheticallyShuffleProducts = (items: Product[]): Product[] => {
     }
   }
 
-  return [...pinnedItems, ...blended, ...hats];
+  // If any hats remain, sprinkle them in at the end
+  while (hatIndex < hats.length) {
+    blended.push(hats[hatIndex++]);
+  }
+
+  return [...pinnedItems, ...blended];
 };
 
 interface ProductsGridProps {

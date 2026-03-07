@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import Price from './Price';
+import { products as allProducts } from './ProductsGridHome';
 
 export interface FBTProduct {
   id: string;
@@ -142,11 +143,36 @@ export const FBT_BY_PAGE: Record<string, FBTProduct[]> = {
 export function getFBTForPage(slug?: string): FBTProduct[] {
   if (!slug) return defaultFBT;
 
+  // 1. Explicit mapping
   const explicit = FBT_BY_PAGE[slug];
   if (explicit && explicit.length) {
     const ordered = orderByKey(explicit, slug);
     return ordered.slice(0, Math.min(FALLBACK_COUNT, ordered.length));
   }
 
+  // 2. Try to find by category (using ProductsGridHome's products)
+  // Find the product in the list by slug (variantSlug or id)
+  const pdpProduct = allProducts.find(
+    (p) => p.variantSlug === slug || String(p.id) === slug
+  );
+  if (pdpProduct && pdpProduct.category) {
+    // Find up to FALLBACK_COUNT other products in the same category, excluding the current product
+    const similar = allProducts
+      .filter(
+        (p) =>
+          p.category === pdpProduct.category &&
+          (p.variantSlug !== slug && String(p.id) !== slug)
+      )
+      .slice(0, FALLBACK_COUNT)
+      .map((p) => ({
+        id: p.variantSlug || String(p.id),
+        name: p.name,
+        price: typeof p.price === 'string' ? parseFloat(p.price.replace(/[^\d.]/g, '')) : Number(p.price),
+        image: p.image,
+      }));
+    if (similar.length) return similar;
+  }
+
+  // 3. Fallback
   return buildFallback(slug);
 }
