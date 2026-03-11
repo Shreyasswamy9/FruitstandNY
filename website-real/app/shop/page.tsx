@@ -135,6 +135,7 @@ export default function ShopPage() {
                           transition={{ duration: 0.15, delay: index * 0.04 }}
                           onClick={() => {
                             setActiveCategory(option.value)
+                            if (option.value === null) setStPatsOnly(false)
                             setIsMenuOpen(false)
                           }}
                           className={`block text-left px-3 py-2.5 text-base sm:text-lg tracking-wide font-medium transition-all duration-200 relative group whitespace-nowrap ${
