@@ -130,7 +130,7 @@ export default function RootLayout({
           new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
           j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-          })(window,document,'script','dataLayer','GTM-N8M6F5WK');
+          })(window,document,'script','dataLayer','GTM-5Q32QDV8');
         }`}
         </Script>
       </head>
@@ -138,7 +138,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#fbf6f0]`}
         suppressHydrationWarning
       >
-        <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N8M6F5WK"
+        <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5Q32QDV8"
         height="0" width="0" style={{display:'none',visibility:'hidden'}}></iframe></noscript>
         <CartProvider>
           <Suspense fallback={null}>
