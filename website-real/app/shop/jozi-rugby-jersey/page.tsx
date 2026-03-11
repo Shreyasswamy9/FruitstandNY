@@ -9,6 +9,8 @@ import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseSizeOption, PurchaseColorOption } from "@/components/ProductPurchaseBar";
 import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import StPatsBanner from "@/components/StPatsBanner";
+import { isGreenColorOnSale, getStPatsPrice } from "@/lib/stPatricksDay";
 
 const PRODUCT = {
   name: "Jozi Rugby Jersey",
@@ -71,12 +73,27 @@ export default function JoziRugbyJerseyPage() {
     }
   }, []);
 
+  // Preselect variant via query param (?color=slug) — done at runtime only
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const colorSlug = params.get('color');
+    if (!colorSlug) return;
+    const found = JOZI_COLOR_OPTIONS.find(c => c.slug === colorSlug);
+    if (found && found.slug !== selectedColor.slug) {
+      handleSelectColor(found);
+    }
+  }, [handleSelectColor, selectedColor.slug]);
+
+  const stPatsSalePrice = getStPatsPrice("jozi-rugby-jersey", PRODUCT.price, selectedColor.slug);
+  const isOnStPats = isGreenColorOnSale("jozi-rugby-jersey", selectedColor.slug);
+
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
       productId: "4a97844e-eb2b-4e6f-af94-419ea24dfe86",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: isOnStPats ? stPatsSalePrice : PRODUCT.price,
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -131,7 +148,17 @@ export default function JoziRugbyJerseyPage() {
             <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
               {PRODUCT.name}
             </h1>
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            {isOnStPats ? (
+              <>
+                <p className="mt-2 text-[26px] font-black text-[#1d1c19] line-through opacity-40">${PRODUCT.price.toFixed(2)}</p>
+                <p className="text-[26px] font-black text-[#2e8b2e]">${stPatsSalePrice.toFixed(2)}</p>
+              </>
+            ) : (
+              <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            )}
+            {isOnStPats && (
+              <StPatsBanner colorName={selectedColor.name} />
+            )}
             <div className="mt-4">
               <SizeGuide productSlug="rugby-jersey" />
             </div>
@@ -183,7 +210,7 @@ export default function JoziRugbyJerseyPage() {
       </main>
 
       <ProductPurchaseBar
-        price={PRODUCT.price}
+        price={isOnStPats ? stPatsSalePrice : PRODUCT.price}
         summaryLabel={selectedColor.name.toUpperCase()}
         sizeOptions={sizeOptionsForBar}
         selectedSize={selectedSize}

@@ -6,6 +6,7 @@ import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader"
 import SignupPromoModal from "@/components/SignupPromoModal"
+import MarqueeBanner from "@/components/MarqueeBanner"
 
 const SIGNUP_PROMO_ENABLED = false
 
@@ -173,6 +174,20 @@ export default function Home() {
             />
           </video>
           <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/40 to-black/70" />
+          {/* Marquee Banner Overlay */}
+          <div className="absolute top-20 left-0 right-0 z-20 w-full">
+            <MarqueeBanner
+              items={[
+                "☘️ ST. PATRICK'S DAY SALE",
+                "50% OFF EVERYTHING GREEN",
+              ]}
+              backgroundColor="transparent"
+              textColor="#6ee86e"
+              separator="✦"
+              speed={25}
+            />
+          </div>
+
           {/* Shop Now Button inside video at bottom */}
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex justify-center w-full pointer-events-none">
             <a

@@ -14,6 +14,7 @@ import { supabase } from "../supabase-client"
 import { useRouter } from "next/navigation"
 import type { User } from "@supabase/supabase-js"
 import { trackInitiateCheckout, type MetaPixelContent, generateEventId } from "@/lib/analytics/meta-pixel"
+import { useCartFunnelTracking } from "@/hooks/useCartFunnelTracking"
 
 const ORDER_NUMBER_STORAGE_KEY = 'latestOrderNumber';
 
@@ -244,8 +245,11 @@ function CartPage() {
   const [discountMessage, setDiscountMessage] = useState<string | null>(null);
   const [discountError, setDiscountError] = useState<string | null>(null);
   const hasTrackedInitiateCheckout = useRef(false);
+  const [expressCheckoutReady, setExpressCheckoutReady] = useState(false);
 
   const router = useRouter();
+
+
 
   // Check auth state
   useEffect(() => {
@@ -304,24 +308,27 @@ function CartPage() {
     const item = items.find(i => i.lineId === productId) || items.find(i => i.productId === productId);
     const label = item ? `${item.name}${item.size ? ' — ' + item.size : ''}` : 'this item';
     if (typeof window === 'undefined' || window.confirm(`Remove ${label} from your cart?`)) {
+      if (item) trackItemRemoved(item);
       removeFromCart(productId);
     }
   };
 
   const handleClearCart = () => {
     if (typeof window === 'undefined' || window.confirm('Are you sure you want to clear your entire cart?')) {
+      trackCartCleared();
       clearCart();
     }
   };
 
   const updateQuantity = (id: string, newQuantity: number) => {
+    const item = items.find(i => i.lineId === id) || items.find(i => i.productId === id);
     if (newQuantity <= 0) {
+      if (item) trackQuantityChanged(item, 0);
       handleRemove(id);
       return;
     }
-
-    const item = items.find(i => i.lineId === id) || items.find(i => i.productId === id);
     if (item) {
+      trackQuantityChanged(item, newQuantity);
       setLineQuantity(item.lineId ?? item.productId, newQuantity);
     }
   };
@@ -358,6 +365,26 @@ function CartPage() {
   const tax = 0; // Tax calculated at checkout
   const total = Math.max(subtotal + shipping - discountAmount, 0); // Total before tax
 
+  // ── Cart funnel tracking (PostHog) ───────────────────────────────────────────
+  const {
+    trackCheckoutClick,
+    trackItemRemoved,
+    trackQuantityChanged,
+    trackCartCleared,
+    trackDiscountApplied,
+    trackDiscountError,
+  } = useCartFunnelTracking({
+    items,
+    total,
+    subtotal,
+    shipping,
+    isSignedIn,
+    clientSecret,
+    paymentMessage,
+    sessionLoading,
+    expressCheckoutReady,
+  });
+
   // Track InitiateCheckout when user lands on cart with items
   useEffect(() => {
     if (hasTrackedInitiateCheckout.current) return;
@@ -386,6 +413,7 @@ function CartPage() {
     if (!normalized) {
       setDiscountError('Enter a discount code.');
       setDiscountMessage(null);
+      trackDiscountError(normalized, 'empty_code');
       return;
     }
 
@@ -394,13 +422,15 @@ function CartPage() {
       setDiscountError('No active discounts right now.');
       setDiscountMessage(null);
       setAppliedDiscountCode(null);
+      trackDiscountError(normalized, 'invalid_or_inactive');
       return;
     }
 
     setAppliedDiscountCode(resolved.code);
     setDiscountMessage(resolved.label);
     setDiscountError(null);
-  }, [discountCode, resolveDiscount, subtotal]);
+    trackDiscountApplied(resolved.code, resolved.amount);
+  }, [discountCode, resolveDiscount, subtotal, trackDiscountApplied, trackDiscountError]);
 
   const handleClearDiscount = useCallback(() => {
     setAppliedDiscountCode(null);
@@ -487,6 +517,7 @@ function CartPage() {
         setPaymentIntentId(result.paymentIntentId);
         rememberOrderNumber(result.orderNumber);
         _setElementsReady(!secretChanged);
+        setExpressCheckoutReady(true);
         setPaymentMessage(null);
         setCheckoutError(null);
         console.log('CartPage: Payment intent loaded successfully');
@@ -588,7 +619,7 @@ function CartPage() {
                 {/* Free Shipping Countdown or Progress */}
                 <div className="mt-3 pt-3 border-t border-gray-300/50">
                   {freeShippingActive ? (
-                    <div className="mb-2 p-2 rounded-lg bg-[#1d8950s] text-white text-center font-bold text-xs">
+                    <div className="mb-2 p-2 rounded-lg text-black text-center font-bold text-xs">
                       🎉 You got free shipping for a limited time! <br />
                       <span className="font-mono text-base">{Math.floor(freeShippingSecondsLeft / 60)}:{(freeShippingSecondsLeft % 60).toString().padStart(2, '0')}</span> left
                     </div>
@@ -659,7 +690,7 @@ function CartPage() {
                       </div>
                       <button
                         type="button"
-                        onClick={isSignedIn ? () => router.push('/cart/checkout-redirect') : handleGuestCheckout}
+                        onClick={() => { trackCheckoutClick(); isSignedIn ? router.push('/cart/checkout-redirect') : handleGuestCheckout(); }}
                         className="w-full py-3 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={sessionLoading || items.length === 0}
                       >
@@ -684,7 +715,7 @@ function CartPage() {
                         </div>
                         <button
                           type="button"
-                          onClick={isSignedIn ? () => router.push('/cart/checkout-redirect') : handleGuestCheckout}
+                          onClick={() => { trackCheckoutClick(); isSignedIn ? router.push('/cart/checkout-redirect') : handleGuestCheckout(); }}
                           className="w-full py-3 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           disabled={sessionLoading || items.length === 0}
                         >

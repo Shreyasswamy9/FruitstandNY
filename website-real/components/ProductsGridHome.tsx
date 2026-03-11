@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Price from './Price'
+import { isStPatsDayActive } from "@/lib/stPatricksDay"
 
 export interface Product {
   id: number;
@@ -19,6 +20,8 @@ export interface Product {
   bundleId?: string | null;
   displayPrice?: string;
   badgeLabel?: string;
+  stPatsBadge?: boolean; // marks this card as a St. Patrick's Day green deal
+  stPatsOriginalPrice?: number; // original numeric price for discount calc
 }
 
 // Editable product list for the homepage grid
@@ -28,15 +31,16 @@ export const products: Product[] = [
     { id: 2, name: "Kiwi Rugby Jersey", price: "$125", image: "/images/products/kiwi rugby jersey/Kiwi DS 1x1.png", hoverImage: "/images/products/kiwi rugby jersey/Kiwi 2.png", category: "Jerseys", variantSlug: "kiwi-rugby-jersey", badgeLabel: "NEW" },
   // Liberty Zip-Up
   { id: 3, name: "Liberty Zip-Up", price: "$110", image: "/images/products/liberty zip ups/copper/Copper DS 1x1.png", hoverImage: "/images/products/liberty zip ups/copper/Copper Zip 1.png", category: "Tops", variantSlug: "liberty-zip-up", badgeLabel: "NEW" },
+  { id: 31, name: "Liberty Zip-Up", price: "$110", image: "/images/products/liberty zip ups/moss/Moss DS 1x1.png", hoverImage: "/images/products/liberty zip ups/moss/Moss Zip 1.png", category: "Tops", variantColor: "Moss", variantSlug: "moss", stPatsBadge: true, stPatsOriginalPrice: 110 },
   // Liberty Hoodie
   { id: 4, name: "Liberty Hoodie", price: "$110", image: "/images/products/liberty hoodies/mauve/Mauve DS 1x1.png", hoverImage: "/images/products/liberty hoodies/mauve/Mauve Hoodie 1 copy.png", category: "Tops", variantSlug: "liberty-hoodie", badgeLabel: "NEW" },
   // Jozi Rugby Jersey
-  { id: 5, name: "Jozi Rugby Jersey", price: "$125", image: "/images/products/jozi rugby jersey/Jozi DS 1x1.png", hoverImage: "/images/products/jozi rugby jersey/Jozi 1.png", category: "Jerseys", variantSlug: "jozi-rugby-jersey", badgeLabel: "NEW" },
+  { id: 5, name: "Jozi Rugby Jersey", price: "$125", image: "/images/products/jozi rugby jersey/Jozi DS 1x1.png", hoverImage: "/images/products/jozi rugby jersey/Jozi 1.png", category: "Jerseys", variantSlug: "jozi-rugby-jersey", badgeLabel: "NEW", stPatsBadge: true, stPatsOriginalPrice: 125 },
   // Stamped Waffle Knit
   { id: 1081, name: "Stamped Waffle Knit", price: "$65", image: "/images/products/waffle knit/Stamped Waffle Knit 1.png", hoverImage: "/images/products/waffle knit/Stamped Waffle Knit 2.png", category: "Tops", variantSlug: "stamped-waffle-knit", badgeLabel: "NEW" },
   // Retro Track Suit Collection (spotlight second)
   { id: 2001, name: "Retro Track Suit", price: "$165", image: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png", hoverImage: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TS7.png", category: "Tracksuits", variantColor: "Elmhurst Taro Custard", variantSlug: "elmhurst-taro-custard" },
-  { id: 2002, name: "Retro Track Suit", price: "$165", image: "/images/products/tracksuits/Greenpoint Patina Crew/GB.png", hoverImage: "/images/products/tracksuits/Greenpoint Patina Crew/TS2.png", category: "Tracksuits", variantColor: "Greenpoint Patina Crew", variantSlug: "greenpoint-patina-crew" },
+  { id: 2002, name: "Retro Track Suit", price: "$165", image: "/images/products/tracksuits/Greenpoint Patina Crew/GB.png", hoverImage: "/images/products/tracksuits/Greenpoint Patina Crew/TS2.png", category: "Tracksuits", variantColor: "Greenpoint Patina Crew", variantSlug: "greenpoint-patina-crew", stPatsBadge: true, stPatsOriginalPrice: 110 },
   { id: 2003, name: "Retro Track Suit", price: "$165", image: "/images/products/tracksuits/NOHO NAPOLETANOS/TB.png", hoverImage: "/images/products/tracksuits/NOHO NAPOLETANOS/TS3.png", category: "Tracksuits", variantColor: "Noho Napoletanos", variantSlug: "noho-napoletanos" },
   { id: 2004, name: "Retro Track Suit", price: "$165", image: "/images/products/tracksuits/THE FACTORY FLOOR/BG.png", hoverImage: "/images/products/tracksuits/THE FACTORY FLOOR/TS4.png", category: "Tracksuits", variantColor: "The Factory Floor", variantSlug: "the-factory-floor" },
   { id: 2005, name: "Retro Track Suit", price: "$165", image: "/images/products/tracksuits/VICE CITY RUNNERS/PB.png", hoverImage: "/images/products/tracksuits/VICE CITY RUNNERS/TS5.png", category: "Tracksuits", variantColor: "Vice City Runners", variantSlug: "vice-city-runners" },
@@ -61,7 +65,7 @@ export const products: Product[] = [
   // Gala Tee – each color variant surfaced individually
   { id: 1011, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/broadwaynoir/GN4.png", hoverImage: "/images/products/gala-tshirt/broadwaynoir/GN5.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
   { id: 1012, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/suttonplacesnow/GN6.png", hoverImage: "/images/products/gala-tshirt/suttonplacesnow/GN11.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
-  { id: 1013, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/Grasshopper/GN3.png", hoverImage: "/images/products/gala-tshirt/Grasshopper/GN8.png", category: "Tops", variantColor: "Grasshopper", variantSlug: "grasshopper" },
+  { id: 1013, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/Grasshopper/GN3.png", hoverImage: "/images/products/gala-tshirt/Grasshopper/GN8.png", category: "Tops", variantColor: "Grasshopper", variantSlug: "grasshopper", stPatsBadge: true, stPatsOriginalPrice: 40 },
   { id: 1014, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/frostedlemonade/GN10.png", hoverImage: "/images/products/gala-tshirt/frostedlemonade/GN9.png", category: "Tops", variantColor: "Frosted Lemonade", variantSlug: "frosted-lemonade" },
   { id: 1015, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/italianice/GN1.png", hoverImage: "/images/products/gala-tshirt/italianice/GN2.png", category: "Tops", variantColor: "Italian Ice", variantSlug: "italian-ice" },
   { id: 1016, name: "Gala Tee", price: "$40", image: "/images/products/gala-tshirt/ruby red/GN.png", hoverImage: "/images/products/gala-tshirt/ruby red/GN7.png", category: "Tops", variantColor: "Ruby Red", variantSlug: "ruby-red" },
@@ -72,7 +76,7 @@ export const products: Product[] = [
   { id: 1031, name: "Mutsu Tee", price: "$45.00", image: "/images/products/mutsu-tshirt/broadwaynoir/N1.png", hoverImage: "/images/products/mutsu-tshirt/broadwaynoir/N2.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
   { id: 1032, name: "Mutsu Tee", price: "$45.00", image: "/images/products/mutsu-tshirt/suttonplacesnow/N3.png", hoverImage: "/images/products/mutsu-tshirt/suttonplacesnow/N4.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
   // Fuji Long Sleeve variants (updated colors & images)
-  { id: 1041, name: "Fuji Long Sleeve", price: "$80", image: "/images/products/fuji-tshirt/Arboretum/F2.png", hoverImage: "/images/products/fuji-tshirt/Arboretum/F11.png", category: "Tops", variantColor: "Arboretum", variantSlug: "arboretum" },
+  { id: 1041, name: "Fuji Long Sleeve", price: "$80", image: "/images/products/fuji-tshirt/Arboretum/F2.png", hoverImage: "/images/products/fuji-tshirt/Arboretum/F11.png", category: "Tops", variantColor: "Arboretum", variantSlug: "arboretum", stPatsBadge: true, stPatsOriginalPrice: 80 },
   { id: 1042, name: "Fuji Long Sleeve", price: "$80", image: "/images/products/fuji-tshirt/Hudson blue/F1.png", hoverImage: "/images/products/fuji-tshirt/Hudson blue/F9.png", category: "Tops", variantColor: "Hudson Blue", variantSlug: "hudson-blue" },
   { id: 1043, name: "Fuji Long Sleeve", price: "$80", image: "/images/products/fuji-tshirt/Redbird/F4.png", hoverImage: "/images/products/fuji-tshirt/Redbird/F5.png", category: "Tops", variantColor: "Redbird", variantSlug: "redbird" },
   { id: 1044, name: "Fuji Long Sleeve", price: "$80", image: "/images/products/fuji-tshirt/Broadwaynoir/F3.png", hoverImage: "/images/products/fuji-tshirt/Broadwaynoir/F7.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
@@ -82,7 +86,7 @@ export const products: Product[] = [
   { id: 1073, name: "First Edition Tee", price: "$45", image: "/images/products/First Edition Tee/FE3.png", hoverImage: "/images/products/First Edition Tee/FE4.png", category: "Tops", variantColor: "Black", variantSlug: "black" },
 
   // Forest Hills Hat (Green)
-  { id: 3001, name: "Forest Hills Hat", price: "$46", image: "/images/products/Forest Hills Hat/Green Hat.png", hoverImage: "/images/products/Forest Hills Hat/G1.png", category: "Hats" },
+  { id: 3001, name: "Forest Hills Hat", price: "$46", image: "/images/products/Forest Hills Hat/Green Hat.png", hoverImage: "/images/products/Forest Hills Hat/G1.png", category: "Hats", stPatsBadge: true, stPatsOriginalPrice: 46 },
 
   // Porcelain FS Cap (White)
   { id: 3002, name: "Porcelain FS Cap", price: "$44", image: "/images/products/Porcelain Hat/Fruitscale Hat.png", hoverImage: "/images/products/Porcelain Hat/FS2.png", category: "Hats", variantSlug: "porcelain-hat" },
@@ -101,7 +105,7 @@ export const products: Product[] = [
 
   // Track Pants (variants)
   { id: 5001, name: "Retro Track Pants", price: "$90", image: "/images/products/Track Pants/ELMHURST TARO CUSTARD/P6.png", hoverImage: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TS7.png", category: "Tracksuits", variantColor: "Elmhurst Taro Custard", variantSlug: "elmhurst-taro-custard" },
-  { id: 5002, name: "Retro Track Pants", price: "$90", image: "/images/products/Track Pants/Greenpoint Patina Crew/P4.png", hoverImage: "/images/products/tracksuits/Greenpoint Patina Crew/TS2.png", category: "Tracksuits", variantColor: "Greenpoint Patina Crew", variantSlug: "greenpoint-patina-crew" },
+  { id: 5002, name: "Retro Track Pants", price: "$90", image: "/images/products/Track Pants/Greenpoint Patina Crew/P4.png", hoverImage: "/images/products/tracksuits/Greenpoint Patina Crew/TS2.png", category: "Tracksuits", variantColor: "Greenpoint Patina Crew", variantSlug: "greenpoint-patina-crew", stPatsBadge: true, stPatsOriginalPrice: 90 },
   { id: 5003, name: "Retro Track Pants", price: "$90", image: "/images/products/Track Pants/NOHO NAPOLETANOS/P7.png", hoverImage: "/images/products/tracksuits/NOHO NAPOLETANOS/TS3.png", category: "Tracksuits", variantColor: "Noho Napoletanos", variantSlug: "noho-napoletanos" },
   { id: 5004, name: "Retro Track Pants", price: "$90", image: "/images/products/Track Pants/THE FACTORY FLOOR/P1.png", hoverImage: "/images/products/tracksuits/THE FACTORY FLOOR/TS4.png", category: "Tracksuits", variantColor: "The Factory Floor", variantSlug: "the-factory-floor" },
   { id: 5005, name: "Retro Track Pants", price: "$90", image: "/images/products/Track Pants/VICE CITY RUNNERS/P2.png", hoverImage: "/images/products/tracksuits/VICE CITY RUNNERS/TS5.png", category: "Tracksuits", variantColor: "Vice City Runners", variantSlug: "vice-city-runners" },
@@ -110,7 +114,7 @@ export const products: Product[] = [
 
   // Track Top (variants)
   { id: 6001, name: "Retro Track Jacket", price: "$110", image: "/images/products/Track Top/ELMHURST TARO CUSTARD/J6.png", hoverImage: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TS7.png", category: "Tracksuits", variantColor: "Elmhurst Taro Custard", variantSlug: "elmhurst-taro-custard" },
-  { id: 6002, name: "Retro Track Jacket", price: "$110", image: "/images/products/Track Top/Greenpoint Patina Crew/J1.png", hoverImage: "/images/products/tracksuits/Greenpoint Patina Crew/TS2.png", category: "Tracksuits", variantColor: "Greenpoint Patina Crew", variantSlug: "greenpoint-patina-crew" },
+  { id: 6002, name: "Retro Track Jacket", price: "$110", image: "/images/products/Track Top/Greenpoint Patina Crew/J1.png", hoverImage: "/images/products/tracksuits/Greenpoint Patina Crew/TS2.png", category: "Tracksuits", variantColor: "Greenpoint Patina Crew", variantSlug: "greenpoint-patina-crew", stPatsBadge: true, stPatsOriginalPrice: 110 },
   { id: 6003, name: "Retro Track Jacket", price: "$110", image: "/images/products/Track Top/NOHO NAPOLETANOS/J7.png", hoverImage: "/images/products/tracksuits/NOHO NAPOLETANOS/TS3.png", category: "Tracksuits", variantColor: "Noho Napoletanos", variantSlug: "noho-napoletanos" },
   { id: 6004, name: "Retro Track Jacket", price: "$110", image: "/images/products/Track Top/THE FACTORY FLOOR/J4.png", hoverImage: "/images/products/tracksuits/THE FACTORY FLOOR/TS4.png", category: "Tracksuits", variantColor: "The Factory Floor", variantSlug: "the-factory-floor" },
   { id: 6005, name: "Retro Track Jacket", price: "$110", image: "/images/products/Track Top/VICE CITY RUNNERS/J3.png", hoverImage: "/images/products/tracksuits/VICE CITY RUNNERS/TS5.png", category: "Tracksuits", variantColor: "Vice City Runners", variantSlug: "vice-city-runners" },
@@ -271,10 +275,12 @@ interface ProductsGridProps {
   categoryFilter?: string | null;
   showBackgroundVideo?: boolean; // render the fixed background video (home only)
   collapseVariantsByName?: boolean;
+  stPatsOnly?: boolean;
+  onStPatsToggle?: () => void;
   onRequestBundleSheet?: (options?: { initialTab?: 'curated' | 'custom'; selectedId?: string | null }) => void;
 }
 
-export default function ProductsGrid({ categoryFilter, showBackgroundVideo = true, collapseVariantsByName = true, onRequestBundleSheet }: ProductsGridProps = {}) {
+export default function ProductsGrid({ categoryFilter, showBackgroundVideo = true, collapseVariantsByName = true, stPatsOnly = false, onStPatsToggle, onRequestBundleSheet }: ProductsGridProps = {}) {
   const router = useRouter();
   const [hovered, setHovered] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(true);
@@ -292,17 +298,21 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
   }, []);
   
   // Filter products based on category then collapse variants so only one card per product name
-  const filteredProducts = useMemo(() => (
-    categoryFilter
+  const filteredProducts = useMemo(() => {
+    let base = categoryFilter
       ? products.filter(p => {
-        if (!p.category) return false;
-        if (categoryFilter === 'Tops') {
-          return ['Tops', 'T-Shirts'].includes(p.category);
-        }
-        return p.category === categoryFilter;
-      })
-      : products
-  ), [categoryFilter]);
+          if (!p.category) return false;
+          if (categoryFilter === 'Tops') {
+            return ['Tops', 'T-Shirts'].includes(p.category);
+          }
+          return p.category === categoryFilter;
+        })
+      : products;
+    if (stPatsOnly) {
+      base = base.filter(p => p.stPatsBadge === true);
+    }
+    return base;
+  }, [categoryFilter, stPatsOnly]);
   // For each product name, bucket all variants together for representative selection
   const variantGroups = useMemo(() => (
     filteredProducts.reduce((acc, p) => {
@@ -372,6 +382,7 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
       ? `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
       : String(p)
   }
+  const stPatsActive = isStPatsDayActive();
 
   // Map variant color names to hex for swatch display
   const COLOR_HEX: Record<string, string> = {
@@ -440,10 +451,104 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
           }
         }
       `}</style>
+      {stPatsActive && (
+        <div
+          style={{
+            width: '100%',
+            maxWidth: isMobile ? '100%' : '1200px',
+            margin: '0 auto',
+            padding: isMobile ? '0 16px 16px' : '0 20px 20px',
+            boxSizing: 'border-box',
+          }}
+        >
+          <button
+            onClick={onStPatsToggle}
+            style={{
+              width: '100%',
+              background: stPatsOnly
+                ? 'linear-gradient(135deg, #0d3b0d 0%, #1f6b1f 40%, #0a2e0a 100%)'
+                : 'linear-gradient(135deg, #0a2e0a 0%, #1a4d1a 40%, #0d3b0d 100%)',
+              border: stPatsOnly ? '1.5px solid rgba(74,183,74,0.7)' : '1px solid rgba(74,183,74,0.35)',
+              borderRadius: 16,
+              padding: isMobile ? '12px 16px' : '14px 24px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              overflow: 'hidden',
+              position: 'relative',
+              cursor: 'pointer',
+              textAlign: 'left',
+              boxShadow: stPatsOnly ? '0 0 0 3px rgba(74,183,74,0.2)' : 'none',
+              transition: 'box-shadow 0.2s, border 0.2s',
+            }}
+          >
+            {/* Watermark clover */}
+            <span
+              aria-hidden
+              style={{
+                position: 'absolute',
+                right: -8,
+                top: -8,
+                fontSize: 80,
+                opacity: 0.06,
+                pointerEvents: 'none',
+                lineHeight: 1,
+                filter: 'blur(1px)',
+              }}
+            >☘️</span>
+            <span style={{ fontSize: 20, lineHeight: 1, flexShrink: 0 }}>☘️</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{
+                margin: 0,
+                color: '#ffffff',
+                fontWeight: 900,
+                fontSize: isMobile ? '0.82rem' : '0.9rem',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                lineHeight: 1.3,
+              }}>
+                St. Patrick&apos;s Day Sale
+                <span style={{
+                  marginLeft: 10,
+                  background: 'linear-gradient(90deg,#4ab74a,#2e8b2e)',
+                  color: '#fff',
+                  borderRadius: 999,
+                  padding: '2px 9px',
+                  fontSize: '0.72rem',
+                  fontWeight: 800,
+                  letterSpacing: '0.1em',
+                  verticalAlign: 'middle',
+                }}>50% OFF</span>
+              </p>
+              <p style={{
+                margin: '3px 0 0',
+                color: 'rgba(160,255,160,0.75)',
+                fontSize: isMobile ? '0.72rem' : '0.78rem',
+                letterSpacing: '0.04em',
+                lineHeight: 1.4,
+              }}>
+                {stPatsOnly ? 'Showing green deals only — tap to clear' : 'Tap to shop green colorways · Ends March 17th'}
+              </p>
+            </div>
+            {stPatsOnly && (
+              <span style={{
+                flexShrink: 0,
+                background: 'rgba(255,255,255,0.12)',
+                border: '1px solid rgba(255,255,255,0.25)',
+                color: '#ffffff',
+                borderRadius: 999,
+                padding: '3px 10px',
+                fontSize: '0.65rem',
+                fontWeight: 700,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+              }}>✕ Clear</span>
+            )}
+          </button>
+        </div>
+      )}
       <div
         style={{
-          position: 'relative',
-          zIndex: 1,
           display: 'grid',
           gap: isMobile ? 22 : 28,
           width: '100%',
@@ -648,6 +753,30 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
                   {product.badgeLabel}
                 </span>
               )}
+              {stPatsActive && product.stPatsBadge && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: product.badgeLabel ? 44 : 12,
+                    left: 12,
+                    background: 'linear-gradient(90deg,#1a4d1a,#2e8b2e)',
+                    color: '#ffffff',
+                    padding: '4px 10px',
+                    borderRadius: 999,
+                    fontSize: '0.65rem',
+                    fontWeight: 800,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    zIndex: 10,
+                    pointerEvents: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                  }}
+                >
+                  <span style={{ fontSize: '0.7rem', lineHeight: 1 }}>☘️</span> 50% OFF
+                </span>
+              )}
               <Image
                 src={activeVariant.image}
                 alt={product.name}
@@ -765,6 +894,11 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
                   }}>{/* price */}
                     {product.displayPrice ? (
                       <span>{product.displayPrice}</span>
+                    ) : stPatsActive && product.stPatsBadge && product.stPatsOriginalPrice ? (
+                      <span>
+                        <span style={{ textDecoration: 'line-through', opacity: 0.4, marginRight: 5 }}>{formatPrice(product.price)}</span>
+                        <span style={{ color: '#2e8b2e', fontWeight: 700 }}>${(product.stPatsOriginalPrice * 0.5).toFixed(2)}</span>
+                      </span>
                     ) : (
                       <Price price={product.price} salePrice={product.salePrice} />
                     )}

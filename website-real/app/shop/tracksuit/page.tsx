@@ -8,6 +8,8 @@ import { useCart } from "../../../components/CartContext";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import StPatsBanner, { StPatsNudge } from "@/components/StPatsBanner";
+import { isGreenColorOnSale, getStPatsPrice, isStPatsDayActive } from "@/lib/stPatricksDay";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -165,13 +167,16 @@ export default function TracksuitPage() {
     }
   }, [colorOptions, handleSelectColor, selectedColor.slug]);
 
+  const stPatsSalePrice = getStPatsPrice("tracksuit", PRODUCT.price, selectedColor.slug);
+  const isOnStPats = isGreenColorOnSale("tracksuit", selectedColor.slug);
+
   // Show popup and keep it visible
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
       productId: "0f5810c1-abec-4e70-a077-33c839b4de2b",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: isOnStPats ? stPatsSalePrice : PRODUCT.price,
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -230,7 +235,20 @@ export default function TracksuitPage() {
               {selectedColor.name.toUpperCase()}
             </p>
 
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            {isOnStPats ? (
+              <>
+                <p className="mt-2 text-[26px] font-black text-[#1d1c19] line-through opacity-40">${PRODUCT.price.toFixed(2)}</p>
+                <p className="text-[26px] font-black text-[#2e8b2e]">${stPatsSalePrice.toFixed(2)}</p>
+              </>
+            ) : (
+              <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            )}
+            {isOnStPats && (
+              <StPatsBanner colorName={selectedColor.name} />
+            )}
+            {!isOnStPats && isStPatsDayActive() && (
+              <StPatsNudge colorName="Greenpoint Patina Crew" salePrice={getStPatsPrice("tracksuit", PRODUCT.price, "greenpoint-patina-crew")} />
+            )}
 
             {/* SWATCHES */}
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3 lg:col-start-2 lg:justify-start">
@@ -328,7 +346,7 @@ export default function TracksuitPage() {
       </main>
 
       <ProductPurchaseBar
-        price={PRODUCT.price}
+        price={isOnStPats ? stPatsSalePrice : PRODUCT.price}
         summaryLabel={selectedColor.name.toUpperCase()}
         sizeOptions={sizeOptionsForBar}
         selectedSize={selectedSize}

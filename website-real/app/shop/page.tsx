@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion"
 import { useState, useRef, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import ProductsGrid from "../../components/ProductsGridHome"
 import BundleSheet from "../../components/BundleSheet"
 import ProductPageBrandHeader from "../../components/ProductPageBrandHeader"
@@ -18,7 +19,9 @@ const SORT_OPTIONS = [
 ]
 
 export default function ShopPage() {
+  const searchParams = useSearchParams()
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
+  const [stPatsOnly, setStPatsOnly] = useState(() => searchParams.get('stpats') === '1')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const [bundleSheetConfig, setBundleSheetConfig] = useState<{
@@ -176,6 +179,8 @@ export default function ShopPage() {
           categoryFilter={activeCategory}
           showBackgroundVideo={false}
           collapseVariantsByName={false}
+          stPatsOnly={stPatsOnly}
+          onStPatsToggle={() => setStPatsOnly(prev => !prev)}
           onRequestBundleSheet={(options) => openBundleSheet({
             tab: options?.initialTab ?? 'custom',
             selectedId: options?.selectedId ?? null,

@@ -7,6 +7,8 @@ import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import StPatsBanner from "@/components/StPatsBanner";
+import { isGreenColorOnSale, getStPatsPrice } from "@/lib/stPatricksDay";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -59,12 +61,15 @@ export default function ForestHillsHatPage() {
     currency: "USD",
   });
 
+  const stPatsSalePrice = getStPatsPrice("forest-hills-hat", PRODUCT.price, null);
+  const isOnStPats = isGreenColorOnSale("forest-hills-hat", null);
+
   const handleAddToCart = useCallback(() => {
     if (!selectedSize) return;
     addToCart({
       productId: "8d1d5080-2106-420d-b7ea-babc2fba5457",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: isOnStPats ? stPatsSalePrice : PRODUCT.price,
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -110,7 +115,17 @@ export default function ForestHillsHatPage() {
               {PRODUCT.name}
             </h1>
 
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            {isOnStPats ? (
+              <>
+                <p className="mt-2 text-[26px] font-black text-[#1d1c19] line-through opacity-40">${PRODUCT.price.toFixed(2)}</p>
+                <p className="text-[26px] font-black text-[#2e8b2e]">${stPatsSalePrice.toFixed(2)}</p>
+              </>
+            ) : (
+              <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            )}
+            {isOnStPats && (
+              <StPatsBanner colorName="Lime Green" />
+            )}
           </div>
         </div>
 
@@ -159,7 +174,7 @@ export default function ForestHillsHatPage() {
       </main>
 
       <ProductPurchaseBar
-        price={PRODUCT.price}
+        price={isOnStPats ? stPatsSalePrice : PRODUCT.price}
         summaryLabel="LIME GREEN"
         sizeOptions={sizeOptions}
         selectedSize={selectedSize}

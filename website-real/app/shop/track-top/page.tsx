@@ -2,12 +2,14 @@
 import Link from "next/link";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import SizeGuide from "@/components/SizeGuide";
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useCart } from "../../../components/CartContext";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import StPatsBanner, { StPatsNudge } from "@/components/StPatsBanner";
+import { isGreenColorOnSale, getStPatsPrice, isStPatsDayActive } from "@/lib/stPatricksDay";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -95,12 +97,27 @@ export default function TrackTopPage() {
       window.history.replaceState(null, '', `${basePath}?color=${option.slug}`);
     }
   }, []);
+  // Preselect variant via query param (?color=slug) — done at runtime only
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const colorSlug = params.get('color');
+    if (!colorSlug) return;
+    const found = COLOR_DATA.find(c => c.slug === colorSlug);
+    if (found && found.slug !== selectedColor.slug) {
+      handleSelectColor(found);
+    }
+  }, [handleSelectColor, selectedColor.slug]);
+
+  const stPatsSalePrice = getStPatsPrice("track-top", PRODUCT.price, selectedColor.slug);
+  const isOnStPats = isGreenColorOnSale("track-top", selectedColor.slug);
+
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
       productId: "91c47e89-efd4-4961-aadf-d4f7bf6e13b7",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: isOnStPats ? stPatsSalePrice : PRODUCT.price,
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -163,7 +180,20 @@ export default function TrackTopPage() {
               {selectedColor.name.toUpperCase()}
             </p>
 
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            {isOnStPats ? (
+              <>
+                <p className="mt-2 text-[26px] font-black text-[#1d1c19] line-through opacity-40">${PRODUCT.price.toFixed(2)}</p>
+                <p className="text-[26px] font-black text-[#2e8b2e]">${stPatsSalePrice.toFixed(2)}</p>
+              </>
+            ) : (
+              <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            )}
+            {isOnStPats && (
+              <StPatsBanner colorName={selectedColor.name} />
+            )}
+            {!isOnStPats && isStPatsDayActive() && (
+              <StPatsNudge colorName="Greenpoint Patina Crew" salePrice={getStPatsPrice("track-top", PRODUCT.price, "greenpoint-patina-crew")} />
+            )}
 
             {/* SWATCHES */}
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3 lg:col-start-2 lg:justify-start">
@@ -261,7 +291,7 @@ export default function TrackTopPage() {
       </main>
 
       <ProductPurchaseBar
-        price={PRODUCT.price}
+        price={isOnStPats ? stPatsSalePrice : PRODUCT.price}
         summaryLabel={selectedColor.name.toUpperCase()}
         sizeOptions={sizeOptions}
         selectedSize={selectedSize}

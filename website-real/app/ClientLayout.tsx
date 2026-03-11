@@ -40,9 +40,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           ]}
           displaySocials={true}
           displayItemNumbering={true}
-          logoUrl="https://cdn.jsdelivr.net/gh/Shreyasswamy9/FruitstandNY@main/website-real/public/images/newlogo.png"
-          menuButtonColor="#000000"
-          openMenuButtonColor="#000000"
+          logoUrl="/images/patrickslogo.png"
+          menuButtonColor="#159b62"
+          openMenuButtonColor="#159b62"
           changeMenuColorOnOpen={false}
           accentColor="#ff6b6b"
           onMenuOpen={() => {}}
@@ -65,7 +65,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           pointer-events: auto !important;
           background: transparent !important;
           border: none !important;
-          color: #000000 !important;
+          color: #159b62 !important;
           font-size: 16px !important;
           font-weight: 400 !important;
           padding: 8px 12px !important;

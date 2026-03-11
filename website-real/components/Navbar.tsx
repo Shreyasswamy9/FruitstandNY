@@ -190,7 +190,8 @@ export default function Navbar({ isShopDropdownOpen, setIsShopDropdownOpen }: Na
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden text-white hover:text-gray-300 transition-colors duration-200"
+              className="md:hidden hover:opacity-80 transition-opacity duration-200"
+              style={{ color: "#159b62" }}
             >
               <svg
                 className="w-6 h-6"
