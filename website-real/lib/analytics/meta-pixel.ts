@@ -23,6 +23,8 @@ declare global {
       version?: string;
     }) | undefined;
     _fbq?: any;
+    /** True when this browser is a flagged internal/staff device. */
+    INTERNAL_USER?: boolean;
   }
 }
 
@@ -162,15 +164,25 @@ function markEventAsFired(eventId: string): void {
 
 /**
  * Ensure Meta Pixel script is loaded
+ *
+ * Returns false (blocking all fbq calls) when:
+ *  - running on the server
+ *  - [META PIXEL: BLOCKED for internal users] window.INTERNAL_USER === true
+ *  - window.fbq is not initialised
  */
 function ensurePixelLoaded(): boolean {
   if (typeof window === "undefined") return false;
-  
+
+  // [META PIXEL: BLOCKED for internal users]
+  // window.INTERNAL_USER is set synchronously by the bootstrap script in <head>
+  // before any React code runs, so this check is always reliable.
+  if (window.INTERNAL_USER) return false;
+
   if (!window.fbq) {
     console.warn("Meta Pixel not loaded. Ensure the base code is in your <head>.");
     return false;
   }
-  
+
   return true;
 }
 

@@ -15,6 +15,8 @@ declare global {
       version?: string;
     }) | undefined;
     _fbq?: any;
+    /** True when this browser is a flagged internal/staff device. */
+    INTERNAL_USER?: boolean;
   }
 }
 
@@ -38,6 +40,13 @@ export default function MetaPixelBase() {
   useEffect(() => {
     // Check consent on mount
     const checkConsent = () => {
+      // [META PIXEL: BLOCKED for internal users]
+      // window.INTERNAL_USER is set synchronously by the bootstrap script in <head>
+      // before this component mounts, so this guard is reliable.
+      if (typeof window !== 'undefined' && window.INTERNAL_USER) {
+        setConsentGranted(false);
+        return;
+      }
       const granted = hasConsent();
       setConsentGranted(granted);
     };
