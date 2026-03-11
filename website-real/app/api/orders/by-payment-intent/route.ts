@@ -44,6 +44,14 @@ export async function GET(request: NextRequest) {
 
   try {
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+    // Only return order data for payment intents that have actually succeeded.
+    // Abandoned intents (e.g. created when a user browses the cart) must not
+    // be treated as completed purchases.
+    if (paymentIntent.status !== 'succeeded') {
+      return NextResponse.json({ error: 'Payment not completed', data: null }, { status: 404 });
+    }
+
     const amountReceived = typeof paymentIntent.amount_received === 'number'
       ? paymentIntent.amount_received
       : paymentIntent.amount;

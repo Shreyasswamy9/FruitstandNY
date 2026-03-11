@@ -30,10 +30,8 @@ function SuccessContent() {
   const [detailsError, setDetailsError] = useState<string | null>(null);
   const [shouldFetchOrder, setShouldFetchOrder] = useState(false);
   const [initialOrderNumber, setInitialOrderNumber] = useState<string | null>(null);
-  const hasClearedCart = useRef(false);
   const purchaseTracked = useRef(false);
   const router = useRouter();
-  const { clearCart } = useCart();
 
   // Track Purchase once order details are loaded
   useEffect(() => {
@@ -104,6 +102,13 @@ function SuccessContent() {
       }
 
       if (pid) {
+        // Only treat as a confirmed purchase if Stripe returned 'succeeded'
+        const redirectStatus = params.get('redirect_status');
+        if (redirectStatus !== 'succeeded') {
+          // Abandoned or failed payment — do not clear cart or fetch order
+          setLoading(false);
+          return;
+        }
         setShouldFetchOrder(true);
         localStorage.removeItem('cart');
         window.dispatchEvent(new Event('cartCleared'));
@@ -221,14 +226,6 @@ function SuccessContent() {
       window.sessionStorage.removeItem('latestOrderNumber');
     }
   }, [initialOrderNumber, orderDetails]);
-
-  useEffect(() => {
-    if (hasClearedCart.current) {
-      return;
-    }
-    clearCart();
-    hasClearedCart.current = true;
-  }, [clearCart]);
 
   const resolvedOrderNumber = orderDetails?.orderNumber 
     ? orderDetails.orderNumber 
