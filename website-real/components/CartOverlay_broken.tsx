@@ -32,7 +32,7 @@ const YOU_MAY_ALSO_LIKE = [
     productId: "forest-hills-hat",
     name: "Forest Hills Hat",
     priceLabel: "$46.00",
-    image: "/images/products/Forest Hills Hat/G1.png",
+    image: "/images/products/Forest Hills Hat/Forest Hills Hat Final.png",
   },
 ];
 

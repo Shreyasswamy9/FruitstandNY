@@ -69,7 +69,7 @@ export default FrequentlyBoughtTogether;
 const FBT_POOL: FBTProduct[] = [
   { id: 'gala-tshirt', name: 'Gala Tee', price: 40, image: '/images/products/gala-tshirt/broadwaynoir/GN4.png' },
   { id: 'wasabi-tee', name: 'Wabisabi™ Scheffel Hall Pears Tee', price: 45, image: '/images/products/Wasabi Tee/Wabasabi 1.png' },
-  { id: 'forest-hills-hat', name: 'Forest Hills Hat', price: 46, image: '/images/products/Forest Hills Hat/G1.png' },
+  { id: 'forest-hills-hat', name: 'Forest Hills Hat', price: 46, image: '/images/products/Forest Hills Hat/Forest Hills Hat Final.png' },
   { id: 'porcelain-hat', name: 'Porcelain FS Cap', price: 44, image: '/images/products/Porcelain Hat/FS2.png' },
   { id: 'denim-hat', name: 'Indigo Hat', price: 44, image: '/images/products/denim-hat/Denim Hat.png' },
   { id: 'ecru-hat', name: 'Ecru Hat', price: 44, image: '/images/products/Ecru Hat/Beige Hat.png' },

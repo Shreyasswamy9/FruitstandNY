@@ -73,11 +73,10 @@ export default function EcruHatPage() {
     <div>
       <ProductPageBrandHeader />
 
-      <main className="bg-[#fbf5ed] pb-52.5 pt-16 md:pt-20 lg:pt-24">
-        {/* HERO SECTION - Top 75% */}
-        <div className="mx-auto w-full max-w-300 px-6 text-center lg:px-12 lg:text-left lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-start lg:gap-12" style={{ minHeight: '75vh' }}>
-          {/* IMAGE */}
-          <div className="relative mx-auto aspect-4/5 w-full lg:mx-0 lg:max-w-130 lg:row-span-2">
+      <main className="bg-[#fbf5ed] pb-[60px] pt-16 md:pt-20 lg:pt-24">
+        <div className="mx-auto w-full max-w-[1280px] px-6 text-center lg:px-12 lg:text-left lg:grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:items-start lg:gap-14" style={{ minHeight: '75vh' }}>
+          {/* IMAGE COLUMN */}
+          <div className="relative mx-auto aspect-[4/5] w-full lg:mx-0 lg:max-w-[620px] lg:row-span-3">
             <ProductImageGallery
               productName={PRODUCT.name}
               options={[
@@ -100,13 +99,27 @@ export default function EcruHatPage() {
             />
           </div>
 
-          {/* TITLE / PRICE / COLORWAY - Single Line */}
-          <div className="mt-8 flex flex-col items-center lg:col-start-2 lg:items-start lg:mt-6">
+          {/* INFO COLUMN */}
+          <div className="mt-8 flex flex-col items-center lg:col-start-2 lg:items-start lg:mt-0">
             <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
               {PRODUCT.name}
             </h1>
-
             <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            {/* DESCRIPTION SECTION */}
+            <div className="w-full text-center lg:text-left mt-5">
+              <p className="px-1 text-[14px] leading-relaxed text-[#3d372f]">
+                {formatText(PRODUCT.description, "Ecru Hat", ["Ecru", "Fruitstand"])}
+              </p>
+            </div>
+            {/* DETAILS SECTION */}
+            <div className="w-full text-left mt-8">
+              <p className="text-base font-semibold text-[#1d1c19]">Details</p>
+              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-[#1d1c19]">
+                {PRODUCT.details.map((detail) => (
+                  <li key={detail}>{formatText(detail, "Ecru Hat", ["Ecru", "Fruitstand"])}</li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
 
