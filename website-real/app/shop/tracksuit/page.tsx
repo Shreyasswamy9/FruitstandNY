@@ -78,7 +78,7 @@ const TRACKSUIT_SWATCH_COLORS: Record<string, [string, string]> = {
 
 const PRODUCT = {
   name: "Retro Track Suit",
-  price: 110,
+  price: 165,
   description:
     "Inspired by classic New York athletic warm-ups, this track suit features bold color blocking and a relaxed, vintage silhouette designed for movement and comfort. Each colorway pays homage to various motifs, with contrasting panels and embroidered FRUITSTAND® logos.",
 };
