@@ -44,9 +44,9 @@ const COLOR_DATA: TrackColorOption[] = [
 
 const TRACKPANTS_SWATCH_COLORS: Record<string, [string, string]> = {
   "elmhurst-taro-custard": ["#e7d9b0", "#7c6bc4"],
-  "greenpoint-patina-crew": ["#f7c8d2", "#9c7a55"],
-  "noho-napoletanos": ["#c8cbcd", "#1f294c"],
-  "the-factory-floor": ["#1c1c1c", "#5f5a33"],
+  "greenpoint-patina-crew": ["#1c1c1c", "#58543a"],
+  "noho-napoletanos": ["#f7c8d2", "#ab8c65"],
+  "the-factory-floor": ["#c8cbcd", "#1e2744"],
   "vice-city-runners": ["#f6c8d4", "#8ec4dd"],
   "victory-liberty-club": ["#0f4da8", "#7a273b"],
   "yorkville-black-and-white-cookies": ["#f3f3f3", "#1b1b1b"],

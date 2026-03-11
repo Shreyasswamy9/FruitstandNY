@@ -67,12 +67,12 @@ const TRACKSUIT_VARIANTS = [
 type TracksuitVariant = typeof TRACKSUIT_VARIANTS[number];
 
 const TRACKSUIT_SWATCH_COLORS: Record<string, [string, string]> = {
-  "elmhurst-taro-custard": ["#e7d9b0", "#7c6bc4"],
-  "greenpoint-patina-crew": ["#f7c8d2", "#9c7a55"],
-  "noho-napoletanos": ["#c8cbcd", "#1f294c"],
-  "the-factory-floor": ["#1c1c1c", "#5f5a33"],
-  "vice-city-runners": ["#f6c8d4", "#8ec4dd"],
-  "victory-liberty-club": ["#0f4da8", "#7a273b"],
+  "elmhurst-taro-custard": ["#e7d9b0", "#7c6bc4"],      // cream + purple
+  "greenpoint-patina-crew": ["#1c1c1c", "#58543a"],     // silver-grey + olive
+  "noho-napoletanos": ["#f7c8d2", "#ab8c65"],           // warm pink + tan
+  "the-factory-floor": ["#c8cbcd", "#1e2744"],          // black + dark navy
+  "vice-city-runners": ["#f6c8d4", "#8ec4dd"],          // pink + light blue
+  "victory-liberty-club": ["#0f4da8", "#7a273b"],       // blue + dark red
   "yorkville-black-and-white-cookies": ["#f3f3f3", "#1b1b1b"],
 };
 
@@ -210,13 +210,19 @@ export default function TracksuitPage() {
               productName={PRODUCT.name}
               options={TRACKSUIT_VARIANTS.map((variant) => ({
                 name: variant.name,
+                slug: variant.slug,
                 images: variant.images,
               }))}
               selectedOption={{
                 name: selectedColor.name,
+                slug: selectedColor.slug,
                 images: selectedColor.images,
               } as ProductImageGalleryOption}
               selectedImage={selectedImage}
+              onOptionChange={(option, ctx) => {
+                const next = TRACKSUIT_VARIANTS.find(v => v.slug === option.slug || v.name === option.name);
+                if (next) handleSelectColor(next, ctx);
+              }}
               onImageChange={(image) => {
                 setSelectedImage(image);
                 setCurrentImageIndex(selectedColor.images.indexOf(image));
