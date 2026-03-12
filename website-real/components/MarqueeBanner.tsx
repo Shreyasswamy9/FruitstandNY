@@ -3,7 +3,7 @@
 import React from "react";
 
 interface MarqueeBannerProps {
-  items?: string[];
+  items?: string[]; 
   speed?: number; // seconds for one full loop
   backgroundColor?: string;
   textColor?: string;
@@ -25,13 +25,29 @@ export default function MarqueeBanner({
   textColor = "#ffffff",
   separator = "✦",
 }: MarqueeBannerProps) {
-  // Duplicate items so the loop looks seamless
-  const allItems = [...items, ...items, ...items];
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const trackRef = React.useRef<HTMLDivElement>(null);
+  const [repeatCount, setRepeatCount] = React.useState(4); // Start with a safe default
+
+  React.useEffect(() => {
+    if (!containerRef.current || !trackRef.current) return;
+    const containerWidth = containerRef.current.offsetWidth;
+    const trackWidth = trackRef.current.scrollWidth;
+    if (trackWidth < containerWidth * 2) {
+      const singleSetWidth = trackWidth / repeatCount;
+      let minRepeats = Math.ceil((containerWidth * 2) / singleSetWidth);
+      minRepeats = Math.max(minRepeats, 2); // at least twice for seamless
+      setRepeatCount(minRepeats);
+    }
+  }, [items, repeatCount]);
+
+  const allItems = Array.from({ length: repeatCount }, () => items).flat();
 
   return (
     <div
       className="marquee-banner w-full overflow-hidden"
       style={{ backgroundColor, borderTop: "1px solid #6ee86e", borderBottom: "1px solid #6ee86e" }}
+      ref={containerRef}
     >
       <div
         className="marquee-track flex items-center whitespace-nowrap"
@@ -39,6 +55,7 @@ export default function MarqueeBanner({
           animation: `marquee ${speed}s linear infinite`,
           willChange: "transform",
         }}
+        ref={trackRef}
       >
         {allItems.map((item, i) => (
           <React.Fragment key={i}>
@@ -57,11 +74,10 @@ export default function MarqueeBanner({
           </React.Fragment>
         ))}
       </div>
-
       <style>{`
         @keyframes marquee {
           0%   { transform: translateX(0); }
-          100% { transform: translateX(-33.333%); }
+          100% { transform: translateX(-50%); }
         }
         .marquee-track {
           display: inline-flex;
