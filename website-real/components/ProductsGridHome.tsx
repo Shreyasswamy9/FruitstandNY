@@ -86,7 +86,7 @@ export const products: Product[] = [
   { id: 1073, name: "First Edition Tee", price: "$45", image: "/images/products/First Edition Tee/FE3.png", hoverImage: "/images/products/First Edition Tee/FE4.png", category: "Tops", variantColor: "Black", variantSlug: "black" },
 
   // Forest Hills Hat (Green)
-  { id: 3001, name: "Forest Hills Hat", price: "$46", image: "/images/products/Forest Hills Hat/Forest Hills Hat Final.png", hoverImage: "/images/products/Forest Hills Hat/Forest Hills Hat Final.png", category: "Hats", stPatsBadge: true, stPatsOriginalPrice: 46 },
+  { id: 3001, name: "Forest Hills Hat", price: "$46", image: "/images/products/Forest Hills Hat/Forest Hills Hat Final.png", hoverImage: "/images/products/Forest Hills Hat/G1.png", category: "Hats", stPatsBadge: true, stPatsOriginalPrice: 46 },
 
   // Porcelain FS Cap (White)
   { id: 3002, name: "Porcelain FS Cap", price: "$44", image: "/images/products/Porcelain Hat/Fruitscale Hat.png", hoverImage: "/images/products/Porcelain Hat/FS2.png", category: "Hats", variantSlug: "porcelain-hat" },
