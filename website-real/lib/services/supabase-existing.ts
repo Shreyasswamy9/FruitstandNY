@@ -544,7 +544,7 @@ export class SupabaseOrderService {
       ? Number(session.total_details.amount_tax) / 100 
       : Number(metadata.tax ?? 0);
     
-    const orderNumber = (metadata.order_number as string) || generateOrderNumber();
+    const orderNumber = (metadata.order_number as string) || await generateOrderNumber();
 
     // Recalculate subtotal
     const cartItems = Array.isArray(cart) ? cart : [];

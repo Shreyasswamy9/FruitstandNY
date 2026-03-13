@@ -153,15 +153,79 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
       return;
     }
 
-    // Extract shipping details from Stripe
+    // Extract shipping details with explicit precedence:
+    // 1) Stripe shipping_details (true shipping)
+    // 2) guest metadata address captured pre-checkout
+    // 3) customer_details address (billing/auto-collected fallback only)
     const customerDetails = session.customer_details;
-    const shippingAddress = customerDetails?.address;
+    type SessionShippingDetails = {
+      name?: string | null;
+      phone?: string | null;
+      address?: Stripe.Address | null;
+    };
+    const shippingDetails = (session as Stripe.Checkout.Session & {
+      shipping_details?: SessionShippingDetails | null;
+    }).shipping_details;
+    const metadata = session.metadata ?? {};
+    const guestData = safeJsonParse<GuestPayload>(metadata.guest ?? '{}', {});
+    const customerData = safeJsonParse<CustomerPayload>(metadata.customer ?? '{}', {});
+
+    const hasGuestAddress = !!(
+      guestData?.address?.street ||
+      guestData?.address?.city ||
+      guestData?.address?.state ||
+      guestData?.address?.zipCode
+    );
+
+    const shippingAddress = shippingDetails?.address
+      ? {
+          line1: shippingDetails.address.line1,
+          line2: shippingDetails.address.line2,
+          city: shippingDetails.address.city,
+          state: shippingDetails.address.state,
+          postal_code: shippingDetails.address.postal_code,
+          country: shippingDetails.address.country,
+        }
+      : hasGuestAddress
+        ? {
+            line1: guestData.address?.street,
+            line2: guestData.address?.street2,
+            city: guestData.address?.city,
+            state: guestData.address?.state,
+            postal_code: guestData.address?.zipCode,
+            country: guestData.address?.country,
+          }
+        : customerDetails?.address;
+
+    const guestName = guestData?.firstName && guestData?.lastName
+      ? `${guestData.firstName} ${guestData.lastName}`
+      : undefined;
+
+    const shippingName = shippingDetails?.name || guestName || customerData?.name || customerDetails?.name || 'Unknown';
+    const shippingEmail = session.customer_email || customerData?.email || guestData?.email || customerDetails?.email || '';
+    const shippingPhone = shippingDetails?.phone || guestData?.phone || customerData?.phone || customerDetails?.phone || null;
+
+    const shippingSource = shippingDetails?.address
+      ? 'stripe_shipping_details'
+      : hasGuestAddress
+        ? 'guest_metadata'
+        : customerDetails?.address
+          ? 'customer_details_fallback'
+          : 'none';
+
+    if (shippingSource === 'customer_details_fallback') {
+      console.warn('Webhook: Using customer_details as shipping fallback for session', session.id);
+    }
+
+    if (shippingSource === 'none') {
+      console.error('Webhook: No shipping address source available for session', session.id);
+    }
 
     // Prepare shipping data from Stripe
     const shippingData = {
-      shipping_name: customerDetails?.name || 'Unknown',
-      shipping_email: session.customer_email || customerDetails?.email || '',
-      shipping_phone: customerDetails?.phone || null,
+      shipping_name: shippingName,
+      shipping_email: shippingEmail,
+      shipping_phone: shippingPhone,
       shipping_address_line1: shippingAddress?.line1 || '',
       shipping_address_line2: shippingAddress?.line2 || null,
       shipping_city: shippingAddress?.city || '',
@@ -172,7 +236,10 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
       status: 'confirmed' as const,
     };
 
-    console.log('Extracted shipping data from Stripe:', shippingData);
+    console.log('Extracted shipping data from Stripe:', {
+      ...shippingData,
+      _shipping_source: shippingSource,
+    });
 
     // Try to find existing order by stripe session ID
     try {
@@ -285,7 +352,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
       return;
     }
 
-    const orderNumber = metadata.order_number || generateOrderNumber();
+    const orderNumber = metadata.order_number || await generateOrderNumber();
     
     // Recalculate tax based on actual shipping state (NY-based business)
     const shippingState = shippingDetails?.address?.state || guestData?.address?.state;

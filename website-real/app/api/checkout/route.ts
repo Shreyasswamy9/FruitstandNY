@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
 
     const discountAmount = Math.max(0, Math.min(rawDiscountAmount, subtotal));
     const totalAmount = subtotal - discountAmount + safeShipping + safeTax;
-    const orderNumber = generateOrderNumber();
+    const orderNumber = await generateOrderNumber();
 
     console.log('Checkout API: Order details calculated', { orderNumber, totalAmount });
 

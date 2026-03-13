@@ -288,7 +288,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const generatedOrderNumber = generateOrderNumber();
+    const generatedOrderNumber = await generateOrderNumber();
     console.log(`[${requestId}] Payment intent API: Order number generated`, { orderNumber: generatedOrderNumber });
 
     let orderNumber = generatedOrderNumber;

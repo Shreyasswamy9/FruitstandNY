@@ -84,7 +84,7 @@ function SuccessContent() {
 
       setSessionId(sid);
       setPaymentIntentId(pid);
-      if (orderNumberParam && /^\d{6}$/.test(orderNumberParam)) {
+      if (orderNumberParam && /^\d{4,}$/.test(orderNumberParam)) {
         setInitialOrderNumber(orderNumberParam);
       }
 
@@ -219,7 +219,7 @@ function SuccessContent() {
     }
     const stored = window.sessionStorage.getItem('latestOrderNumber');
     if (stored) {
-      if (/^\d{6}$/.test(stored)) {
+      if (/^\d{4,}$/.test(stored)) {
         setInitialOrderNumber(stored);
       }
       // Remove it immediately after reading to prevent reuse
@@ -229,7 +229,7 @@ function SuccessContent() {
 
   const resolvedOrderNumber = orderDetails?.orderNumber 
     ? orderDetails.orderNumber 
-    : (initialOrderNumber && /^\d{6}$/.test(initialOrderNumber) ? initialOrderNumber : null);
+    : (initialOrderNumber && /^\d{4,}$/.test(initialOrderNumber) ? initialOrderNumber : null);
 
   if (loading) {
     return (

@@ -91,7 +91,7 @@ const _PaymentSection: React.FC<PaymentSectionProps> = ({
 
       let returnUrl = baseReturnUrl;
 
-      if (orderNumber && /^\d{6}$/.test(orderNumber)) {
+      if (orderNumber && /^\d{4,}$/.test(orderNumber)) {
         if (typeof window !== 'undefined') {
           try {
             window.sessionStorage.setItem(ORDER_NUMBER_STORAGE_KEY, orderNumber);
@@ -289,7 +289,7 @@ function CartPage() {
   }, []);
 
   const rememberOrderNumber = useCallback((value?: string | null) => {
-    if (!value || !/^\d{6}$/.test(value)) {
+    if (!value || !/^\d{4,}$/.test(value)) {
       return;
     }
     orderNumberRef.current = value;
