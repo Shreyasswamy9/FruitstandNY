@@ -2,7 +2,6 @@
 
 import { motion, AnimatePresence } from "framer-motion"
 import { useState, useRef, useEffect } from "react"
-import { useSearchParams } from "next/navigation"
 import ProductsGrid from "../../components/ProductsGridHome"
 import BundleSheet from "../../components/BundleSheet"
 import ProductPageBrandHeader from "../../components/ProductPageBrandHeader"
@@ -19,9 +18,7 @@ const SORT_OPTIONS = [
 ]
 
 export default function ShopPage() {
-  const searchParams = useSearchParams()
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
-  const [stPatsOnly, setStPatsOnly] = useState(() => searchParams.get('stpats') === '1')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const [bundleSheetConfig, setBundleSheetConfig] = useState<{
@@ -135,7 +132,6 @@ export default function ShopPage() {
                           transition={{ duration: 0.15, delay: index * 0.04 }}
                           onClick={() => {
                             setActiveCategory(option.value)
-                            if (option.value === null) setStPatsOnly(false)
                             setIsMenuOpen(false)
                           }}
                           className={`block text-left px-3 py-2.5 text-base sm:text-lg tracking-wide font-medium transition-all duration-200 relative group whitespace-nowrap ${
@@ -180,8 +176,6 @@ export default function ShopPage() {
           categoryFilter={activeCategory}
           showBackgroundVideo={false}
           collapseVariantsByName={false}
-          stPatsOnly={stPatsOnly}
-          onStPatsToggle={() => setStPatsOnly(prev => !prev)}
           onRequestBundleSheet={(options) => openBundleSheet({
             tab: options?.initialTab ?? 'custom',
             selectedId: options?.selectedId ?? null,

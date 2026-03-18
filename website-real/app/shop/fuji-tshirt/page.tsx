@@ -7,8 +7,7 @@ import SizeGuide from "@/components/SizeGuide";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
-import StPatsBanner, { StPatsNudge } from "@/components/StPatsBanner";
-import { isGreenColorOnSale, getStPatsPrice, isStPatsDayActive } from "@/lib/stPatricksDay";
+
 import { useTrackProductView } from "@/hooks/useTrackProductView";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
@@ -117,15 +116,12 @@ export default function FujiTshirtPage() {
   
   // useSearchParams can cause build-time suspense issues; read from window.location in an effect instead
 
-  const stPatsSalePrice = getStPatsPrice("fuji-tshirt", PRODUCT.price, selectedColor.slug);
-  const isOnStPats = isGreenColorOnSale("fuji-tshirt", selectedColor.slug);
-
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
       productId: "1dcbfbda-626c-49fb-858e-c50050b4b726",
       name: PRODUCT.name,
-      price: isOnStPats ? stPatsSalePrice : PRODUCT.price,
+      price: PRODUCT.price,
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -198,20 +194,8 @@ export default function FujiTshirtPage() {
               {selectedColor.name.toUpperCase()}
             </p>
 
-            {isOnStPats ? (
-              <>
-                <p className="mt-2 text-[26px] font-black text-[#1d1c19] line-through opacity-40">${PRODUCT.price.toFixed(2)}</p>
-                <p className="text-[26px] font-black text-[#2e8b2e]">${stPatsSalePrice.toFixed(2)}</p>
-              </>
-            ) : (
-              <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
-            )}
-            {isOnStPats && (
-              <StPatsBanner colorName={selectedColor.name} />
-            )}
-            {!isOnStPats && isStPatsDayActive() && (
-              <StPatsNudge colorName="Arboretum" salePrice={getStPatsPrice("fuji-tshirt", PRODUCT.price, "arboretum")} />
-            )}
+            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            {/* St. Patrick's Day components disabled */}
           </div>
 
           {/* SWATCHES */}
@@ -306,7 +290,7 @@ export default function FujiTshirtPage() {
       </main>
 
       <ProductPurchaseBar
-        price={isOnStPats ? stPatsSalePrice : PRODUCT.price}
+        price={PRODUCT.price}
         summaryLabel={selectedColor.name.toUpperCase()}
         sizeOptions={sizeOptions}
         selectedSize={selectedSize}

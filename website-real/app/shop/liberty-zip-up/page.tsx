@@ -9,8 +9,7 @@ import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseSizeOption, PurchaseColorOption } from "@/components/ProductPurchaseBar";
 import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
-import StPatsBanner, { StPatsNudge } from "@/components/StPatsBanner";
-import { isGreenColorOnSale, getStPatsPrice, isStPatsDayActive } from "@/lib/stPatricksDay";
+
 
 const PRODUCT = {
   name: "Liberty Zip-Up",
@@ -88,15 +87,12 @@ export default function LibertyZipUpPage() {
     }
   }, [handleSelectColor, selectedColor.slug]);
 
-  const stPatsSalePrice = getStPatsPrice("liberty-zip-up", PRODUCT.price, selectedColor.slug);
-  const isOnStPats = isGreenColorOnSale("liberty-zip-up", selectedColor.slug);
-
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
       productId: "b544f080-b1b5-4dab-8e51-4208b456f73c",
       name: PRODUCT.name,
-      price: isOnStPats ? stPatsSalePrice : PRODUCT.price,
+      price: PRODUCT.price,
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -164,20 +160,8 @@ export default function LibertyZipUpPage() {
             <p className="mt-1 text-[18px] text-[#1d1c19] font-avenir-light">
               {selectedColor.name.toUpperCase()}
             </p>
-            {isOnStPats ? (
-              <>
-                <p className="mt-2 text-[26px] font-black text-[#1d1c19] line-through opacity-40">${PRODUCT.price.toFixed(2)}</p>
-                <p className="text-[26px] font-black text-[#2e8b2e]">${stPatsSalePrice.toFixed(2)}</p>
-              </>
-            ) : (
-              <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
-            )}
-            {isOnStPats && (
-              <StPatsBanner colorName={selectedColor.name} />
-            )}
-            {!isOnStPats && isStPatsDayActive() && (
-              <StPatsNudge colorName="Moss" salePrice={getStPatsPrice("liberty-zip-up", PRODUCT.price, "moss")} />
-            )}
+            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            {/* St. Patrick's Day components disabled */}
             <div className="mt-4">
               <SizeGuide productSlug="liberty-hoodie" />
             </div>
@@ -260,7 +244,7 @@ export default function LibertyZipUpPage() {
       </main>
 
       <ProductPurchaseBar
-        price={isOnStPats ? stPatsSalePrice : PRODUCT.price}
+        price={PRODUCT.price}
         summaryLabel={selectedColor.name.toUpperCase()}
         sizeOptions={sizeOptionsForBar}
         selectedSize={selectedSize}

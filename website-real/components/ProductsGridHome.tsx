@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Price from './Price'
-import { isStPatsDayActive } from "@/lib/stPatricksDay"
 
 export interface Product {
   id: number;
@@ -275,12 +274,10 @@ interface ProductsGridProps {
   categoryFilter?: string | null;
   showBackgroundVideo?: boolean; // render the fixed background video (home only)
   collapseVariantsByName?: boolean;
-  stPatsOnly?: boolean;
-  onStPatsToggle?: () => void;
   onRequestBundleSheet?: (options?: { initialTab?: 'curated' | 'custom'; selectedId?: string | null }) => void;
 }
 
-export default function ProductsGrid({ categoryFilter, showBackgroundVideo = true, collapseVariantsByName = true, stPatsOnly = false, onStPatsToggle, onRequestBundleSheet }: ProductsGridProps = {}) {
+export default function ProductsGrid({ categoryFilter, showBackgroundVideo = true, collapseVariantsByName = true, onRequestBundleSheet }: ProductsGridProps = {}) {
   const router = useRouter();
   const [hovered, setHovered] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(true);
@@ -308,11 +305,8 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
           return p.category === categoryFilter;
         })
       : products;
-    if (stPatsOnly) {
-      base = base.filter(p => p.stPatsBadge === true);
-    }
     return base;
-  }, [categoryFilter, stPatsOnly]);
+  }, [categoryFilter]);
   // For each product name, bucket all variants together for representative selection
   const variantGroups = useMemo(() => (
     filteredProducts.reduce((acc, p) => {
@@ -382,7 +376,6 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
       ? `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
       : String(p)
   }
-  const stPatsActive = isStPatsDayActive();
 
   // Map variant color names to hex for swatch display
   const COLOR_HEX: Record<string, string> = {
@@ -451,102 +444,6 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
           }
         }
       `}</style>
-      {stPatsActive && (
-        <div
-          style={{
-            width: '100%',
-            maxWidth: isMobile ? '100%' : '1200px',
-            margin: '0 auto',
-            padding: isMobile ? '0 16px 16px' : '0 20px 20px',
-            boxSizing: 'border-box',
-          }}
-        >
-          <button
-            onClick={onStPatsToggle}
-            style={{
-              width: '100%',
-              background: stPatsOnly
-                ? 'linear-gradient(135deg, #0d3b0d 0%, #1f6b1f 40%, #0a2e0a 100%)'
-                : 'linear-gradient(135deg, #0a2e0a 0%, #1a4d1a 40%, #0d3b0d 100%)',
-              border: stPatsOnly ? '1.5px solid rgba(74,183,74,0.7)' : '1px solid rgba(74,183,74,0.35)',
-              borderRadius: 16,
-              padding: isMobile ? '12px 16px' : '14px 24px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              overflow: 'hidden',
-              position: 'relative',
-              cursor: 'pointer',
-              textAlign: 'left',
-              boxShadow: stPatsOnly ? '0 0 0 3px rgba(74,183,74,0.2)' : 'none',
-              transition: 'box-shadow 0.2s, border 0.2s',
-            }}
-          >
-            {/* Watermark clover */}
-            <span
-              aria-hidden
-              style={{
-                position: 'absolute',
-                right: -8,
-                top: -8,
-                fontSize: 80,
-                opacity: 0.06,
-                pointerEvents: 'none',
-                lineHeight: 1,
-                filter: 'blur(1px)',
-              }}
-            >☘️</span>
-            <span style={{ fontSize: 20, lineHeight: 1, flexShrink: 0 }}>☘️</span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{
-                margin: 0,
-                color: '#ffffff',
-                fontWeight: 900,
-                fontSize: isMobile ? '0.82rem' : '0.9rem',
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase',
-                lineHeight: 1.3,
-              }}>
-                St. Patrick&apos;s Day Sale
-                <span style={{
-                  marginLeft: 10,
-                  background: 'linear-gradient(90deg,#4ab74a,#2e8b2e)',
-                  color: '#fff',
-                  borderRadius: 999,
-                  padding: '2px 9px',
-                  fontSize: '0.72rem',
-                  fontWeight: 800,
-                  letterSpacing: '0.1em',
-                  verticalAlign: 'middle',
-                }}>50% OFF</span>
-              </p>
-              <p style={{
-                margin: '3px 0 0',
-                color: 'rgba(160,255,160,0.75)',
-                fontSize: isMobile ? '0.72rem' : '0.78rem',
-                letterSpacing: '0.04em',
-                lineHeight: 1.4,
-              }}>
-                {stPatsOnly ? 'Showing green deals only — tap to clear' : 'Tap to shop green colorways · Ends March 17th'}
-              </p>
-            </div>
-            {stPatsOnly && (
-              <span style={{
-                flexShrink: 0,
-                background: 'rgba(255,255,255,0.12)',
-                border: '1px solid rgba(255,255,255,0.25)',
-                color: '#ffffff',
-                borderRadius: 999,
-                padding: '3px 10px',
-                fontSize: '0.65rem',
-                fontWeight: 700,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-              }}>✕ Clear</span>
-            )}
-          </button>
-        </div>
-      )}
       <div
         style={{
           display: 'grid',
@@ -753,30 +650,6 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
                   {product.badgeLabel}
                 </span>
               )}
-              {stPatsActive && product.stPatsBadge && (
-                <span
-                  style={{
-                    position: 'absolute',
-                    top: product.badgeLabel ? 44 : 12,
-                    left: 12,
-                    background: 'linear-gradient(90deg,#1a4d1a,#2e8b2e)',
-                    color: '#ffffff',
-                    padding: '4px 10px',
-                    borderRadius: 999,
-                    fontSize: '0.65rem',
-                    fontWeight: 800,
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    zIndex: 10,
-                    pointerEvents: 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4,
-                  }}
-                >
-                  <span style={{ fontSize: '0.7rem', lineHeight: 1 }}>☘️</span> 50% OFF
-                </span>
-              )}
               <Image
                 src={activeVariant.image}
                 alt={product.name}
@@ -894,11 +767,6 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
                   }}>{/* price */}
                     {product.displayPrice ? (
                       <span>{product.displayPrice}</span>
-                    ) : stPatsActive && product.stPatsBadge && product.stPatsOriginalPrice ? (
-                      <span>
-                        <span style={{ textDecoration: 'line-through', opacity: 0.4, marginRight: 5 }}>{formatPrice(product.price)}</span>
-                        <span style={{ color: '#2e8b2e', fontWeight: 700 }}>${(product.stPatsOriginalPrice * 0.5).toFixed(2)}</span>
-                      </span>
                     ) : (
                       <Price price={product.price} salePrice={product.salePrice} />
                     )}

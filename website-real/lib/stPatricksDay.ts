@@ -1,24 +1,19 @@
 /**
- * St. Patrick's Day Sale — March 17, 2026
- * 50% off green colorways on qualifying products.
- *
- * To activate/deactivate the sale, adjust SALE_START / SALE_END below,
- * or flip FORCE_ACTIVE for local testing.
+ * St. Patrick's Day Sale — DISABLED
+ * This sale is no longer active.
  */
 
-export const SALE_DISCOUNT = 0.5; // 50% off
+export const SALE_DISCOUNT = 0; // Disabled
 
-const SALE_START = new Date("2026-03-10T00:00:00-05:00"); // Live now
-const SALE_END   = new Date("2026-03-18T00:00:00-05:00"); // Closes midnight after St. Paddy's
+const SALE_START = new Date("2025-03-17T00:00:00-05:00"); // Past date
+const SALE_END   = new Date("2025-03-18T00:00:00-05:00"); // Past date
 
-// Set to true during development to preview the banner outside the sale window
+// Always false - sale is disabled
 const FORCE_ACTIVE = false;
 
-/** Returns true when the St. Patrick's Day sale is live. */
+/** Returns false - sale is disabled. */
 export function isStPatsDayActive(): boolean {
-  if (FORCE_ACTIVE) return true;
-  const now = new Date();
-  return now >= SALE_START && now < SALE_END;
+  return false;
 }
 
 /**

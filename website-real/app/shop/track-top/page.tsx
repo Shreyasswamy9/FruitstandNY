@@ -8,8 +8,7 @@ import { useCart } from "../../../components/CartContext";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
-import StPatsBanner, { StPatsNudge } from "@/components/StPatsBanner";
-import { isGreenColorOnSale, getStPatsPrice, isStPatsDayActive } from "@/lib/stPatricksDay";
+
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -109,15 +108,12 @@ export default function TrackTopPage() {
     }
   }, [handleSelectColor, selectedColor.slug]);
 
-  const stPatsSalePrice = getStPatsPrice("track-top", PRODUCT.price, selectedColor.slug);
-  const isOnStPats = isGreenColorOnSale("track-top", selectedColor.slug);
-
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addToCart({
       productId: "91c47e89-efd4-4961-aadf-d4f7bf6e13b7",
       name: PRODUCT.name,
-      price: isOnStPats ? stPatsSalePrice : PRODUCT.price,
+      price: PRODUCT.price,
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -180,20 +176,8 @@ export default function TrackTopPage() {
               {selectedColor.name.toUpperCase()}
             </p>
 
-            {isOnStPats ? (
-              <>
-                <p className="mt-2 text-[26px] font-black text-[#1d1c19] line-through opacity-40">${PRODUCT.price.toFixed(2)}</p>
-                <p className="text-[26px] font-black text-[#2e8b2e]">${stPatsSalePrice.toFixed(2)}</p>
-              </>
-            ) : (
-              <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
-            )}
-            {isOnStPats && (
-              <StPatsBanner colorName={selectedColor.name} />
-            )}
-            {!isOnStPats && isStPatsDayActive() && (
-              <StPatsNudge colorName="Greenpoint Patina Crew" salePrice={getStPatsPrice("track-top", PRODUCT.price, "greenpoint-patina-crew")} />
-            )}
+            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            {/* St. Patrick's Day components disabled */}
 
             {/* SWATCHES */}
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3 lg:col-start-2 lg:justify-start">
@@ -291,7 +275,7 @@ export default function TrackTopPage() {
       </main>
 
       <ProductPurchaseBar
-        price={isOnStPats ? stPatsSalePrice : PRODUCT.price}
+        price={PRODUCT.price}
         summaryLabel={selectedColor.name.toUpperCase()}
         sizeOptions={sizeOptions}
         selectedSize={selectedSize}
