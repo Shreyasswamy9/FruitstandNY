@@ -252,14 +252,12 @@ export async function POST(request: NextRequest) {
         order_number: orderNumber,
         // Include any minimal identifiers needed by webhook (avoid secrets)
       },
-      billing_address_collection: 'auto',
+      billing_address_collection: 'required',
     };
 
-    if (!hasGuestAddress) {
-      sessionConfig.shipping_address_collection = {
-        allowed_countries: ['US', 'CA'],
-      };
-    }
+    sessionConfig.shipping_address_collection = {
+      allowed_countries: ['US', 'CA'],
+    };
 
     const customerInfo = customerData ?? (guestData && typeof guestData === 'object' && 'email' in guestData
       ? guestData as { email?: string; name?: string }

@@ -161,6 +161,12 @@ export interface Order {
   created_at: string;
   updated_at: string;
   order_items?: OrderItem[];
+  billing_address_line1?: string;
+  billing_address_line2?: string;
+  billing_city?: string;
+  billing_state?: string;
+  billing_postal_code?: string;
+  billing_country?: string;
 }
 
 export interface OrderItem {
@@ -501,7 +507,7 @@ export class SupabaseOrderService {
     return data as Order;
   }
 
-  static async syncOrderFromStripeSession(session: Stripe.Checkout.Session) {
+  static async syncOrderFromStripeSession(session: Stripe.Checkout.Session, resolvedShippingAddress?: Stripe.Address | null) {
     console.log('Syncing order from Stripe session:', session.id);
 
     if (session.payment_status !== 'paid') {
@@ -530,8 +536,8 @@ export class SupabaseOrderService {
 
     // 2. Extract data from session
     const customerDetails = session.customer_details;
-    const shippingDetails = (session as any).shipping_details?.address || customerDetails?.address;
-
+    const shippingDetails = resolvedShippingAddress;
+    const billingAddress = customerDetails?.address;
     const metadata = session.metadata ?? {};
     const cartJson = readCartMetadata(metadata) ?? '[]';
     const cart = safeJsonParse<OrderCartItem[]>(cartJson, []);
@@ -582,6 +588,13 @@ export class SupabaseOrderService {
       shipping_state: shippingDetails?.state || guestData?.address?.state || '',
       shipping_postal_code: shippingDetails?.postal_code || guestData?.address?.zipCode || '',
       shipping_country: shippingDetails?.country || guestData?.address?.country || 'US',
+
+      billing_address_line1: billingAddress?.line1 || '',
+      billing_address_line2: billingAddress?.line2 || '',
+      billing_city: billingAddress?.city || '',
+      billing_state: billingAddress?.state || '',
+      billing_postal_code: billingAddress?.postal_code || '',
+      billing_country: billingAddress?.country || 'US',
     };
 
     const { data: newOrder, error: createErr } = await supabaseAdmin

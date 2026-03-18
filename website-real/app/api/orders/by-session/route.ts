@@ -18,11 +18,28 @@ export async function GET(request: NextRequest) {
       // 1. Fetch session from Stripe
       console.log('Order not found in DB for session:', sessionId);
       const session = await stripe.checkout.sessions.retrieve(sessionId);
+      // Get shipping from the payment intent, not the session
+      let shippingAddress = null;
+
+      if (session.payment_intent) {
+        const paymentIntentId = typeof session.payment_intent === 'string'
+          ? session.payment_intent
+          : session.payment_intent.id;
+
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+        if (paymentIntent.shipping?.address) {
+          shippingAddress = paymentIntent.shipping.address;
+        }
+      }
+
+      console.log('Resolved shipping:', JSON.stringify(shippingAddress));
+
 
       // 2. If paid, attempt to sync/create the order immediately (Hybrid approach)
       if (session && session.payment_status === 'paid') {
         console.log('Session is paid, attempting interactive sync for session:', sessionId);
-        const syncedOrder = await SupabaseOrderService.syncOrderFromStripeSession(session);
+        const syncedOrder = await SupabaseOrderService.syncOrderFromStripeSession(session, shippingAddress);
         if (syncedOrder) {
           console.log('Successfully synced order:', syncedOrder.order_number);
           return NextResponse.json({
