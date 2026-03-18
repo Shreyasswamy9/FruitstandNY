@@ -7,7 +7,7 @@ import { useCart } from "../../components/CartContext";
 import Image from "next/image"
 import Price from '@/components/Price'
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader"
-import { Elements, ExpressCheckoutElement } from "@stripe/react-stripe-js"
+import { Elements, ExpressCheckoutElement, useStripe, useElements } from "@stripe/react-stripe-js"
 import type { Appearance } from "@stripe/stripe-js"
 import { stripePromise, useCheckout, useStripeCheckout, type CheckoutItem, type CustomerCheckoutPayload } from "../../hooks/useCheckout"
 import { supabase } from "../supabase-client"
@@ -34,198 +34,92 @@ const DISCOUNT_CODES: Record<string, DiscountDefinition> = {
   },
 };
 
-// Simplified Payment Section for logged-in users only
-/* UNUSED - Keeping for future reference
-type PaymentSectionProps = {
-  total: number;
-  items: CartItem[];
-  processing: boolean;
-  setProcessing: (value: boolean) => void;
-  message: string | null;
-  setMessage: React.Dispatch<React.SetStateAction<string | null>>;
-  elementsReady: boolean;
-  setElementsReady: (ready: boolean) => void;
-  orderNumber: string | null;
-};
-
-const _PaymentSection: React.FC<PaymentSectionProps> = ({
+// Add this component ABOVE the CartPage function definition
+function ExpressCheckoutWrapper({
   total,
-  items,
-  processing,
-  setProcessing,
-  message,
-  setMessage,
-  elementsReady,
-  setElementsReady,
   orderNumber,
-}) => {
+  sessionLoading,
+  items,
+  isSignedIn,
+  trackCheckoutClick,
+  handleGuestCheckout,
+  router,
+}: {
+  total: number;
+  orderNumber: string | null;
+  sessionLoading: boolean;
+  items: unknown[];
+  isSignedIn: boolean;
+  trackCheckoutClick: () => void;
+  handleGuestCheckout: () => void;
+  router: ReturnType<typeof useRouter>;
+}) {
   const stripe = useStripe();
   const elements = useElements();
-  const itemCount = useMemo(
-    () => items.reduce((sum, item) => sum + item.quantity, 0),
-    [items]
-  );
-  const previewItems = useMemo(() => items.slice(0, 3), [items]);
 
-  const confirmPayment = useCallback(
-    async (event?: StripeExpressCheckoutElementConfirmEvent) => {
-      const expressEvent = event as StripeExpressCheckoutElementConfirmEvent | undefined;
-      (expressEvent as { preventDefault?: () => void } | undefined)?.preventDefault?.();
+  const handleConfirm = async () => {
+    if (!stripe || !elements) return;
 
-      if (processing) {
-        return;
-      }
+    const { error } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/success`,
+      },
+    });
 
-      if (!stripe || !elements) {
-        setMessage('Payment form is still loading. Please try again in a moment.');
-        return;
-      }
-
-      setProcessing(true);
-      setMessage(null);
-
-      const baseReturnUrl =
-        typeof window !== 'undefined'
-          ? `${window.location.origin}/order/complete`
-          : `${process.env.NEXT_PUBLIC_BASE_URL ?? ''}/order/complete`;
-
-      let returnUrl = baseReturnUrl;
-
-      if (orderNumber && /^\d{4,}$/.test(orderNumber)) {
-        if (typeof window !== 'undefined') {
-          try {
-            window.sessionStorage.setItem(ORDER_NUMBER_STORAGE_KEY, orderNumber);
-          } catch (error) {
-            console.warn('Unable to persist order number to session storage', error);
-          }
-        }
-
-        try {
-          const composed = new URL(baseReturnUrl);
-          composed.searchParams.set('order_number', orderNumber);
-          returnUrl = composed.toString();
-        } catch {
-          const separator = baseReturnUrl.includes('?') ? '&' : '?';
-          returnUrl = `${baseReturnUrl}${separator}order_number=${encodeURIComponent(orderNumber)}`;
-        }
-      }
-
-      const { error, paymentIntent } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: returnUrl,
-        },
-        redirect: 'if_required',
-      });
-
-      if (error) {
-        setMessage(error.message ?? 'We could not process your payment. Please try again.');
-      } else if (paymentIntent?.status === 'succeeded') {
-        setMessage('Payment approved. Redirecting…');
-      }
-
-      setProcessing(false);
-    },
-    [elements, processing, orderNumber, setMessage, setProcessing, stripe]
-  );
+    if (error) {
+      console.error('Express checkout error:', error.message);
+    }
+  };
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-3xl bg-[#f7ede0] text-gray-900 p-5 shadow-lg border border-white/60">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.35em] text-gray-700/70">Total due today</p>
-            <p className="mt-2 text-3xl font-semibold text-gray-900">${total.toFixed(2)}</p>
-            <p className="mt-2 text-xs text-gray-700/70">
-              {itemCount} item{itemCount !== 1 ? 's' : ''} • includes tax & shipping
-            </p>
-          </div>
-          <div className="flex -space-x-4">
-            {previewItems.map((item) => (
-              <div
-                key={item.lineId ?? item.productId}
-                className="relative h-12 w-12 rounded-xl border border-white/70 overflow-hidden bg-white/60 backdrop-blur"
-              >
-                {item.image ? (
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    fill
-                    className="object-cover"
-                    sizes="48px"
-                  />
-                ) : (
-                  <div className="h-full w-full flex items-center justify-center text-[10px] text-gray-700/80">
-                    {item.name.slice(0, 2).toUpperCase()}
-                  </div>
-                )}
-                <span className="absolute -bottom-1 -right-1 rounded-full bg-white px-1 text-[10px] font-semibold text-gray-900">
-                  ×{item.quantity}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+    <div className="space-y-4">
+      <ExpressCheckoutElement
+        onConfirm={handleConfirm}
+        options={{
+          paymentMethods: {
+            applePay: 'auto',
+            googlePay: 'auto',
+            amazonPay: 'auto',
+            link: 'auto',
+          },
+          emailRequired: true,
+          phoneNumberRequired: true,
+          shippingAddressRequired: true,
+          allowedShippingCountries: ['US'],
+          shippingRates: [
+            {
+              id: 'fsny-free-shipping',
+              amount: 0,
+              displayName: 'Free shipping',
+            },
+          ],
+          paymentMethodOrder: ['apple_pay', 'google_pay', 'amazon_pay', 'link'],
+        }}
+      />
+      <div className="flex items-center gap-3 text-gray-300 text-[11px] uppercase tracking-[0.35em]">
+        <span className="h-px bg-gray-200 flex-1" />
+        <span>— OR —</span>
+        <span className="h-px bg-gray-200 flex-1" />
       </div>
-
-      <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 space-y-6 shadow-sm">
-        <div>
-          <h3 className="text-base font-semibold text-gray-900">Express checkout</h3>
-          <p className="text-xs text-gray-500 mt-1">Pay with Apple Pay, Google Pay, Amazon Pay, or Link for faster checkout.</p>
-          <div className="mt-4">
-            <ExpressCheckoutElement
-              onConfirm={confirmPayment}
-              options={{
-                paymentMethods: {
-                  applePay: 'auto',
-                  googlePay: 'auto',
-                  amazonPay: 'auto',
-                  link: 'auto',
-                },
-                emailRequired: true,
-                phoneNumberRequired: true,
-                shippingAddressRequired: true,
-                allowedShippingCountries: ['US'],
-                shippingRates: [
-                  {
-                    id: 'fsny-free-shipping',
-                    amount: 0,
-                    displayName: 'Free shipping',
-                  },
-                ],
-                paymentMethodOrder: ['apple_pay', 'google_pay', 'amazon_pay', 'link'],
-              }}
-            />
+      <button
+        type="button"
+        onClick={() => { trackCheckoutClick(); isSignedIn ? router.push('/cart/checkout-redirect') : handleGuestCheckout(); }}
+        className="w-full py-3 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={sessionLoading || items.length === 0}
+      >
+        {sessionLoading ? (
+          <div className="flex items-center justify-center">
+            <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-white mr-2"></div>
+            Loading...
           </div>
-        </div>
-        
-        <div className="flex items-center gap-3 text-gray-300 text-[11px] uppercase tracking-[0.35em]">
-          <span className="h-px bg-gray-200 flex-1" />
-          <span>— OR —</span>
-          <span className="h-px bg-gray-200 flex-1" />
-        </div>
-
-        <div>
-          <h4 className="text-sm font-semibold text-gray-800 mb-3">Other payment methods</h4>
-          <p className="text-xs text-gray-600 mb-4">Card, bank transfer, and other payment options</p>
-          <Link
-            href="/cart/checkout-redirect"
-            className="w-full py-4 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors text-center block"
-          >
-            Continue to payment →
-          </Link>
-        </div>
-
-        {message && (
-          <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
-            {message}
-          </div>
+        ) : (
+          `Checkout — $${total.toFixed(2)}`
         )}
-      </div>
+      </button>
     </div>
   );
-};
-*/
+}
 
 function CartPage() {
   const { items, removeFromCart, clearCart, setLineQuantity, freeShippingActive, freeShippingSecondsLeft } = useCart();
@@ -649,44 +543,32 @@ function CartPage() {
                 </div>
               </div>
 
-              {/* Express Checkout - Always visible */}
-              <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 space-y-4 shadow-sm">
-                <div>
-                  <h3 className="text-base font-semibold text-gray-900">Express checkout</h3>
-                  <p className="text-xs sm:text-xs text-gray-500 mt-1">Pay with Apple Pay, Google Pay, Amazon Pay, or Link.</p>
-                </div>
-                {clientSecret && elementsOptions ? (
-                  <Elements stripe={stripePromise} options={elementsOptions} key={clientSecret}>
-                    <div className="space-y-4">
-                      <ExpressCheckoutElement
-                        onConfirm={async () => {
-                          // Express checkout will handle the payment
-                        }}
-                        options={{
-                          paymentMethods: {
-                            applePay: 'auto',
-                            googlePay: 'auto',
-                            amazonPay: 'auto',
-                            link: 'auto',
-                          },
-                          emailRequired: true,
-                          phoneNumberRequired: true,
-                          shippingAddressRequired: true,
-                          allowedShippingCountries: ['US'],
-                          shippingRates: [
-                            {
-                              id: 'fsny-free-shipping',
-                              amount: 0,
-                              displayName: 'Free shipping',
-                            },
-                          ],
-                          paymentMethodOrder: ['apple_pay', 'google_pay', 'amazon_pay', 'link'],
-                        }}
-                      />
-                      <div className="flex items-center gap-3 text-gray-300 text-[11px] uppercase tracking-[0.35em]">
-                        <span className="h-px bg-gray-200 flex-1" />
-                        <span>— OR —</span>
-                        <span className="h-px bg-gray-200 flex-1" />
+            {/* Express Checkout - Always visible */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 space-y-4 shadow-sm">
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Express checkout</h3>
+                <p className="text-xs sm:text-xs text-gray-500 mt-1">Pay with Apple Pay, Google Pay, Amazon Pay, or Link.</p>
+              </div>
+              {clientSecret && elementsOptions ? (
+                <Elements stripe={stripePromise} options={elementsOptions} key={clientSecret}>
+                  <ExpressCheckoutWrapper
+                    total={total}
+                    orderNumber={orderNumberRef.current}
+                    sessionLoading={sessionLoading}
+                    items={items}
+                    isSignedIn={isSignedIn}
+                    trackCheckoutClick={trackCheckoutClick}
+                    handleGuestCheckout={handleGuestCheckout}
+                    router={router}
+                  />
+                </Elements>
+              ) : (
+                <div className="space-y-4">
+                  {paymentMessage ? (
+                    <>
+                      <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
+                        <p className="font-semibold mb-2">Payment Error</p>
+                        <p>{paymentMessage}</p>
                       </div>
                       <button
                         type="button"
@@ -694,50 +576,26 @@ function CartPage() {
                         className="w-full py-3 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={sessionLoading || items.length === 0}
                       >
-                        {sessionLoading ? (
-                          <div className="flex items-center justify-center">
-                            <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-white mr-2"></div>
-                            Loading...
-                          </div>
-                        ) : (
-                          `Checkout — $${total.toFixed(2)}`
-                        )}
+                        Continue to Checkout →
                       </button>
-                    </div>
-                  </Elements>
-                ) : (
-                  <div className="space-y-4">
-                    {paymentMessage ? (
-                      <>
-                        <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
-                          <p className="font-semibold mb-2">Payment Error</p>
-                          <p>{paymentMessage}</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => { trackCheckoutClick(); isSignedIn ? router.push('/cart/checkout-redirect') : handleGuestCheckout(); }}
-                          className="w-full py-3 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          disabled={sessionLoading || items.length === 0}
-                        >
-                          Continue to Checkout →
-                        </button>
-                      </>
-                    ) : (
-                      <div className="flex items-center justify-center text-sm text-gray-600">
-                        <div className="flex items-center gap-2">
-                          <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-gray-500"></div>
-                          <span>Loading payment options...</span>
-                        </div>
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-center text-sm text-gray-600">
+                      <div className="flex items-center gap-2">
+                        <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-gray-500"></div>
+                        <span>Loading payment options...</span>
                       </div>
-                    )}
-                  </div>
-                )}
-                {paymentMessage && clientSecret && (
-                  <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
-                    {paymentMessage}
-                  </div>
-                )}
-              </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              {paymentMessage && clientSecret && (
+                <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
+                  {paymentMessage}
+                </div>
+              )}
+            </div>
+              
             </div>
 
             {/* Order Summary (Receipt Style) */}
