@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { fromTheme } from 'tailwind-merge';
 
 const ORDER_NUMBER_START = 4000;
 
@@ -31,44 +32,18 @@ export async function generateOrderNumber(): Promise<string> {
   try {
     const supabaseAdmin = getSupabaseAdminClient();
 
-    // If admin credentials are missing, keep a process-local monotonic sequence.
     if (!supabaseAdmin) {
       const fallback = Math.max(ORDER_NUMBER_START, (inProcessLastIssued ?? ORDER_NUMBER_START - 1) + 1);
       inProcessLastIssued = fallback;
       return String(fallback);
     }
 
-    const [{ count }, { data: latestRows }] = await Promise.all([
-      supabaseAdmin.from('orders').select('*', { count: 'exact', head: true }),
-      supabaseAdmin
-        .from('orders')
-        .select('order_number, created_at')
-        .order('created_at', { ascending: false })
-        .limit(1),
-    ]);
+    const { data, error } = await supabaseAdmin.rpc('next_order_number');
+    console.log(data, error);
 
-    const totalOrders = count ?? 0;
-    const candidateFromCount = ORDER_NUMBER_START + totalOrders;
+    if (error || data === null) throw error ?? new Error('No data from sequence');
 
-    const latestOrderNumber = parseNumericOrderNumber(
-      (latestRows?.[0] as { order_number?: string | number } | undefined)?.order_number
-    );
-
-    // Ignore legacy random order numbers that are far outside the sequential window.
-    const maxExpectedSequential = ORDER_NUMBER_START + totalOrders + 1000;
-    const candidateFromLatest = latestOrderNumber !== null
-      && latestOrderNumber >= ORDER_NUMBER_START
-      && latestOrderNumber <= maxExpectedSequential
-      ? latestOrderNumber + 1
-      : ORDER_NUMBER_START;
-
-    const candidateFromProcess = inProcessLastIssued !== null
-      ? inProcessLastIssued + 1
-      : ORDER_NUMBER_START;
-
-    const nextOrderNumber = Math.max(candidateFromCount, candidateFromLatest, candidateFromProcess);
-    inProcessLastIssued = nextOrderNumber;
-    return String(nextOrderNumber);
+    return String(data);
   } catch {
     const fallback = Math.max(ORDER_NUMBER_START, (inProcessLastIssued ?? ORDER_NUMBER_START - 1) + 1);
     inProcessLastIssued = fallback;
