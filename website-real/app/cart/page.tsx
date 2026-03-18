@@ -86,7 +86,8 @@ function ExpressCheckoutWrapper({
           emailRequired: true,
           phoneNumberRequired: true,
           shippingAddressRequired: true,
-          allowedShippingCountries: ['US'],
+          billingAddressRequired: true,
+          allowedShippingCountries: ['US', 'CA'],
           shippingRates: [
             {
               id: 'fsny-free-shipping',

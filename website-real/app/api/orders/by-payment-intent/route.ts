@@ -43,7 +43,12 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+  expand: ['payment_method'],
+});
+
+const billingAddress = (paymentIntent.payment_method as Stripe.PaymentMethod)
+  ?.billing_details?.address ?? null;
 
     // Only return order data for payment intents that have actually succeeded.
     // Abandoned intents (e.g. created when a user browses the cart) must not
@@ -52,16 +57,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Payment not completed', data: null }, { status: 404 });
     }
 
-    const amountReceived = typeof paymentIntent.amount_received === 'number'
-      ? paymentIntent.amount_received
-      : paymentIntent.amount;
+    const syncedOrder = await SupabaseOrderService.syncOrderFromPaymentIntent(paymentIntent, billingAddress);
+    if (!syncedOrder) {
+      return NextResponse.json({ error: 'Order not found yet. It may still be processing.', data: null }, { status: 404 });
+    }
 
     return NextResponse.json({
       data: {
-        orderNumber: paymentIntent.metadata?.order_number ?? paymentIntent.id,
-        totalAmount: typeof amountReceived === 'number' ? amountReceived / 100 : null,
-        status: paymentIntent.status,
-        items: [], // No items available from PaymentIntent alone
+        orderNumber: syncedOrder.order_number,
+        totalAmount: syncedOrder.total_amount,
+        status: syncedOrder.status,
+        items: (syncedOrder.order_items || []).map((item: any) => ({
+          id: item.product_id || item.id,
+          name: item.product_name || item.name || 'Product',
+          price: Number(item.price || item.unit_price || 0),
+          quantity: Number(item.quantity || 1),
+        })),
         currency: 'USD',
       },
     });

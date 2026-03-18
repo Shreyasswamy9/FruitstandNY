@@ -544,12 +544,12 @@ export class SupabaseOrderService {
     const guestData = safeJsonParse<GuestPayload>(metadata.guest ?? '{}', {});
     const customerData = safeJsonParse<CustomerPayload>(metadata.customer ?? '{}', {});
     const shippingAmount = Number(metadata.shipping ?? 0);
-    
+
     // Use Stripe's calculated tax instead of metadata tax
-    const taxAmount = session.total_details?.amount_tax 
-      ? Number(session.total_details.amount_tax) / 100 
+    const taxAmount = session.total_details?.amount_tax
+      ? Number(session.total_details.amount_tax) / 100
       : Number(metadata.tax ?? 0);
-    
+
     const orderNumber = (metadata.order_number as string) || await generateOrderNumber();
 
     // Recalculate subtotal
@@ -634,9 +634,9 @@ export class SupabaseOrderService {
       });
 
       const { data: insertedItemsData, error: itemsErr } = await supabaseAdmin
-      .from('order_items')
-      .insert(orderItemRows)
-      .select(); // returns inserted rows
+        .from('order_items')
+        .insert(orderItemRows)
+        .select(); // returns inserted rows
 
       insertedItems = insertedItemsData ?? [];
 
@@ -653,5 +653,146 @@ export class SupabaseOrderService {
       ...createdOrder,
       order_items: insertedItems ?? [],
     };
+  }
+
+  static async syncOrderFromPaymentIntent(paymentIntent: Stripe.PaymentIntent, resolvedBillingAddress?: Stripe.Address | null) {
+    console.log('Syncing order from payment intent:', paymentIntent.id);
+
+    if (paymentIntent.status !== 'succeeded') return null;
+
+    // Check if already exists
+    try {
+      const { data: existingOrder } = await supabaseAdmin
+        .from('orders')
+        .select(`*, order_items (*)`)
+        .eq('stripe_payment_intent_id', paymentIntent.id)
+        .maybeSingle();
+
+      if (existingOrder) {
+        console.log(`Order already exists for payment intent ${paymentIntent.id}`);
+        return existingOrder;
+      }
+    } catch (err) {
+      console.log('Error checking for existing order (ignoring):', err);
+    }
+
+    try {
+      const orderNumber = paymentIntent.metadata?.order_number;
+      if (orderNumber) {
+        const { data: existingByOrderNumber } = await supabaseAdmin
+          .from('orders')
+          .select(`*, order_items (*)`)
+          .eq('order_number', orderNumber)
+          .maybeSingle();
+
+        if (existingByOrderNumber) {
+          console.log(`Order already exists with order number ${orderNumber}`);
+          return existingByOrderNumber;
+        }
+      }
+    } catch (err) {
+      console.log('Error checking for existing order by number (ignoring):', err);
+    }
+
+    const metadata = paymentIntent.metadata ?? {};
+    const cartJson = readCartMetadata(metadata) ?? '[]';
+    const cart = safeJsonParse<OrderCartItem[]>(cartJson, []);
+    const guestData = safeJsonParse<GuestPayload>(metadata.guest ?? '{}', {});
+    const customerData = safeJsonParse<CustomerPayload>(metadata.customer ?? '{}', {});
+    const shippingAmount = Number(metadata.shipping ?? 0);
+    const taxAmount = Number(metadata.tax ?? 0);
+    const orderNumber = metadata.order_number || await generateOrderNumber();
+
+    const cartItems = Array.isArray(cart) ? cart : [];
+    const subtotal = cartItems.reduce((sum, item) => {
+      return sum + Number(item.price ?? item.unitPrice ?? 0) * Number(item.quantity ?? item.qty ?? 1);
+    }, 0);
+
+    const shippingAddress = paymentIntent.shipping?.address ?? null;
+
+    const orderPayload = {
+      user_id: null,
+      order_number: orderNumber,
+      status: 'confirmed',
+      payment_status: 'paid',
+      stripe_payment_intent_id: paymentIntent.id,
+      stripe_checkout_session_id: null,
+      total_amount: (paymentIntent.amount_received ?? paymentIntent.amount) / 100,
+      subtotal,
+      tax_amount: taxAmount,
+      shipping_amount: shippingAmount,
+      discount_amount: Number(metadata.discount_amount ?? 0),
+      shipping_name: paymentIntent.shipping?.name
+        || (guestData?.firstName && guestData?.lastName ? `${guestData.firstName} ${guestData.lastName}` : '')
+        || customerData?.name
+        || '',
+      shipping_email: customerData?.email || guestData?.email || paymentIntent.receipt_email || '',
+      shipping_phone: paymentIntent.shipping?.phone || guestData?.phone || '',
+      shipping_address_line1: shippingAddress?.line1 || guestData?.address?.street || '',
+      shipping_address_line2: shippingAddress?.line2 || guestData?.address?.street2 || '',
+      shipping_city: shippingAddress?.city || guestData?.address?.city || '',
+      shipping_state: shippingAddress?.state || guestData?.address?.state || '',
+      shipping_postal_code: shippingAddress?.postal_code || guestData?.address?.zipCode || '',
+      shipping_country: shippingAddress?.country || guestData?.address?.country || 'US',
+      billing_address_line1: resolvedBillingAddress?.line1 || '',
+      billing_address_line2: resolvedBillingAddress?.line2 || '',
+      billing_city: resolvedBillingAddress?.city || '',
+      billing_state: resolvedBillingAddress?.state || '',
+      billing_postal_code: resolvedBillingAddress?.postal_code || '',
+      billing_country: resolvedBillingAddress?.country || '',
+    };
+
+    const { data: newOrder, error: createErr } = await supabaseAdmin
+      .from('orders')
+      .insert(orderPayload)
+      .select()
+      .single();
+
+    if (createErr || !newOrder) {
+      console.error('Failed to create order from payment intent', createErr);
+      throw createErr || new Error('Failed to create order');
+    }
+
+    const createdOrder = newOrder as Order;
+    let insertedItems: OrderItem[] = [];
+
+    if (cartItems.length > 0) {
+      const orderItemRows = cartItems.map((item) => {
+        const quantity = Number(item.quantity ?? item.qty ?? 1);
+        const unitPrice = Number(item.price ?? item.unitPrice ?? 0);
+        return {
+          order_id: createdOrder.id,
+          product_id: item.id ?? item.productId ?? null,
+          variant_id: item.variantId ?? null,
+          product_name: item.name ?? item.title ?? '',
+          product_image_url: item.image ?? item.product?.images?.[0] ?? null,
+          quantity,
+          unit_price: unitPrice,
+          total_price: unitPrice * quantity,
+          variant_details: {
+            size: item.size ?? item.selectedSize ?? null,
+            color: item.color ?? null,
+            price: unitPrice,
+            image: item.image ?? null,
+          },
+        };
+      });
+
+      const { data: insertedItemsData, error: itemsErr } = await supabaseAdmin
+        .from('order_items')
+        .insert(orderItemRows)
+        .select();
+
+      if (itemsErr) {
+        console.error('Failed to insert order items, rolling back order', itemsErr);
+        await supabaseAdmin.from('orders').delete().eq('id', createdOrder.id);
+        throw itemsErr;
+      }
+
+      insertedItems = insertedItemsData ?? [];
+      console.log(`Inserted ${orderItemRows.length} order items for order ${createdOrder.id}`);
+    }
+
+    return { ...createdOrder, order_items: insertedItems };
   }
 }
