@@ -40,7 +40,7 @@ const JOZI_COLOR_OPTIONS: JoziColorOption[] = [
   { name: 'Default', slug: 'default', color: '#2d5016', images: ['/images/products/jozi rugby jersey/Jozi DS 1x1.png', '/images/products/jozi rugby jersey/Jozi 1.png', '/images/products/jozi rugby jersey/Jozi 2.png'], bg: '#f5f5f5', border: '#d4d4d4' },
 ];
 
-const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
+const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL"] as const;
 
 export default function JoziRugbyJerseyPage() {
   const [selectedColor, setSelectedColor] = useState<JoziColorOption>(JOZI_COLOR_OPTIONS[0]);

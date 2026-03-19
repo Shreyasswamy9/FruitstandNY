@@ -40,7 +40,7 @@ const KIWI_COLOR_OPTIONS: KiwiColorOption[] = [
   { name: 'Default', slug: 'default', color: '#2d5016', images: ['/images/products/kiwi rugby jersey/Kiwi DS 1x1.png', '/images/products/kiwi rugby jersey/Kiwi 1.png', '/images/products/kiwi rugby jersey/Kiwi 2.png'], bg: '#f5f5f5', border: '#d4d4d4' },
 ];
 
-const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
+const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL"] as const;
 
 export default function KiwiRugbyJerseyPage() {
   const [selectedColor, setSelectedColor] = useState<KiwiColorOption>(KIWI_COLOR_OPTIONS[0]);

@@ -42,7 +42,7 @@ const LIBERTY_HOODIE_COLOR_OPTIONS: LibertyHoodieColorOption[] = [
   { name: 'Stone', slug: 'stone', color: '#a39e9d', images: ['/images/products/liberty hoodies/stone/Stone Hoodie DS 1x1.png', '/images/products/liberty hoodies/stone/Stone Hoodie 1 copy.png', '/images/products/liberty hoodies/stone/Stone Hoodie 2 copy.png'], bg: '#f5f5f5', border: '#d4d4d4' },
 ];
 
-const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
+const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL"] as const;
 
 export default function LibertyHoodiePage() {
   const [selectedColor, setSelectedColor] = useState<LibertyHoodieColorOption>(LIBERTY_HOODIE_COLOR_OPTIONS[0]);

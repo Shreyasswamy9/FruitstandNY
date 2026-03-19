@@ -49,7 +49,7 @@ const STAMPED_COLOR_OPTIONS: StampedColorOption[] = [
   },
 ];
 
-const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
+const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL"] as const;
 
 export default function StampedWaffleKnitPage() {
   const [selectedColor, setSelectedColor] = useState<StampedColorOption>(STAMPED_COLOR_OPTIONS[0]);

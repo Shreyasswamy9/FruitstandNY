@@ -44,7 +44,7 @@ const LIBERTY_ZIP_COLOR_OPTIONS: LibertyZipColorOption[] = [
   { name: 'Copper', slug: 'copper', color: '#b87333', images: ['/images/products/liberty zip ups/copper/Copper DS 1x1.png', '/images/products/liberty zip ups/copper/Copper Zip 1.png', '/images/products/liberty zip ups/copper/Copper Zip 2.png'], bg: '#f5f5f5', border: '#d4d4d4' },
 ];
 
-const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
+const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL"] as const;
 
 export default function LibertyZipUpPage() {
   const [selectedColor, setSelectedColor] = useState<LibertyZipColorOption>(LIBERTY_ZIP_COLOR_OPTIONS[0]);
