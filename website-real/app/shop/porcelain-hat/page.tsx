@@ -7,6 +7,8 @@ import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import PriceDisplay from "@/components/PriceDisplay";
+import { getActivePrice } from "@/lib/priceScheduling";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -28,6 +30,8 @@ const PORCELAIN_HAT_IMAGES = [
 const PRODUCT = {
   name: "Porcelain FS Cap",
   price: 44,
+  salePrice: 25,
+  salePriceEffectiveDate: "2026-03-26",
   description: "Crisp porcelain white cap finished with tonal Fruitstand embroidery.",
   details: [
     "Structured 6-panel silhouette",
@@ -51,7 +55,7 @@ export default function PorcelainHatPage() {
   useTrackProductView({
     productId: "bca735d7-f575-4ef3-9ff7-28966205618b",
     productName: PRODUCT.name,
-    price: PRODUCT.price,
+    price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
     currency: "USD",
   });
 
@@ -60,7 +64,7 @@ export default function PorcelainHatPage() {
     addToCart({
       productId: "bca735d7-f575-4ef3-9ff7-28966205618b",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -104,7 +108,11 @@ export default function PorcelainHatPage() {
             <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
               {PRODUCT.name}
             </h1>
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <PriceDisplay
+              regularPrice={PRODUCT.price}
+              salePrice={PRODUCT.salePrice}
+              salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate}
+            />
             {/* DESCRIPTION SECTION */}
             <div className="w-full text-center lg:text-left mt-5">
               <p className="px-1 text-[14px] leading-relaxed text-[#3d372f]">
@@ -173,7 +181,7 @@ export default function PorcelainHatPage() {
       </main>
 
       <ProductPurchaseBar
-        price={PRODUCT.price}
+        price={getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate)}
         summaryLabel="PORCELAIN WHITE"
         sizeOptions={sizeOptions}
         selectedSize={selectedSize}

@@ -9,6 +9,8 @@ import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import PriceDisplay from "@/components/PriceDisplay";
+import { getActivePrice } from "@/lib/priceScheduling";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -37,8 +39,10 @@ const MUTSU_COLOR_IMAGE_MAP: Record<string, string[]> = {
 };
 
 const PRODUCT = {
-  name: "Mutsu Tee",
+  name: "Portugal Pocket Tee",
   price: 45,
+  salePrice: 35,
+  salePriceEffectiveDate: "2026-03-26",
   description: "Crafted from 100% organic cotton in Portugal, made in a relaxed fit. At 160 GSM, it’s a normal weight tee, but still soft and breathable. Features an oversized front left pocket — designed for effortless everyday wear.",
   details: [
     "100% organic cotton (160 GSM)",
@@ -65,7 +69,7 @@ export default function MutsuTshirtPage() {
   useTrackProductView({
     productId: "21da7031-a510-4ea0-add3-1dce02fee867",
     productName: PRODUCT.name,
-    price: PRODUCT.price,
+    price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
     currency: "USD",
     selectedVariant: {
       color: selectedColor.name,
@@ -91,7 +95,7 @@ export default function MutsuTshirtPage() {
     addToCart({
       productId: "21da7031-a510-4ea0-add3-1dce02fee867",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -165,7 +169,11 @@ export default function MutsuTshirtPage() {
               {selectedColor.name.toUpperCase()}
             </p>
 
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <PriceDisplay
+              regularPrice={PRODUCT.price}
+              salePrice={PRODUCT.salePrice}
+              salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate}
+            />
           </div>
 
           {/* SWATCHES */}
@@ -261,7 +269,7 @@ export default function MutsuTshirtPage() {
       </main>
 
       <ProductPurchaseBar
-        price={PRODUCT.price}
+        price={getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate)}
         summaryLabel={selectedColor.name.toUpperCase()}
         sizeOptions={sizeOptions}
         selectedSize={selectedSize}

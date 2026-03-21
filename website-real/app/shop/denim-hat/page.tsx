@@ -7,6 +7,8 @@ import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { getActivePrice } from "@/lib/priceScheduling";
+import PriceDisplay from "@/components/PriceDisplay";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -30,6 +32,8 @@ const DENIM_HAT_IMAGES = [
 const PRODUCT = {
   name: "Indigo Hat",
   price: 44,
+  salePrice: 25,
+  salePriceEffectiveDate: "2026-03-26",
   description: "Classic indigo denim finished with tonal Fruitstand embroidery.",
   details: [
     "Washed denim 6-panel cap",
@@ -53,7 +57,7 @@ export default function DenimHatPage() {
   useTrackProductView({
     productId: "fe9f97fa-944a-4c36-8889-fdb3a9936615",
     productName: PRODUCT.name,
-    price: PRODUCT.price,
+    price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
     currency: "USD",
   });
 
@@ -62,7 +66,7 @@ export default function DenimHatPage() {
     addToCart({
       productId: "fe9f97fa-944a-4c36-8889-fdb3a9936615",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -106,7 +110,11 @@ export default function DenimHatPage() {
             <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
               {PRODUCT.name}
             </h1>
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <PriceDisplay
+              regularPrice={PRODUCT.price}
+              salePrice={PRODUCT.salePrice}
+              salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate}
+            />
             {/* DESCRIPTION SECTION */}
             <div className="w-full text-center lg:text-left mt-5">
               <p className="px-1 text-[14px] leading-relaxed text-[#3d372f]">
@@ -122,25 +130,6 @@ export default function DenimHatPage() {
                 ))}
               </ul>
             </div>
-          </div>
-        </div>
-
-        {/* DESCRIPTION SECTION */}
-        <div className="mx-auto w-full max-w-[400px] px-6 text-center mt-5">
-          <p className="px-1 text-[14px] leading-relaxed text-[#3d372f]">
-            {formatText(PRODUCT.description, "Indigo Hat", ["Indigo", "Denim", "Fruitstand"])}
-          </p>
-        </div>
-
-        {/* DETAILS SECTION */}
-        <div className="mx-auto w-full max-w-[400px] px-6 text-left">
-          <div className="mt-8">
-            <p className="text-base font-semibold text-[#1d1c19]">Details</p>
-            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-[#1d1c19]">
-              {PRODUCT.details.map((detail) => (
-                <li key={detail}>{formatText(detail, "Indigo Hat", ["Indigo", "Denim", "Fruitstand"])}</li>
-              ))}
-            </ul>
           </div>
         </div>
 
@@ -175,7 +164,7 @@ export default function DenimHatPage() {
       </main>
 
       <ProductPurchaseBar
-        price={PRODUCT.price}
+        price={getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate)}
         summaryLabel="INDIGO DENIM"
         sizeOptions={sizeOptions}
         selectedSize={selectedSize}

@@ -7,6 +7,8 @@ import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import PriceDisplay from "@/components/PriceDisplay";
+import { getActivePrice } from "@/lib/priceScheduling";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -32,6 +34,8 @@ const EMPIRE_HAT_IMAGES = [
 const PRODUCT = {
   name: "Empire Corduroy Hat",
   price: 49,
+  salePrice: 25,
+  salePriceEffectiveDate: "2026-03-26",
   description: "Premium corduroy finished with apple red embroidery front, back, and brim.",
   details: [
     "Deep red corduroy 6-panel camp hat",
@@ -56,7 +60,7 @@ export default function EmpireHatPage() {
   useTrackProductView({
     productId: "98da26f5-be40-4f35-a8ad-b26dd9ae01f9",
     productName: PRODUCT.name,
-    price: PRODUCT.price,
+    price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
     currency: "USD",
   });
 
@@ -65,7 +69,7 @@ export default function EmpireHatPage() {
     addToCart({
       productId: "98da26f5-be40-4f35-a8ad-b26dd9ae01f9",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -109,7 +113,11 @@ export default function EmpireHatPage() {
             <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
               {PRODUCT.name}
             </h1>
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <PriceDisplay
+              regularPrice={PRODUCT.price}
+              salePrice={PRODUCT.salePrice}
+              salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate}
+            />
             {/* DESCRIPTION SECTION */}
             <div className="w-full text-center lg:text-left mt-5">
               <p className="px-1 text-[14px] leading-relaxed text-[#3d372f]">
@@ -178,7 +186,7 @@ export default function EmpireHatPage() {
       </main>
 
       <ProductPurchaseBar
-        price={PRODUCT.price}
+        price={getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate)}
         summaryLabel="APPLE RED CORDUROY"
         sizeOptions={sizeOptions}
         selectedSize={selectedSize}

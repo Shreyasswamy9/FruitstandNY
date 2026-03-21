@@ -9,6 +9,8 @@ import { useCart } from "@/components/CartContext";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import PriceDisplay from "@/components/PriceDisplay";
+import { getActivePrice } from "@/lib/priceScheduling";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -39,6 +41,8 @@ type HockeyJerseyVariant = typeof HOCKEY_JERSEY_VARIANTS[number];
 const PRODUCT = {
   name: "Broadway Blueberry Jersey",
   price: 180,
+  salePrice: 49,
+  salePriceEffectiveDate: "2026-03-26",
   description: "Inspired by vintage New York hockey uniforms, this jersey features an all-over blueberry print in a deep, tonal blue, accented with white striping featuring a red cherry pattern.\n\nAn embroidered FRUITSTAND logo runs across the chest. The relaxed fit drapes naturally and layers easily over a tee or hoodie.",
   details: [
     "100% polyester",
@@ -64,7 +68,7 @@ export default function HockeyJerseyPage() {
   useTrackProductView({
     productId: "e1e3790d-d37e-4327-a14e-53bad7745ec8",
     productName: PRODUCT.name,
-    price: PRODUCT.price,
+    price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
     currency: "USD",
     selectedVariant: {
       color: selectedColor.name,
@@ -99,7 +103,7 @@ export default function HockeyJerseyPage() {
     addToCart({
       productId: "e1e3790d-d37e-4327-a14e-53bad7745ec8",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -160,7 +164,11 @@ export default function HockeyJerseyPage() {
               {selectedColor.name.toUpperCase()}
             </p>
 
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <PriceDisplay
+              regularPrice={PRODUCT.price}
+              salePrice={PRODUCT.salePrice}
+              salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate}
+            />
 
             {/* SWATCHES */}
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3 lg:col-start-2 lg:justify-start">
@@ -251,7 +259,7 @@ export default function HockeyJerseyPage() {
               ))}
             </div>
           </div>
-        </div>
+        </div>getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate)
       </div>
 
       <ProductPurchaseBar

@@ -9,6 +9,8 @@ import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/Produc
 import { useTrackProductView } from "@/hooks/useTrackProductView";
 import StPatsBanner from "@/components/StPatsBanner";
 import { isGreenColorOnSale, getStPatsPrice } from "@/lib/stPatricksDay";
+import PriceDisplay from "@/components/PriceDisplay";
+import { getActivePrice } from "@/lib/priceScheduling";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -32,8 +34,10 @@ const FOREST_HILLS_HAT_IMAGES = [
 ];
 
 const PRODUCT = {
-  name: "Forest Hills Hat",
+  name: "Forest Hills Camp Hat",
   price: 46,
+  salePrice: 25,
+  salePriceEffectiveDate: "2026-03-26",
   description: "Lime green cotton twill with tonal Fruitstand embroidery front and back.",
   details: [
     "6-panel camp silhouette",
@@ -58,7 +62,7 @@ export default function ForestHillsHatPage() {
   useTrackProductView({
     productId: "8d1d5080-2106-420d-b7ea-babc2fba5457",
     productName: PRODUCT.name,
-    price: PRODUCT.price,
+    price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
     currency: "USD",
   });
 
@@ -70,7 +74,7 @@ export default function ForestHillsHatPage() {
     addToCart({
       productId: "8d1d5080-2106-420d-b7ea-babc2fba5457",
       name: PRODUCT.name,
-      price: isOnStPats ? stPatsSalePrice : PRODUCT.price,
+      price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -122,7 +126,11 @@ export default function ForestHillsHatPage() {
                 <p className="text-[26px] font-black text-[#2e8b2e]">${stPatsSalePrice.toFixed(2)}</p>
               </>
             ) : (
-              <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+              <PriceDisplay
+                regularPrice={PRODUCT.price}
+                salePrice={PRODUCT.salePrice}
+                salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate}
+              />
             )}
             {isOnStPats && (
               <StPatsBanner colorName="Lime Green" />
@@ -173,7 +181,7 @@ export default function ForestHillsHatPage() {
       </main>
 
       <ProductPurchaseBar
-        price={isOnStPats ? stPatsSalePrice : PRODUCT.price}
+        price={isOnStPats ? stPatsSalePrice : getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate)}
         summaryLabel="LIME GREEN"
         sizeOptions={sizeOptions}
         selectedSize={selectedSize}

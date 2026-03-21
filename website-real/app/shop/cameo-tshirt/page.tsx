@@ -10,6 +10,8 @@ import { type ColorOption } from '@/components/ColorPicker';
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import PriceDisplay from "@/components/PriceDisplay";
+import { getActivePrice } from "@/lib/priceScheduling";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -43,8 +45,10 @@ type CameoColorOption = ColorOption & {
 };
 
 const PRODUCT = {
-  name: "Cameo Tee",
+  name: "Portugal Heavyweight Tee",
   price: 40,
+  salePrice: 29,
+  salePriceEffectiveDate: "2026-03-26",
   description: "Crafted from 100% organic cotton in Portugal, made in a relaxed fit. At 200 GSM, it’s heavy weight, soft, and breathable — designed for effortless everyday wear. The CAMEO Tee takes inspiration from our previous best sellers — Golden Delicious and Red Delicious — updated this time with a wider collar opening for more room at the neck and a relaxed, oversized silhouette.",
   details: [
     "100% organic cotton (200 GSM)",
@@ -70,7 +74,7 @@ export default function CameoTshirtPage() {
   useTrackProductView({
     productId: "1ad5fc4b-898d-4e86-ada6-c4787ba20add",
     productName: PRODUCT.name,
-    price: PRODUCT.price,
+    price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
     currency: "USD",
     selectedVariant: {
       color: selectedColor.name,
@@ -96,7 +100,7 @@ export default function CameoTshirtPage() {
     addToCart({
       productId: "1ad5fc4b-898d-4e86-ada6-c4787ba20add",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -166,7 +170,11 @@ export default function CameoTshirtPage() {
               {selectedColor.name.toUpperCase()}
             </p>
 
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <PriceDisplay
+              regularPrice={PRODUCT.price}
+              salePrice={PRODUCT.salePrice}
+              salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate}
+            />
           </div>
 
           {/* SWATCHES */}
@@ -262,7 +270,7 @@ export default function CameoTshirtPage() {
       </main>
 
       <ProductPurchaseBar
-        price={PRODUCT.price}
+        price={getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate)}
         summaryLabel={selectedColor.name.toUpperCase()}
         sizeOptions={sizeOptions}
         selectedSize={selectedSize}

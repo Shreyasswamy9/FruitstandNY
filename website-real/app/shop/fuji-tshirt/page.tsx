@@ -7,8 +7,9 @@ import SizeGuide from "@/components/SizeGuide";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
-
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import PriceDisplay from "@/components/PriceDisplay";
+import { getActivePrice } from "@/lib/priceScheduling";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -62,8 +63,10 @@ type FujiColorOption = {
 };
 
 const PRODUCT = {
-  name: "Fuji Long Sleeve",
+  name: "Portugal Heavyweight Pocket Long Sleeve",
   price: 80,
+  salePrice: 44,
+  salePriceEffectiveDate: "2026-03-26",
   description:
     "Crafted from 100% organic cotton in Portugal, made in a relaxed fit. At 250 GSM, it’s heavy weight, soft, and breathable — designed for effortless everyday wear.",
   details: [
@@ -92,7 +95,7 @@ export default function FujiTshirtPage() {
   useTrackProductView({
     productId: "1dcbfbda-626c-49fb-858e-c50050b4b726",
     productName: PRODUCT.name,
-    price: PRODUCT.price,
+    price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
     currency: "USD",
     selectedVariant: {
       color: selectedColor.name,
@@ -121,7 +124,7 @@ export default function FujiTshirtPage() {
     addToCart({
       productId: "1dcbfbda-626c-49fb-858e-c50050b4b726",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -194,7 +197,11 @@ export default function FujiTshirtPage() {
               {selectedColor.name.toUpperCase()}
             </p>
 
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <PriceDisplay
+              regularPrice={PRODUCT.price}
+              salePrice={PRODUCT.salePrice}
+              salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate}
+            />
             {/* St. Patrick's Day components disabled */}
           </div>
 
@@ -290,7 +297,7 @@ export default function FujiTshirtPage() {
       </main>
 
       <ProductPurchaseBar
-        price={PRODUCT.price}
+        price={getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate)}
         summaryLabel={selectedColor.name.toUpperCase()}
         sizeOptions={sizeOptions}
         selectedSize={selectedSize}

@@ -8,6 +8,8 @@ import { useCart } from "../../../components/CartContext";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import PriceDisplay from "@/components/PriceDisplay";
+import { getActivePrice } from "@/lib/priceScheduling";
 
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
@@ -54,6 +56,8 @@ const TRACKPANTS_SWATCH_COLORS: Record<string, [string, string]> = {
 const PRODUCT = {
   name: "Retro Track Pants",
   price: 90,
+  salePrice: 45,
+  salePriceEffectiveDate: "2026-03-26",
   description: "Inspired by classic New York athletic warm-ups, these track pants feature bold color blocking and a relaxed, vintage silhouette designed for movement and comfort. Each colorway pays homage to various motifs, with contrasting panels and an embroidered FRUITSTAND® logo.",
   details: [
     "100% Nylon shell",
@@ -76,7 +80,7 @@ export default function TrackPantsPage() {
   useTrackProductView({
     productId: "859d396c-0cd7-4d62-9a95-135ce8efbb82",
     productName: PRODUCT.name,
-    price: PRODUCT.price,
+    price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
     currency: "USD",
     selectedVariant: {
       color: selectedColor.name,
@@ -111,7 +115,7 @@ export default function TrackPantsPage() {
     addToCart({
       productId: "859d396c-0cd7-4d62-9a95-135ce8efbb82",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -176,7 +180,11 @@ export default function TrackPantsPage() {
               {selectedColor.name.toUpperCase()}
             </p>
 
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <PriceDisplay
+              regularPrice={PRODUCT.price}
+              salePrice={PRODUCT.salePrice}
+              salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate}
+            />
             {/* St. Patrick's Day components disabled */}
 
             {/* SWATCHES */}
@@ -275,7 +283,7 @@ export default function TrackPantsPage() {
       </main>
 
       <ProductPurchaseBar
-        price={PRODUCT.price}
+        price={getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate)}
         summaryLabel={selectedColor.name.toUpperCase()}
         sizeOptions={sizeOptions}
         selectedSize={selectedSize}

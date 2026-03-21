@@ -8,6 +8,8 @@ import { useCart } from "../../../components/CartContext";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import PriceDisplay from "@/components/PriceDisplay";
+import { getActivePrice } from "@/lib/priceScheduling";
 
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
@@ -54,6 +56,8 @@ const TRACKTOP_SWATCH_COLORS: Record<string, [string, string]> = {
 const PRODUCT = {
   name: "Retro Track Jacket",
   price: 110,
+  salePrice: 49,
+  salePriceEffectiveDate: "2026-03-26",
   description: "Inspired by classic New York athletic warm-ups, this track jacket features bold color blocking and a relaxed, vintage silhouette designed for movement and comfort. Each colorway pays homage to various motifs, with contrasting panels and an embroidered FRUITSTAND® logo across the chest.",
   details: [
     "100% Nylon shell",
@@ -79,7 +83,7 @@ export default function TrackTopPage() {
   useTrackProductView({
     productId: "91c47e89-efd4-4961-aadf-d4f7bf6e13b7",
     productName: PRODUCT.name,
-    price: PRODUCT.price,
+    price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
     currency: "USD",
     selectedVariant: {
       color: selectedColor.name,
@@ -113,7 +117,7 @@ export default function TrackTopPage() {
     addToCart({
       productId: "91c47e89-efd4-4961-aadf-d4f7bf6e13b7",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -176,7 +180,11 @@ export default function TrackTopPage() {
               {selectedColor.name.toUpperCase()}
             </p>
 
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <PriceDisplay
+              regularPrice={PRODUCT.price}
+              salePrice={PRODUCT.salePrice}
+              salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate}
+            />
             {/* St. Patrick's Day components disabled */}
 
             {/* SWATCHES */}
@@ -275,7 +283,7 @@ export default function TrackTopPage() {
       </main>
 
       <ProductPurchaseBar
-        price={PRODUCT.price}
+        price={getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate)}
         summaryLabel={selectedColor.name.toUpperCase()}
         sizeOptions={sizeOptions}
         selectedSize={selectedSize}

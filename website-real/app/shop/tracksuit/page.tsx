@@ -8,6 +8,8 @@ import { useCart } from "../../../components/CartContext";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import PriceDisplay from "@/components/PriceDisplay";
+import { getActivePrice } from "@/lib/priceScheduling";
 
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
@@ -78,6 +80,8 @@ const TRACKSUIT_SWATCH_COLORS: Record<string, [string, string]> = {
 const PRODUCT = {
   name: "Retro Track Suit",
   price: 165,
+  salePrice: 79,
+  salePriceEffectiveDate: "2026-03-26",
   description:
     "Inspired by classic New York athletic warm-ups, this track suit features bold color blocking and a relaxed, vintage silhouette designed for movement and comfort. Each colorway pays homage to various motifs, with contrasting panels and embroidered FRUITSTAND® logos.",
 };
@@ -136,7 +140,7 @@ export default function TracksuitPage() {
   useTrackProductView({
     productId: "0f5810c1-abec-4e70-a077-33c839b4de2b",
     productName: PRODUCT.name,
-    price: PRODUCT.price,
+    price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
     currency: "USD",
     selectedVariant: {
       color: selectedColor.name,
@@ -172,7 +176,7 @@ export default function TracksuitPage() {
     addToCart({
       productId: "0f5810c1-abec-4e70-a077-33c839b4de2b",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -237,7 +241,11 @@ export default function TracksuitPage() {
               {selectedColor.name.toUpperCase()}
             </p>
 
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <PriceDisplay
+              regularPrice={PRODUCT.price}
+              salePrice={PRODUCT.salePrice}
+              salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate}
+            />
             {/* St. Patrick's Day components disabled */}
 
             {/* SWATCHES */}
@@ -336,7 +344,7 @@ export default function TracksuitPage() {
       </main>
 
       <ProductPurchaseBar
-        price={PRODUCT.price}
+        price={getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate)}
         summaryLabel={selectedColor.name.toUpperCase()}
         sizeOptions={sizeOptionsForBar}
         selectedSize={selectedSize}

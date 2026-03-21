@@ -31,8 +31,8 @@ export default function Price({ price, salePrice, className, strikeColor }: Pric
 
   return (
     <span className={className}>
-      <span className="line-through mr-2" style={strikeColor ? { color: strikeColor } : undefined}>{format(p)}</span>
-      <span>{format(Number(sale))}</span>
+      <span className="line-through mr-2 text-gray-500" style={strikeColor ? { color: strikeColor } : { textDecorationThickness: '2px' }}>{format(p)}</span>
+      <span className="font-semibold">{format(Number(sale))}</span>
     </span>
   );
 }

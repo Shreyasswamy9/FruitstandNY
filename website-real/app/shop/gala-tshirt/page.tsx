@@ -9,6 +9,8 @@ import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseSizeOption, PurchaseColorOption } from "@/components/ProductPurchaseBar";
 import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import PriceDisplay from "@/components/PriceDisplay";
+import { getActivePrice } from "@/lib/priceScheduling";
 
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
@@ -24,8 +26,10 @@ function formatText(text: string, productName: string, colorNames: string[]): st
 }
 
 const PRODUCT = {
-  name: "Gala Tee",
+  name: "Portugal Lightweight Tee",
   price: 40,
+  salePrice: 29,
+  salePriceEffectiveDate: "2026-03-26",
   description: "Crafted from 100% organic cotton in Portugal, made in a relaxed fit. At 120 GSM, it’s super lightweight, soft, and breathable — designed for effortless everyday wear.",
   details: [
     "100% organic cotton (120 GSM)",
@@ -67,7 +71,7 @@ export default function GalaTshirtPage() {
   useTrackProductView({
     productId: "16eab132-c3a5-4b1c-88b5-1a82cbcd90de",
     productName: PRODUCT.name,
-    price: PRODUCT.price,
+    price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
     currency: "USD",
     selectedVariant: {
       color: selectedColor.name,
@@ -91,7 +95,7 @@ export default function GalaTshirtPage() {
     addToCart({
       productId: "16eab132-c3a5-4b1c-88b5-1a82cbcd90de",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -168,7 +172,11 @@ export default function GalaTshirtPage() {
               {selectedColor.name.toUpperCase()}
             </p>
 
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <PriceDisplay
+              regularPrice={PRODUCT.price}
+              salePrice={PRODUCT.salePrice}
+              salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate}
+            />
             {/* St. Patrick's Day components disabled */}
           </div>
 
@@ -265,7 +273,7 @@ export default function GalaTshirtPage() {
       </main>
 
       <ProductPurchaseBar
-        price={PRODUCT.price}
+        price={getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate)}
         summaryLabel={selectedColor.name.toUpperCase()}
         sizeOptions={sizeOptions}
         selectedSize={selectedSize}
