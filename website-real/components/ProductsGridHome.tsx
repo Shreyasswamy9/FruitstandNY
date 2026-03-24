@@ -49,15 +49,81 @@ export const products: Product[] = [
   { id: 2007, name: "Retro Track Suit", price: "$165", salePrice: 79, salePriceEffectiveDate: "2026-03-26", image: "/images/products/tracksuits/YORKVILLE BLACK AND WHITE COOKIES/BW.png", hoverImage: "/images/products/tracksuits/YORKVILLE BLACK AND WHITE COOKIES/TS1.png", category: "Tracksuits", variantColor: "Yorkville Black and White Cookies", variantSlug: "yorkville-black-and-white-cookies" },
   // Broadway Blueberry Jersey (merch slot before tees)
   { id: 1, name: "Broadway Blueberry Jersey", price: "$180", salePrice: 49, salePriceEffectiveDate: "2026-03-26", image: "/images/products/hockey Jersey/JN.png", hoverImage: "/images/products/hockey Jersey/JN1.png", category: "Jerseys", variantColor: "Black Ice", variantSlug: "hockey-jersey" },
+  // Bundle Section
   {
-    id: 9001,
+    id: 9002,
+    name: "Gala Tee Bundle",
+    price: "$29",
+    displayPrice: "Bundle from $29",
+    image: "/images/products/gala-tshirt/broadwaynoir/GN4.png",
+    hoverImage: "/images/products/gala-tshirt/broadwaynoir/GN5.png",
+    category: "Tops",
+    variantColor: "Build your bundle",
+    isBundle: true,
+    bundleId: "gala-bundle",
+    badgeLabel: "Bundle",
+  },
+  {
+    id: 9003,
+    name: "Mutsu Tee Bundle",
+    price: "$35",
+    displayPrice: "Bundle from $35",
+    image: "/images/products/mutsu-tshirt/broadwaynoir/N1.png",
+    hoverImage: "/images/products/mutsu-tshirt/broadwaynoir/N2.png",
+    category: "Tops",
+    variantColor: "Build your bundle",
+    isBundle: true,
+    bundleId: "mutsu-bundle",
+    badgeLabel: "Bundle",
+  },
+  {
+    id: 9004,
+    name: "Cameo Tee Bundle",
+    price: "$29",
+    displayPrice: "Bundle from $29",
+    image: "/images/products/cameo-tshirt/broadwaynoir/MN.png",
+    hoverImage: "/images/products/cameo-tshirt/broadwaynoir/MN3.png",
+    category: "Tops",
+    variantColor: "Build your bundle",
+    isBundle: true,
+    bundleId: "cameo-bundle",
+    badgeLabel: "Bundle",
+  },
+  {
+    id: 9005,
+    name: "Fuji Long Sleeve Bundle",
+    price: "$44",
+    displayPrice: "Bundle from $44",
+    image: "/images/products/fuji-tshirt/Broadwaynoir/F3.png",
+    hoverImage: "/images/products/fuji-tshirt/Broadwaynoir/F7.png",
+    category: "Tops",
+    variantColor: "Build your bundle",
+    isBundle: true,
+    bundleId: "fuji-bundle",
+    badgeLabel: "Bundle",
+  },
+  {
+    id: 9006,
+    name: "Hat Bundle",
+    price: "$25",
+    displayPrice: "Bundle from $25",
+    image: "/images/products/Forest Hills Hat/Forest Hills Hat Final.png",
+    hoverImage: "/images/products/Forest Hills Hat/G1.png",
+    category: "Hats",
+    variantColor: "Build your bundle",
+    isBundle: true,
+    bundleId: "hat-bundle",
+    badgeLabel: "Bundle",
+  },
+  {
+    id: 9007,
     name: "Fruitstand Tee Bundle",
-    price: "$125",
-    displayPrice: "$106.25 bundle",
+    price: "$79",
+    displayPrice: "Bundle from $79",
     image: "/images/products/Teebundle/Five T-Shirts.png",
     hoverImage: "/images/products/Teebundle/Five T-Shirts.png",
     category: "Tops",
-    variantColor: "Curated trio · Save 15%",
+    variantColor: "Build your bundle",
     isBundle: true,
     bundleId: "tshirt-bundle",
     badgeLabel: "Bundle",
@@ -574,11 +640,18 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
                 const touchTime = state ? Date.now() - state.start : 0;
                 if (state && !state.moved && touchTime < 250) {
                   if (isBundleCard) {
-                    // Navigate to dedicated bundle page if it exists
-                    if (product.bundleId === 'tshirt-bundle') {
-                      router.push('/shop/tshirt-bundle');
-                    } else {
-                      openBundleSheet();
+                    // Navigate to dedicated bundle page
+                    const bundleRoutes: Record<string, string> = {
+                      'gala-bundle': '/shop/gala-bundle',
+                      'mutsu-bundle': '/shop/mutsu-bundle',
+                      'cameo-bundle': '/shop/cameo-bundle',
+                      'fuji-bundle': '/shop/fuji-bundle',
+                      'hat-bundle': '/shop/hat-bundle',
+                      'tshirt-bundle': '/shop/tshirt-bundle',
+                    };
+                    const bundlePath = product.bundleId ? bundleRoutes[product.bundleId] : null;
+                    if (bundlePath) {
+                      router.push(bundlePath);
                     }
                     setMobileHover(null);
                     lastNavigationRef.current = Date.now();
@@ -603,11 +676,18 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
                 return;
               }
               if (isBundleCard) {
-                // Navigate to dedicated bundle page if it exists
-                if (product.bundleId === 'tshirt-bundle') {
-                  router.push('/shop/tshirt-bundle');
-                } else {
-                  openBundleSheet();
+                // Navigate to dedicated bundle page
+                const bundleRoutes: Record<string, string> = {
+                  'gala-bundle': '/shop/gala-bundle',
+                  'mutsu-bundle': '/shop/mutsu-bundle',
+                  'cameo-bundle': '/shop/cameo-bundle',
+                  'fuji-bundle': '/shop/fuji-bundle',
+                  'hat-bundle': '/shop/hat-bundle',
+                  'tshirt-bundle': '/shop/tshirt-bundle',
+                };
+                const bundlePath = product.bundleId ? bundleRoutes[product.bundleId] : null;
+                if (bundlePath) {
+                  router.push(bundlePath);
                 }
                 lastNavigationRef.current = Date.now();
                 return;

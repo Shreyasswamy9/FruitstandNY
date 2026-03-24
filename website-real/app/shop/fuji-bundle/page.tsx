@@ -7,14 +7,14 @@ import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import { useCart } from "@/components/CartContext";
 import { TEE_VARIANTS, SIZE_OPTIONS, type TeeVariant, type TeeColor, type SizeOption } from "@/lib/teeVariants";
-import { CUSTOM_BUNDLE_PRICES, type CustomBundleSize } from "@/lib/customBundles";
+import { SHIRT_BUNDLE_PRICING, type BundleQty } from "@/lib/shirtBundles";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
 
 const PRODUCT = {
-  name: "Fruitstand Tee Bundle",
-  description: "Mix and match your favorite tees. Select colors and sizes.",
+  name: "Fuji Tee Bundle",
+  description: "Mix and match your favorite Gala Tees. Select colors and sizes.",
   details: [
-    "Mix and match any Gala, Cameo, Mutsu, or Fuji tees",
+    "All Fuji Banana Tees in this bundle",
     "Select color + size for each tee",
     "Bundle pricing applied automatically",
     "Ships together as one curated set",
@@ -23,63 +23,59 @@ const PRODUCT = {
 };
 
 type BundleItem = {
-  tee: TeeVariant;
   color: TeeColor;
   size: SizeOption | null;
 };
 
-export default function TshirtBundlePage() {
+export default function GalaBundlePage() {
   const { addToCart } = useCart();
 
-  const [bundleSize, setBundleSize] = useState<CustomBundleSize>(3);
+  const fujiBanana = TEE_VARIANTS.find(t => t.slug === 'fuji-tshirt')!;
+  
+  const [bundleSize, setBundleSize] = useState<BundleQty>(1);
   const [items, setItems] = useState<BundleItem[]>([
-    { tee: TEE_VARIANTS[0], color: TEE_VARIANTS[0].colors[0], size: null },
-    { tee: TEE_VARIANTS[1], color: TEE_VARIANTS[1].colors[0], size: null },
-    { tee: TEE_VARIANTS[2], color: TEE_VARIANTS[2].colors[0], size: null },
+    { color: fujiBanana.colors[0], size: null },
   ]);
 
   // Modal state
   const [editingTeeIndex, setEditingTeeIndex] = useState<number | null>(null);
-  const [tempTee, setTempTee] = useState<TeeVariant | null>(null);
   const [tempColor, setTempColor] = useState<TeeColor | null>(null);
   const [tempSize, setTempSize] = useState<SizeOption | null>(null);
 
   useTrackProductView({
-    productId: "89c1a393-3829-47bc-9c11-40e8183672cd",
+    productId: "a2faf1a9-461f-41b1-b6dd-8d3ec26b021c",
     productName: PRODUCT.name,
-    price: CUSTOM_BUNDLE_PRICES[bundleSize],
+    price: SHIRT_BUNDLE_PRICING.fuji[bundleSize],
     currency: "USD",
   });
 
-  const handleBundleSizeChange = useCallback((newSize: CustomBundleSize) => {
+  const handleBundleSizeChange = useCallback((newSize: BundleQty) => {
     setBundleSize(newSize);
     setItems((prev) => {
       const next = [...prev];
       while (next.length < newSize) {
-        const tee = TEE_VARIANTS[next.length % TEE_VARIANTS.length];
-        next.push({ tee, color: tee.colors[0], size: null });
+        next.push({ color: fujiBanana.colors[0], size: null });
       }
       return next.slice(0, newSize);
     });
     setEditingTeeIndex(null);
-  }, []);
+  }, [fujiBanana.colors]);
 
   const openEditModal = useCallback((index: number) => {
     setEditingTeeIndex(index);
-    setTempTee(items[index].tee);
     setTempColor(items[index].color);
     setTempSize(items[index].size);
   }, [items]);
 
   const saveEdit = useCallback(() => {
-    if (editingTeeIndex === null || !tempTee || !tempColor || !tempSize) return;
+    if (editingTeeIndex === null || !tempColor || !tempSize) return;
     setItems((prev) => {
       const next = [...prev];
-      next[editingTeeIndex] = { tee: tempTee, color: tempColor, size: tempSize };
+      next[editingTeeIndex] = { color: tempColor, size: tempSize };
       return next;
     });
     setEditingTeeIndex(null);
-  }, [editingTeeIndex, tempTee, tempColor, tempSize]);
+  }, [editingTeeIndex, tempColor, tempSize]);
 
   const closeModal = useCallback(() => {
     setEditingTeeIndex(null);
@@ -90,29 +86,29 @@ export default function TshirtBundlePage() {
 
   const addBundleToCart = useCallback(() => {
     if (!allFilled) return;
-    const price = CUSTOM_BUNDLE_PRICES[bundleSize];
+    const price = SHIRT_BUNDLE_PRICING.fuji[bundleSize];
     const summary = items
       .slice(0, bundleSize)
-      .map((item, i) => `#${i + 1} ${item.tee.name} • ${item.color.name} • ${item.size}`)
+      .map((item, i) => `#${i + 1} ${item.color.name} • ${item.size}`)
       .join(" | ");
     addToCart({
-      productId: "89c1a393-3829-47bc-9c11-40e8183672cd",
-      name: `Fruitstand Tee Bundle (${bundleSize}) – ${summary}`,
+      productId: "a2faf1a9-461f-41b1-b6dd-8d3ec26b021c",
+      name: `Fuji Tee Bundle (${bundleSize}) – ${summary}`,
       price,
-      image: "/images/products/Teebundle/Five T-Shirts.png",
+      image: fujiBanana.colors[0].image,
       quantity: 1,
     });
-  }, [addToCart, bundleSize, allFilled, items]);
+  }, [addToCart, bundleSize, allFilled, items, fujiBanana.colors]);
 
-  const boughtTogetherItems = useMemo(() => getFBTForPage("tshirt-bundle"), []);
+  const boughtTogetherItems = useMemo(() => getFBTForPage("fuji-bundle"), []);
 
   const savingsInfo = useMemo(() => {
-    if (bundleSize === 3) return null;
-    const singlePrice = CUSTOM_BUNDLE_PRICES[3] * (bundleSize / 3);
-    const bundlePrice = CUSTOM_BUNDLE_PRICES[bundleSize];
+    if (bundleSize === 1) return null;
+    const singlePrice = SHIRT_BUNDLE_PRICING.fuji[1] * bundleSize;
+    const bundlePrice = SHIRT_BUNDLE_PRICING.fuji[bundleSize];
     const savings = singlePrice - bundlePrice;
     const savingsPercent = Math.round((savings / singlePrice) * 100);
-    return savings > 0 ? { savings, savingsPercent } : null;
+    return { savings, savingsPercent };
   }, [bundleSize]);
 
   return (
@@ -137,7 +133,7 @@ export default function TshirtBundlePage() {
               How many tees?
             </p>
             <div className="flex flex-wrap gap-2 mb-6">
-              {([3, 4, 5] as const).map((size) => (
+              {([1, 2, 3, 4, 5, 6] as const).map((size) => (
                 <button
                   key={size}
                   onClick={() => handleBundleSizeChange(size)}
@@ -153,7 +149,7 @@ export default function TshirtBundlePage() {
             </div>
             <div className="flex items-baseline gap-2">
               <p className="text-4xl font-black text-[#1d1c19]">
-                ${CUSTOM_BUNDLE_PRICES[bundleSize]}
+                ${SHIRT_BUNDLE_PRICING.fuji[bundleSize]}
               </p>
               {savingsInfo && (
                 <p className="text-sm text-green-700 font-semibold">
@@ -181,10 +177,7 @@ export default function TshirtBundlePage() {
                     {/* Content */}
                     <div className="h-2/3 p-3 flex flex-col justify-between">
                       <div>
-                        <p className="text-xs font-bold text-[#1d1c19] line-clamp-1 text-left">
-                          {item.tee.name}
-                        </p>
-                        <p className="text-xs text-[#1d1c19]/60 line-clamp-1 text-left">
+                        <p className="text-xs font-bold text-[#1d1c19] line-clamp-2 text-left">
                           {item.color.name}
                         </p>
                       </div>
@@ -207,7 +200,7 @@ export default function TshirtBundlePage() {
 
           {/* BOTTOM SHEET MODAL */}
           <AnimatePresence>
-            {editingTeeIndex !== null && tempTee && tempColor && (
+            {editingTeeIndex !== null && tempColor && (
               <>
                 {/* Backdrop */}
                 <motion.div
@@ -236,33 +229,7 @@ export default function TshirtBundlePage() {
                       </h3>
                     </div>
 
-                    {/* TEE TYPE SELECTOR */}
-                    <div className="mb-8">
-                      <p className="text-xs uppercase tracking-[0.2em] text-[#1d1c19]/60 mb-4">
-                        Choose Tee Type
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {TEE_VARIANTS.map((tee) => (
-                          <button
-                            key={tee.slug}
-                            type="button"
-                            onClick={() => {
-                              setTempTee(tee);
-                              setTempColor(tee.colors[0]);
-                            }}
-                            className={`rounded-full border px-4 py-2 text-sm font-semibold tracking-wide transition-all duration-200 ${
-                              tee.slug === tempTee.slug
-                                ? "border-black bg-black text-white"
-                                : "border-black/20 text-[#1d1c19] hover:border-black"
-                            }`}
-                          >
-                            {tee.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* COLOR PREVIEW */}
+                    {/* Color Preview */}
                     <div className="mb-8">
                       <div className="flex gap-4 items-center">
                         <div
@@ -286,7 +253,7 @@ export default function TshirtBundlePage() {
                         Choose Color
                       </p>
                       <div className="grid grid-cols-5 sm:grid-cols-6 gap-3">
-                        {tempTee.colors.map((color) => (
+                        {fujiBanana.colors.map((color) => (
                           <button
                             key={color.name}
                             onClick={() => setTempColor(color)}
@@ -362,7 +329,7 @@ export default function TshirtBundlePage() {
                   onClick={addBundleToCart}
                   className="w-full bg-black text-white py-4 rounded-lg font-bold uppercase text-sm tracking-[0.1em] hover:bg-[#2a2a2a] transition-all"
                 >
-                  Add to Cart • ${CUSTOM_BUNDLE_PRICES[bundleSize]}
+                  Add to Cart • ${SHIRT_BUNDLE_PRICING.fuji[bundleSize]}
                 </button>
               </div>
             </motion.div>
