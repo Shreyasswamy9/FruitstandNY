@@ -205,8 +205,8 @@ export default function MandarinTeePage() {
         selectedSize={selectedSize}
         onSelectSize={setSelectedSize}
         onAddToCart={handleAddToCart}
-        addDisabled={!selectedSize || Boolean(selectedSizeSoldOut)}
-        addDisabledReason={selectedSizeSoldOut ? "Sold out" : undefined}
+        addDisabled={true}
+        addDisabledReason="Sold out"
       />
     </div>
   );
