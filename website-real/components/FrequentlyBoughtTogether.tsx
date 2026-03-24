@@ -79,7 +79,7 @@ const FBT_POOL: FBTProduct[] = [
   { id: 'tracksuit', name: 'Retro Track Suit', price: 165, image: '/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png' },
   { id: 'mandarin-tee', name: 'Mandarin 橘子 [JUZI] Tee', price: 68, image: '/images/products/Mandarin Tee/Mandarin Tee.png' },
   { id: 'mutsu-tshirt', name: 'Mutsu Tee', price: 45, image: '/images/products/mutsu-tshirt/broadwaynoir/N1.png' },
-  { id: 'fuji-tshirt', name: 'Fuji Long Sleeve', price: 80, image: '/images/products/fuji-tshirt/Arboretum/F2.png' },
+  { id: 'fuji-tshirt', name: 'Fuji Long Sleeve', price: 80, image: '/images/products/fuji-tshirt/Arboretum/Fuji Arboretum.png' },
   { id: 'cameo-tshirt', name: 'Cameo Tee', price: 40, image: '/images/products/cameo-tshirt/broadwaynoir/MN.png' },
   { id: 'first-edition-tee', name: 'First Edition Tee', price: 45, image: '/images/products/First Edition Tee/FE1.png' },
   { id: 'hockey-jersey', name: 'Broadway Blueberry Jersey', price: 180, image: '/images/products/hockey Jersey/JN.png' },

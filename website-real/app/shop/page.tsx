@@ -11,6 +11,7 @@ import { useTrackCategoryView } from "@/hooks/useTrackCategoryView"
 const SORT_OPTIONS = [
   { label: 'All Products', value: null },
   { label: 'Tees', value: 'Tops' },
+  { label: 'Outerwear', value: 'Outerwear' },
   { label: 'Tracksuits', value: 'Tracksuits' },
   { label: 'Jerseys', value: 'Jerseys' },
   { label: 'Hats', value: 'Hats' },

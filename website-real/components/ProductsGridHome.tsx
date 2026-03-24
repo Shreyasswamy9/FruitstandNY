@@ -32,14 +32,14 @@ export const products: Product[] = [
   // Kiwi Rugby Jersey
     { id: 2, name: "Kiwi Rugby Jersey", price: "$125", image: "/images/products/kiwi rugby jersey/Kiwi DS 1x1.png", hoverImage: "/images/products/kiwi rugby jersey/Kiwi 2.png", category: "Jerseys", variantSlug: "kiwi-rugby-jersey", badgeLabel: "NEW" },
   // Liberty Zip-Up
-  { id: 3, name: "Liberty Zip-Up", price: "$110", image: "/images/products/liberty zip ups/copper/Copper DS 1x1.png", hoverImage: "/images/products/liberty zip ups/copper/Copper Zip 1.png", category: "Tops", variantSlug: "liberty-zip-up", badgeLabel: "NEW" },
-  { id: 31, name: "Liberty Zip-Up", price: "$110", image: "/images/products/liberty zip ups/moss/Moss DS 1x1.png", hoverImage: "/images/products/liberty zip ups/moss/Moss Zip 1.png", category: "Tops", variantColor: "Moss", variantSlug: "moss", stPatsBadge: true, stPatsOriginalPrice: 110 },
+  { id: 3, name: "Liberty Zip-Up", price: "$110", image: "/images/products/liberty zip ups/copper/Copper DS 1x1.png", hoverImage: "/images/products/liberty zip ups/copper/Copper Zip 1.png", category: "Outerwear", variantSlug: "liberty-zip-up", badgeLabel: "NEW" },
+  { id: 31, name: "Liberty Zip-Up", price: "$110", image: "/images/products/liberty zip ups/moss/Moss DS 1x1.png", hoverImage: "/images/products/liberty zip ups/moss/Moss Zip 1.png", category: "Outerwear", variantColor: "Moss", variantSlug: "moss", stPatsBadge: true, stPatsOriginalPrice: 110 },
   // Liberty Hoodie
-  { id: 4, name: "Liberty Hoodie", price: "$110", image: "/images/products/liberty hoodies/mauve/Mauve DS 1x1.png", hoverImage: "/images/products/liberty hoodies/mauve/Mauve Hoodie 1 copy.png", category: "Tops", variantSlug: "liberty-hoodie", badgeLabel: "NEW" },
+  { id: 4, name: "Liberty Hoodie", price: "$110", image: "/images/products/liberty hoodies/mauve/Mauve DS 1x1.png", hoverImage: "/images/products/liberty hoodies/mauve/Mauve Hoodie 1 copy.png", category: "Outerwear", variantSlug: "liberty-hoodie", badgeLabel: "NEW" },
   // Jozi Rugby Jersey
   { id: 5, name: "Jozi Rugby Jersey", price: "$125", image: "/images/products/jozi rugby jersey/Jozi DS 1x1.png", hoverImage: "/images/products/jozi rugby jersey/Jozi 1.png", category: "Jerseys", variantSlug: "jozi-rugby-jersey", badgeLabel: "NEW", stPatsBadge: true, stPatsOriginalPrice: 125 },
   // Stamped Waffle Knit
-  { id: 1081, name: "Stamped Waffle Knit", price: "$65", image: "/images/products/waffle knit/Stamped Waffle Knit 1.png", hoverImage: "/images/products/waffle knit/Stamped Waffle Knit 2.png", category: "Tops", variantSlug: "stamped-waffle-knit", badgeLabel: "NEW" },
+  { id: 1081, name: "Stamped Waffle Knit", price: "$65", image: "/images/products/waffle knit/Waffle Knit DS 1x1.png", hoverImage: "/images/products/waffle knit/Stamped Waffle Knit 1.png", category: "Tops", variantSlug: "stamped-waffle-knit", badgeLabel: "NEW" },
   // Retro Track Suit Collection (spotlight second)
   { id: 2001, name: "Retro Track Suit", price: "$165", salePrice: 79, salePriceEffectiveDate: "2026-03-26", image: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TP.png", hoverImage: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TS7.png", category: "Tracksuits", variantColor: "Elmhurst Taro Custard", variantSlug: "elmhurst-taro-custard" },
   { id: 2002, name: "Retro Track Suit", price: "$165", salePrice: 79, salePriceEffectiveDate: "2026-03-26", image: "/images/products/tracksuits/Greenpoint Patina Crew/GB.png", hoverImage: "/images/products/tracksuits/Greenpoint Patina Crew/TS2.png", category: "Tracksuits", variantColor: "Greenpoint Patina Crew", variantSlug: "greenpoint-patina-crew", stPatsBadge: true, stPatsOriginalPrice: 165 },
@@ -69,8 +69,8 @@ export const products: Product[] = [
     name: "Mutsu Tee Bundle",
     price: "$35",
     displayPrice: "Bundle from $35",
-    image: "/images/products/mutsu-tshirt/broadwaynoir/N1.png",
-    hoverImage: "/images/products/mutsu-tshirt/broadwaynoir/N2.png",
+    image: "/images/products/mutsu-tshirt/broadwaynoir/Mutsu Broadway Noir.png",
+    hoverImage: "/images/products/mutsu-tshirt/broadwaynoir/N1.png",
     category: "Tops",
     variantColor: "Build your bundle",
     isBundle: true,
@@ -95,7 +95,7 @@ export const products: Product[] = [
     name: "Fuji Long Sleeve Bundle",
     price: "$44",
     displayPrice: "Bundle from $44",
-    image: "/images/products/fuji-tshirt/Broadwaynoir/F3.png",
+    image: "/images/products/fuji-tshirt/Broadwaynoir/Fuji Broadway Noir.png",
     hoverImage: "/images/products/fuji-tshirt/Broadwaynoir/F7.png",
     category: "Tops",
     variantColor: "Build your bundle",
@@ -132,22 +132,22 @@ export const products: Product[] = [
   // New Tee lineup
   // Gala Tee – each color variant surfaced individually
   { id: 1011, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/broadwaynoir/GN4.png", hoverImage: "/images/products/gala-tshirt/broadwaynoir/GN5.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
-  { id: 1012, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/suttonplacesnow/GN6.png", hoverImage: "/images/products/gala-tshirt/suttonplacesnow/GN11.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
-  { id: 1013, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/Grasshopper/GN3.png", hoverImage: "/images/products/gala-tshirt/Grasshopper/GN8.png", category: "Tops", variantColor: "Grasshopper", variantSlug: "grasshopper", stPatsBadge: true, stPatsOriginalPrice: 40 },
-  { id: 1014, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/frostedlemonade/GN10.png", hoverImage: "/images/products/gala-tshirt/frostedlemonade/GN9.png", category: "Tops", variantColor: "Frosted Lemonade", variantSlug: "frosted-lemonade" },
-  { id: 1015, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/italianice/GN1.png", hoverImage: "/images/products/gala-tshirt/italianice/GN2.png", category: "Tops", variantColor: "Italian Ice", variantSlug: "italian-ice" },
-  { id: 1016, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/ruby red/GN.png", hoverImage: "/images/products/gala-tshirt/ruby red/GN7.png", category: "Tops", variantColor: "Ruby Red", variantSlug: "ruby-red" },
+  { id: 1012, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/suttonplacesnow/Gala Sutton Place Snow.png", hoverImage: "/images/products/gala-tshirt/suttonplacesnow/GN11.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
+  { id: 1013, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/Grasshopper/Gala Grasshopper.png", hoverImage: "/images/products/gala-tshirt/Grasshopper/GN8.png", category: "Tops", variantColor: "Grasshopper", variantSlug: "grasshopper", stPatsBadge: true, stPatsOriginalPrice: 40 },
+  { id: 1014, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/frostedlemonade/Gala Frosted Lemonade.png", hoverImage: "/images/products/gala-tshirt/frostedlemonade/GN10.png", category: "Tops", variantColor: "Frosted Lemonade", variantSlug: "frosted-lemonade" },
+  { id: 1015, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/italianice/Gala Italian Ice.png", hoverImage: "/images/products/gala-tshirt/italianice/GN2.png", category: "Tops", variantColor: "Italian Ice", variantSlug: "italian-ice" },
+  { id: 1016, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/ruby red/Gala Ruby Red.png", hoverImage: "/images/products/gala-tshirt/ruby red/GN7.png", category: "Tops", variantColor: "Ruby Red", variantSlug: "ruby-red" },
   // Cameo variants
   { id: 1021, name: "Portugal Heavyweight Tee", price: "$40", salePrice: 29, salePriceEffectiveDate: "2026-03-26", image: "/images/products/cameo-tshirt/broadwaynoir/MN.png", hoverImage: "/images/products/cameo-tshirt/broadwaynoir/MN3.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
-  { id: 1022, name: "Portugal Heavyweight Tee", price: "$40", salePrice: 29, salePriceEffectiveDate: "2026-03-26", image: "/images/products/cameo-tshirt/suttonplacesnow/MN1.png", hoverImage: "/images/products/cameo-tshirt/suttonplacesnow/MN2.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
+  { id: 1022, name: "Portugal Heavyweight Tee", price: "$40", salePrice: 29, salePriceEffectiveDate: "2026-03-26", image: "/images/products/cameo-tshirt/suttonplacesnow/Cameo Sutton Place Snow.png", hoverImage: "/images/products/cameo-tshirt/suttonplacesnow/MN2.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
   // Mutsu variants
-  { id: 1031, name: "Portugal Pocket Tee", price: "$45.00", salePrice: 35, salePriceEffectiveDate: "2026-03-26", image: "/images/products/mutsu-tshirt/broadwaynoir/N1.png", hoverImage: "/images/products/mutsu-tshirt/broadwaynoir/N2.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
-  { id: 1032, name: "Portugal Pocket Tee", price: "$45.00", salePrice: 35, salePriceEffectiveDate: "2026-03-26", image: "/images/products/mutsu-tshirt/suttonplacesnow/N3.png", hoverImage: "/images/products/mutsu-tshirt/suttonplacesnow/N4.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
+  { id: 1031, name: "Portugal Pocket Tee", price: "$45.00", salePrice: 35, salePriceEffectiveDate: "2026-03-26", image: "/images/products/mutsu-tshirt/broadwaynoir/Mutsu Broadway Noir.png", hoverImage: "/images/products/mutsu-tshirt/broadwaynoir/N1.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
+  { id: 1032, name: "Portugal Pocket Tee", price: "$45.00", salePrice: 35, salePriceEffectiveDate: "2026-03-26", image: "/images/products/mutsu-tshirt/suttonplacesnow/Mutsu Sutton Place Snow.png", hoverImage: "/images/products/mutsu-tshirt/suttonplacesnow/N4.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
   // Fuji Long Sleeve variants (updated colors & images)
-  { id: 1041, name: "Portugal Heavyweight Pocket Long Sleeve", price: "$80", salePrice: 44, salePriceEffectiveDate: "2026-03-26", image: "/images/products/fuji-tshirt/Arboretum/F2.png", hoverImage: "/images/products/fuji-tshirt/Arboretum/F11.png", category: "Tops", variantColor: "Arboretum", variantSlug: "arboretum", stPatsBadge: true, stPatsOriginalPrice: 80 },
-  { id: 1042, name: "Portugal Heavyweight Pocket Long Sleeve", price: "$80", salePrice: 44, salePriceEffectiveDate: "2026-03-26", image: "/images/products/fuji-tshirt/Hudson blue/F1.png", hoverImage: "/images/products/fuji-tshirt/Hudson blue/F9.png", category: "Tops", variantColor: "Hudson Blue", variantSlug: "hudson-blue" },
-  { id: 1043, name: "Portugal Heavyweight Pocket Long Sleeve", price: "$80", salePrice: 44, salePriceEffectiveDate: "2026-03-26", image: "/images/products/fuji-tshirt/Redbird/F4.png", hoverImage: "/images/products/fuji-tshirt/Redbird/F5.png", category: "Tops", variantColor: "Redbird", variantSlug: "redbird" },
-  { id: 1044, name: "Portugal Heavyweight Pocket Long Sleeve", price: "$80", salePrice: 44, salePriceEffectiveDate: "2026-03-26", image: "/images/products/fuji-tshirt/Broadwaynoir/F3.png", hoverImage: "/images/products/fuji-tshirt/Broadwaynoir/F7.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
+  { id: 1041, name: "Portugal Heavyweight Pocket Long Sleeve", price: "$80", salePrice: 44, salePriceEffectiveDate: "2026-03-26", image: "/images/products/fuji-tshirt/Arboretum/Fuji Arboretum.png", hoverImage: "/images/products/fuji-tshirt/Arboretum/F11.png", category: "Tops", variantColor: "Arboretum", variantSlug: "arboretum", stPatsBadge: true, stPatsOriginalPrice: 80 },
+  { id: 1042, name: "Portugal Heavyweight Pocket Long Sleeve", price: "$80", salePrice: 44, salePriceEffectiveDate: "2026-03-26", image: "/images/products/fuji-tshirt/Hudson blue/Fuji Hudson Blue.png", hoverImage: "/images/products/fuji-tshirt/Hudson blue/F9.png", category: "Tops", variantColor: "Hudson Blue", variantSlug: "hudson-blue" },
+  { id: 1043, name: "Portugal Heavyweight Pocket Long Sleeve", price: "$80", salePrice: 44, salePriceEffectiveDate: "2026-03-26", image: "/images/products/fuji-tshirt/Redbird/Fuji Redbird.png", hoverImage: "/images/products/fuji-tshirt/Redbird/F5.png", category: "Tops", variantColor: "Redbird", variantSlug: "redbird" },
+  { id: 1044, name: "Portugal Heavyweight Pocket Long Sleeve", price: "$80", salePrice: 44, salePriceEffectiveDate: "2026-03-26", image: "/images/products/fuji-tshirt/Broadwaynoir/Fuji Broadway Noir.png", hoverImage: "/images/products/fuji-tshirt/Broadwaynoir/F7.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
   // New additions: Wasabi Tee and First Edition Tee
   { id: 1071, name: "Wabisabi™ Scheffel Hall Pears Tee", price: "$45", image: "/images/products/Wasabi Tee/Wabasabi 1.png", hoverImage: "/images/products/Wasabi Tee/Wabasabi 2.png", category: "Tops", variantSlug: "wasabi-tee" },
   { id: 1072, name: "First Edition Tee", price: "$45", image: "/images/products/First Edition Tee/FE1.png", hoverImage: "/images/products/First Edition Tee/FE2.png", category: "Tops", variantColor: "White", variantSlug: "white" },

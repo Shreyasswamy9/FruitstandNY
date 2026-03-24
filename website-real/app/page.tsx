@@ -54,7 +54,7 @@ const newItems = [
   {
     id: "stamped-waffle-knit",
     name: "STAMPED WAFFLE KNIT",
-    image: "/images/products/waffle knit/Stamped Waffle Knit Updated.png",
+    image: "/images/products/waffle knit/Waffle Knit DS 1x1.png",
     price: "$65",
     link: "/shop/stamped-waffle-knit",
   },
@@ -82,7 +82,7 @@ const newItems = [
   {
     id: "fuji-tee",
     name: "FUJI LONG SLEEVE",
-    image: "/images/products/fuji-tshirt/Arboretum/F2.png",
+    image: "/images/products/fuji-tshirt/Arboretum/Fuji Arboretum.png",
     price: "$80",
     link: "/shop/fuji-tshirt",
   },

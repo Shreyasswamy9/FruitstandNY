@@ -72,8 +72,8 @@ export const SHIRT_BUNDLES: ShirtBundleConfig[] = [
     description: 'Build your Mutsu Tee bundle. Mix colors and sizes.',
     basePrice: 35.00,
     prices: SHIRT_BUNDLE_PRICING.mutsu,
-    image: '/images/products/mutsu-tshirt/broadwaynoir/N1.png',
-    hoverImage: '/images/products/mutsu-tshirt/broadwaynoir/N2.png',
+    image: '/images/products/mutsu-tshirt/broadwaynoir/Mutsu Broadway Noir.png',
+    hoverImage: '/images/products/mutsu-tshirt/broadwaynoir/N1.png',
   },
   {
     id: '9004',
@@ -96,7 +96,7 @@ export const SHIRT_BUNDLES: ShirtBundleConfig[] = [
     description: 'Build your Fuji Long Sleeve bundle. Mix colors and sizes.',
     basePrice: 44.00,
     prices: SHIRT_BUNDLE_PRICING.fuji,
-    image: '/images/products/fuji-tshirt/Broadwaynoir/F3.png',
+    image: '/images/products/fuji-tshirt/Broadwaynoir/Fuji Broadway Noir.png',
     hoverImage: '/images/products/fuji-tshirt/Broadwaynoir/F7.png',
   },
 ];

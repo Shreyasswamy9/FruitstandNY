@@ -40,9 +40,9 @@ const STAMPED_COLOR_OPTIONS: StampedColorOption[] = [
     slug: 'default',
     color: '#e8d5c4',
     images: [
+      '/images/products/waffle knit/Waffle Knit DS 1x1.png',
       '/images/products/waffle knit/Stamped Waffle Knit 1.png',
       '/images/products/waffle knit/Stamped Waffle Knit 2.png',
-      '/images/products/waffle knit/Waffle Knit DS 1x1.png'
     ],
     bg: '#f5f5f5',
     border: '#d4d4d4'

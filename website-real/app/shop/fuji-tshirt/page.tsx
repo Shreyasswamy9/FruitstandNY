@@ -29,22 +29,22 @@ type FujiColorSlug = 'arboretum' | 'hudson-blue' | 'redbird' | 'broadway-noir';
 
 const FUJI_COLOR_IMAGE_MAP: Record<FujiColorSlug, string[]> = {
   'arboretum': [
-    '/images/products/fuji-tshirt/Arboretum/F2.png',
+    '/images/products/fuji-tshirt/Arboretum/Fuji Arboretum.png',
     '/images/products/fuji-tshirt/Arboretum/F11.png',
     '/images/products/fuji-tshirt/Arboretum/F12.png'
   ],
   'hudson-blue': [
-    '/images/products/fuji-tshirt/Hudson blue/F1.png',
+    '/images/products/fuji-tshirt/Hudson blue/Fuji Hudson Blue.png',
     '/images/products/fuji-tshirt/Hudson blue/F9.png',
     '/images/products/fuji-tshirt/Hudson blue/F10.png'
   ],
   'redbird': [
-    '/images/products/fuji-tshirt/Redbird/F4.png',
+    '/images/products/fuji-tshirt/Redbird/Fuji Redbird.png',
     '/images/products/fuji-tshirt/Redbird/F5.png',
     '/images/products/fuji-tshirt/Redbird/F6.png'
   ],
   'broadway-noir': [
-    '/images/products/fuji-tshirt/Broadwaynoir/F3.png',
+    '/images/products/fuji-tshirt/Broadwaynoir/Fuji Broadway Noir.png',
     '/images/products/fuji-tshirt/Broadwaynoir/F7.png',
     '/images/products/fuji-tshirt/Broadwaynoir/F8.png'
   ]
