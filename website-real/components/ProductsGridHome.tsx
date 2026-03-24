@@ -595,7 +595,6 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
               borderRadius: CARD_RADIUS,
               boxShadow: 'none',
               overflow: 'hidden',
-              cursor: 'pointer',
               transition: 'transform 0.2s',
               display: 'flex',
               flexDirection: 'column',
