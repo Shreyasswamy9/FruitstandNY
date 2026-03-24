@@ -23,6 +23,7 @@ export interface Product {
   badgeLabel?: string;
   stPatsBadge?: boolean; // marks this card as a St. Patrick's Day green deal
   stPatsOriginalPrice?: number; // original numeric price for discount calc
+  soldOut?: boolean; // marks item as sold out with no stock
 }
 
 // Editable product list for the homepage grid
@@ -168,7 +169,7 @@ export const products: Product[] = [
   { id: 3005, name: "Indigo FS Cap", price: "$44", salePrice: 25, salePriceEffectiveDate: "2026-03-26", image: "/images/products/denim-hat/Denim Hat.png", hoverImage: "/images/products/denim-hat/D1.png", category: "Hats" },
 
   // Mandarin Tee
-  { id: 4001, name: "Mandarin 橘子 [JUZI] Tee", price: "$68.00", image: "/images/products/Mandarin Tee/Mandarin Tee.png", hoverImage: "/images/products/Mandarin Tee/Mandarin 2.png", category: "Tops", variantSlug: "mandarin-tee", },
+  { id: 4001, name: "Mandarin 橘子 [JUZI] Tee", price: "$68.00", image: "/images/products/Mandarin Tee/Mandarin Tee.png", hoverImage: "/images/products/Mandarin Tee/Mandarin 2.png", category: "Tops", variantSlug: "mandarin-tee", soldOut: true },
 
   // Track Pants (variants)
   { id: 5001, name: "Retro Track Pants", price: "$90", image: "/images/products/Track Pants/ELMHURST TARO CUSTARD/P6.png", hoverImage: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TS7.png", category: "Tracksuits", variantColor: "Elmhurst Taro Custard", variantSlug: "elmhurst-taro-custard" },
@@ -609,11 +610,13 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
               marginBottom: 0,
               boxSizing: 'border-box',
               position: 'relative',
-              transform: isActive ? 'scale(1.01)' : 'none',
+              transform: isActive && !product.soldOut ? 'scale(1.01)' : 'none',
               zIndex: isActive ? 10 : 1,
               justifyContent: isMobile ? 'center' : 'stretch',
-              pointerEvents: 'auto',
-                border: 'none'
+              pointerEvents: product.soldOut ? 'none' : 'auto',
+              cursor: product.soldOut ? 'not-allowed' : 'pointer',
+              opacity: product.soldOut ? 0.6 : 1,
+              border: 'none'
             }}
             onMouseEnter={() => { 
               if (!isMobile) setHovered(product.id); 
@@ -672,6 +675,9 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
               }
             }}
             onClick={() => {
+              if (product.soldOut) {
+                return;
+              }
               if (Date.now() - lastNavigationRef.current < 350) {
                 return;
               }
@@ -715,7 +721,28 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
               overflow: 'hidden',
               borderRadius: CARD_RADIUS,
             }}>
-              {product.badgeLabel && (
+              {product.soldOut ? (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: 12,
+                    left: 12,
+                    backgroundColor: '#dc2626',
+                    color: '#ffffff',
+                    padding: '4px 10px',
+                    borderRadius: 999,
+                    fontSize: '0.65rem',
+                    fontWeight: 600,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    zIndex: 10,
+                    opacity: 1,
+                    pointerEvents: 'none',
+                  }}
+                >
+                  Sold Out
+                </span>
+              ) : product.badgeLabel ? (
                 <span
                   style={{
                     position: 'absolute',
@@ -736,7 +763,7 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
                 >
                   {product.badgeLabel}
                 </span>
-              )}
+              ) : null}
               <Image
                 src={activeVariant.image}
                 alt={product.name}
@@ -762,6 +789,27 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
                   }}
                   priority={idx < 6}
                 />
+              )}
+              {product.soldOut && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 5,
+                  }}
+                >
+                  <p style={{
+                    color: '#ffffff',
+                    fontSize: '0.95rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                  }}>Sold Out</p>
+                </div>
               )}
               </div>
               {/* Name and price below the image with premium spacing */}
