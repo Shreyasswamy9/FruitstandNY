@@ -685,7 +685,7 @@ async function getSupabaseAdminClient() {
  * Send order confirmation email from checkout session
  */
 async function sendOrderConfirmationEmail(
-  order: { id: string | number; order_number?: string; total_amount?: number },
+  order: { id: string | number; order_number?: string; total_amount?: number; subtotal?: number; tax_amount?: number; shipping_amount?: number; discount_amount?: number; created_at?: string },
   session: Stripe.Checkout.Session
 ) {
   try {
@@ -720,12 +720,16 @@ async function sendOrderConfirmationEmail(
                         (session.metadata?.customer ? JSON.parse(session.metadata.customer).name : null) ||
                         'Valued Customer'
     
-    // Calculate order total (total_amount stored in dollars in DB)
-    const orderTotal = order.total_amount != null
-      ? `$${order.total_amount.toFixed(2)}`
-      : `$${((session.amount_total || 0) / 100).toFixed(2)}`
+    const fmt = (n: number | null | undefined, fallbackCents: number | null | undefined) =>
+      `$${(n != null ? n : (fallbackCents ?? 0) / 100).toFixed(2)}`
 
-    // Build order URL — link to account page where order history is visible
+    const orderTotal    = fmt(order.total_amount, session.amount_total)
+    const orderSubtotal = fmt(order.subtotal, session.amount_subtotal)
+    const orderTax      = fmt(order.tax_amount, session.total_details?.amount_tax ?? null)
+    const orderShipping = fmt(order.shipping_amount, session.total_details?.amount_shipping ?? null)
+    const orderDiscount = fmt(order.discount_amount, session.total_details?.amount_discount ?? null)
+    const orderDate     = new Date(order.created_at || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+
     const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || 'https://fruitstandny.com').replace(/\/$/, '')
     const orderUrl = `${baseUrl}/account`
 
@@ -735,10 +739,15 @@ async function sendOrderConfirmationEmail(
       toEmail: customerEmail,
       toName: customerName,
       mergeVars: {
-        ORDER_NUMBER: orderNumber,
-        ORDER_TOTAL: orderTotal,
-        ORDER_URL: orderUrl,
         CUSTOMER_NAME: customerName,
+        ORDER_NUMBER: orderNumber,
+        ORDER_DATE: orderDate,
+        ORDER_TOTAL: orderTotal,
+        ORDER_SUBTOTAL: orderSubtotal,
+        ORDER_TAX_TOTAL: orderTax,
+        ORDER_SHIP_TOTAL: orderShipping,
+        ORDER_DISCOUNT_TOTAL: orderDiscount,
+        ORDER_URL: orderUrl,
       },
     })
     
@@ -758,7 +767,7 @@ async function sendOrderConfirmationEmail(
  * Send order confirmation email from payment intent
  */
 async function sendOrderConfirmationEmailFromPaymentIntent(
-  order: { id: string | number; order_number?: string; total_amount?: number },
+  order: { id: string | number; order_number?: string; total_amount?: number; subtotal?: number; tax_amount?: number; shipping_amount?: number; discount_amount?: number; created_at?: string },
   paymentIntent: Stripe.PaymentIntent,
   customerEmail: string,
   customerName: string
@@ -779,12 +788,17 @@ async function sendOrderConfirmationEmailFromPaymentIntent(
       return
     }
     
-    // Calculate order total (total_amount stored in dollars in DB)
-    const orderTotal = order.total_amount != null
-      ? `$${order.total_amount.toFixed(2)}`
-      : `$${((paymentIntent.amount || 0) / 100).toFixed(2)}`
+    const meta = paymentIntent.metadata ?? {}
+    const fmt = (n: number | null | undefined, fallbackCents: number | null | undefined) =>
+      `$${(n != null ? n : (fallbackCents ?? 0) / 100).toFixed(2)}`
 
-    // Build order URL — link to account page where order history is visible
+    const orderTotal    = fmt(order.total_amount, paymentIntent.amount)
+    const orderSubtotal = fmt(order.subtotal, Number.isFinite(Number(meta.subtotal)) ? Number(meta.subtotal) * 100 : null)
+    const orderTax      = fmt(order.tax_amount, Number.isFinite(Number(meta.tax)) ? Number(meta.tax) * 100 : null)
+    const orderShipping = fmt(order.shipping_amount, Number.isFinite(Number(meta.shipping)) ? Number(meta.shipping) * 100 : null)
+    const orderDiscount = fmt(order.discount_amount, Number.isFinite(Number(meta.discount_amount)) ? Number(meta.discount_amount) * 100 : null)
+    const orderDate     = new Date(order.created_at || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+
     const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || 'https://fruitstandny.com').replace(/\/$/, '')
     const orderUrl = `${baseUrl}/account`
 
@@ -794,10 +808,15 @@ async function sendOrderConfirmationEmailFromPaymentIntent(
       toEmail: customerEmail,
       toName: customerName || 'Valued Customer',
       mergeVars: {
-        ORDER_NUMBER: orderNumber,
-        ORDER_TOTAL: orderTotal,
-        ORDER_URL: orderUrl,
         CUSTOMER_NAME: customerName || 'Valued Customer',
+        ORDER_NUMBER: orderNumber,
+        ORDER_DATE: orderDate,
+        ORDER_TOTAL: orderTotal,
+        ORDER_SUBTOTAL: orderSubtotal,
+        ORDER_TAX_TOTAL: orderTax,
+        ORDER_SHIP_TOTAL: orderShipping,
+        ORDER_DISCOUNT_TOTAL: orderDiscount,
+        ORDER_URL: orderUrl,
       },
     })
     
