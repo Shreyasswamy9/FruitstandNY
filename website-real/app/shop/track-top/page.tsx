@@ -69,7 +69,7 @@ const PRODUCT = {
     "Relaxed fit",
     "Made in Sialkot, Pakistan",
   ],
-  sizes: ["XS", "S", "M", "L", "XL", "XXL", "XXXL"],
+  sizes: ["XS", "S", "M", "L", "XL", "XXL"],
 };
 
 export default function TrackTopPage() {

@@ -47,7 +47,7 @@ const PRODUCT = {
     "Comes with custom NYC-made hang tags and a sustainable burlap bag",
     "Quality guaranteed, Free returns."
   ],
-  sizes: ["XS", "S", "M", "L", "XL", "XXL", "XXXL"],
+  sizes: ["XS", "S", "M", "L", "XL", "XXL"],
 };
 
 export default function FirstEditionTeePage() {

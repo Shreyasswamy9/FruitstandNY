@@ -55,7 +55,7 @@ const PRODUCT = {
   ],
 };
 
-const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
+const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL"];
 
 export default function HockeyJerseyPage() {
   const colorOptions = HOCKEY_JERSEY_VARIANTS;

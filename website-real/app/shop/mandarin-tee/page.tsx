@@ -48,11 +48,11 @@ const PRODUCT = {
     "Ships with a custom FRUITSTAND sticker printed in NYC",
     "Quality guaranteed, Free returns."
   ],
-  sizes: ["XS", "S", "M", "L", "XL", "XXL", "XXXL"],
+  sizes: ["XS", "S", "M", "L", "XL", "XXL"],
 };
 
 const OUT_OF_STOCK_SIZES = [
-  "XS", "S", "XXXL"] as const;
+  "XS", "S"] as const;
 
 export default function MandarinTeePage() {
   const [selectedImage, setSelectedImage] = useState(MANDARIN_IMAGES[0]);

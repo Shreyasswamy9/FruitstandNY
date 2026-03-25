@@ -124,7 +124,7 @@ const RECOMMENDED_PRODUCTS = [
   },
 ];
 
-const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
+const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL"];
 
 const DEFAULT_VARIANT = TRACKSUIT_VARIANTS.find((variant) => variant.slug === "victory-liberty-club") ?? TRACKSUIT_VARIANTS[0];
 

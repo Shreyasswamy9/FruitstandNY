@@ -161,7 +161,7 @@ export default function ProductPurchaseBar({
             className="relative flex overflow-hidden border-t border-white bg-black text-white shadow-[0_-14px_40px_rgba(0,0,0,0.35)]"
           >
             <div className="flex h-full w-full items-stretch">
-              <div className="relative flex flex-1 items-center justify-end border-r border-black px-3 py-4">
+              <div className={`relative flex flex-1 items-center justify-end border-r border-black px-3 py-4 ${colorOptions?.length === 1 ? "opacity-40" : ""}`}>
                 {selectedColorOption?.swatch ? (
                   <span
                     aria-hidden
@@ -175,26 +175,30 @@ export default function ProductPurchaseBar({
                 <span className="max-w-[120px] truncate text-[13px] font-semibold uppercase tracking-[0.18em]">
                   {colorLabel}
                 </span>
-                <span className="pointer-events-none text-sm text-white ml-2">▼</span>
-                <select
-                  aria-label="Select color"
-                  value={selectedColor ?? ""}
-                  onChange={(event) => {
-                    const value = event.target.value;
-                    if (value) {
-                      onSelectColor?.(value);
-                    }
-                  }}
-                  className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                  style={{ color: "#000000", backgroundColor: "#ffffff" }}
-                >
-                  {!selectedColor && <option value="">Select</option>}
-                  {colorOptions?.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                {colorOptions?.length !== 1 && (
+                  <span className="pointer-events-none text-sm text-white ml-2">▼</span>
+                )}
+                {colorOptions?.length !== 1 && (
+                  <select
+                    aria-label="Select color"
+                    value={selectedColor ?? ""}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      if (value) {
+                        onSelectColor?.(value);
+                      }
+                    }}
+                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                    style={{ color: "#000000", backgroundColor: "#ffffff" }}
+                  >
+                    {!selectedColor && <option value="">Select</option>}
+                    {colorOptions?.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div className="relative flex flex-1 items-center justify-end border-r border-white px-3 py-4">

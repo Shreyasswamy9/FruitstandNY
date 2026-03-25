@@ -41,7 +41,7 @@ const PRODUCT = {
     "Image of Scheffel Hall (photo taken Dec 2021) inside our golden pear motif",
     "Quality guaranteed, Free returns."
   ],
-  sizes: ["XS", "S", "M", "L", "XL", "XXL", "XXXL"],
+  sizes: ["XS", "S", "M", "L", "XL", "XXL"],
 };
 
 export default function WasabiTeePage() {

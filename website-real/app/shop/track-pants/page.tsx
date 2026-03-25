@@ -66,7 +66,7 @@ const PRODUCT = {
     "Quality guaranteed, Free returns.",
     "Made in Sialkot, Pakistan",
   ],
-  sizes: ["XS", "S", "M", "L", "XL", "XXL", "XXXL"],
+  sizes: ["XS", "S", "M", "L", "XL", "XXL"],
 };
 
 export default function TrackPantsPage() {
