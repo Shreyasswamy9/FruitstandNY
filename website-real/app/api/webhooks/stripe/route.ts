@@ -273,7 +273,8 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
     console.log('No existing order found, will attempt to sync/create one.');
 
     // If we reach here, no order exists or update failed — sync using the session
-    const syncResult = await SupabaseOrderService.syncOrderFromStripeSession(session);
+    // Pass the resolved shippingAddress so it doesn't get lost
+    const syncResult = await SupabaseOrderService.syncOrderFromStripeSession(session, shippingDetails?.address || null);
 
     if (!syncResult) {
       console.error('Webhook: Order sync failed.');
