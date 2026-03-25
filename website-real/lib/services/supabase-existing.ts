@@ -655,7 +655,7 @@ export class SupabaseOrderService {
     };
   }
 
-  static async syncOrderFromPaymentIntent(paymentIntent: Stripe.PaymentIntent, resolvedBillingAddress?: Stripe.Address | null) {
+  static async syncOrderFromPaymentIntent(paymentIntent: Stripe.PaymentIntent, resolvedBillingAddress?: Stripe.Address | null, resolvedBillingEmail?: string | null) {
     console.log('Syncing order from payment intent:', paymentIntent.id);
 
     if (paymentIntent.status !== 'succeeded') return null;
@@ -726,7 +726,7 @@ export class SupabaseOrderService {
         || (guestData?.firstName && guestData?.lastName ? `${guestData.firstName} ${guestData.lastName}` : '')
         || customerData?.name
         || '',
-      shipping_email: customerData?.email || guestData?.email || paymentIntent.receipt_email || '',
+      shipping_email: customerData?.email || guestData?.email || paymentIntent.receipt_email || resolvedBillingEmail || '',
       shipping_phone: paymentIntent.shipping?.phone || guestData?.phone || '',
       shipping_address_line1: shippingAddress?.line1 || guestData?.address?.street || '',
       shipping_address_line2: shippingAddress?.line2 || guestData?.address?.street2 || '',

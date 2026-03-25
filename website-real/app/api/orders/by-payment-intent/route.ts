@@ -49,6 +49,8 @@ export async function GET(request: NextRequest) {
 
 const billingAddress = (paymentIntent.payment_method as Stripe.PaymentMethod)
   ?.billing_details?.address ?? null;
+const billingEmail = (paymentIntent.payment_method as Stripe.PaymentMethod)
+  ?.billing_details?.email ?? null;
 
     // Only return order data for payment intents that have actually succeeded.
     // Abandoned intents (e.g. created when a user browses the cart) must not
@@ -57,7 +59,7 @@ const billingAddress = (paymentIntent.payment_method as Stripe.PaymentMethod)
       return NextResponse.json({ error: 'Payment not completed', data: null }, { status: 404 });
     }
 
-    const syncedOrder = await SupabaseOrderService.syncOrderFromPaymentIntent(paymentIntent, billingAddress);
+    const syncedOrder = await SupabaseOrderService.syncOrderFromPaymentIntent(paymentIntent, billingAddress, billingEmail);
     if (!syncedOrder) {
       return NextResponse.json({ error: 'Order not found yet. It may still be processing.', data: null }, { status: 404 });
     }

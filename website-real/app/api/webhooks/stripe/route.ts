@@ -318,6 +318,11 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
 
     const shippingName = (shippingDetails?.name || customerData?.name || nameFromGuest || 'Guest').trim() || 'Guest';
     const shippingEmail = customerData?.email || guestData?.email || paymentIntent.receipt_email || '';
+
+    if (!shippingEmail) {
+      console.error(`No email found for payment intent ${paymentIntent.id} — confirmation email will not be sent`)
+    }
+
     const shippingPhone = shippingDetails?.phone || guestData?.phone || customerData?.phone || null;
 
     const shippingPayload = {
