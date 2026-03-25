@@ -6,6 +6,7 @@ import { generateOrderNumber } from '@/lib/orderNumbers'
 import { readCartMetadata } from '@/lib/stripeCartMetadata'
 import { sendTransactionalTemplate } from '@/lib/email/transactional'
 import { hasEmailEvent, recordEmailEvent } from '@/lib/email/emailEvents'
+import { trackOrderInMailchimp } from '@/lib/mailchimp-ecommerce'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
@@ -251,7 +252,8 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
         
         // Send order confirmation email
         await sendOrderConfirmationEmail(existingOrder, session);
-        
+        await trackOrderInMailchimp(existingOrder);
+
         return;
       }
     } catch (err) {
@@ -272,7 +274,8 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
     
     // Send order confirmation email for newly created order
     await sendOrderConfirmationEmail(syncResult, session);
-    
+    await trackOrderInMailchimp(syncResult);
+
     console.log('Webhook processed successfully');
 
   } catch (err: unknown) {
@@ -317,7 +320,19 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
       : undefined;
 
     const shippingName = (shippingDetails?.name || customerData?.name || nameFromGuest || 'Guest').trim() || 'Guest';
-    const shippingEmail = customerData?.email || guestData?.email || paymentIntent.receipt_email || '';
+
+    // For Link / Apple Pay / Google Pay, email comes from the charge's billing_details
+    let chargeEmail = '';
+    if (paymentIntent.latest_charge) {
+      try {
+        const charge = await stripe.charges.retrieve(paymentIntent.latest_charge as string);
+        chargeEmail = charge.billing_details.email || '';
+      } catch {
+        // non-fatal
+      }
+    }
+
+    const shippingEmail = customerData?.email || guestData?.email || paymentIntent.receipt_email || chargeEmail || '';
 
     if (!shippingEmail) {
       console.error(`No email found for payment intent ${paymentIntent.id} — confirmation email will not be sent`)
@@ -353,7 +368,8 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
         shippingEmail,
         shippingName
       );
-      
+      await trackOrderInMailchimp(existingOrder, cartItems);
+
       return;
     }
 
@@ -386,6 +402,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
         shippingEmail,
         shippingName
       );
+      await trackOrderInMailchimp(newOrder, cartItems);
     }
   } catch (error) {
     console.error('Error handling payment_intent.succeeded:', error);
@@ -703,15 +720,15 @@ async function sendOrderConfirmationEmail(
                         (session.metadata?.customer ? JSON.parse(session.metadata.customer).name : null) ||
                         'Valued Customer'
     
-    // Calculate order total
-    const orderTotal = order.total_amount ? 
-                      `$${(order.total_amount / 100).toFixed(2)}` : 
-                      `$${((session.amount_total || 0) / 100).toFixed(2)}`
-    
-    // Build order URL
-    const baseUrl = process.env.APP_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://fruitstandny.com'
-    const orderUrl = `${baseUrl}/order/${orderNumber}`
-    
+    // Calculate order total (total_amount stored in dollars in DB)
+    const orderTotal = order.total_amount != null
+      ? `$${order.total_amount.toFixed(2)}`
+      : `$${((session.amount_total || 0) / 100).toFixed(2)}`
+
+    // Build order URL — link to account page where order history is visible
+    const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || 'https://fruitstandny.com').replace(/\/$/, '')
+    const orderUrl = `${baseUrl}/account`
+
     // Send email
     const result = await sendTransactionalTemplate({
       templateName: 'order_confirmation',
@@ -762,15 +779,15 @@ async function sendOrderConfirmationEmailFromPaymentIntent(
       return
     }
     
-    // Calculate order total
-    const orderTotal = order.total_amount ? 
-                      `$${(order.total_amount / 100).toFixed(2)}` : 
-                      `$${((paymentIntent.amount || 0) / 100).toFixed(2)}`
-    
-    // Build order URL
-    const baseUrl = process.env.APP_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://fruitstandny.com'
-    const orderUrl = `${baseUrl}/order/${orderNumber}`
-    
+    // Calculate order total (total_amount stored in dollars in DB)
+    const orderTotal = order.total_amount != null
+      ? `$${order.total_amount.toFixed(2)}`
+      : `$${((paymentIntent.amount || 0) / 100).toFixed(2)}`
+
+    // Build order URL — link to account page where order history is visible
+    const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || 'https://fruitstandny.com').replace(/\/$/, '')
+    const orderUrl = `${baseUrl}/account`
+
     // Send email
     const result = await sendTransactionalTemplate({
       templateName: 'order_confirmation',
