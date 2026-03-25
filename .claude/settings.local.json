@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/shreyasswamy/Desktop/FruitstandNY -type f \\\\\\(-name *.sql -o -name *migration* \\\\\\))"
+    ]
+  }
+}

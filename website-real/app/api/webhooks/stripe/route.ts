@@ -291,8 +291,17 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
     }
 
     const metadata = paymentIntent.metadata ?? {};
+
+    // If there's no cart or order_number in PI metadata, this PI was created by a
+    // Checkout Session (metadata lives on the session, not the PI). Skip here —
+    // checkout.session.completed will handle order creation with the correct amounts.
     const cartJson = readCartMetadata(metadata) ?? '[]';
     const cartItems = safeJsonParse<OrderCartItem[]>(cartJson, []);
+    if (cartItems.length === 0 && !metadata.order_number) {
+      console.log('Skipping payment_intent.succeeded — no cart metadata found on PI, checkout.session.completed will handle this order.');
+      return;
+    }
+
     const guestData = safeJsonParse<GuestPayload>(metadata.guest ?? '{}', {});
     const customerData = safeJsonParse<CustomerPayload>(metadata.customer ?? '{}', {});
 
