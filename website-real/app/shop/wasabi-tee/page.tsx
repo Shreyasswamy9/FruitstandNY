@@ -9,6 +9,7 @@ import { useCart } from "../../../components/CartContext";
 import ProductPurchaseBar, { PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import SizeGuide from "@/components/SizeGuide";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -49,6 +50,7 @@ export default function WasabiTeePage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const { addToCart } = useCart();
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('51977ef7-ae8f-486f-9dd7-7620e3b6e70a');
 
   useTrackProductView({
     productId: "51977ef7-ae8f-486f-9dd7-7620e3b6e70a",
@@ -71,10 +73,10 @@ export default function WasabiTeePage() {
 
   const boughtTogetherItems = getFBTForPage('wasabi-tee');
 
-  const sizeOptions: PurchaseSizeOption[] = PRODUCT.sizes.map((size) => ({
-    value: size,
-    label: size,
-  }));
+  const sizeOptions: PurchaseSizeOption[] = useMemo(
+    () => PRODUCT.sizes.map((size) => ({ value: size, label: size, soldOut: isSizeSoldOut(size) })),
+    [isSizeSoldOut]
+  );
 
   return (
     <div>
@@ -183,6 +185,8 @@ export default function WasabiTeePage() {
         selectedSize={selectedSize}
         onSelectSize={setSelectedSize}
         onAddToCart={handleAddToCart}
+        addDisabled={isOutOfStock(selectedSize)}
+        addDisabledReason={isOutOfStock(selectedSize) ? "Out of Stock" : undefined}
       />
 
     </div>

@@ -8,6 +8,7 @@ import { useCart } from "../../../components/CartContext";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductSetStock } from '@/hooks/useProductStock';
 import PriceDisplay from "@/components/PriceDisplay";
 import { getActivePrice } from "@/lib/priceScheduling";
 
@@ -135,6 +136,13 @@ export default function TracksuitPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  // Check stock across the set AND both individual pieces — a size is unavailable
+  // if either the track top or track pants is out of stock in that size/color.
+  const { isOutOfStock, isSizeSoldOut } = useProductSetStock([
+    '0f5810c1-abec-4e70-a077-33c839b4de2b', // Retro Track Suit (set)
+    '91c47e89-efd4-4961-aadf-d4f7bf6e13b7', // Track Top
+    '859d396c-0cd7-4d62-9a95-135ce8efbb82', // Track Pants
+  ]);
 
   // Track product page view
   useTrackProductView({
@@ -173,6 +181,7 @@ export default function TracksuitPage() {
   // Show popup and keep it visible
   const handleAddToCart = () => {
     if (!selectedSize) return;
+    if (isOutOfStock(selectedSize, selectedColor.name)) return;
     addToCart({
       productId: "0f5810c1-abec-4e70-a077-33c839b4de2b",
       name: PRODUCT.name,
@@ -185,8 +194,8 @@ export default function TracksuitPage() {
   };
 
   const sizeOptionsForBar: PurchaseSizeOption[] = useMemo(
-    () => SIZE_OPTIONS.map((size) => ({ value: size, label: size })),
-    []
+    () => SIZE_OPTIONS.map((size) => ({ value: size, label: size, soldOut: isSizeSoldOut(size, selectedColor.name) })),
+    [isSizeSoldOut, selectedColor.name]
   );
 
   const purchaseColorOptions: PurchaseColorOption[] = useMemo(
@@ -358,6 +367,8 @@ export default function TracksuitPage() {
           }
         }}
         onAddToCart={handleAddToCart}
+        addDisabled={isOutOfStock(selectedSize, selectedColor.name)}
+        addDisabledReason={isOutOfStock(selectedSize, selectedColor.name) ? "Out of Stock" : undefined}
       />
     </div>
   );

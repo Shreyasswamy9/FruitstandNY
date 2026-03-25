@@ -9,6 +9,7 @@ import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseSizeOption, PurchaseColorOption } from "@/components/ProductPurchaseBar";
 import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 import PriceDisplay from "@/components/PriceDisplay";
 import { getActivePrice } from "@/lib/priceScheduling";
 
@@ -67,6 +68,7 @@ export default function GalaTshirtPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('16eab132-c3a5-4b1c-88b5-1a82cbcd90de');
 
   useTrackProductView({
     productId: "16eab132-c3a5-4b1c-88b5-1a82cbcd90de",
@@ -118,8 +120,8 @@ export default function GalaTshirtPage() {
   const boughtTogetherItems = getFBTForPage('gala-tshirt');
 
   const sizeOptions: PurchaseSizeOption[] = useMemo(
-    () => SIZE_OPTIONS.map((size) => ({ value: size, label: size })),
-    []
+    () => SIZE_OPTIONS.map((size) => ({ value: size, label: size, soldOut: isSizeSoldOut(size, selectedColor.name) })),
+    [isSizeSoldOut, selectedColor.name]
   );
 
   const colorOptions: PurchaseColorOption[] = useMemo(
@@ -287,6 +289,8 @@ export default function GalaTshirtPage() {
           }
         }}
         onAddToCart={handleAddToCart}
+        addDisabled={isOutOfStock(selectedSize, selectedColor.name)}
+        addDisabledReason={isOutOfStock(selectedSize, selectedColor.name) ? "Out of Stock" : undefined}
       />
     </div>
   );

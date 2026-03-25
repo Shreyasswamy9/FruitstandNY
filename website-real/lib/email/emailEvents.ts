@@ -2,7 +2,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-type EmailEventType = 'order_confirmation' | 'order_shipped' | 'order_delivered' | 'order_cancelled'
+type EmailEventType = 'order_confirmation' | 'order_shipped' | 'order_delivered' | 'order_cancelled' | 'stock_decremented'
 
 let supabaseAdmin: ReturnType<typeof createClient<any>> | null = null
 

@@ -9,6 +9,7 @@ import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseSizeOption, PurchaseColorOption } from "@/components/ProductPurchaseBar";
 import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 
 const PRODUCT = {
   name: "Stamped Waffle Knit",
@@ -57,6 +58,7 @@ export default function StampedWaffleKnitPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('01578d37-edd1-4d26-9456-0da3a8e907d9');
 
   useTrackProductView({
     productId: "01578d37-edd1-4d26-9456-0da3a8e907d9",
@@ -82,6 +84,7 @@ export default function StampedWaffleKnitPage() {
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
+    if (isOutOfStock(selectedSize, selectedColor.name)) return;
     addToCart({
       productId: "01578d37-edd1-4d26-9456-0da3a8e907d9",
       name: PRODUCT.name,
@@ -94,8 +97,8 @@ export default function StampedWaffleKnitPage() {
   };
 
   const sizeOptionsForBar: PurchaseSizeOption[] = useMemo(
-    () => SIZE_OPTIONS.map((size) => ({ value: size, label: size })),
-    []
+    () => SIZE_OPTIONS.map((size) => ({ value: size, label: size, soldOut: isSizeSoldOut(size, selectedColor.name) })),
+    [isSizeSoldOut, selectedColor.name]
   );
 
   const purchaseColorOptions: PurchaseColorOption[] = useMemo(
@@ -204,6 +207,8 @@ export default function StampedWaffleKnitPage() {
           if (option) handleSelectColor(option);
         }}
         onAddToCart={handleAddToCart}
+        addDisabled={isOutOfStock(selectedSize, selectedColor.name)}
+        addDisabledReason={isOutOfStock(selectedSize, selectedColor.name) ? "Out of Stock" : undefined}
       />
     </div>
   );

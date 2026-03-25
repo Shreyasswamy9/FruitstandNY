@@ -9,6 +9,7 @@ import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 import PriceDisplay from "@/components/PriceDisplay";
 import { getActivePrice } from "@/lib/priceScheduling";
 
@@ -65,6 +66,7 @@ export default function MutsuTshirtPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('21da7031-a510-4ea0-add3-1dce02fee867');
 
   useTrackProductView({
     productId: "21da7031-a510-4ea0-add3-1dce02fee867",
@@ -117,8 +119,8 @@ export default function MutsuTshirtPage() {
   const boughtTogetherItems = getFBTForPage('mutsu-tshirt');
 
   const sizeOptions: PurchaseSizeOption[] = useMemo(
-    () => ["XS", "S", "M", "L", "XL", "XXL", "XXXL"].map((size) => ({ value: size, label: size })),
-    []
+    () => ["XS", "S", "M", "L", "XL", "XXL", "XXXL"].map((size) => ({ value: size, label: size, soldOut: isSizeSoldOut(size, selectedColor.name) })),
+    [isSizeSoldOut, selectedColor.name]
   );
 
   const purchaseColorOptions: PurchaseColorOption[] = useMemo(
@@ -283,6 +285,8 @@ export default function MutsuTshirtPage() {
           }
         }}
         onAddToCart={handleAddToCart}
+        addDisabled={isOutOfStock(selectedSize, selectedColor.name)}
+        addDisabledReason={isOutOfStock(selectedSize, selectedColor.name) ? "Out of Stock" : undefined}
       />
     </div>
   );

@@ -9,6 +9,7 @@ import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseSizeOption, PurchaseColorOption } from "@/components/ProductPurchaseBar";
 import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 
 const PRODUCT = {
   name: "Kiwi Rugby Jersey",
@@ -48,6 +49,7 @@ export default function KiwiRugbyJerseyPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('4ffbb5f9-3e30-46d5-8d9b-8667d7e2b0da');
 
   useTrackProductView({
     productId: "4ffbb5f9-3e30-46d5-8d9b-8667d7e2b0da",
@@ -73,6 +75,7 @@ export default function KiwiRugbyJerseyPage() {
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
+    if (isOutOfStock(selectedSize, selectedColor.name)) return;
     addToCart({
       productId: "4ffbb5f9-3e30-46d5-8d9b-8667d7e2b0da",
       name: PRODUCT.name,
@@ -85,8 +88,8 @@ export default function KiwiRugbyJerseyPage() {
   };
 
   const sizeOptionsForBar: PurchaseSizeOption[] = useMemo(
-    () => SIZE_OPTIONS.map((size) => ({ value: size, label: size })),
-    []
+    () => SIZE_OPTIONS.map((size) => ({ value: size, label: size, soldOut: isSizeSoldOut(size, selectedColor.name) })),
+    [isSizeSoldOut, selectedColor.name]
   );
 
   const purchaseColorOptions: PurchaseColorOption[] = useMemo(
@@ -195,6 +198,8 @@ export default function KiwiRugbyJerseyPage() {
           if (option) handleSelectColor(option);
         }}
         onAddToCart={handleAddToCart}
+        addDisabled={isOutOfStock(selectedSize, selectedColor.name)}
+        addDisabledReason={isOutOfStock(selectedSize, selectedColor.name) ? "Out of Stock" : undefined}
       />
     </div>
   );

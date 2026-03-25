@@ -7,6 +7,7 @@ import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 import PriceDisplay from "@/components/PriceDisplay";
 import { getActivePrice } from "@/lib/priceScheduling";
 
@@ -45,12 +46,14 @@ const PRODUCT = {
 export default function EcruHatPage() {
   const [selectedImage, setSelectedImage] = useState(ECRU_HAT_IMAGES[0]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { addToCart } = useCart();
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('700581d7-2b22-44bb-a0af-d938f7e71d58');
+
   const sizeOptions = useMemo<PurchaseSizeOption[]>(
-    () => [{ value: "ONE_SIZE", label: "One Size" }],
-    []
+    () => [{ value: "ONE_SIZE", label: "One Size", soldOut: isSizeSoldOut("ONE_SIZE") }],
+    [isSizeSoldOut]
   );
   const [selectedSize, setSelectedSize] = useState<string>(() => sizeOptions[0]?.value ?? "");
-  const { addToCart } = useCart();
 
   useTrackProductView({
     productId: "700581d7-2b22-44bb-a0af-d938f7e71d58",
@@ -187,6 +190,8 @@ export default function EcruHatPage() {
         selectedSize={selectedSize}
         onSelectSize={setSelectedSize}
         onAddToCart={handleAddToCart}
+        addDisabled={isOutOfStock(selectedSize)}
+        addDisabledReason={isOutOfStock(selectedSize) ? "Out of Stock" : undefined}
       />
     </div>
   );

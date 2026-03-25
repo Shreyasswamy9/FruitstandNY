@@ -9,6 +9,7 @@ import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseSizeOption, PurchaseColorOption } from "@/components/ProductPurchaseBar";
 import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 
 const PRODUCT = {
   name: "Jozi Rugby Jersey",
@@ -48,6 +49,7 @@ export default function JoziRugbyJerseyPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('4a97844e-eb2b-4e6f-af94-419ea24dfe86');
 
   useTrackProductView({
     productId: "4a97844e-eb2b-4e6f-af94-419ea24dfe86",
@@ -97,8 +99,8 @@ export default function JoziRugbyJerseyPage() {
   };
 
   const sizeOptionsForBar: PurchaseSizeOption[] = useMemo(
-    () => SIZE_OPTIONS.map((size) => ({ value: size, label: size })),
-    []
+    () => SIZE_OPTIONS.map((size) => ({ value: size, label: size, soldOut: isSizeSoldOut(size, selectedColor.name) })),
+    [isSizeSoldOut, selectedColor.name]
   );
 
   const purchaseColorOptions: PurchaseColorOption[] = useMemo(
@@ -208,6 +210,8 @@ export default function JoziRugbyJerseyPage() {
           if (option) handleSelectColor(option);
         }}
         onAddToCart={handleAddToCart}
+        addDisabled={isOutOfStock(selectedSize, selectedColor.name)}
+        addDisabledReason={isOutOfStock(selectedSize, selectedColor.name) ? "Out of Stock" : undefined}
       />
     </div>
   );

@@ -3,6 +3,10 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 
 export interface CartItem {
   productId: string;
+  /** Supabase product_variants.id — preserved from the add-to-cart API response so
+   *  checkout and payment-intent routes can pass it through to Stripe metadata and
+   *  the webhook can prefer it over size/color lookups for stock decrement. */
+  variantId?: string;
   name: string;
   price: number;
   image: string;
@@ -70,6 +74,7 @@ const normalizeStoredItems = (raw: unknown): CartItem[] => {
 
       const normalized: CartItem = {
         productId,
+        variantId: typeof value.variantId === "string" && value.variantId.trim().length > 0 ? value.variantId : undefined,
         name: typeof value.name === "string" ? value.name : "",
         price: Number(value.price) || 0,
         image: typeof value.image === "string" ? value.image : "",

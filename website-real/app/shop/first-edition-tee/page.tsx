@@ -10,6 +10,7 @@ import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -60,6 +61,7 @@ export default function FirstEditionTeePage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const { addToCart } = useCart();
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('149da285-d6ae-4c37-bf76-376ad50363f8');
 
   useTrackProductView({
     productId: "149da285-d6ae-4c37-bf76-376ad50363f8",
@@ -94,8 +96,8 @@ export default function FirstEditionTeePage() {
   const boughtTogetherItems = getFBTForPage('first-edition-tee');
 
   const sizeOptions: PurchaseSizeOption[] = useMemo(
-    () => PRODUCT.sizes.map((size) => ({ value: size, label: size })),
-    []
+    () => PRODUCT.sizes.map((size) => ({ value: size, label: size, soldOut: isSizeSoldOut(size, selectedColor.name) })),
+    [isSizeSoldOut, selectedColor.name]
   );
 
   const purchaseColorOptions: PurchaseColorOption[] = useMemo(
@@ -251,6 +253,8 @@ export default function FirstEditionTeePage() {
           }
         }}
         onAddToCart={handleAddToCart}
+        addDisabled={isOutOfStock(selectedSize, selectedColor.name)}
+        addDisabledReason={isOutOfStock(selectedSize, selectedColor.name) ? "Out of Stock" : undefined}
       />
     </div>
   );

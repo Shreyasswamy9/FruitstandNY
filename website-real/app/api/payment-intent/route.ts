@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { cleanupCartMetadata, serializeCartItems } from '@/lib/stripeCartMetadata';
+import { validateCartStock } from '@/lib/stock/validateStock';
 
 interface CheckoutItemPayload {
   productId?: string;
+  /** Supabase product_variants.id — carried through Stripe metadata so the webhook
+   *  can prefer direct variant lookup over size/color fallback for stock decrement. */
+  variantId?: string;
   name: string;
   price: number | string;
   quantity: number | string;
@@ -257,6 +261,34 @@ export async function POST(request: NextRequest) {
       total,
       amountInCents,
     });
+
+    // Real-time stock validation — cumulative quantity per line item against live inventory.
+    // Validates before creating or updating the payment intent so customers cannot reach
+    // Stripe for items that are already out of stock.
+    const stockCheck = await validateCartStock(
+      items
+        .filter((item) => !!item.productId)
+        .map((item) => ({
+          productId: item.productId!,
+          variantId: item.variantId ?? null,
+          name: item.name,
+          size: item.size ?? null,
+          color: item.color ?? null,
+          quantity: Number(item.quantity || 1),
+        })),
+    );
+    if (!stockCheck.valid) {
+      const outOfStockNames = stockCheck.errors.map((e) => e.name).join(', ');
+      console.warn(`[${requestId}] Payment intent API: Stock check failed`, stockCheck.errors);
+      return NextResponse.json(
+        {
+          error: 'Some items are out of stock or have insufficient inventory.',
+          outOfStock: stockCheck.errors,
+          message: `The following items cannot be purchased: ${outOfStockNames}`,
+        },
+        { status: 409 },
+      );
+    }
 
     const contactEmail = customerData?.email || guestData?.email || undefined;
     const contactName = guestData?.firstName && guestData?.lastName

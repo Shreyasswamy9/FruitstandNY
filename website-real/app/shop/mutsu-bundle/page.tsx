@@ -9,6 +9,7 @@ import { useCart } from "@/components/CartContext";
 import { TEE_VARIANTS, SIZE_OPTIONS, type TeeVariant, type TeeColor, type SizeOption } from "@/lib/teeVariants";
 import { SHIRT_BUNDLE_PRICING, type BundleQty } from "@/lib/shirtBundles";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 
 const PRODUCT = {
   name: "Mutsu Tee Bundle",
@@ -41,6 +42,8 @@ export default function GalaBundlePage() {
   const [editingTeeIndex, setEditingTeeIndex] = useState<number | null>(null);
   const [tempColor, setTempColor] = useState<TeeColor | null>(null);
   const [tempSize, setTempSize] = useState<SizeOption | null>(null);
+
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('165899ab-6885-426b-9035-44ff75896522');
 
   useTrackProductView({
     productId: "165899ab-6885-426b-9035-44ff75896522",
@@ -327,9 +330,10 @@ export default function GalaBundlePage() {
               <div className="max-w-4xl mx-auto">
                 <button
                   onClick={addBundleToCart}
-                  className="w-full bg-black text-white py-4 rounded-lg font-bold uppercase text-sm tracking-[0.1em] hover:bg-[#2a2a2a] transition-all"
+                  disabled={isOutOfStock(null)}
+                  className={`w-full py-4 rounded-lg font-bold uppercase text-sm tracking-[0.1em] transition-all ${isOutOfStock(null) ? 'bg-black/40 text-white cursor-not-allowed' : 'bg-black text-white hover:bg-[#2a2a2a]'}`}
                 >
-                  Add to Cart • ${SHIRT_BUNDLE_PRICING.mutsu[bundleSize]}
+                  {isOutOfStock(null) ? 'OUT OF STOCK' : `Add to Cart • $${SHIRT_BUNDLE_PRICING.mutsu[bundleSize]}`}
                 </button>
               </div>
             </motion.div>

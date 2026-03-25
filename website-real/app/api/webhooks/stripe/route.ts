@@ -304,7 +304,19 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
     }
 
     console.log('Webhook: Order synced in Supabase with id', syncResult.id)
-    
+
+    // Decrement stock for each purchased item (guarded against duplicate webhook runs)
+    const alreadyDecremented = await hasEmailEvent(syncResult.id, 'stock_decremented');
+    if (!alreadyDecremented) {
+      const cartJson = readCartMetadata(session.metadata ?? {}) ?? '[]';
+      const cartItemsForDecrement = safeJsonParse<OrderCartItem[]>(cartJson, []);
+      const adminClient = await getSupabaseAdminClient();
+      if (adminClient && cartItemsForDecrement.length > 0) {
+        await decrementStock(cartItemsForDecrement, adminClient, syncResult.id);
+        await recordEmailEvent(syncResult.id, 'stock_decremented');
+      }
+    }
+
     // Send order confirmation email for newly created order
     await sendOrderConfirmationEmail(syncResult, session);
     await trackOrderInMailchimp(syncResult);
@@ -422,7 +434,17 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
         payment_status: 'paid',
         status: 'confirmed',
       });
-      
+
+      // Decrement stock (guarded against duplicate runs)
+      const alreadyDecremented = await hasEmailEvent(existingOrder.id, 'stock_decremented');
+      if (!alreadyDecremented) {
+        const adminClient = await getSupabaseAdminClient();
+        if (adminClient && cartItems.length > 0) {
+          await decrementStock(cartItems, adminClient, existingOrder.id);
+          await recordEmailEvent(existingOrder.id, 'stock_decremented');
+        }
+      }
+
       // Send order confirmation email
       await sendOrderConfirmationEmailFromPaymentIntent(
         existingOrder,
@@ -458,8 +480,18 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
       shippingPhone,
     });
     
-    // Send order confirmation email for new order
+    // Decrement stock for new order
     if (newOrder) {
+      const alreadyDecremented = await hasEmailEvent(newOrder.id, 'stock_decremented');
+      if (!alreadyDecremented) {
+        const adminClient = await getSupabaseAdminClient();
+        if (adminClient && cartItems.length > 0) {
+          await decrementStock(cartItems, adminClient, newOrder.id);
+          await recordEmailEvent(newOrder.id, 'stock_decremented');
+        }
+      }
+
+      // Send order confirmation email for new order
       await sendOrderConfirmationEmailFromPaymentIntent(
         newOrder,
         paymentIntent,
@@ -735,6 +767,146 @@ async function createOrderFromPaymentIntent(params: CreateOrderFromPaymentIntent
   }
 
   return createdOrder
+}
+
+/**
+ * Maps a "set" product ID to the individual component product IDs that make it up.
+ * When a set is purchased, stock is decremented for both the set AND each component.
+ * The same size and color from the set cart item are used to find the matching component variant.
+ */
+const PRODUCT_SET_COMPONENTS: Record<string, string[]> = {
+  // Retro Track Suit → Track Top + Track Pants
+  '0f5810c1-abec-4e70-a077-33c839b4de2b': [
+    '91c47e89-efd4-4961-aadf-d4f7bf6e13b7', // Track Top
+    '859d396c-0cd7-4d62-9a95-135ce8efbb82', // Track Pants
+  ],
+};
+
+type DecrementOutcome = { target: string; qty: number; ok: boolean; reason?: string };
+
+/**
+ * Atomically decrement stock for each purchased item via Postgres RPC.
+ *
+ * Transactional behaviour:
+ *   - All decrement attempts run and results are collected.
+ *   - If ANY decrement fails this function throws, so the caller must NOT record
+ *     stock_decremented — Stripe will retry the webhook.
+ *   - stock_decremented is recorded by callers ONLY after this returns without error.
+ *
+ * RPC dependency:
+ *   - Requires decrement_variant_stock and decrement_product_stock in Supabase.
+ *   - If a function is missing (Postgres error 42883) the error is logged with a
+ *     migration hint and counted as a failure → webhook returns 500 → Stripe retries.
+ *
+ * Variant identity preference:
+ *   - variantId on the cart item → direct RPC by variant id (no extra query).
+ *   - No variantId but size/color present → one lookup then RPC by variant id.
+ *   - No variant info → product-level RPC fallback.
+ */
+async function decrementStock(
+  cartItems: OrderCartItem[],
+  supabaseAdmin: SupabaseClient,
+  orderId: string | number,
+): Promise<void> {
+  const outcomes: DecrementOutcome[] = [];
+  // PostgreSQL error code for "function does not exist"
+  const PG_UNDEFINED_FUNCTION = '42883';
+
+  const rpcDecrementVariant = async (variantId: string, qty: number, label: string): Promise<void> => {
+    const { error } = await supabaseAdmin.rpc('decrement_variant_stock', {
+      p_variant_id: variantId,
+      p_qty: qty,
+    });
+    if (error) {
+      const isMissing = (error as { code?: string }).code === PG_UNDEFINED_FUNCTION;
+      const reason = isMissing
+        ? 'RPC decrement_variant_stock not found — run supabase-migrations/001_stock_rpc_and_uniqueness.sql'
+        : (error.message ?? 'Unknown RPC error');
+      console.error(`[order ${orderId}] decrementStock FAIL variant=${variantId} qty=${qty} item="${label}": ${reason}`);
+      outcomes.push({ target: `variant:${variantId}`, qty, ok: false, reason });
+    } else {
+      console.log(`[order ${orderId}] decrementStock OK variant=${variantId} qty=${qty} item="${label}"`);
+      outcomes.push({ target: `variant:${variantId}`, qty, ok: true });
+    }
+  };
+
+  const rpcDecrementProduct = async (productId: string, qty: number, label: string): Promise<void> => {
+    const { error } = await supabaseAdmin.rpc('decrement_product_stock', {
+      p_product_id: productId,
+      p_qty: qty,
+    });
+    if (error) {
+      const isMissing = (error as { code?: string }).code === PG_UNDEFINED_FUNCTION;
+      const reason = isMissing
+        ? 'RPC decrement_product_stock not found — run supabase-migrations/001_stock_rpc_and_uniqueness.sql'
+        : (error.message ?? 'Unknown RPC error');
+      console.error(`[order ${orderId}] decrementStock FAIL product=${productId} qty=${qty} item="${label}": ${reason}`);
+      outcomes.push({ target: `product:${productId}`, qty, ok: false, reason });
+    } else {
+      console.log(`[order ${orderId}] decrementStock OK product=${productId} qty=${qty} item="${label}"`);
+      outcomes.push({ target: `product:${productId}`, qty, ok: true });
+    }
+  };
+
+  // Looks up the best-matching variant for (productId, size, color) and decrements it.
+  // Returns true if a variant row was found (decrement attempted), false → fall back to product.
+  const decrementVariantByAttrs = async (
+    productId: string,
+    size: string | null,
+    color: string | null,
+    qty: number,
+    label: string,
+  ): Promise<boolean> => {
+    if (!size && !color) return false;
+    let q = supabaseAdmin
+      .from('product_variants')
+      .select('id')
+      .eq('product_id', productId)
+      .limit(1);
+    if (size) q = q.eq('size', size);
+    if (color) q = q.eq('color', color);
+    const { data } = await q.maybeSingle();
+    if (!data) return false;
+    await rpcDecrementVariant(data.id, qty, label);
+    return true;
+  };
+
+  for (const item of cartItems) {
+    const qty = Math.max(1, Number(item.quantity ?? item.qty ?? 1));
+    // Prefer variantId carried from checkout/payment-intent metadata.
+    const variantId = item.variantId ?? null;
+    const productId = item.id ?? item.productId ?? null;
+    const size = item.size ?? item.selectedSize ?? null;
+    const color = item.color ?? null;
+    const label = item.name ?? item.title ?? productId ?? 'unknown';
+
+    // --- Primary decrement ---
+    if (variantId) {
+      // Direct path — no extra lookup needed.
+      await rpcDecrementVariant(variantId, qty, label);
+    } else if (productId) {
+      // Size/color fallback only when variantId is truly absent.
+      const found = await decrementVariantByAttrs(productId, size, color, qty, label);
+      if (!found) await rpcDecrementProduct(productId, qty, label);
+    }
+
+    // --- Set components (e.g. tracksuit → top + pants) ---
+    // Always runs so both components get decremented by the full qty.
+    if (productId && PRODUCT_SET_COMPONENTS[productId]) {
+      for (const componentId of PRODUCT_SET_COMPONENTS[productId]) {
+        const cLabel = `${label} [component ${componentId}]`;
+        const found = await decrementVariantByAttrs(componentId, size, color, qty, cLabel);
+        if (!found) await rpcDecrementProduct(componentId, qty, cLabel);
+      }
+    }
+  }
+
+  // Throw after all attempts so callers skip recording stock_decremented on failure.
+  const failures = outcomes.filter((o) => !o.ok);
+  if (failures.length > 0) {
+    const summary = failures.map((f) => `${f.target} qty=${f.qty}: ${f.reason}`).join('; ');
+    throw new Error(`[order ${orderId}] Stock decrement had ${failures.length} failure(s): ${summary}`);
+  }
 }
 
 let cachedSupabaseAdmin: SupabaseClient | null = null

@@ -9,6 +9,7 @@ import { useCart } from "@/components/CartContext";
 import { TEE_VARIANTS, SIZE_OPTIONS, type TeeVariant, type TeeColor, type SizeOption } from "@/lib/teeVariants";
 import { CUSTOM_BUNDLE_PRICES, type CustomBundleSize } from "@/lib/customBundles";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 
 const PRODUCT = {
   name: "Fruitstand Tee Bundle",
@@ -43,6 +44,8 @@ export default function TshirtBundlePage() {
   const [tempTee, setTempTee] = useState<TeeVariant | null>(null);
   const [tempColor, setTempColor] = useState<TeeColor | null>(null);
   const [tempSize, setTempSize] = useState<SizeOption | null>(null);
+
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('89c1a393-3829-47bc-9c11-40e8183672cd');
 
   useTrackProductView({
     productId: "89c1a393-3829-47bc-9c11-40e8183672cd",
@@ -360,9 +363,10 @@ export default function TshirtBundlePage() {
               <div className="max-w-4xl mx-auto">
                 <button
                   onClick={addBundleToCart}
-                  className="w-full bg-black text-white py-4 rounded-lg font-bold uppercase text-sm tracking-[0.1em] hover:bg-[#2a2a2a] transition-all"
+                  disabled={isOutOfStock(null)}
+                  className={`w-full py-4 rounded-lg font-bold uppercase text-sm tracking-[0.1em] transition-all ${isOutOfStock(null) ? 'bg-black/40 text-white cursor-not-allowed' : 'bg-black text-white hover:bg-[#2a2a2a]'}`}
                 >
-                  Add to Cart • ${CUSTOM_BUNDLE_PRICES[bundleSize]}
+                  {isOutOfStock(null) ? 'OUT OF STOCK' : `Add to Cart • $${CUSTOM_BUNDLE_PRICES[bundleSize]}`}
                 </button>
               </div>
             </motion.div>

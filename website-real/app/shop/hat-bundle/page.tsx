@@ -8,6 +8,7 @@ import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import { useCart } from "@/components/CartContext";
 import { HAT_BUNDLE_PRICES } from "@/lib/shirtBundles";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 
 // Available hats for the bundle
 const AVAILABLE_HATS = [
@@ -72,6 +73,8 @@ export default function HatBundlePage() {
   // Modal state
   const [editingHatIndex, setEditingHatIndex] = useState<number | null>(null);
   const [tempHatId, setTempHatId] = useState<string | null>(null);
+
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('ea9effdd-a3fa-4715-93fd-11afcac88b2a');
 
   useTrackProductView({
     productId: "ea9effdd-a3fa-4715-93fd-11afcac88b2a",
@@ -326,9 +329,10 @@ export default function HatBundlePage() {
               <div className="max-w-4xl mx-auto">
                 <button
                   onClick={addBundleToCart}
-                  className="w-full bg-black text-white py-4 rounded-lg font-bold uppercase text-sm tracking-[0.1em] hover:bg-[#2a2a2a] transition-all"
+                  disabled={isOutOfStock(null)}
+                  className={`w-full py-4 rounded-lg font-bold uppercase text-sm tracking-[0.1em] transition-all ${isOutOfStock(null) ? 'bg-black/40 text-white cursor-not-allowed' : 'bg-black text-white hover:bg-[#2a2a2a]'}`}
                 >
-                  Add to Cart • ${HAT_BUNDLE_PRICES[bundleSize]}
+                  {isOutOfStock(null) ? 'OUT OF STOCK' : `Add to Cart • $${HAT_BUNDLE_PRICES[bundleSize]}`}
                 </button>
               </div>
             </motion.div>

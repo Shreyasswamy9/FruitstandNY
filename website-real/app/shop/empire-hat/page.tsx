@@ -7,6 +7,7 @@ import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 import PriceDisplay from "@/components/PriceDisplay";
 import { getActivePrice } from "@/lib/priceScheduling";
 
@@ -50,12 +51,14 @@ const PRODUCT = {
 export default function EmpireHatPage() {
   const [selectedImage, setSelectedImage] = useState(EMPIRE_HAT_IMAGES[0]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { addToCart } = useCart();
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('98da26f5-be40-4f35-a8ad-b26dd9ae01f9');
+
   const sizeOptions = useMemo<PurchaseSizeOption[]>(
-    () => [{ value: "ONE_SIZE", label: "One Size" }],
-    []
+    () => [{ value: "ONE_SIZE", label: "One Size", soldOut: isSizeSoldOut("ONE_SIZE") }],
+    [isSizeSoldOut]
   );
   const [selectedSize, setSelectedSize] = useState<string>(() => sizeOptions[0]?.value ?? "");
-  const { addToCart } = useCart();
 
   useTrackProductView({
     productId: "98da26f5-be40-4f35-a8ad-b26dd9ae01f9",
@@ -192,6 +195,8 @@ export default function EmpireHatPage() {
         selectedSize={selectedSize}
         onSelectSize={setSelectedSize}
         onAddToCart={handleAddToCart}
+        addDisabled={isOutOfStock(selectedSize)}
+        addDisabledReason={isOutOfStock(selectedSize) ? "Out of Stock" : undefined}
       />
     </div>
   );

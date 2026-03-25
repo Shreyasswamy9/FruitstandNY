@@ -9,6 +9,7 @@ import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseSizeOption, PurchaseColorOption } from "@/components/ProductPurchaseBar";
 import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 
 
 const PRODUCT = {
@@ -39,7 +40,7 @@ type LibertyZipColorOption = {
 };
 
 const LIBERTY_ZIP_COLOR_OPTIONS: LibertyZipColorOption[] = [
-  { name: 'Onyx', slug: 'onyx', color: '#1a1a1a', images: ['/images/products/liberty zip ups/onyx/Onyx Zip-up DS 1x1.png', '/images/products/liberty zip ups/onyx/Onyx Zip 1.png', '/images/products/liberty zip ups/onyx/Onyx Zip 2.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Black', slug: 'onyx', color: '#1a1a1a', images: ['/images/products/liberty zip ups/onyx/Onyx Zip-up DS 1x1.png', '/images/products/liberty zip ups/onyx/Onyx Zip 1.png', '/images/products/liberty zip ups/onyx/Onyx Zip 2.png'], bg: '#f5f5f5', border: '#d4d4d4' },
   { name: 'Moss', slug: 'moss', color: '#556b2f', images: ['/images/products/liberty zip ups/moss/Moss DS 1x1.png', '/images/products/liberty zip ups/moss/Moss Zip 1.png', '/images/products/liberty zip ups/moss/Moss Zip 2.png'], bg: '#f5f5f5', border: '#d4d4d4' },
   { name: 'Copper', slug: 'copper', color: '#b87333', images: ['/images/products/liberty zip ups/copper/Copper DS 1x1.png', '/images/products/liberty zip ups/copper/Copper Zip 1.png', '/images/products/liberty zip ups/copper/Copper Zip 2.png'], bg: '#f5f5f5', border: '#d4d4d4' },
 ];
@@ -52,6 +53,7 @@ export default function LibertyZipUpPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('b544f080-b1b5-4dab-8e51-4208b456f73c');
 
   useTrackProductView({
     productId: "b544f080-b1b5-4dab-8e51-4208b456f73c",
@@ -89,6 +91,7 @@ export default function LibertyZipUpPage() {
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
+    if (isOutOfStock(selectedSize, selectedColor.name)) return;
     addToCart({
       productId: "b544f080-b1b5-4dab-8e51-4208b456f73c",
       name: PRODUCT.name,
@@ -101,8 +104,8 @@ export default function LibertyZipUpPage() {
   };
 
   const sizeOptionsForBar: PurchaseSizeOption[] = useMemo(
-    () => SIZE_OPTIONS.map((size) => ({ value: size, label: size })),
-    []
+    () => SIZE_OPTIONS.map((size) => ({ value: size, label: size, soldOut: isSizeSoldOut(size, selectedColor.name) })),
+    [isSizeSoldOut, selectedColor.name]
   );
 
   const purchaseColorOptions: PurchaseColorOption[] = useMemo(
@@ -256,6 +259,8 @@ export default function LibertyZipUpPage() {
           if (option) handleSelectColor(option);
         }}
         onAddToCart={handleAddToCart}
+        addDisabled={isOutOfStock(selectedSize, selectedColor.name)}
+        addDisabledReason={isOutOfStock(selectedSize, selectedColor.name) ? "Out of Stock" : undefined}
       />
     </div>
   );

@@ -64,19 +64,31 @@ export default function ProductPurchaseBar({
     return colorOptions.find((opt) => opt.value === selectedColor) ?? null;
   }, [selectedColor, colorOptions]);
 
+  const selectedSizeOption = useMemo(
+    () => (selectedSize ? sizeOptions.find((opt) => opt.value === selectedSize) ?? null : null),
+    [selectedSize, sizeOptions],
+  );
+
   const sizeLabel = useMemo(() => {
-    if (!selectedSize) return "SIZE";
-    const found = sizeOptions.find((opt) => opt.value === selectedSize);
-    return (found?.label ?? selectedSize).toUpperCase();
-  }, [selectedSize, sizeOptions]);
+    if (!selectedSizeOption) return "SIZE";
+    return (selectedSizeOption.label ?? selectedSizeOption.value).toUpperCase();
+  }, [selectedSizeOption]);
 
   const colorLabel = useMemo(() => {
     if (!selectedColorOption) return "COLOR";
     return selectedColorOption.label.toUpperCase();
   }, [selectedColorOption]);
 
-  const addButtonDisabled = Boolean(addDisabled);
-  const disableReason = addDisabled ? addDisabledReason : undefined;
+  // Derive OOS directly from sizeOptions so the button is blocked even if the parent
+  // forgot addDisabled or stock hasn't loaded yet for a previously-selected size.
+  const selectedSizeSoldOut = selectedSizeOption?.soldOut ?? false;
+
+  const addButtonDisabled = Boolean(addDisabled) || selectedSizeSoldOut;
+  const disableReason = selectedSizeSoldOut
+    ? "Out of Stock"
+    : addDisabled
+      ? addDisabledReason
+      : undefined;
 
   const triggerSizeNotice = () => {
     setShowSizeNotice(true);
@@ -138,6 +150,11 @@ export default function ProductPurchaseBar({
       return;
     }
 
+    // Final guard: never add a size that is marked sold-out in sizeOptions,
+    // even if this handler fires despite the button being disabled.
+    const opt = sizeOptions.find((o) => o.value === selectedSize);
+    if (opt?.soldOut) return;
+
     onAddToCart();
   };
 
@@ -172,7 +189,7 @@ export default function ProductPurchaseBar({
                     }}
                   />
                 ) : null}
-                <span className="max-w-[120px] truncate text-[13px] font-semibold uppercase tracking-[0.18em]">
+                <span className="max-w-30 truncate text-[13px] font-semibold uppercase tracking-[0.18em]">
                   {colorLabel}
                 </span>
                 {colorOptions?.length !== 1 && (
@@ -202,7 +219,7 @@ export default function ProductPurchaseBar({
               </div>
 
               <div className="relative flex flex-1 items-center justify-end border-r border-white px-3 py-4">
-                <span className="max-w-[120px] truncate text-[13px] font-semibold uppercase tracking-[0.18em]">
+                <span className={`max-w-30 truncate text-[13px] font-semibold uppercase tracking-[0.18em] ${selectedSizeSoldOut ? "line-through opacity-50" : ""}`}>
                   {sizeLabel}
                 </span>
                 <span className="pointer-events-none text-sm text-white ml-2">▼</span>
@@ -211,9 +228,11 @@ export default function ProductPurchaseBar({
                   value={selectedSize ?? ""}
                   onChange={(event) => {
                     const value = event.target.value;
-                    if (value) {
-                      onSelectSize(value);
-                    }
+                    if (!value) return;
+                    // Guard: never call onSelectSize for a sold-out option
+                    const opt = sizeOptions.find((o) => o.value === value);
+                    if (opt?.soldOut) return;
+                    onSelectSize(value);
                   }}
                   className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
                   style={{ color: "#000000", backgroundColor: "#ffffff" }}
@@ -221,7 +240,9 @@ export default function ProductPurchaseBar({
                   {!selectedSize && <option value="">Select</option>}
                   {sizeOptions.map((option) => (
                     <option key={option.value} value={option.value} disabled={option.soldOut}>
-                      {option.label ?? option.value}
+                      {option.soldOut
+                        ? `${option.label ?? option.value} — Out of Stock`
+                        : (option.label ?? option.value)}
                     </option>
                   ))}
                 </select>

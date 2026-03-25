@@ -9,6 +9,7 @@ import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseSizeOption, PurchaseColorOption } from "@/components/ProductPurchaseBar";
 import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 
 const PRODUCT = {
   name: "Liberty Hoodie",
@@ -37,7 +38,7 @@ type LibertyHoodieColorOption = {
 };
 
 const LIBERTY_HOODIE_COLOR_OPTIONS: LibertyHoodieColorOption[] = [
-  { name: 'Onyx', slug: 'onyx', color: '#1a1a1a', images: ['/images/products/liberty hoodies/onyx/Onyx Hoodie DS 1x1.png', '/images/products/liberty hoodies/onyx/Onyx Hoodie 1 copy.png', '/images/products/liberty hoodies/onyx/Onyx Hoodie 2 copy.png'], bg: '#f5f5f5', border: '#d4d4d4' },
+  { name: 'Black', slug: 'onyx', color: '#1a1a1a', images: ['/images/products/liberty hoodies/onyx/Onyx Hoodie DS 1x1.png', '/images/products/liberty hoodies/onyx/Onyx Hoodie 1 copy.png', '/images/products/liberty hoodies/onyx/Onyx Hoodie 2 copy.png'], bg: '#f5f5f5', border: '#d4d4d4' },
   { name: 'Mauve', slug: 'mauve', color: '#9d7a8a', images: ['/images/products/liberty hoodies/mauve/Mauve DS 1x1.png', '/images/products/liberty hoodies/mauve/Mauve Hoodie 1 copy.png', '/images/products/liberty hoodies/mauve/Mauve Hoodie 2 copy.png'], bg: '#f5f5f5', border: '#d4d4d4' },
   { name: 'Stone', slug: 'stone', color: '#a39e9d', images: ['/images/products/liberty hoodies/stone/Stone Hoodie DS 1x1.png', '/images/products/liberty hoodies/stone/Stone Hoodie 1 copy.png', '/images/products/liberty hoodies/stone/Stone Hoodie 2 copy.png'], bg: '#f5f5f5', border: '#d4d4d4' },
 ];
@@ -50,6 +51,7 @@ export default function LibertyHoodiePage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('324aacbd-fc54-4887-b4ef-9679297af9e1');
 
   useTrackProductView({
     productId: "324aacbd-fc54-4887-b4ef-9679297af9e1",
@@ -75,6 +77,7 @@ export default function LibertyHoodiePage() {
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
+    if (isOutOfStock(selectedSize, selectedColor.name)) return;
     addToCart({
       productId: "324aacbd-fc54-4887-b4ef-9679297af9e1",
       name: PRODUCT.name,
@@ -87,8 +90,8 @@ export default function LibertyHoodiePage() {
   };
 
   const sizeOptionsForBar: PurchaseSizeOption[] = useMemo(
-    () => SIZE_OPTIONS.map((size) => ({ value: size, label: size })),
-    []
+    () => SIZE_OPTIONS.map((size) => ({ value: size, label: size, soldOut: isSizeSoldOut(size, selectedColor.name) })),
+    [isSizeSoldOut, selectedColor.name]
   );
 
   const purchaseColorOptions: PurchaseColorOption[] = useMemo(
@@ -241,6 +244,8 @@ export default function LibertyHoodiePage() {
           if (option) handleSelectColor(option);
         }}
         onAddToCart={handleAddToCart}
+        addDisabled={isOutOfStock(selectedSize, selectedColor.name)}
+        addDisabledReason={isOutOfStock(selectedSize, selectedColor.name) ? "Out of Stock" : undefined}
       />
     </div>
   );

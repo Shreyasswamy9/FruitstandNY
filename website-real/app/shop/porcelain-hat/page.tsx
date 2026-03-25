@@ -7,6 +7,7 @@ import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 import PriceDisplay from "@/components/PriceDisplay";
 import { getActivePrice } from "@/lib/priceScheduling";
 
@@ -45,12 +46,14 @@ const PRODUCT = {
 export default function PorcelainHatPage() {
   const [selectedImage, setSelectedImage] = useState(PORCELAIN_HAT_IMAGES[0]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { addToCart } = useCart();
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('bca735d7-f575-4ef3-9ff7-28966205618b');
+
   const sizeOptions = useMemo<PurchaseSizeOption[]>(
-    () => [{ value: "ONE_SIZE", label: "One Size" }],
-    []
+    () => [{ value: "ONE_SIZE", label: "One Size", soldOut: isSizeSoldOut("ONE_SIZE") }],
+    [isSizeSoldOut]
   );
   const [selectedSize, setSelectedSize] = useState<string>(() => sizeOptions[0]?.value ?? "");
-  const { addToCart } = useCart();
 
   useTrackProductView({
     productId: "bca735d7-f575-4ef3-9ff7-28966205618b",
@@ -187,6 +190,8 @@ export default function PorcelainHatPage() {
         selectedSize={selectedSize}
         onSelectSize={setSelectedSize}
         onAddToCart={handleAddToCart}
+        addDisabled={isOutOfStock(selectedSize)}
+        addDisabledReason={isOutOfStock(selectedSize) ? "Out of Stock" : undefined}
       />
     </div>
   );

@@ -7,6 +7,7 @@ import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 import StPatsBanner from "@/components/StPatsBanner";
 import { isGreenColorOnSale, getStPatsPrice } from "@/lib/stPatricksDay";
 import PriceDisplay from "@/components/PriceDisplay";
@@ -52,12 +53,14 @@ const PRODUCT = {
 export default function ForestHillsHatPage() {
   const [selectedImage, setSelectedImage] = useState(FOREST_HILLS_HAT_IMAGES[0]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { addToCart } = useCart();
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('8d1d5080-2106-420d-b7ea-babc2fba5457');
+
   const sizeOptions = useMemo<PurchaseSizeOption[]>(
-    () => [{ value: "ONE_SIZE", label: "One Size" }],
-    []
+    () => [{ value: "ONE_SIZE", label: "One Size", soldOut: isSizeSoldOut("ONE_SIZE") }],
+    [isSizeSoldOut]
   );
   const [selectedSize, setSelectedSize] = useState<string>(() => sizeOptions[0]?.value ?? "");
-  const { addToCart } = useCart();
 
   useTrackProductView({
     productId: "8d1d5080-2106-420d-b7ea-babc2fba5457",
@@ -187,6 +190,8 @@ export default function ForestHillsHatPage() {
         selectedSize={selectedSize}
         onSelectSize={setSelectedSize}
         onAddToCart={handleAddToCart}
+        addDisabled={isOutOfStock(selectedSize)}
+        addDisabledReason={isOutOfStock(selectedSize) ? "Out of Stock" : undefined}
       />
     </div>
   );

@@ -8,6 +8,7 @@ import { useCart } from "../../../components/CartContext";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 import PriceDisplay from "@/components/PriceDisplay";
 import { getActivePrice } from "@/lib/priceScheduling";
 
@@ -76,6 +77,7 @@ export default function TrackPantsPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const { addToCart } = useCart();
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('859d396c-0cd7-4d62-9a95-135ce8efbb82');
 
   useTrackProductView({
     productId: "859d396c-0cd7-4d62-9a95-135ce8efbb82",
@@ -127,8 +129,8 @@ export default function TrackPantsPage() {
   const boughtTogetherItems = getFBTForPage('track-pants');
 
   const sizeOptions: PurchaseSizeOption[] = useMemo(
-    () => PRODUCT.sizes.map((size) => ({ value: size, label: size })),
-    []
+    () => PRODUCT.sizes.map((size) => ({ value: size, label: size, soldOut: isSizeSoldOut(size, selectedColor.name) })),
+    [isSizeSoldOut, selectedColor.name]
   );
 
   const purchaseColorOptions: PurchaseColorOption[] = useMemo(
@@ -297,6 +299,8 @@ export default function TrackPantsPage() {
           }
         }}
         onAddToCart={handleAddToCart}
+        addDisabled={isOutOfStock(selectedSize, selectedColor.name)}
+        addDisabledReason={isOutOfStock(selectedSize, selectedColor.name) ? "Out of Stock" : undefined}
       />
     </div>
   );

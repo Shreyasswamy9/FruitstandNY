@@ -7,6 +7,7 @@ import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 import { getActivePrice } from "@/lib/priceScheduling";
 import PriceDisplay from "@/components/PriceDisplay";
 
@@ -47,12 +48,14 @@ const PRODUCT = {
 export default function DenimHatPage() {
   const [selectedImage, setSelectedImage] = useState(DENIM_HAT_IMAGES[0]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { addToCart } = useCart();
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('fe9f97fa-944a-4c36-8889-fdb3a9936615');
+
   const sizeOptions = useMemo<PurchaseSizeOption[]>(
-    () => [{ value: "ONE_SIZE", label: "One Size" }],
-    []
+    () => [{ value: "ONE_SIZE", label: "One Size", soldOut: isSizeSoldOut("ONE_SIZE") }],
+    [isSizeSoldOut]
   );
   const [selectedSize, setSelectedSize] = useState<string>(() => sizeOptions[0]?.value ?? "");
-  const { addToCart } = useCart();
 
   useTrackProductView({
     productId: "fe9f97fa-944a-4c36-8889-fdb3a9936615",
@@ -170,6 +173,8 @@ export default function DenimHatPage() {
         selectedSize={selectedSize}
         onSelectSize={setSelectedSize}
         onAddToCart={handleAddToCart}
+        addDisabled={isOutOfStock(selectedSize)}
+        addDisabledReason={isOutOfStock(selectedSize) ? "Out of Stock" : undefined}
       />
     </div>
   );

@@ -9,6 +9,7 @@ import { useCart } from "@/components/CartContext";
 import { TEE_VARIANTS, SIZE_OPTIONS, type TeeVariant, type TeeColor, type SizeOption } from "@/lib/teeVariants";
 import { SHIRT_BUNDLE_PRICING, type BundleQty } from "@/lib/shirtBundles";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 
 const PRODUCT = {
   name: "Cameo Tee Bundle",
@@ -41,6 +42,8 @@ export default function GalaBundlePage() {
   const [editingTeeIndex, setEditingTeeIndex] = useState<number | null>(null);
   const [tempColor, setTempColor] = useState<TeeColor | null>(null);
   const [tempSize, setTempSize] = useState<SizeOption | null>(null);
+
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('4e6ed8e5-0946-454c-bee4-b5048cac5b9b');
 
   useTrackProductView({
     productId: "4e6ed8e5-0946-454c-bee4-b5048cac5b9b",
@@ -327,9 +330,10 @@ export default function GalaBundlePage() {
               <div className="max-w-4xl mx-auto">
                 <button
                   onClick={addBundleToCart}
-                  className="w-full bg-black text-white py-4 rounded-lg font-bold uppercase text-sm tracking-[0.1em] hover:bg-[#2a2a2a] transition-all"
+                  disabled={isOutOfStock(null)}
+                  className={`w-full py-4 rounded-lg font-bold uppercase text-sm tracking-[0.1em] transition-all ${isOutOfStock(null) ? 'bg-black/40 text-white cursor-not-allowed' : 'bg-black text-white hover:bg-[#2a2a2a]'}`}
                 >
-                  Add to Cart • ${SHIRT_BUNDLE_PRICING.cameo[bundleSize]}
+                  {isOutOfStock(null) ? 'OUT OF STOCK' : `Add to Cart • $${SHIRT_BUNDLE_PRICING.cameo[bundleSize]}`}
                 </button>
               </div>
             </motion.div>

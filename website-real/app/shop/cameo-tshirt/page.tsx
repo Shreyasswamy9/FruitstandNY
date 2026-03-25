@@ -10,6 +10,7 @@ import { type ColorOption } from '@/components/ColorPicker';
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 import PriceDisplay from "@/components/PriceDisplay";
 import { getActivePrice } from "@/lib/priceScheduling";
 
@@ -70,6 +71,7 @@ export default function CameoTshirtPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('1ad5fc4b-898d-4e86-ada6-c4787ba20add');
 
   useTrackProductView({
     productId: "1ad5fc4b-898d-4e86-ada6-c4787ba20add",
@@ -97,6 +99,7 @@ export default function CameoTshirtPage() {
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
+    if (isOutOfStock(selectedSize, selectedColor.name)) return;
     addToCart({
       productId: "1ad5fc4b-898d-4e86-ada6-c4787ba20add",
       name: PRODUCT.name,
@@ -123,8 +126,8 @@ export default function CameoTshirtPage() {
   const boughtTogetherItems = getFBTForPage('cameo-tshirt');
 
   const sizeOptions: PurchaseSizeOption[] = useMemo(
-    () => ["XS", "S", "M", "L", "XL", "XXL", "XXXL"].map((size) => ({ value: size, label: size })),
-    []
+    () => ["XS", "S", "M", "L", "XL", "XXL", "XXXL"].map((size) => ({ value: size, label: size, soldOut: isSizeSoldOut(size, selectedColor.name) })),
+    [isSizeSoldOut, selectedColor.name]
   );
 
   const purchaseColorOptions: PurchaseColorOption[] = useMemo(
@@ -284,6 +287,8 @@ export default function CameoTshirtPage() {
           }
         }}
         onAddToCart={handleAddToCart}
+        addDisabled={isOutOfStock(selectedSize, selectedColor.name)}
+        addDisabledReason={isOutOfStock(selectedSize, selectedColor.name) ? "Out of Stock" : undefined}
       />
     </div>
   );

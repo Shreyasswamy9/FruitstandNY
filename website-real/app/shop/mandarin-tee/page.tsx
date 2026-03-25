@@ -9,6 +9,7 @@ import { useCart } from "../../../components/CartContext";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { type PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 
 // Simple formatter for highlighting keywords in the description
 // Formatter: lowercase except product/color names uppercased
@@ -51,26 +52,25 @@ const PRODUCT = {
   sizes: ["XS", "S", "M", "L", "XL", "XXL"],
 };
 
-const OUT_OF_STOCK_SIZES = [
-  "XS", "S"] as const;
-
 export default function MandarinTeePage() {
   const [selectedImage, setSelectedImage] = useState(MANDARIN_IMAGES[0]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { addToCart } = useCart();
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('f47a07e4-6470-49b2-ace6-a60e70ee3737');
+
   const sizeOptions = useMemo<PurchaseSizeOption[]>(
     () =>
       PRODUCT.sizes.map((size) => ({
         value: size,
         label: size,
-        soldOut: OUT_OF_STOCK_SIZES.includes(size as (typeof OUT_OF_STOCK_SIZES)[number]),
+        soldOut: isSizeSoldOut(size),
       })),
-    []
+    [isSizeSoldOut]
   );
   const [selectedSize, setSelectedSize] = useState<string | null>(() => {
     const firstAvailable = sizeOptions.find((option) => !option.soldOut)?.value;
     return firstAvailable ?? null;
   });
-  const { addToCart } = useCart();
 
   useTrackProductView({
     productId: "f47a07e4-6470-49b2-ace6-a60e70ee3737",
@@ -92,10 +92,6 @@ export default function MandarinTeePage() {
   }, [addToCart, selectedImage, selectedSize]);
 
   const boughtTogetherItems = getFBTForPage("mandarin-tee");
-
-  const selectedSizeSoldOut = selectedSize
-    ? sizeOptions.find((option) => option.value === selectedSize)?.soldOut
-    : false;
 
   return (
     <div>
@@ -205,8 +201,8 @@ export default function MandarinTeePage() {
         selectedSize={selectedSize}
         onSelectSize={setSelectedSize}
         onAddToCart={handleAddToCart}
-        addDisabled={true}
-        addDisabledReason="Sold out"
+        addDisabled={isOutOfStock(selectedSize)}
+        addDisabledReason={isOutOfStock(selectedSize) ? "Out of Stock" : undefined}
       />
     </div>
   );

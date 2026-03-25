@@ -9,6 +9,7 @@ import { useCart } from "@/components/CartContext";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseColorOption, PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { useProductStock } from '@/hooks/useProductStock';
 import PriceDisplay from "@/components/PriceDisplay";
 import { getActivePrice } from "@/lib/priceScheduling";
 
@@ -64,6 +65,7 @@ export default function HockeyJerseyPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const { isOutOfStock, isSizeSoldOut } = useProductStock('e1e3790d-d37e-4327-a14e-53bad7745ec8');
 
   useTrackProductView({
     productId: "e1e3790d-d37e-4327-a14e-53bad7745ec8",
@@ -115,8 +117,8 @@ export default function HockeyJerseyPage() {
   const boughtTogetherItems = getFBTForPage('hockey-jersey');
 
   const sizeOptionsForBar: PurchaseSizeOption[] = useMemo(
-    () => sizeOptions.map((size) => ({ value: size, label: size })),
-    []
+    () => sizeOptions.map((size) => ({ value: size, label: size, soldOut: isSizeSoldOut(size, selectedColor.name) })),
+    [isSizeSoldOut, selectedColor.name]
   );
 
   const purchaseColorOptions: PurchaseColorOption[] = useMemo(
@@ -277,6 +279,8 @@ export default function HockeyJerseyPage() {
           }
         }}
         onAddToCart={handleAddToCart}
+        addDisabled={isOutOfStock(selectedSize, selectedColor.name)}
+        addDisabledReason={isOutOfStock(selectedSize, selectedColor.name) ? "Out of Stock" : undefined}
       />
     </div>
   );
