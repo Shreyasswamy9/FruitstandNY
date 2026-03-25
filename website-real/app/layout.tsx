@@ -119,7 +119,7 @@ export default function RootLayout({
         <script
           id="mcjs"
           dangerouslySetInnerHTML={{
-            __html: '!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/fcf0bbb9c363876e4b7950198/177293cf6369623cf7ebb592e.js");'
+            __html: '!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/fcf0bbb9c363876e4b7950198/701c39750148b2925ed7905a1.js");'
           }}
         />
         <Script id="google-tag-manager" strategy="afterInteractive">{`
