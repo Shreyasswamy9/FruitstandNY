@@ -155,7 +155,7 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
     }
 
     // Extract shipping details with explicit precedence:
-    // 1) Stripe shipping_details (true shipping)
+    // 1) Stripe shipping from payment intent (primary source for actual shipping address)
     // 2) guest metadata address captured pre-checkout
     // 3) customer_details address (billing/auto-collected fallback only)
     const customerDetails = session.customer_details;
@@ -164,9 +164,31 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
       phone?: string | null;
       address?: Stripe.Address | null;
     };
-    const shippingDetails = (session as Stripe.Checkout.Session & {
-      shipping_details?: SessionShippingDetails | null;
-    }).shipping_details;
+    
+    // Get shipping details from payment intent (this is where Stripe stores the actual shipping address)
+    let shippingDetails: SessionShippingDetails | null = null;
+    try {
+      const stripePaymentIntent = typeof session.payment_intent === 'string'
+        ? session.payment_intent
+        : session.payment_intent?.id;
+      
+      if (stripePaymentIntent) {
+        const paymentIntent = await stripe.paymentIntents.retrieve(stripePaymentIntent);
+        if (paymentIntent.shipping) {
+          shippingDetails = paymentIntent.shipping;
+        }
+      }
+    } catch (err) {
+      console.warn('Webhook: Could not retrieve payment intent for shipping details', err);
+    }
+    
+    // Fallback to session.shipping_details if payment intent shipping not found
+    if (!shippingDetails) {
+      shippingDetails = (session as Stripe.Checkout.Session & {
+        shipping_details?: SessionShippingDetails | null;
+      }).shipping_details || null;
+    }
+    
     const metadata = session.metadata ?? {};
     const guestData = safeJsonParse<GuestPayload>(metadata.guest ?? '{}', {});
     const customerData = safeJsonParse<CustomerPayload>(metadata.customer ?? '{}', {});
@@ -189,12 +211,12 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
         }
       : hasGuestAddress
         ? {
-            line1: guestData.address?.street,
-            line2: guestData.address?.street2,
-            city: guestData.address?.city,
-            state: guestData.address?.state,
-            postal_code: guestData.address?.zipCode,
-            country: guestData.address?.country,
+            line1: guestData.address?.street || null,
+            line2: guestData.address?.street2 || null,
+            city: guestData.address?.city || null,
+            state: guestData.address?.state || null,
+            postal_code: guestData.address?.zipCode || null,
+            country: guestData.address?.country || null,
           }
         : customerDetails?.address;
 
@@ -273,8 +295,8 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
     console.log('No existing order found, will attempt to sync/create one.');
 
     // If we reach here, no order exists or update failed — sync using the session
-    // Pass the resolved shippingAddress so it doesn't get lost
-    const syncResult = await SupabaseOrderService.syncOrderFromStripeSession(session, shippingDetails?.address || null);
+    // Pass the fully resolved shippingAddress (with fallback logic) to syncOrderFromStripeSession
+    const syncResult = await SupabaseOrderService.syncOrderFromStripeSession(session, shippingAddress);
 
     if (!syncResult) {
       console.error('Webhook: Order sync failed.');
