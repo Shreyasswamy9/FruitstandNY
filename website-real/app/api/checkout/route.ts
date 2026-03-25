@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { generateOrderNumber } from '@/lib/orderNumbers';
 
 export async function POST(request: NextRequest) {
   console.log('Checkout API: Request received');
@@ -125,9 +124,8 @@ export async function POST(request: NextRequest) {
 
     const discountAmount = Math.max(0, Math.min(rawDiscountAmount, subtotal));
     const totalAmount = subtotal - discountAmount + safeShipping + safeTax;
-    const orderNumber = await generateOrderNumber();
 
-    console.log('Checkout API: Order details calculated', { orderNumber, totalAmount });
+    console.log('Checkout API: Order details calculated', { totalAmount });
 
     // 6. Prepare Stripe line items (unchanged except image handling)
     const discountRatio = subtotal > 0 && discountAmount > 0
@@ -249,7 +247,6 @@ export async function POST(request: NextRequest) {
         discount_amount: String(discountAmount),
         guest: JSON.stringify(guestData || {}),
         customer: JSON.stringify(customerData || {}),
-        order_number: orderNumber,
         // Include any minimal identifiers needed by webhook (avoid secrets)
       },
       billing_address_collection: 'required',

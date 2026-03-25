@@ -465,6 +465,12 @@ export class SupabaseOrderService {
     shipping_state?: string;
     shipping_postal_code?: string;
     shipping_country?: string;
+    billing_address_line1?: string;
+    billing_address_line2?: string | null;
+    billing_city?: string;
+    billing_state?: string;
+    billing_postal_code?: string;
+    billing_country?: string;
     payment_status?: string;
     status?: string;
   }) {

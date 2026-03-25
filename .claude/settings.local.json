@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(find /Users/shreyasswamy/Desktop/FruitstandNY -type f \\\\\\(-name *.sql -o -name *migration* \\\\\\))"
+      "Bash(find /Users/shreyasswamy/Desktop/FruitstandNY -type f \\\\\\(-name *.sql -o -name *migration* \\\\\\))",
+      "Bash(grep -r \"next_order_number\\\\|CREATE FUNCTION\" /Users/shreyasswamy/Desktop/FruitstandNY/website-real --include=*.md --include=*.txt --include=*.sh)"
     ]
   }
 }

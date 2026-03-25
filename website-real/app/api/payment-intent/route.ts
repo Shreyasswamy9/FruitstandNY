@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { generateOrderNumber } from '@/lib/orderNumbers';
 import { cleanupCartMetadata, serializeCartItems } from '@/lib/stripeCartMetadata';
 
 interface CheckoutItemPayload {
@@ -288,11 +287,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const generatedOrderNumber = await generateOrderNumber();
-    console.log(`[${requestId}] Payment intent API: Order number generated`, { orderNumber: generatedOrderNumber });
-
-    let orderNumber = generatedOrderNumber;
-
     const { paymentIntentId } = payload;
 
     let paymentIntent: Stripe.PaymentIntent;
@@ -315,7 +309,9 @@ export async function POST(request: NextRequest) {
         // Continue with creation if retrieval fails
       }
 
-      orderNumber = existingIntent?.metadata?.order_number || generatedOrderNumber;
+      // Preserve existing order_number if already assigned; don't generate a new one
+      // (order number is only assigned by the webhook on successful payment)
+      const existingOrderNumber = existingIntent?.metadata?.order_number;
 
       let cleanupMetadata: Record<string, string>;
       try {
@@ -331,7 +327,7 @@ export async function POST(request: NextRequest) {
 
       const intentMetadata = {
         ...cleanupMetadata,
-        order_number: orderNumber,
+        ...(existingOrderNumber ? { order_number: existingOrderNumber } : {}),
         ...baseMetadata,
         ...cartMetadata,
       } satisfies Stripe.MetadataParam;
@@ -342,7 +338,6 @@ export async function POST(request: NextRequest) {
         console.log(`[${requestId}] Payment intent API: Updating payment intent`, {
           paymentIntentId,
           amountInCents,
-          orderNumber,
         });
         paymentIntent = await stripe.paymentIntents.update(paymentIntentId, {
           amount: amountInCents,
@@ -379,7 +374,6 @@ export async function POST(request: NextRequest) {
       }
     } else {
       const metadata = {
-        order_number: orderNumber,
         ...baseMetadata,
         ...cartMetadata,
       } satisfies Stripe.MetadataParam;
@@ -400,7 +394,6 @@ export async function POST(request: NextRequest) {
       try {
         console.log(`[${requestId}] Payment intent API: Creating new payment intent`, {
           amountInCents,
-          orderNumber,
           hasShipping: !!shippingDetails,
           hasEmail: !!contactEmail,
         });
@@ -449,29 +442,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Ensure order number exists
-    const finalOrderNumber = paymentIntent.metadata?.order_number ?? orderNumber;
-    if (!finalOrderNumber || !/^\d+$/.test(finalOrderNumber)) {
-      console.error(`[${requestId}] Payment intent API: Invalid or missing order number`, {
-        metadata: paymentIntent.metadata,
-        generatedOrderNumber: orderNumber,
-      });
-      return NextResponse.json(
-        { error: 'Failed to generate order number.' },
-        { status: 500 }
-      );
-    }
-
     console.log(`[${requestId}] Payment intent API: Response prepared successfully`, {
       paymentIntentId: paymentIntent.id,
-      orderNumber: finalOrderNumber,
       clientSecretPresent: true,
     });
 
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
-      orderNumber: finalOrderNumber,
     });
   } catch (error) {
     const requestId = Math.random().toString(36).substring(7);

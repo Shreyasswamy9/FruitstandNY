@@ -198,6 +198,9 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
           }
         : customerDetails?.address;
 
+    // Extract billing address from customer_details (always collected by Stripe)
+    const billingAddress = customerDetails?.address;
+
     const guestName = guestData?.firstName && guestData?.lastName
       ? `${guestData.firstName} ${guestData.lastName}`
       : undefined;
@@ -222,7 +225,7 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
       console.error('Webhook: No shipping address source available for session', session.id);
     }
 
-    // Prepare shipping data from Stripe
+    // Prepare shipping and billing data from Stripe
     const shippingData = {
       shipping_name: shippingName,
       shipping_email: shippingEmail,
@@ -233,6 +236,13 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
       shipping_state: shippingAddress?.state || '',
       shipping_postal_code: shippingAddress?.postal_code || '',
       shipping_country: shippingAddress?.country || 'US',
+      // Billing address fields
+      billing_address_line1: billingAddress?.line1 || '',
+      billing_address_line2: billingAddress?.line2 || null,
+      billing_city: billingAddress?.city || '',
+      billing_state: billingAddress?.state || '',
+      billing_postal_code: billingAddress?.postal_code || '',
+      billing_country: billingAddress?.country || 'US',
       payment_status: 'paid' as const,
       status: 'confirmed' as const,
     };
@@ -321,6 +331,15 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
       ? Number(metadata.tax)
       : 0;
 
+    // CRITICAL: Use Stripe's amount as ground truth for total
+    // If metadata sums don't match, log warning but use Stripe amount
+    const metadataTotal = subtotal + shippingAmount + taxAmount;
+    const stripeAmountDollars = paymentIntent.amount / 100;
+    
+    if (Math.abs(metadataTotal - stripeAmountDollars) > 0.01) {
+      console.warn(`Payment intent ${paymentIntent.id}: Metadata total $${metadataTotal} differs from Stripe amount $${stripeAmountDollars}. Using Stripe amount.`);
+    }
+
     const shippingDetails = paymentIntent.shipping ?? null;
     const shippingAddress = shippingDetails?.address;
 
@@ -330,12 +349,16 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
 
     const shippingName = (shippingDetails?.name || customerData?.name || nameFromGuest || 'Guest').trim() || 'Guest';
 
-    // For Link / Apple Pay / Google Pay, email comes from the charge's billing_details
+    // For Link / Apple Pay / Google Pay, email and billing address come from the charge's billing_details
     let chargeEmail = '';
+    let chargeBillingAddress: Stripe.Address | null = null;
     if (paymentIntent.latest_charge) {
       try {
         const charge = await stripe.charges.retrieve(paymentIntent.latest_charge as string);
         chargeEmail = charge.billing_details.email || '';
+        if (charge.billing_details.address) {
+          chargeBillingAddress = charge.billing_details.address;
+        }
       } catch {
         // non-fatal
       }
@@ -359,6 +382,13 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
       shipping_state: shippingAddress?.state || guestData?.address?.state || '',
       shipping_postal_code: shippingAddress?.postal_code || guestData?.address?.zipCode || '',
       shipping_country: shippingAddress?.country || guestData?.address?.country || 'US',
+      // Add billing address
+      billing_address_line1: chargeBillingAddress?.line1 || '',
+      billing_address_line2: chargeBillingAddress?.line2 || '',
+      billing_city: chargeBillingAddress?.city || '',
+      billing_state: chargeBillingAddress?.state || '',
+      billing_postal_code: chargeBillingAddress?.postal_code || '',
+      billing_country: chargeBillingAddress?.country || 'US',
     };
 
     const existingOrder = await SupabaseOrderService.getOrderByPaymentIntent(paymentIntent.id).catch(() => null);
@@ -397,7 +427,9 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
       guestData,
       customerData,
       paymentIntentId: paymentIntent.id,
+      stripeAmount: paymentIntent.amount / 100,
       shippingDetails,
+      billingAddress: chargeBillingAddress,
       shippingName,
       shippingEmail,
       shippingPhone,
@@ -457,7 +489,9 @@ type CreateOrderFromPaymentIntentParams = {
   guestData: GuestPayload
   customerData: CustomerPayload
   paymentIntentId: string
+  stripeAmount: number
   shippingDetails: Stripe.PaymentIntent.Shipping | null
+  billingAddress: Stripe.Address | null | undefined
   shippingName: string
   shippingEmail: string
   shippingPhone: string | null
@@ -576,7 +610,9 @@ async function createOrderFromPaymentIntent(params: CreateOrderFromPaymentIntent
     guestData,
     customerData,
     paymentIntentId,
+    stripeAmount,
     shippingDetails,
+    billingAddress,
     shippingName,
     shippingEmail,
     shippingPhone,
@@ -597,7 +633,8 @@ async function createOrderFromPaymentIntent(params: CreateOrderFromPaymentIntent
     payment_status: 'paid' as const,
     stripe_payment_intent_id: paymentIntentId,
     stripe_checkout_session_id: null as string | null,
-    total_amount: subtotal + shipping + tax,
+    // CRITICAL: Use Stripe's actual amount as source of truth, not metadata calculation
+    total_amount: stripeAmount,
     subtotal,
     tax_amount: tax,
     shipping_amount: shipping,
@@ -611,6 +648,13 @@ async function createOrderFromPaymentIntent(params: CreateOrderFromPaymentIntent
     shipping_state: address?.state || guestData?.address?.state || '',
     shipping_postal_code: address?.postal_code || guestData?.address?.zipCode || '',
     shipping_country: address?.country || guestData?.address?.country || 'US',
+    // Billing address
+    billing_address_line1: billingAddress?.line1 || '',
+    billing_address_line2: billingAddress?.line2 || '',
+    billing_city: billingAddress?.city || '',
+    billing_state: billingAddress?.state || '',
+    billing_postal_code: billingAddress?.postal_code || '',
+    billing_country: billingAddress?.country || 'US',
   }
 
   const { data: newOrder, error: createErr } = await supabaseAdmin
