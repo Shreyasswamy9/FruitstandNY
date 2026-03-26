@@ -52,16 +52,11 @@ export default function ReviewPlatformPage() {
   // If not submitted yet, show Typeform
   if (!isSubmitted) {
     return (
-      <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', overflow: 'hidden', zIndex: 0 }}>
-        <iframe
-          src={typeformUrl.toString()}
-          width="100%"
-          height="100%"
-          frameBorder="0"
-          title="Product Review Survey"
-          style={{ border: 'none', display: 'block' }}
-        />
+      <div className="w-full min-h-screen bg-white">
         <LogoButton />
+        <div className="w-full h-screen flex items-center justify-center">
+          <div data-tf-live={TYPEFORM_ID} style={{ width: '100%', height: '100%' }} />
+        </div>
       </div>
     );
   }
