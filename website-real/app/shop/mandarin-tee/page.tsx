@@ -52,7 +52,7 @@ const PRODUCT = {
 };
 
 const OUT_OF_STOCK_SIZES = [
-  "XS", "S", "XXXL"] as const;
+  "XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
 
 export default function MandarinTeePage() {
   const [selectedImage, setSelectedImage] = useState(MANDARIN_IMAGES[0]);
@@ -205,8 +205,8 @@ export default function MandarinTeePage() {
         selectedSize={selectedSize}
         onSelectSize={setSelectedSize}
         onAddToCart={handleAddToCart}
-        addDisabled={!selectedSize || Boolean(selectedSizeSoldOut)}
-        addDisabledReason={selectedSizeSoldOut ? "Sold out" : undefined}
+        addDisabled={true}
+        addDisabledReason="Sold Out"
       />
     </div>
   );

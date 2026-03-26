@@ -87,7 +87,7 @@ export default function FirstEditionTeePage() {
     addToCart({
       productId: "149da285-d6ae-4c37-bf76-376ad50363f8",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -145,7 +145,7 @@ export default function FirstEditionTeePage() {
               {selectedColor.name.toUpperCase()}
             </p>
 
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <PriceDisplay regularPrice={PRODUCT.price} salePrice={PRODUCT.salePrice} salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate} />
           </div>
 
           {/* SWATCHES */}

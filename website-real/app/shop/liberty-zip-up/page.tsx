@@ -10,6 +10,7 @@ import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseSizeOption, PurchaseColorOption } from "@/components/ProductPurchaseBar";
 import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { getActivePrice } from "@/lib/priceScheduling";
 
 
 const PRODUCT = {
@@ -95,7 +96,7 @@ export default function LibertyZipUpPage() {
     addToCart({
       productId: "b544f080-b1b5-4dab-8e51-4208b456f73c",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
       image: selectedImage,
       quantity: 1,
       size: selectedSize,

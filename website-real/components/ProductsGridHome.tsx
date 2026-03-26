@@ -168,7 +168,7 @@ export const products: Product[] = [
   { id: 3005, name: "Indigo FS Cap", price: "$44", salePrice: 24.99, salePriceEffectiveDate: "2026-03-25", image: "/images/products/denim-hat/Denim Hat.png", hoverImage: "/images/products/denim-hat/D1.png", category: "Hats" },
 
   // Mandarin Tee
-  { id: 4001, name: "Mandarin 橘子 [JUZI] Tee", price: "$68.00", image: "/images/products/Mandarin Tee/Mandarin Tee.png", hoverImage: "/images/products/Mandarin Tee/Mandarin 2.png", category: "Tops", variantSlug: "mandarin-tee", },
+  { id: 4001, name: "Mandarin 橘子 [JUZI] Tee", price: "$68.00", image: "/images/products/Mandarin Tee/Mandarin Tee.png", hoverImage: "/images/products/Mandarin Tee/Mandarin 2.png", category: "Tops", variantSlug: "mandarin-tee", badgeLabel: "Sold Out" },
 
   // Track Pants (variants)
   { id: 5001, name: "Retro Track Pants", price: "$90", salePrice: 44.99, salePriceEffectiveDate: "2026-03-25", image: "/images/products/Track Pants/ELMHURST TARO CUSTARD/P6.png", hoverImage: "/images/products/tracksuits/ELMHURST TARO CUSTARD/TS7.png", category: "Tracksuits", variantColor: "Elmhurst Taro Custard", variantSlug: "elmhurst-taro-custard" },
@@ -721,7 +721,7 @@ export default function ProductsGrid({ categoryFilter, showBackgroundVideo = tru
                     position: 'absolute',
                     top: 12,
                     left: 12,
-                    backgroundColor: '#111827',
+                    backgroundColor: product.badgeLabel === 'Sold Out' ? '#6b7280' : '#111827',
                     color: '#ffffff',
                     padding: '4px 10px',
                     borderRadius: 999,

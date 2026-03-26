@@ -9,6 +9,8 @@ import { useCart } from "../../../components/CartContext";
 import ProductPurchaseBar, { PurchaseSizeOption } from "@/components/ProductPurchaseBar";
 import SizeGuide from "@/components/SizeGuide";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import PriceDisplay from "@/components/PriceDisplay";
+import { getActivePrice } from "@/lib/priceScheduling";
 
 function formatText(text: string, productName: string, colorNames: string[]): string {
   let lower = text.toLowerCase();
@@ -64,7 +66,7 @@ export default function WasabiTeePage() {
     addToCart({
       productId: "51977ef7-ae8f-486f-9dd7-7620e3b6e70a",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -115,7 +117,7 @@ export default function WasabiTeePage() {
               {PRODUCT.name}
             </h1>
 
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <PriceDisplay regularPrice={PRODUCT.price} salePrice={PRODUCT.salePrice} salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate} />
 
             {/* SIZE GUIDE */}
             <div className="mt-2 text-[13px] font-semibold uppercase tracking-[0.34em] text-[#1d1c19] lg:col-start-2 lg:text-left">

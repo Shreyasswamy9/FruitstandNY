@@ -10,6 +10,7 @@ import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseSizeOption, PurchaseColorOption } from "@/components/ProductPurchaseBar";
 import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
+import { getActivePrice } from "@/lib/priceScheduling";
 
 const PRODUCT = {
   name: "Stamped Waffle Knit",
@@ -88,7 +89,7 @@ export default function StampedWaffleKnitPage() {
     addToCart({
       productId: "01578d37-edd1-4d26-9456-0da3a8e907d9",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
       image: selectedImage,
       quantity: 1,
       size: selectedSize,

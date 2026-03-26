@@ -15,7 +15,8 @@ const CROSS_SELL_BONUS = {
   heading: "BUNDLE AND SAVE $45.00",
   name: "Retro Track Pants",
   subtitle: "Victory Liberty Club",
-  priceLabel: "$90.00",
+  regularPrice: 90,
+  salePrice: 44.99,
   image: TRACK_PANTS_IMAGE,
   productId: TRACK_PANTS_PRODUCT_ID,
   slug: "/shop/track-pants",
@@ -25,13 +26,15 @@ const YOU_MAY_ALSO_LIKE = [
   {
     productId: "track-top",
     name: "Retro Track Jacket",
-    priceLabel: "$110.00",
+    regularPrice: 110,
+    salePrice: 49.99,
     image: "/images/products/Track Top/ELMHURST TARO CUSTARD/J6.png",
   },
   {
     productId: "forest-hills-hat",
     name: "Forest Hills Hat",
-    priceLabel: "$46.00",
+    regularPrice: 46,
+    salePrice: 24.99,
     image: "/images/products/Forest Hills Hat/Forest Hills Hat Final.png",
   },
 ];
@@ -160,7 +163,7 @@ export default function CartOverlay() {
     addToCart({
       productId: TRACK_PANTS_PRODUCT_ID,
       name: CROSS_SELL_BONUS.name,
-      price: 90,
+      price: CROSS_SELL_BONUS.salePrice,
       image: TRACK_PANTS_IMAGE,
       quantity: 1,
       size: size ?? undefined,
@@ -329,7 +332,8 @@ export default function CartOverlay() {
                   </p>
                 ) : null}
                 <p className="mt-2 text-sm font-semibold uppercase tracking-[0.32em] text-[#1b1a18]">
-                  {CROSS_SELL_BONUS.priceLabel}
+                  <span className="line-through mr-1 text-gray-400">${CROSS_SELL_BONUS.regularPrice}</span>
+                  <span>${CROSS_SELL_BONUS.salePrice}</span>
                 </p>
               </div>
             </div>
@@ -348,7 +352,10 @@ export default function CartOverlay() {
                     </div>
                     <div>
                       <p className="text-sm font-black uppercase tracking-[0.28em] text-[#1b1a18]">{product.name}</p>
-                      <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-[#5f584e]">{product.priceLabel}</p>
+                      <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-[#5f584e]">
+                        <span className="line-through mr-1 text-gray-400">${product.regularPrice}</span>
+                        <span>${product.salePrice}</span>
+                      </p>
                     </div>
                   </div>
                   <button
@@ -357,7 +364,7 @@ export default function CartOverlay() {
                       addToCart({
                         productId: product.productId,
                         name: product.name,
-                        price: Number(product.priceLabel.replace(/[^0-9.]/g, "")) || 0,
+                        price: product.salePrice,
                         image: product.image,
                         quantity: 1,
                       })
