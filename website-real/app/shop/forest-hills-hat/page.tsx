@@ -26,8 +26,8 @@ function formatText(text: string, productName: string, colorNames: string[]): st
 }
 
 const FOREST_HILLS_HAT_IMAGES = [
-  "/images/products/Forest Hills Hat/Forest Hills Hat Final.png",
-  "/images/products/Forest Hills Hat/Green Hat.png",
+  "/images/products/Forest Hills Hat/Forest Hills Hat.png",
+  "/images/products/Forest Hills Hat/Forest Hills Hat Close Up.png",
   "/images/products/Forest Hills Hat/G1.png",
   "/images/products/Forest Hills Hat/G2.png",
   "/images/products/Forest Hills Hat/G3.png",

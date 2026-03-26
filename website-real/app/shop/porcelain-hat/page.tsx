@@ -24,8 +24,9 @@ function formatText(text: string, productName: string, colorNames: string[]): st
 }
 
 const PORCELAIN_HAT_IMAGES = [
-  "/images/products/Porcelain Hat/Fruitscale Hat.png",
-  "/images/products/Porcelain Hat/FS2.png",
+  "/images/products/Porcelain Hat/Porcelain Cap.png",
+  "/images/products/Porcelain Hat/Porcelain Back.png",
+  "/images/products/Porcelain Hat/Porcelain Close Up.png",
 ];
 
 const PRODUCT = {

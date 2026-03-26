@@ -24,7 +24,7 @@ function formatText(text: string, productName: string, colorNames: string[]): st
 }
 
 const EMPIRE_HAT_IMAGES = [
-  "/images/products/empire-hat/Apple Hat.png",
+  "/images/products/empire-hat/Empire Corduroy Hat.png",
   "/images/products/empire-hat/A1.png",
   "/images/products/empire-hat/A2.png",
   "/images/products/empire-hat/A3.png",

@@ -24,7 +24,7 @@ function formatText(text: string, productName: string, colorNames: string[]): st
 }
 
 const DENIM_HAT_IMAGES = [
-  "/images/products/denim-hat/Denim Hat.png",
+  "/images/products/denim-hat/Indigo Cap.png",
   "/images/products/denim-hat/D1.png",
   "/images/products/denim-hat/D2.png",
   "/images/products/denim-hat/D3.png",

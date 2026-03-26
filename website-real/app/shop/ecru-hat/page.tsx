@@ -24,8 +24,9 @@ function formatText(text: string, productName: string, colorNames: string[]): st
 }
 
 const ECRU_HAT_IMAGES = [
-  "/images/products/Ecru Hat/Beige Hat.png",
-  "/images/products/Ecru Hat/B1.png",
+  "/images/products/Ecru Hat/Ecru Cap.png",
+  "/images/products/Ecru Hat/Ecru Back.png",
+  "/images/products/Ecru Hat/Ecru Close Up.png",
 ];
 
 const PRODUCT = {

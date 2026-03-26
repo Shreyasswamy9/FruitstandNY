@@ -33,7 +33,7 @@ const MUTSU_COLOR_IMAGE_MAP: Record<string, string[]> = {
     '/images/products/mutsu-tshirt/broadwaynoir/N5.png'
   ],
   'sutton-place-snow': [
-    '/images/products/mutsu-tshirt/suttonplacesnow/Mutsu Sutton Place Snow.png',
+    '/images/products/mutsu-tshirt/suttonplacesnow/Mutsu Sutton Place Snow11.png',
     '/images/products/mutsu-tshirt/suttonplacesnow/N4.png',
     '/images/products/mutsu-tshirt/suttonplacesnow/N6.png'
   ]

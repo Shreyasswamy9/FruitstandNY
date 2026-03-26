@@ -56,8 +56,8 @@ export const products: Product[] = [
     name: "Gala Tee Bundle",
     price: "$29.99",
     displayPrice: "Bundle from $29.99",
-    image: "/images/products/gala-tshirt/broadwaynoir/GN4.png",
-    hoverImage: "/images/products/gala-tshirt/broadwaynoir/GN5.png",
+    image: "/images/products/Teebundle/Bundle Photo.png",
+    hoverImage: "/images/products/Teebundle/Bundle Photo.png",
     category: "Tops",
     variantColor: "Build your bundle",
     isBundle: true,
@@ -69,8 +69,8 @@ export const products: Product[] = [
     name: "Mutsu Tee Bundle",
     price: "$34.99",
     displayPrice: "Bundle from $34.99",
-    image: "/images/products/mutsu-tshirt/broadwaynoir/Mutsu Broadway Noir.png",
-    hoverImage: "/images/products/mutsu-tshirt/broadwaynoir/N1.png",
+    image: "/images/products/Teebundle/Mutsu + Cameo Bundle.png",
+    hoverImage: "/images/products/Teebundle/Mutsu + Cameo Bundle.png",
     category: "Tops",
     variantColor: "Build your bundle",
     isBundle: true,
@@ -82,8 +82,8 @@ export const products: Product[] = [
     name: "Cameo Tee Bundle",
     price: "$29.99",
     displayPrice: "Bundle from $29.99",
-    image: "/images/products/cameo-tshirt/broadwaynoir/MN.png",
-    hoverImage: "/images/products/cameo-tshirt/broadwaynoir/MN3.png",
+    image: "/images/products/Teebundle/Mutsu + Cameo Bundle.png",
+    hoverImage: "/images/products/Teebundle/Mutsu + Cameo Bundle.png",
     category: "Tops",
     variantColor: "Build your bundle",
     isBundle: true,
@@ -95,8 +95,8 @@ export const products: Product[] = [
     name: "Fuji Long Sleeve Bundle",
     price: "$44",
     displayPrice: "Bundle from $44",
-    image: "/images/products/fuji-tshirt/Broadwaynoir/Fuji Broadway Noir.png",
-    hoverImage: "/images/products/fuji-tshirt/Broadwaynoir/F7.png",
+    image: "/images/products/Teebundle/Fuji Bundle.png",
+    hoverImage: "/images/products/Teebundle/Fuji Bundle.png",
     category: "Tops",
     variantColor: "Build your bundle",
     isBundle: true,
@@ -108,8 +108,8 @@ export const products: Product[] = [
     name: "Hat Bundle",
     price: "$24.99",
     displayPrice: "Bundle from $24.99",
-    image: "/images/products/Forest Hills Hat/Forest Hills Hat Final.png",
-    hoverImage: "/images/products/Forest Hills Hat/G1.png",
+    image: "/images/products/Forest Hills Hat/Forest Hills Hat.png",
+    hoverImage: "/images/products/Forest Hills Hat/Forest Hills Hat Close Up.png",
     category: "Hats",
     variantColor: "Build your bundle",
     isBundle: true,
@@ -131,18 +131,18 @@ export const products: Product[] = [
   },
   // New Tee lineup
   // Gala Tee – each color variant surfaced individually
-  { id: 1011, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/broadwaynoir/GN4.png", hoverImage: "/images/products/gala-tshirt/broadwaynoir/GN5.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
-  { id: 1012, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/suttonplacesnow/Gala Sutton Place Snow.png", hoverImage: "/images/products/gala-tshirt/suttonplacesnow/GN11.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
-  { id: 1013, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/Grasshopper/Gala Grasshopper.png", hoverImage: "/images/products/gala-tshirt/Grasshopper/GN8.png", category: "Tops", variantColor: "Grasshopper", variantSlug: "grasshopper", stPatsBadge: true, stPatsOriginalPrice: 40 },
-  { id: 1014, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/frostedlemonade/Gala Frosted Lemonade.png", hoverImage: "/images/products/gala-tshirt/frostedlemonade/GN10.png", category: "Tops", variantColor: "Frosted Lemonade", variantSlug: "frosted-lemonade" },
-  { id: 1015, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/italianice/Gala Italian Ice.png", hoverImage: "/images/products/gala-tshirt/italianice/GN2.png", category: "Tops", variantColor: "Italian Ice", variantSlug: "italian-ice" },
-  { id: 1016, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/ruby red/Gala Ruby Red.png", hoverImage: "/images/products/gala-tshirt/ruby red/GN7.png", category: "Tops", variantColor: "Ruby Red", variantSlug: "ruby-red" },
+  { id: 1011, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/broadwaynoir/Gala Broadway Noir1.png", hoverImage: "/images/products/gala-tshirt/broadwaynoir/GN4.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
+  { id: 1012, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/suttonplacesnow/Gala Sutton Place Snow1.png", hoverImage: "/images/products/gala-tshirt/suttonplacesnow/GN11.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
+  { id: 1013, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/Grasshopper/Gala Grasshopper1.png", hoverImage: "/images/products/gala-tshirt/Grasshopper/GN8.png", category: "Tops", variantColor: "Grasshopper", variantSlug: "grasshopper", stPatsBadge: true, stPatsOriginalPrice: 40 },
+  { id: 1014, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/frostedlemonade/Gala Frosted Lemonade1.png", hoverImage: "/images/products/gala-tshirt/frostedlemonade/GN10.png", category: "Tops", variantColor: "Frosted Lemonade", variantSlug: "frosted-lemonade" },
+  { id: 1015, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/italianice/Gala Italian Ice1.png", hoverImage: "/images/products/gala-tshirt/italianice/GN2.png", category: "Tops", variantColor: "Italian Ice", variantSlug: "italian-ice" },
+  { id: 1016, name: "Portugal Lightweight Tee", price: "$40", salePrice: 29.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/gala-tshirt/ruby red/gala ruby red 1.png", hoverImage: "/images/products/gala-tshirt/ruby red/GN7.png", category: "Tops", variantColor: "Ruby Red", variantSlug: "ruby-red" },
   // Cameo variants
-  { id: 1021, name: "Portugal Heavyweight Tee", price: "$40", salePrice: 29.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/cameo-tshirt/broadwaynoir/MN.png", hoverImage: "/images/products/cameo-tshirt/broadwaynoir/MN3.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
-  { id: 1022, name: "Portugal Heavyweight Tee", price: "$40", salePrice: 29.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/cameo-tshirt/suttonplacesnow/Cameo Sutton Place Snow.png", hoverImage: "/images/products/cameo-tshirt/suttonplacesnow/MN2.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
+  { id: 1021, name: "Portugal Heavyweight Tee", price: "$40", salePrice: 29.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/cameo-tshirt/broadwaynoir/Cameo Broadway Noir.png", hoverImage: "/images/products/cameo-tshirt/broadwaynoir/MN3.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
+  { id: 1022, name: "Portugal Heavyweight Tee", price: "$40", salePrice: 29.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/cameo-tshirt/suttonplacesnow/Cameo Sutton Place Snow11.png", hoverImage: "/images/products/cameo-tshirt/suttonplacesnow/MN2.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
   // Mutsu variants
   { id: 1031, name: "Portugal Pocket Tee", price: "$45", salePrice: 34.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/mutsu-tshirt/broadwaynoir/Mutsu Broadway Noir.png", hoverImage: "/images/products/mutsu-tshirt/broadwaynoir/N1.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
-  { id: 1032, name: "Portugal Pocket Tee", price: "$45", salePrice: 34.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/mutsu-tshirt/suttonplacesnow/Mutsu Sutton Place Snow.png", hoverImage: "/images/products/mutsu-tshirt/suttonplacesnow/N4.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
+  { id: 1032, name: "Portugal Pocket Tee", price: "$45", salePrice: 34.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/mutsu-tshirt/suttonplacesnow/Mutsu Sutton Place Snow11.png", hoverImage: "/images/products/mutsu-tshirt/suttonplacesnow/N4.png", category: "Tops", variantColor: "Sutton Place Snow", variantSlug: "sutton-place-snow" },
   // Fuji Long Sleeve variants (updated colors & images)
   { id: 1041, name: "Portugal Heavyweight Pocket Long Sleeve", price: "$80", salePrice: 44.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/fuji-tshirt/Arboretum/Fuji Arboretum.png", hoverImage: "/images/products/fuji-tshirt/Arboretum/F11.png", category: "Tops", variantColor: "Arboretum", variantSlug: "arboretum", stPatsBadge: true, stPatsOriginalPrice: 80 },
   { id: 1042, name: "Portugal Heavyweight Pocket Long Sleeve", price: "$80", salePrice: 44.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/fuji-tshirt/Hudson blue/Fuji Hudson Blue.png", hoverImage: "/images/products/fuji-tshirt/Hudson blue/F9.png", category: "Tops", variantColor: "Hudson Blue", variantSlug: "hudson-blue" },
@@ -154,19 +154,19 @@ export const products: Product[] = [
   { id: 1073, name: "First Edition Tee", price: "$29.99", image: "/images/products/First Edition Tee/FE3.png", hoverImage: "/images/products/First Edition Tee/FE4.png", category: "Tops", variantColor: "Black", variantSlug: "black" },
 
   // Forest Hills Hat (Green)
-  { id: 3001, name: "Forest Hills Camp Hat", price: "$46", salePrice: 24.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/Forest Hills Hat/Forest Hills Hat Final.png", hoverImage: "/images/products/Forest Hills Hat/G1.png", category: "Hats", stPatsBadge: true, stPatsOriginalPrice: 46 },
+  { id: 3001, name: "Forest Hills Camp Hat", price: "$46", salePrice: 24.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/Forest Hills Hat/Forest Hills Hat.png", hoverImage: "/images/products/Forest Hills Hat/Forest Hills Hat Close Up.png", category: "Hats", stPatsBadge: true, stPatsOriginalPrice: 46 },
 
   // Porcelain FS Cap (White)
-  { id: 3002, name: "Porcelain FS Cap", price: "$44", salePrice: 24.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/Porcelain Hat/Fruitscale Hat.png", hoverImage: "/images/products/Porcelain Hat/FS2.png", category: "Hats", variantSlug: "porcelain-hat" },
+  { id: 3002, name: "Porcelain FS Cap", price: "$44", salePrice: 24.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/Porcelain Hat/Porcelain Cap.png", hoverImage: "/images/products/Porcelain Hat/Porcelain Back.png", category: "Hats", variantSlug: "porcelain-hat" },
 
   // Ecru FS Cap (Beige)
-  { id: 3003, name: "Ecru FS Cap", price: "$44", salePrice: 24.99, salePriceEffectiveDate: "2026-03-21", image: "/images/products/Ecru Hat/Beige Hat.png", hoverImage: "/images/products/Ecru Hat/B1.png", category: "Hats", variantSlug: "ecru-hat" },
+  { id: 3003, name: "Ecru FS Cap", price: "$44", salePrice: 24.99, salePriceEffectiveDate: "2026-03-21", image: "/images/products/Ecru Hat/Ecru Cap.png", hoverImage: "/images/products/Ecru Hat/Ecru Back.png", category: "Hats", variantSlug: "ecru-hat" },
 
   // Empire Corduroy Hat
-  { id: 3004, name: "Empire Corduroy Hat", price: "$49", salePrice: 24.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/empire-hat/Apple Hat.png", hoverImage: "/images/products/empire-hat/A2.png", category: "Hats" },
+  { id: 3004, name: "Empire Corduroy Hat", price: "$49", salePrice: 24.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/empire-hat/Empire Corduroy Hat.png", hoverImage: "/images/products/empire-hat/A2.png", category: "Hats" },
 
   // Indigo FS Cap (Denim)
-  { id: 3005, name: "Indigo FS Cap", price: "$44", salePrice: 24.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/denim-hat/Denim Hat.png", hoverImage: "/images/products/denim-hat/D1.png", category: "Hats" },
+  { id: 3005, name: "Indigo FS Cap", price: "$44", salePrice: 24.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/denim-hat/Indigo Cap.png", hoverImage: "/images/products/denim-hat/D1.png", category: "Hats" },
 
   // Mandarin Tee
   { id: 4001, name: "Mandarin 橘子 [JUZI] Tee", price: "$68.00", image: "/images/products/Mandarin Tee/Mandarin Tee.png", hoverImage: "/images/products/Mandarin Tee/Mandarin 2.png", category: "Tops", variantSlug: "mandarin-tee", soldOut: true },

@@ -29,12 +29,12 @@ function formatText(text: string, productName: string, colorNames: string[]): st
 // Per-color image map for gallery display
 const CAMEO_COLOR_IMAGE_MAP: Record<string, string[]> = {
   'broadway-noir': [
-    '/images/products/cameo-tshirt/broadwaynoir/MN.png',
+    '/images/products/cameo-tshirt/broadwaynoir/Cameo Broadway Noir.png',
     '/images/products/cameo-tshirt/broadwaynoir/MN3.png',
     '/images/products/cameo-tshirt/broadwaynoir/MN4.png'
   ],
   'sutton-place-snow': [
-    '/images/products/cameo-tshirt/suttonplacesnow/Cameo Sutton Place Snow.png',
+    '/images/products/cameo-tshirt/suttonplacesnow/Cameo Sutton Place Snow11.png',
     '/images/products/cameo-tshirt/suttonplacesnow/MN2.png',
     '/images/products/cameo-tshirt/suttonplacesnow/MN5.png'
   ]
