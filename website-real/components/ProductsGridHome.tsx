@@ -150,8 +150,8 @@ export const products: Product[] = [
   { id: 1044, name: "Portugal Heavyweight Pocket Long Sleeve", price: "$80", salePrice: 44.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/fuji-tshirt/Broadwaynoir/Fuji Broadway Noir.png", hoverImage: "/images/products/fuji-tshirt/Broadwaynoir/F7.png", category: "Tops", variantColor: "Broadway Noir", variantSlug: "broadway-noir" },
   // New additions: Wasabi Tee and First Edition Tee
   { id: 1071, name: "Wabisabi™ Scheffel Hall Pears Tee", price: "$45", image: "/images/products/Wasabi Tee/Wabasabi 1.png", hoverImage: "/images/products/Wasabi Tee/Wabasabi 2.png", category: "Tops", variantSlug: "wasabi-tee" },
-  { id: 1072, name: "First Edition Tee", price: "$29.99", image: "/images/products/First Edition Tee/FE1.png", hoverImage: "/images/products/First Edition Tee/FE2.png", category: "Tops", variantColor: "White", variantSlug: "white" },
-  { id: 1073, name: "First Edition Tee", price: "$29.99", image: "/images/products/First Edition Tee/FE3.png", hoverImage: "/images/products/First Edition Tee/FE4.png", category: "Tops", variantColor: "Black", variantSlug: "black" },
+  { id: 1072, name: "First Edition Tee", price: "$29.99", image: "/images/products/First Edition Tee/FE1.png", hoverImage: "/images/products/First Edition Tee/FE4.png", category: "Tops", variantColor: "White", variantSlug: "white" },
+  { id: 1073, name: "First Edition Tee", price: "$29.99", image: "/images/products/First Edition Tee/FE4.png", hoverImage: "/images/products/First Edition Tee/FE1.png", category: "Tops", variantColor: "Black", variantSlug: "black" },
 
   // Forest Hills Hat (Green)
   { id: 3001, name: "Forest Hills Camp Hat", price: "$46", salePrice: 24.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/Forest Hills Hat/Forest Hills Hat.png", hoverImage: "/images/products/Forest Hills Hat/Forest Hills Hat Close Up.png", category: "Hats", stPatsBadge: true, stPatsOriginalPrice: 46 },
