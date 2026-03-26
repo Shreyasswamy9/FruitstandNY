@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { validateCartStock } from '@/lib/stock/validateStock';
 
 export async function POST(request: NextRequest) {
   console.log('Checkout API: Request received');
@@ -129,34 +128,6 @@ export async function POST(request: NextRequest) {
     const totalAmount = subtotal - discountAmount + safeShipping + safeTax;
 
     console.log('Checkout API: Order details calculated', { totalAmount });
-
-    // 5b. Real-time stock validation — reject before creating a Stripe session if any
-    //     item exceeds available inventory. Uses variantId when present (preferred path)
-    //     and falls back to product_id + size + color or product-level stock.
-    const stockCheck = await validateCartStock(
-      normalizedItems
-        .filter((item) => !!item.productId)
-        .map((item) => ({
-          productId: item.productId!,
-          variantId: item.variantId ?? null,
-          name: item.name,
-          size: item.size ?? null,
-          color: item.color ?? null,
-          quantity: Number(item.quantity || 1),
-        })),
-    );
-    if (!stockCheck.valid) {
-      const outOfStockNames = stockCheck.errors.map((e) => e.name).join(', ');
-      console.warn('Checkout API: Stock check failed', stockCheck.errors);
-      return NextResponse.json(
-        {
-          error: 'Some items are out of stock or have insufficient inventory.',
-          outOfStock: stockCheck.errors,
-          message: `The following items cannot be purchased: ${outOfStockNames}`,
-        },
-        { status: 409 },
-      );
-    }
 
     // 6. Prepare Stripe line items (unchanged except image handling)
     const discountRatio = subtotal > 0 && discountAmount > 0
