@@ -82,7 +82,7 @@ const FBT_POOL: FBTProduct[] = [
   { id: 'fuji-tshirt', name: 'Fuji Long Sleeve', price: 80, image: '/images/products/fuji-tshirt/Arboretum/Fuji Arboretum.png' },
   { id: 'cameo-tshirt', name: 'Cameo Tee', price: 40, image: '/images/products/cameo-tshirt/broadwaynoir/MN.png' },
   { id: 'first-edition-tee', name: 'First Edition Tee', price: 45, image: '/images/products/First Edition Tee/FE1.png' },
-  { id: 'hockey-jersey', name: 'Broadway Blueberry Jersey', price: 180, image: '/images/products/hockey Jersey/JN.png' },
+  { id: 'hockey-jersey', name: 'Broadway Blueberry Jersey', price: 180, image: '/images/products/hockey%20Jersey/JN.png' },
 ];
 
 const FBT_LOOKUP = new Map(FBT_POOL.map((product) => [product.id, product]));

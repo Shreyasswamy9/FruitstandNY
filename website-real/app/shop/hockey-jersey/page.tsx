@@ -26,11 +26,11 @@ function formatText(text: string, productName: string, colorNames: string[]): st
 }
 
 const HOCKEY_JERSEY_IMAGE_SET = [
-  "/images/products/hockey Jersey/JN.png",
-  "/images/products/hockey Jersey/JN1.png",
-  "/images/products/hockey Jersey/JN2.png",
-  "/images/products/hockey Jersey/JN3.png",
-  "/images/products/hockey Jersey/JN4.png",
+  "/images/products/hockey%20Jersey/JN.png",
+  "/images/products/hockey%20Jersey/JN1.png",
+  "/images/products/hockey%20Jersey/JN2.png",
+  "/images/products/hockey%20Jersey/JN3.png",
+  "/images/products/hockey%20Jersey/JN4.png",
 ];
 
 const HOCKEY_JERSEY_VARIANTS = [

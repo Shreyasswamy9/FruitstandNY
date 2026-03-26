@@ -49,7 +49,7 @@ export const products: Product[] = [
   { id: 2006, name: "Retro Track Suit", price: "$165", salePrice: 82.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/tracksuits/Victory Liberty Club/RB.png", hoverImage: "/images/products/tracksuits/Victory Liberty Club/TS6.png", category: "Tracksuits", variantColor: "Victory Liberty Club", variantSlug: "victory-liberty-club" },
   { id: 2007, name: "Retro Track Suit", price: "$165", salePrice: 82.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/tracksuits/YORKVILLE BLACK AND WHITE COOKIES/BW.png", hoverImage: "/images/products/tracksuits/YORKVILLE BLACK AND WHITE COOKIES/TS1.png", category: "Tracksuits", variantColor: "Yorkville Black and White Cookies", variantSlug: "yorkville-black-and-white-cookies" },
   // Broadway Blueberry Jersey (merch slot before tees)
-  { id: 1, name: "Broadway Blueberry Jersey", price: "$180", salePrice: 49.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/hockey Jersey/JN.png", hoverImage: "/images/products/hockey Jersey/JN1.png", category: "Jerseys", variantColor: "Black Ice", variantSlug: "hockey-jersey" },
+  { id: 1, name: "Broadway Blueberry Jersey", price: "$180", salePrice: 49.99, salePriceEffectiveDate: "2026-03-26", image: "/images/products/hockey%20Jersey/JN.png", hoverImage: "/images/products/hockey%20Jersey/JN1.png", category: "Jerseys", variantColor: "Black Ice", variantSlug: "hockey-jersey" },
   // Bundle Section
   {
     id: 9002,
