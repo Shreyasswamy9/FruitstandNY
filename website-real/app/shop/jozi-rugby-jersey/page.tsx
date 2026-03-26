@@ -10,10 +10,14 @@ import ProductPurchaseBar, { PurchaseSizeOption, PurchaseColorOption } from "@/c
 import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
 import { useProductStock } from '@/hooks/useProductStock';
+import PriceDisplay from "@/components/PriceDisplay";
+import { getActivePrice } from "@/lib/priceScheduling";
 
 const PRODUCT = {
   name: "Jozi Rugby Jersey",
   price: 125,
+  salePrice: 59.99,
+  salePriceEffectiveDate: "2026-03-26",
   description: "The color scheme and pattern draw from the flag of South Africa. Knit from 100% cotton, these jerseys are the most comfortable statement pieces we have made to date. A three button collar completes the jersey making it versatile for all occasions.",
   details: [
     "100% Cotton",
@@ -54,7 +58,7 @@ export default function JoziRugbyJerseyPage() {
   useTrackProductView({
     productId: "4a97844e-eb2b-4e6f-af94-419ea24dfe86",
     productName: PRODUCT.name,
-    price: PRODUCT.price,
+    price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
     currency: "USD",
     selectedVariant: {
       color: selectedColor.name,
@@ -90,7 +94,7 @@ export default function JoziRugbyJerseyPage() {
     addToCart({
       productId: "4a97844e-eb2b-4e6f-af94-419ea24dfe86",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -145,7 +149,13 @@ export default function JoziRugbyJerseyPage() {
             <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
               {PRODUCT.name}
             </h1>
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <div className="mt-2">
+              <PriceDisplay
+                regularPrice={PRODUCT.price}
+                salePrice={PRODUCT.salePrice}
+                salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate}
+              />
+            </div>
             {/* St. Patrick's Day components disabled */}
             <div className="mt-4">
               <SizeGuide productSlug="rugby-jersey" />

@@ -42,7 +42,7 @@ const MUTSU_COLOR_IMAGE_MAP: Record<string, string[]> = {
 const PRODUCT = {
   name: "Portugal Pocket Tee",
   price: 45,
-  salePrice: 35,
+  salePrice: 34.99,
   salePriceEffectiveDate: "2026-03-26",
   description: "Crafted from 100% organic cotton in Portugal, made in a relaxed fit. At 160 GSM, it’s a normal weight tee, but still soft and breathable. Features an oversized front left pocket — designed for effortless everyday wear.",
   details: [

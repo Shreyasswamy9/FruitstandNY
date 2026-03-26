@@ -10,10 +10,14 @@ import ProductPurchaseBar, { PurchaseSizeOption, PurchaseColorOption } from "@/c
 import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
 import { useProductStock } from '@/hooks/useProductStock';
+import PriceDisplay from "@/components/PriceDisplay";
+import { getActivePrice } from "@/lib/priceScheduling";
 
 const PRODUCT = {
   name: "Liberty Hoodie",
   price: 110,
+  salePrice: 64.99,
+  salePriceEffectiveDate: "2026-03-26",
   description: "The hoodie is part of our effort to introduce true staples into FRUITSTAND — pieces we can wear all day in the workshop and still feel right stepping outside. We wanted something ultra-comfortable, heavyweight, and a go-to piece year-round.",
   details: [
     "100% Cotton",
@@ -56,7 +60,7 @@ export default function LibertyHoodiePage() {
   useTrackProductView({
     productId: "324aacbd-fc54-4887-b4ef-9679297af9e1",
     productName: PRODUCT.name,
-    price: PRODUCT.price,
+    price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
     currency: "USD",
     selectedVariant: {
       color: selectedColor.name,
@@ -81,7 +85,7 @@ export default function LibertyHoodiePage() {
     addToCart({
       productId: "324aacbd-fc54-4887-b4ef-9679297af9e1",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -149,7 +153,13 @@ export default function LibertyHoodiePage() {
             <p className="mt-1 text-[18px] text-[#1d1c19] font-avenir-light">
               {selectedColor.name.toUpperCase()}
             </p>
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <div className="mt-2">
+              <PriceDisplay
+                regularPrice={PRODUCT.price}
+                salePrice={PRODUCT.salePrice}
+                salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate}
+              />
+            </div>
             <div className="mt-4">
               <SizeGuide productSlug="liberty-hoodie" />
             </div>

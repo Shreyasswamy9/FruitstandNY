@@ -124,6 +124,7 @@ export async function POST(request: NextRequest) {
     // Support multiple possible field names from schema
     const isActive = product.is_active ?? product.active ?? true;
     const price = Number(product.price ?? product.unit_price ?? 0);
+    const enableStockTracking = product.enable_stock_tracking ?? true;
 
     // Detailed checks with logs
     if (!isActive) {
@@ -136,7 +137,9 @@ export async function POST(request: NextRequest) {
 
     // Check variant-level stock when a variantId is provided or when size/color can identify a variant
     let resolvedVariantId: string | undefined = variantId || undefined;
-    {
+    
+    // Skip stock validation if stock tracking is disabled for this product
+    if (enableStockTracking) {
       // Try to resolve variant by variantId first, then by size+color lookup
       let variantToCheck: { id: string; stock_quantity: number; is_available: boolean } | null = null;
 

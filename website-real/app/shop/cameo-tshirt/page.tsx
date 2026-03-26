@@ -48,7 +48,7 @@ type CameoColorOption = ColorOption & {
 const PRODUCT = {
   name: "Portugal Heavyweight Tee",
   price: 40,
-  salePrice: 29,
+  salePrice: 29.99,
   salePriceEffectiveDate: "2026-03-26",
   description: "Crafted from 100% organic cotton in Portugal, made in a relaxed fit. At 200 GSM, it’s heavy weight, soft, and breathable — designed for effortless everyday wear. The CAMEO Tee takes inspiration from our previous best sellers — Golden Delicious and Red Delicious — updated this time with a wider collar opening for more room at the neck and a relaxed, oversized silhouette.",
   details: [

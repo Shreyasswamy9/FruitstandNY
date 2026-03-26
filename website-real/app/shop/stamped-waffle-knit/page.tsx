@@ -10,10 +10,14 @@ import ProductPurchaseBar, { PurchaseSizeOption, PurchaseColorOption } from "@/c
 import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
 import { useProductStock } from '@/hooks/useProductStock';
+import PriceDisplay from "@/components/PriceDisplay";
+import { getActivePrice } from "@/lib/priceScheduling";
 
 const PRODUCT = {
   name: "Stamped Waffle Knit",
-  price: 65,
+  price: 100,
+  salePrice: 49.99,
+  salePriceEffectiveDate: "2026-03-26",
   description: "The Stamped Waffle Knit features imagery inspired by international postage stamps — small objects that once carried immense meaning across borders, time, and distance. Stamps were proof of duty paid, markers of travel, and quiet records of work done. Each one a snapshot of a moment, a place, a cost, a story.",
   details: [
     "100% Cotton",
@@ -63,7 +67,7 @@ export default function StampedWaffleKnitPage() {
   useTrackProductView({
     productId: "01578d37-edd1-4d26-9456-0da3a8e907d9",
     productName: PRODUCT.name,
-    price: PRODUCT.price,
+    price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
     currency: "USD",
     selectedVariant: {
       color: selectedColor.name,
@@ -88,7 +92,7 @@ export default function StampedWaffleKnitPage() {
     addToCart({
       productId: "01578d37-edd1-4d26-9456-0da3a8e907d9",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -143,7 +147,13 @@ export default function StampedWaffleKnitPage() {
             <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
               {PRODUCT.name}
             </h1>
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <div className="mt-2">
+              <PriceDisplay
+                regularPrice={PRODUCT.price}
+                salePrice={PRODUCT.salePrice}
+                salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate}
+              />
+            </div>
             <div className="mt-4">
               <SizeGuide productSlug="waffle-knit" />
             </div>

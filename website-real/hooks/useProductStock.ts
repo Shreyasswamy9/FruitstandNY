@@ -12,6 +12,7 @@ type VariantInfo = {
 type StockState = {
   productStock: number;
   productActive: boolean;
+  enableStockTracking: boolean;
   variants: VariantInfo[];
 };
 
@@ -64,6 +65,7 @@ export function useProductStock(productId: string) {
         setStockState({
           productStock: (p.stock_quantity as number) ?? 0,
           productActive: (p.is_active as boolean) ?? true,
+          enableStockTracking: (p.enable_stock_tracking as boolean) ?? true,
           variants: ((p.product_variants ?? []) as Record<string, unknown>[]).map((v) => ({
             id: v.id as string,
             size: (v.size as string | null) ?? null,
@@ -82,11 +84,17 @@ export function useProductStock(productId: string) {
   /**
    * Returns true if a specific size (for a given optional color) is sold out.
    * Falls back to product-level stock when no variants exist.
+   * 
+   * If stock tracking is disabled for this product, always returns false.
    */
   const isSizeSoldOut = useCallback(
     (size: string, color?: string | null): boolean => {
       if (!stockState) return false; // not yet loaded — used only for dropdown label display
-      const { variants, productStock, productActive } = stockState;
+      const { variants, productStock, productActive, enableStockTracking } = stockState;
+      
+      // If stock tracking is disabled, product is always considered in stock
+      if (!enableStockTracking) return false;
+      
       if (!productActive) return true;
       if (variants.length === 0) return productStock <= 0;
 
@@ -121,6 +129,8 @@ export function useProductStock(productId: string) {
    * returns true (treat as OOS) so the Add-to-Cart button stays disabled until we
    * have confirmed the item is purchasable. This prevents the loading-race where a
    * user can add an OOS item before the fetch completes.
+   * 
+   * If stock tracking is disabled for this product, always returns false.
    */
   const isOutOfStock = useCallback(
     (size: string | null, color?: string | null): boolean => {
@@ -128,7 +138,11 @@ export function useProductStock(productId: string) {
       // yet, be conservative and block the add rather than allowing a potentially OOS item.
       if (!stockState) return size !== null;
 
-      const { variants, productStock, productActive } = stockState;
+      const { variants, productStock, productActive, enableStockTracking } = stockState;
+      
+      // If stock tracking is disabled, product is always considered in stock
+      if (!enableStockTracking) return false;
+      
       if (!productActive) return true;
       if (variants.length === 0) return productStock <= 0;
 
@@ -174,6 +188,7 @@ export function useProductSetStock(productIds: string[]) {
               state: {
                 productStock: (p.stock_quantity as number) ?? 0,
                 productActive: (p.is_active as boolean) ?? true,
+                enableStockTracking: (p.enable_stock_tracking as boolean) ?? true,
                 variants: ((p.product_variants ?? []) as Record<string, unknown>[]).map((v) => ({
                   id: v.id as string,
                   size: (v.size as string | null) ?? null,
@@ -206,6 +221,8 @@ export function useProductSetStock(productIds: string[]) {
       if (Object.keys(stockStates).length === 0) return false;
       // Sold out if ANY component product is OOS for this size+color
       return Object.values(stockStates).some((s) => {
+        // If stock tracking is disabled, consider it in stock
+        if (!s.enableStockTracking) return false;
         if (!s.productActive) return true;
         if (s.variants.length === 0) return s.productStock <= 0;
         const matching = s.variants.filter((v) => {
@@ -234,6 +251,8 @@ export function useProductSetStock(productIds: string[]) {
     (size: string | null, color?: string | null): boolean => {
       if (Object.keys(stockStates).length === 0) return false;
       return Object.values(stockStates).some((s) => {
+        // If stock tracking is disabled, consider it in stock
+        if (!s.enableStockTracking) return false;
         if (!s.productActive) return true;
         if (s.variants.length === 0) return s.productStock <= 0;
         if (!size) {

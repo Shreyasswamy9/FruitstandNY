@@ -35,7 +35,7 @@ const EMPIRE_HAT_IMAGES = [
 const PRODUCT = {
   name: "Empire Corduroy Hat",
   price: 49,
-  salePrice: 25,
+  salePrice: 24.99,
   salePriceEffectiveDate: "2026-03-26",
   description: "Premium corduroy finished with apple red embroidery front, back, and brim.",
   details: [

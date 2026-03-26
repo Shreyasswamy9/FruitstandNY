@@ -81,6 +81,7 @@ export interface Product {
   is_active: boolean;
   featured: boolean;
   stock_quantity: number;
+  enable_stock_tracking?: boolean;
   material?: string;
   care_instructions?: string;
   created_at: string;

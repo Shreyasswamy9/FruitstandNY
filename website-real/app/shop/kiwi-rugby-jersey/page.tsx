@@ -10,10 +10,14 @@ import ProductPurchaseBar, { PurchaseSizeOption, PurchaseColorOption } from "@/c
 import ProductImageGallery, { type ProductImageGalleryOption } from "@/components/ProductImageGallery";
 import { useTrackProductView } from "@/hooks/useTrackProductView";
 import { useProductStock } from '@/hooks/useProductStock';
+import PriceDisplay from "@/components/PriceDisplay";
+import { getActivePrice } from "@/lib/priceScheduling";
 
 const PRODUCT = {
   name: "Kiwi Rugby Jersey",
   price: 125,
+  salePrice: 59.99,
+  salePriceEffectiveDate: "2026-03-26",
   description: "The color scheme draws from the silver fern, famous in New Zealand and synonymous with their rugby team. Knit from 100% cotton, these jerseys are the most comfortable statement pieces we have made to date. A vintage laced-neck collar makes for a one-of-a-kind look. With 12 gauge knitting, this jersey was made for both comfort and function.",
   details: [
     "100% Cotton",
@@ -54,7 +58,7 @@ export default function KiwiRugbyJerseyPage() {
   useTrackProductView({
     productId: "4ffbb5f9-3e30-46d5-8d9b-8667d7e2b0da",
     productName: PRODUCT.name,
-    price: PRODUCT.price,
+    price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
     currency: "USD",
     selectedVariant: {
       color: selectedColor.name,
@@ -79,7 +83,7 @@ export default function KiwiRugbyJerseyPage() {
     addToCart({
       productId: "4ffbb5f9-3e30-46d5-8d9b-8667d7e2b0da",
       name: PRODUCT.name,
-      price: PRODUCT.price,
+      price: getActivePrice(PRODUCT.price, PRODUCT.salePrice, PRODUCT.salePriceEffectiveDate),
       image: selectedImage,
       quantity: 1,
       size: selectedSize,
@@ -134,7 +138,13 @@ export default function KiwiRugbyJerseyPage() {
             <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
               {PRODUCT.name}
             </h1>
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <div className="mt-2">
+              <PriceDisplay
+                regularPrice={PRODUCT.price}
+                salePrice={PRODUCT.salePrice}
+                salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate}
+              />
+            </div>
             <div className="mt-4">
               <SizeGuide productSlug="rugby-jersey" />
             </div>

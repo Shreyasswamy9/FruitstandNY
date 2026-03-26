@@ -23,6 +23,7 @@ export interface Product {
   tags: string[];
   active: boolean;
   featured: boolean;
+  enable_stock_tracking?: boolean;
   weight?: number;
   dimensions_length?: number;
   dimensions_width?: number;
