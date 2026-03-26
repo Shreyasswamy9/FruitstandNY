@@ -20,8 +20,8 @@ export default function ReviewPlatformPage() {
     
     script.onload = () => {
       // Redraw embedded forms after script loads
-      if (window.tf) {
-        window.tf.redraw();
+      if ((window as any).tf) {
+        (window as any).tf.redraw();
       }
     };
     
