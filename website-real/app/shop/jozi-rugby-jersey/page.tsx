@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
+import PriceDisplay from "@/components/PriceDisplay";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseSizeOption, PurchaseColorOption } from "@/components/ProductPurchaseBar";
@@ -13,6 +14,8 @@ import { useTrackProductView } from "@/hooks/useTrackProductView";
 const PRODUCT = {
   name: "Jozi Rugby Jersey",
   price: 125,
+  salePrice: 59.99,
+  salePriceEffectiveDate: "2026-03-25",
   description: "The color scheme and pattern draw from the flag of South Africa. Knit from 100% cotton, these jerseys are the most comfortable statement pieces we have made to date. A three button collar completes the jersey making it versatile for all occasions.",
   details: [
     "100% Cotton",
@@ -143,7 +146,7 @@ export default function JoziRugbyJerseyPage() {
             <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
               {PRODUCT.name}
             </h1>
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <PriceDisplay regularPrice={PRODUCT.price} salePrice={PRODUCT.salePrice} salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate} />
             {/* St. Patrick's Day components disabled */}
             <div className="mt-4">
               <SizeGuide productSlug="rugby-jersey" />

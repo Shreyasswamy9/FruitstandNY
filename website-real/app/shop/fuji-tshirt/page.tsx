@@ -65,8 +65,8 @@ type FujiColorOption = {
 const PRODUCT = {
   name: "Portugal Heavyweight Pocket Long Sleeve",
   price: 80,
-  salePrice: 44,
-  salePriceEffectiveDate: "2026-03-26",
+  salePrice: 44.00,
+  salePriceEffectiveDate: "2026-03-25",
   description:
     "Crafted from 100% organic cotton in Portugal, made in a relaxed fit. At 250 GSM, it’s heavy weight, soft, and breathable — designed for effortless everyday wear.",
   details: [

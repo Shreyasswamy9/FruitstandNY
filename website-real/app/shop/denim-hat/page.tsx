@@ -32,8 +32,8 @@ const DENIM_HAT_IMAGES = [
 const PRODUCT = {
   name: "Indigo Hat",
   price: 44,
-  salePrice: 25,
-  salePriceEffectiveDate: "2026-03-26",
+  salePrice: 24.99,
+  salePriceEffectiveDate: "2026-03-25",
   description: "Classic indigo denim finished with tonal Fruitstand embroidery.",
   details: [
     "Washed denim 6-panel cap",

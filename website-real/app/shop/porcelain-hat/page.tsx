@@ -30,8 +30,8 @@ const PORCELAIN_HAT_IMAGES = [
 const PRODUCT = {
   name: "Porcelain FS Cap",
   price: 44,
-  salePrice: 25,
-  salePriceEffectiveDate: "2026-03-26",
+  salePrice: 24.99,
+  salePriceEffectiveDate: "2026-03-25",
   description: "Crisp porcelain white cap finished with tonal Fruitstand embroidery.",
   details: [
     "Structured 6-panel silhouette",

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
+import PriceDisplay from "@/components/PriceDisplay";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseSizeOption, PurchaseColorOption } from "@/components/ProductPurchaseBar";
@@ -13,6 +14,8 @@ import { useTrackProductView } from "@/hooks/useTrackProductView";
 const PRODUCT = {
   name: "Kiwi Rugby Jersey",
   price: 125,
+  salePrice: 59.99,
+  salePriceEffectiveDate: "2026-03-25",
   description: "The color scheme draws from the silver fern, famous in New Zealand and synonymous with their rugby team. Knit from 100% cotton, these jerseys are the most comfortable statement pieces we have made to date. A vintage laced-neck collar makes for a one-of-a-kind look. With 12 gauge knitting, this jersey was made for both comfort and function.",
   details: [
     "100% Cotton",
@@ -131,7 +134,7 @@ export default function KiwiRugbyJerseyPage() {
             <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
               {PRODUCT.name}
             </h1>
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <PriceDisplay regularPrice={PRODUCT.price} salePrice={PRODUCT.salePrice} salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate} />
             <div className="mt-4">
               <SizeGuide productSlug="rugby-jersey" />
             </div>

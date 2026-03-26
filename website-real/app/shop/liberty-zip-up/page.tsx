@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
+import PriceDisplay from "@/components/PriceDisplay";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseSizeOption, PurchaseColorOption } from "@/components/ProductPurchaseBar";
@@ -14,6 +15,8 @@ import { useTrackProductView } from "@/hooks/useTrackProductView";
 const PRODUCT = {
   name: "Liberty Zip-Up",
   price: 110,
+  salePrice: 64.99,
+  salePriceEffectiveDate: "2026-03-25",
   description: "The zip-up is part of our effort to introduce true staples into FRUITSTAND — pieces we can wear all day in the workshop and still feel right stepping outside. We wanted something ultra-comfortable, heavyweight, and a go-to piece year-round.",
   details: [
     "100% Cotton",
@@ -160,7 +163,7 @@ export default function LibertyZipUpPage() {
             <p className="mt-1 text-[18px] text-[#1d1c19] font-avenir-light">
               {selectedColor.name.toUpperCase()}
             </p>
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <PriceDisplay regularPrice={PRODUCT.price} salePrice={PRODUCT.salePrice} salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate} />
             {/* St. Patrick's Day components disabled */}
             <div className="mt-4">
               <SizeGuide productSlug="liberty-hoodie" />

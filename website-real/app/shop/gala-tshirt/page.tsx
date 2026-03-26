@@ -28,8 +28,8 @@ function formatText(text: string, productName: string, colorNames: string[]): st
 const PRODUCT = {
   name: "Portugal Lightweight Tee",
   price: 40,
-  salePrice: 29,
-  salePriceEffectiveDate: "2026-03-26",
+  salePrice: 29.99,
+  salePriceEffectiveDate: "2026-03-25",
   description: "Crafted from 100% organic cotton in Portugal, made in a relaxed fit. At 120 GSM, it’s super lightweight, soft, and breathable — designed for effortless everyday wear.",
   details: [
     "100% organic cotton (120 GSM)",

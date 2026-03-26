@@ -56,8 +56,8 @@ const TRACKTOP_SWATCH_COLORS: Record<string, [string, string]> = {
 const PRODUCT = {
   name: "Retro Track Jacket",
   price: 110,
-  salePrice: 49,
-  salePriceEffectiveDate: "2026-03-26",
+  salePrice: 49.99,
+  salePriceEffectiveDate: "2026-03-25",
   description: "Inspired by classic New York athletic warm-ups, this track jacket features bold color blocking and a relaxed, vintage silhouette designed for movement and comfort. Each colorway pays homage to various motifs, with contrasting panels and an embroidered FRUITSTAND® logo across the chest.",
   details: [
     "100% Nylon shell",

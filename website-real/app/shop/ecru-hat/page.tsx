@@ -30,8 +30,8 @@ const ECRU_HAT_IMAGES = [
 const PRODUCT = {
   name: "Ecru Hat",
   price: 44,
-  salePrice: 25,
-  salePriceEffectiveDate: "2026-03-26",
+  salePrice: 24.99,
+  salePriceEffectiveDate: "2026-03-25",
   description: "Neutral ecru twill with tonal Fruitstand logo hits.",
   details: [
     "Soft cotton twill 6-panel",

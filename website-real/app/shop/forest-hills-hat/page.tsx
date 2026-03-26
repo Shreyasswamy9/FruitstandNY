@@ -36,8 +36,8 @@ const FOREST_HILLS_HAT_IMAGES = [
 const PRODUCT = {
   name: "Forest Hills Camp Hat",
   price: 46,
-  salePrice: 25,
-  salePriceEffectiveDate: "2026-03-26",
+  salePrice: 24.99,
+  salePriceEffectiveDate: "2026-03-25",
   description: "Lime green cotton twill with tonal Fruitstand embroidery front and back.",
   details: [
     "6-panel camp silhouette",

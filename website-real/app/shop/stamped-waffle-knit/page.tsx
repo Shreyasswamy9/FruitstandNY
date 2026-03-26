@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useCart } from "../../../components/CartContext";
 import SizeGuide from "@/components/SizeGuide";
+import PriceDisplay from "@/components/PriceDisplay";
 import { getFBTForPage } from "@/components/FrequentlyBoughtTogether";
 import ProductPageBrandHeader from "@/components/ProductPageBrandHeader";
 import ProductPurchaseBar, { PurchaseSizeOption, PurchaseColorOption } from "@/components/ProductPurchaseBar";
@@ -13,6 +14,8 @@ import { useTrackProductView } from "@/hooks/useTrackProductView";
 const PRODUCT = {
   name: "Stamped Waffle Knit",
   price: 65,
+  salePrice: 49.99,
+  salePriceEffectiveDate: "2026-03-25",
   description: "The Stamped Waffle Knit features imagery inspired by international postage stamps — small objects that once carried immense meaning across borders, time, and distance. Stamps were proof of duty paid, markers of travel, and quiet records of work done. Each one a snapshot of a moment, a place, a cost, a story.",
   details: [
     "100% Cotton",
@@ -140,7 +143,7 @@ export default function StampedWaffleKnitPage() {
             <h1 className="text-[24px] uppercase tracking-[0.08em] leading-tight text-[#1d1c19] font-avenir-black">
               {PRODUCT.name}
             </h1>
-            <p className="mt-2 text-[26px] font-black text-[#1d1c19]">${PRODUCT.price}</p>
+            <PriceDisplay regularPrice={PRODUCT.price} salePrice={PRODUCT.salePrice} salePriceEffectiveDate={PRODUCT.salePriceEffectiveDate} />
             <div className="mt-4">
               <SizeGuide productSlug="waffle-knit" />
             </div>
