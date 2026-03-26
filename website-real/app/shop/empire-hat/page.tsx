@@ -139,25 +139,6 @@ export default function EmpireHatPage() {
           </div>
         </div>
 
-        {/* DESCRIPTION SECTION */}
-        <div className="mx-auto w-full max-w-100 px-6 text-center mt-5">
-          <p className="px-1 text-[14px] leading-relaxed text-[#3d372f]">
-            {formatText(PRODUCT.description, "Empire Corduroy Hat", ["Empire", "Corduroy", "Apple", "Red"])}
-          </p>
-        </div>
-
-        {/* DETAILS SECTION */}
-        <div className="mx-auto w-full max-w-100 px-6 text-left">
-          <div className="mt-8">
-            <p className="text-base font-semibold text-[#1d1c19]">Details</p>
-            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-[#1d1c19]">
-              {PRODUCT.details.map((detail) => (
-                <li key={detail}>{formatText(detail, "Empire Corduroy Hat", ["Empire", "Corduroy", "Apple", "Red"])}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
         {/* YOU MAY ALSO LIKE SECTION */}
         <div className="mx-auto w-full max-w-100 px-6 text-center">
           <div className="mt-12">
