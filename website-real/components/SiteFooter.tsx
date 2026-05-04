@@ -32,6 +32,7 @@ export default function SiteFooter() {
             <Link href="/return-policy" className="text-gray-600 hover:text-gray-900 transition-colors">Return Policy</Link>
             <Link href="/privacy-policy" className="text-gray-600 hover:text-gray-900 transition-colors">Privacy Policy</Link>
             <Link href="/terms-and-conditions" className="text-gray-600 hover:text-gray-900 transition-colors">Terms and Conditions</Link>
+            <Link href="/meta-data-deletion" className="text-gray-600 hover:text-gray-900 transition-colors">Meta Data Deletion</Link>
           </div>
 
           <div className="flex justify-center gap-6 mb-8">

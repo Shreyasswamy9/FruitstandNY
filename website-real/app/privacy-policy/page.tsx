@@ -8,7 +8,8 @@ export default function PrivacyPolicyPage() {
     { label: "Privacy Policy", link: "/privacy-policy" },
     { label: "Return Policy", link: "/return-policy" },
     { label: "Cookie Policy", link: "/cookie-policy" },
-    { label: "Terms & Conditions", link: "/terms-and-conditions" }
+    { label: "Terms & Conditions", link: "/terms-and-conditions" },
+    { label: "Meta Data Deletion", link: "/meta-data-deletion" }
   ];
   return (
     <div className="min-h-screen bg-[#fbf6f0]">
